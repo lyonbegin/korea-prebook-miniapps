@@ -26,6 +26,8 @@ DEMO_WRITE_KEY=local-test-key uvicorn app.main:app --reload
 API: `/health`, `/v1/catalog`, and demo-only inquiry endpoints.
 
 ## Railway
+Deploy to **existing** Railway project `thriving-education` ONLY, with service `prebook-api` and the existing `pgvector` PostgreSQL service. Never create a separate Railway project or database. The database table is prefixed `korea_prebook_inquiries` to avoid collisions. 
+
 Use repository root as build context and the root `Dockerfile`. In production configure `APP_ENV=production` and a managed PostgreSQL `DATABASE_URL` (the Python `postgresql+psycopg://` dialect is supported). The production inquiry-write endpoint is intentionally disabled pending authenticated platform login.
 
 ## Release gates
