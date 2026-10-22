@@ -1,12 +1,11 @@
 <view class="container">
-  <view class="hero">
-    <view class="title">韩国行前预约 · 预购</view>
-    <view class="subtitle">抵韩前预约入住、诊所和网购配送</view>
-  </view>
-  <view class="section">提前安排您的韩国之旅</view>
-  <view wx:for="{{services}}" wx:key="kind" class="card" data-kind="{{item.kind}}" bindtap="onServiceTap">
-    <view class="name">{{item.name_zh}}</view>
-    <view class="desc">预约与购物咨询服务</view>
-  </view>
-  <view class="note">{{status}}</view>
+ <view class="hero">
+  <view class="title">{{title_zh}}</view>
+  <view class="subtitle">{{subtitle_zh}}</view>
+ </view>
+ <view class="section">提前安排您的韩国之旅</view>
+ <view wx:for="{{services}}" wx:key="kind" class="card" data-kind="{{item.kind}}" bindtap="onServiceTap">
+  <view class="name">{{item.name_zh}}</view><view class="desc">预约与购物咨询服务</view>
+ </view>
+ <view class="note">{{status}}</view>
 </view>
