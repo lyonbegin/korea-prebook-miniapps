@@ -1,0 +1,13 @@
+{
+  "name": "korea-prebook-official-runner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Official WeChat Developer Tools and Alipay MiniProgram CLI test worker",
+  "scripts": {
+    "start": "node channel-runner.js"
+  },
+  "dependencies": {
+    "miniprogram-automator": "^0.12.0",
+    "miniprogram-ci": "^2.0.0"
+  }
+}
