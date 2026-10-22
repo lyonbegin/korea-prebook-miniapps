@@ -156,6 +156,8 @@ def create_app(
 
     from app.manager import mount_manager
     mount_manager(app, engine, CATALOG)
+    from app.sourcing import mount_sourcing
+    mount_sourcing(app, engine)
     return app
 
 
