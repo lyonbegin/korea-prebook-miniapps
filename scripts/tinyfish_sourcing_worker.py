@@ -27,6 +27,12 @@ SOURCES = {
     "agoda": "https://www.agoda.com/",
     "klook": "https://www.klook.com/",
     "kkday": "https://www.kkday.com/",
+    "youtube": "https://www.youtube.com/",
+    "fallcent": "https://fallcent.com/product/search/",
+    "oliveyoung": "https://www.oliveyoung.co.kr/",
+    "yanolja": "https://www.yanolja.com/",
+    "coupang": "https://www.coupang.com/",
+    "naver_shopping": "https://shopping.naver.com/",
 }
 ITEM_SCHEMA = {
     "type": "object",
