@@ -20,14 +20,11 @@ ADMIN = os.getenv("ADMIN_API_TOKEN", "")
 KEY = os.getenv("TINYFISH_API_KEY", "")
 HALT = False
 SOURCES = {
-    "rednote": "https://www.rednote.com/",
-    "bilibili": "https://search.bilibili.com/",
     "google_shopping": "https://www.google.com/search?tbm=shop",
     "trip": "https://www.trip.com/",
     "agoda": "https://www.agoda.com/",
     "klook": "https://www.klook.com/",
     "kkday": "https://www.kkday.com/",
-    "youtube": "https://www.youtube.com/",
     "fallcent": "https://fallcent.com/product/search/",
     "oliveyoung": "https://www.oliveyoung.co.kr/",
     "yanolja": "https://www.yanolja.com/",
@@ -94,10 +91,10 @@ def update(jid, state, run_id="", message="", result=None):
 def submit(job):
     url = SOURCES[job["source"]]
     goal = (
-        "READ ONLY. Search this site for the Korean travel, shopping or tourism topic "
+        "READ ONLY. Search this site for a K-beauty consultation-related product or supplier: "
         + json.dumps(job["query"], ensure_ascii=False)
         + ". Extract up to " + str(job["max_items"])
-        + " real matching product, lodging, tourist-activity or creator-post cards. "
+        + " real product or supplier listing cards relevant to skincare, cosmetics, beauty products or counselling-linked shopping. "
         "Open result details if necessary. For each item return its actual complete "
         "source URL, exact title, brief description, visible price if any, location if any. "
         "Never invent products, prices or URLs. Do not submit forms, purchase, book, "
