@@ -1,6 +1,1 @@
-App({
-  globalData: {
-    // Set to registered HTTPS request domain after approval.
-    apiBase: 'https://api.example.invalid'
-  }
-});
+App({globalData:{apiBase:'https://prebook-api-production-9b80.up.railway.app'}});
