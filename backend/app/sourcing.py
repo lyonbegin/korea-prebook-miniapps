@@ -18,14 +18,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import text
 
 SOURCES = {
-    "rednote": {"label": "샤오홍슈 / RedNote", "url": "https://www.rednote.com/", "category": "social_discovery", "login": True},
-    "bilibili": {"label": "Bilibili", "url": "https://search.bilibili.com/", "category": "social_discovery", "login": False},
     "google_shopping": {"label": "Google Shopping", "url": "https://www.google.com/search?tbm=shop", "category": "product", "login": False},
     "trip": {"label": "Trip.com / Ctrip", "url": "https://www.trip.com/", "category": "travel", "login": False},
     "agoda": {"label": "Agoda", "url": "https://www.agoda.com/", "category": "lodging", "login": False},
     "klook": {"label": "Klook", "url": "https://www.klook.com/", "category": "activities", "login": False},
     "kkday": {"label": "KKday", "url": "https://www.kkday.com/", "category": "activities", "login": False},
-    "youtube": {"label": "YouTube 관광·쇼핑 영상", "url": "https://www.youtube.com/", "category": "social_discovery", "login": False},
     "fallcent": {"label": "Fallcent 상품·가격", "url": "https://fallcent.com/product/search/", "category": "product", "login": False},
     "oliveyoung": {"label": "올리브영 K-Beauty", "url": "https://www.oliveyoung.co.kr/", "category": "product", "login": False},
     "yanolja": {"label": "야놀자 숙박·여행", "url": "https://www.yanolja.com/", "category": "lodging", "login": False},
@@ -244,6 +241,7 @@ def mount_sourcing(app, engine):
         row=db_job(jid)
         if row["state"]!="completed":
             raise HTTPException(409, "수집 완료 후 검수·등록 가능합니다")
+        check_source(row["source"])
         items=json.loads(row["result"]).get("items", [])
         indexes=list(dict.fromkeys(data.indices))
         if any(idx<0 or idx>=len(items) for idx in indexes):
