@@ -154,6 +154,8 @@ def create_app(
                 raise HTTPException(status_code=404, detail="Inquiry not found")
             return InquiryOut(inquiry_id=row.id, status=row.status)
 
+    from app.manager import mount_manager
+    mount_manager(app, engine, CATALOG)
     return app
 
 
