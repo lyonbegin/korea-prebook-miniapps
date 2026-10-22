@@ -25,6 +25,12 @@ SOURCES = {
     "agoda": {"label": "Agoda", "url": "https://www.agoda.com/", "category": "lodging", "login": False},
     "klook": {"label": "Klook", "url": "https://www.klook.com/", "category": "activities", "login": False},
     "kkday": {"label": "KKday", "url": "https://www.kkday.com/", "category": "activities", "login": False},
+    "youtube": {"label": "YouTube 관광·쇼핑 영상", "url": "https://www.youtube.com/", "category": "social_discovery", "login": False},
+    "fallcent": {"label": "Fallcent 상품·가격", "url": "https://fallcent.com/product/search/", "category": "product", "login": False},
+    "oliveyoung": {"label": "올리브영 K-Beauty", "url": "https://www.oliveyoung.co.kr/", "category": "product", "login": False},
+    "yanolja": {"label": "야놀자 숙박·여행", "url": "https://www.yanolja.com/", "category": "lodging", "login": False},
+    "coupang": {"label": "쿠팡 상품", "url": "https://www.coupang.com/", "category": "product", "login": False},
+    "naver_shopping": {"label": "네이버 쇼핑", "url": "https://shopping.naver.com/", "category": "product", "login": False},
 }
 
 def utc():
