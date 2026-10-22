@@ -41,4 +41,4 @@ Korean operator's WeChat and Alipay miniapps for **advance booking and pre-purch
 - No commercial launch before review, privacy, payments and supplier contracts.
 
 ## Railway status
-Project: KOREA-PREBOOK, ID 2fb3dd38-5040-4293-9064-f75eca99beed. Deploy a public catalog/health read-only API. Writes remain disabled in production until server-side identity verification.
+Project: existing Railway **thriving-education**, ID 9359b723-c8e5-48ea-a0fb-69c7674b28b1. Service: **prebook-api**. Database: existing **pgvector** PostgreSQL service (shared, separate korea_prebook_inquiries table). Do not create another Railway project or PostgreSQL instance. Deploy a public catalog/health read-only API. Writes remain disabled in production until server-side identity verification.
