@@ -166,7 +166,7 @@ async function jobs(){if(!authorized())return;try{
  el('jobs').appendChild(details)});
  }catch(e){message(e.message)}
 }
-el('login').addEventListener('click',login);el('switch-wechat').addEventListener('click',function(){changeChannel('wechat')});
+el('login').addEventListener('click',function(){login()});el('switch-wechat').addEventListener('click',function(){changeChannel('wechat')});
 el('switch-alipay').addEventListener('click',function(){changeChannel('alipay')});
 el('title').addEventListener('input',draw);el('subtitle').addEventListener('input',draw);
 el('save').addEventListener('click',async function(){if(!authorized())return;
