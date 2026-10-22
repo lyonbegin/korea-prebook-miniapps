@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>위쳇알리 — 입점·소싱 관리자</title>
+<style>
+:root{font-family:system-ui,"Noto Sans KR",Arial,sans-serif;color:#162637;background:#f3f6fa}
+*{box-sizing:border-box}body{margin:0}header{background:#142c48;color:white;padding:17px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+header b{font-size:21px}header small{display:block;font-size:12px;opacity:.72;margin-top:4px}
+button,input,select{font:inherit}button{border:1px solid #d7e1eb;background:white;padding:9px 13px;border-radius:9px;cursor:pointer}button.primary{background:#1670d3;color:white;border-color:#1670d3}button:disabled{opacity:.45;cursor:not-allowed}
+input{padding:10px;border:1px solid #ccd6e2;border-radius:8px;min-width:0;width:100%}label{font-size:13px;color:#465b72;display:block;margin:12px 0 4px}
+main{max-width:1500px;margin:auto;padding:21px;display:grid;grid-template-columns:minmax(315px,1fr) minmax(310px,440px);gap:20px}
+section{background:white;border:1px solid #e1e7ef;border-radius:14px;padding:20px;margin-bottom:15px;box-shadow:0 2px 8px #10243a08}
+h2{font-size:16px;margin:0 0 12px}h3{font-size:14px;margin:17px 0 8px}.muted{font-size:12px;color:#667a90;line-height:1.6}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}
+.pill{font-size:11px;background:#edf4fe;padding:5px 9px;border-radius:40px;color:#2463a2}.notice{background:#f1f7fe;padding:12px;border-radius:10px;font-size:12px;line-height:1.7}
+.checkitem{display:flex;align-items:center;gap:10px;padding:9px;border-bottom:1px solid #eef0f3;font-size:13px}
+.checkitem input{width:auto;accent-color:#1874d5}.checkitem span{flex:1}
+.preview-shell{background:#e6ebf4;padding:17px;border-radius:18px;position:sticky;top:14px}
+.device{max-width:340px;margin:auto;background:white;border-radius:29px;border:7px solid #202b3b;box-shadow:0 15px 36px #172f5040;min-height:570px;overflow:hidden}
+.device-top{height:31px;background:#f8fafc;display:flex;justify-content:center;align-items:center}
+.device-top:before{content:"";width:74px;height:15px;background:#202b3b;border-radius:12px}
+.device-head{background:#14394b;color:white;padding:26px 16px 22px}.device-head strong{font-size:18px}.device-head p{font-size:11px;margin-bottom:0;opacity:.8}
+.device-body{padding:15px;background:#f8fafc;min-height:415px}
+.item{background:white;border:1px solid #e7edf4;border-radius:11px;margin-bottom:9px;padding:13px;font-size:13px}
+.item small{display:block;color:#8291a5;margin-top:6px}.device-foot{border-top:1px solid #e3e9ef;background:white;text-align:center;padding:14px;font-size:11px;color:#647e93}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;border-bottom:1px solid #e9edf3;padding:9px 6px;vertical-align:top}td{word-break:break-word}pre{white-space:pre-wrap;word-break:break-word;background:#eff3f8;border-radius:10px;padding:10px;max-height:180px;overflow:auto;font-size:11px}
+#status{font-size:12px}code{font-size:12px} .hidden{display:none}
+@media(max-width:900px){main{grid-template-columns:1fr}.preview-shell{position:static}}
+</style>
+</head>
+<body>
+<header>
+ <div><b>위쳇알리</b><small>중국·국내 플랫폼 입점관리 · 소싱 · 미니앱 사전검증</small></div>
+ <div class="row"><input id="token" type="password" style="width:245px" placeholder="Railway ADMIN_API_TOKEN"><button id="login" class="primary">관리자 연결</button></div>
+</header>
+<main>
+<div>
+<section><div class="row spread"><h2>① 판매채널 화면 구성</h2><span class="pill">실제 서버 데이터 연동</span></div>
+ <div class="row"><button id="switch-wechat">WeChat</button><button id="switch-alipay">Alipay</button></div>
+ <label>미니앱 제목(중국어)</label><input id="title" maxlength="100">
+ <label>미니앱 설명(중국어)</label><input id="subtitle" maxlength="200">
+ <h3>기본 상품 카테고리</h3><div id="kinds"></div>
+ <h3>소싱 상품 적용</h3><div id="source-select"></div>
+ <div class="row" style="margin-top:14px"><button class="primary" id="save">채널 설정 적용</button><span id="status">관리자 토큰 입력 후 편집 가능합니다.</span></div>
+ <p class="muted">저장하면 API 데이터가 즉시 바뀌고 오른쪽 미리보기에 반영됩니다. 실제 플랫폼 코드 업로드·심사는 별도의 단계입니다.</p>
+</section>
+<section><h2>② touranal 소싱 통합</h2>
+ <p class="muted">현재는 상품 원본을 수동 등록·검수하는 입력 기능입니다. 기존 C:\touranal 수집기 연동은 소스 확보 후 진행합니다.</p>
+ <form id="source-form">
+ <div class="row"><input id="source-title" placeholder="중국어 상품명" required><input id="source-category" placeholder="분류(숙박/쇼핑/관광)" required></div>
+ <div class="row" style="margin-top:8px"><input id="source-origin" placeholder="소스명: touranal / 수동"><input id="source-url" placeholder="원본 자료 URL"></div>
+ <div class="row" style="margin-top:8px"><input id="source-supplier" placeholder="공급업체(선택)"><button class="primary" type="submit">소싱 등록</button></div></form>
+ <div id="sourcing" class="muted" style="margin-top:12px">등록된 상품 없음</div>
+</section>
+<section><h2>③ 공식 IDE 테스트·입점 준비</h2>
+ <p class="muted">테스트 작업을 등록하면 PC의 실행기가 WeChat Developer Tools 또는 Alipay CLI를 실행해 결과를 회신합니다. 실행기가 연결되지 않은 작업은 대기 상태입니다.</p>
+ <div class="row"><button id="preview-job" class="primary">현재 채널 공식 테스트 요청</button><button id="upload-job">코드 업로드 요청</button><button id="refresh-jobs">작업 결과 새로고침</button></div>
+ <div id="readiness" class="notice" style="margin-top:12px">인증 후 플랫폼 계정 준비 상태가 표시됩니다.</div>
+ <div id="jobs" style="margin-top:12px"></div>
+</section>
+</div>
+<div>
+<section class="preview-shell"><div class="row spread"><h2>실시간 미니앱 미리보기</h2><span id="channel-tag" class="pill">WeChat</span></div>
+<div class="device"><div class="device-top"></div><div class="device-head"><strong id="preview-title">韩国行前预约 · 预购</strong><p id="preview-subtitle">抵韩前预约入住、诊所和网购配送</p></div><div class="device-body"><div class="muted" style="margin-bottom:12px">提前安排您的韩国之旅</div><div id="preview-items"></div></div><div class="device-foot" id="preview-foot">미리보기 · 아직 실제 예약 불가</div></div>
+<p class="muted">이 패널은 관리서버의 데이터 미리보기입니다. 공식 WeChat/Alipay 렌더링 결과는 테스트 실행기의 스크린샷으로 별도 제공됩니다.</p></section>
+</div>
+</main>
+<script>
+(function(){
+'use strict';
+var keys=['motel_early_checkin','clinic_visit','korea_online_shopping','airport_goods_handoff','airport_luggage_delivery'];
+var names={'motel_early_checkin':'모텔 얼리 체크인','clinic_visit':'의원 예약','korea_online_shopping':'한국 상품 사전구매','airport_goods_handoff':'공항 상품수령','airport_luggage_delivery':'공항 짐 배송'};
+var channel='wechat', token=sessionStorage.getItem('prebook_admin_token')||'', state=null, current=null;
+var el=function(id){return document.getElementById(id)};
+el('token').value=token;
+function authorized(){return Boolean(token&&state)}
+function message(v){el('status').textContent=v}
+async function request(path,method,data,auth){
+ var opts={method:method||'GET',headers:{}};
+ if(auth!==false&&token)opts.headers.Authorization='Bearer '+token;
+ if(data!==undefined){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(data)}
+ var res=await fetch(path,opts),raw=await res.text(),payload;
+ try{payload=JSON.parse(raw)}catch(e){payload={detail:raw}}
+ if(!res.ok)throw new Error(payload.detail||'HTTP '+res.status);
+ return payload;
+}
+function draw(){
+ if(!current)return;
+ el('channel-tag').textContent=channel==='wechat'?'WeChat':'Alipay';
+ el('preview-title').textContent=el('title').value||current.title_zh;
+ el('preview-subtitle').textContent=el('subtitle').value||current.subtitle_zh;
+ var enabled=Array.from(document.querySelectorAll('[data-kind]')).filter(x=>x.checked).map(x=>x.dataset.kind);
+ var sid=Array.from(document.querySelectorAll('[data-source-id]')).filter(x=>x.checked).map(x=>x.dataset.sourceId);
+ var items=(state?state.channels[channel].services:current.services).filter(x=>enabled.includes(x.kind)&&!x.kind.startsWith('source_'));
+ if(state)items=items.concat(state.sources.filter(x=>sid.includes(x.id)).map(x=>({kind:'source_'+x.id,name_zh:x.title_zh})));
+ var node=el('preview-items');node.replaceChildren();
+ items.forEach(function(item){var div=document.createElement('div');div.className='item';div.textContent=item.name_zh;
+ var sub=document.createElement('small');sub.textContent='预约与购物咨询服务';div.appendChild(sub);node.appendChild(div)});
+ el('preview-foot').textContent=(channel==='wechat'?'微信小程序':'支付宝小程序')+' · 开发预览 / 尚未开放实际预约';
+}
+function setupEditor(){
+ if(!current)return;
+ el('title').value=current.title_zh;el('subtitle').value=current.subtitle_zh;
+ el('kinds').replaceChildren();
+ keys.forEach(function(k){var l=document.createElement('label');l.className='checkitem',l.style.margin='0';
+ var b=document.createElement('input');b.type='checkbox';b.dataset.kind=k;b.checked=current.enabled_kinds.includes(k);b.addEventListener('change',draw);
+ var s=document.createElement('span');s.textContent=names[k];l.append(b,s);el('kinds').appendChild(l)});
+ el('source-select').replaceChildren();
+ if(state){state.sources.forEach(function(x){var l=document.createElement('label');l.className='checkitem';l.style.margin='0';
+ var b=document.createElement('input');b.type='checkbox';b.dataset.sourceId=x.id;b.checked=current.source_ids.includes(x.id);b.addEventListener('change',draw);
+ var s=document.createElement('span');s.textContent=x.title_zh+' ('+x.source_name+')';l.append(b,s);el('source-select').appendChild(l)})}
+ if(!state||!state.sources.length)el('source-select').textContent='관리자 연결 후 소싱 등록 가능';
+ el('save').disabled=!authorized();el('preview-job').disabled=!authorized();el('upload-job').disabled=!authorized();
+ draw();
+}
+async function changeChannel(next){channel=next;
+ try{current=state?state.channels[next]:await request('/v1/channels/'+next+'/home','GET',undefined,false);setupEditor()}catch(e){message(e.message)}
+}
+async function login(){token=el('token').value.trim();sessionStorage.setItem('prebook_admin_token',token);
+ try{state=await request('/manager/api/state');message('관리자 인증 완료');await changeChannel(channel);renderSource();renderReady();await jobs()}
+ catch(e){state=null;message('인증 실패: '+e.message);await changeChannel(channel)}
+}
+function renderSource(){if(!state)return;
+ el('sourcing').replaceChildren();var t=document.createElement('table');
+ t.innerHTML='<thead><tr><th>상품</th><th>분류</th><th>소싱 출처</th></tr></thead>';
+ var tbody=document.createElement('tbody');state.sources.forEach(function(x){var tr=document.createElement('tr');
+ [x.title_zh,x.category,x.source_name].forEach(function(v){var td=document.createElement('td');td.textContent=v;tr.appendChild(td)});tbody.appendChild(tr)});
+ t.appendChild(tbody);el('sourcing').appendChild(t);
+}
+function renderReady(){if(!state)return;
+ var r=state.ready;el('readiness').textContent='WeChat AppID: '+(r.wechat_appid?'설정됨':'미설정')+
+ ' · Alipay Mini Program ID: '+(r.alipay_mini_program_id?'설정됨':'미설정')+
+ ' · Workspace: '+(r.alipay_workspace_id?'설정됨':'미설정')+
+ ' · Super App: '+(r.alipay_super_app_id?'설정됨':'미설정')+
+ ' · PC 실행기: 별도 실행 필요. 이 항목은 정식 입점 승인을 의미하지 않습니다.';
+}
+async function jobs(){if(!authorized())return;try{
+ var data=await request('/manager/api/jobs');el('jobs').replaceChildren();
+ data.slice(0,12).forEach(function(j){var details=document.createElement('details');var summary=document.createElement('summary');
+ summary.textContent=j.channel+' / '+j.action+' / '+j.state+' / '+j.created_at;
+ details.appendChild(summary);if(j.log){var pre=document.createElement('pre');pre.textContent=j.log;details.appendChild(pre)}
+ if(j.screenshot){var img=document.createElement('img');img.alt='공식 IDE 테스트 스크린샷';img.style.maxWidth='100%';img.src='data:image/png;base64,'+j.screenshot;details.appendChild(img)}
+ el('jobs').appendChild(details)});
+ }catch(e){message(e.message)}
+}
+el('login').addEventListener('click',login);el('switch-wechat').addEventListener('click',function(){changeChannel('wechat')});
+el('switch-alipay').addEventListener('click',function(){changeChannel('alipay')});
+el('title').addEventListener('input',draw);el('subtitle').addEventListener('input',draw);
+el('save').addEventListener('click',async function(){if(!authorized())return;
+ var data={title_zh:el('title').value,subtitle_zh:el('subtitle').value,
+ enabled_kinds:Array.from(document.querySelectorAll('[data-kind]')).filter(x=>x.checked).map(x=>x.dataset.kind),
+ source_ids:Array.from(document.querySelectorAll('[data-source-id]')).filter(x=>x.checked).map(x=>x.dataset.sourceId)};
+ try{var result=await request('/manager/api/channels/'+channel,'PUT',data);state.channels[channel]=result;current=result;message('채널 '+channel+' 데이터 적용 완료');setupEditor()}catch(e){message(e.message)}
+});
+el('source-form').addEventListener('submit',async function(ev){ev.preventDefault();if(!authorized()){message('관리자 인증 필요');return}
+ try{await request('/manager/api/source','POST',{title_zh:el('source-title').value,category:el('source-category').value,
+ source_name:el('source-origin').value||'manual',source_url:el('source-url').value,supplier:el('source-supplier').value});
+ state=await request('/manager/api/state');current=state.channels[channel];setupEditor();renderSource();message('소싱 상품 추가 완료')}catch(e){message(e.message)}
+});
+async function job(action){if(!authorized())return;
+ if(action==='upload'&&!window.confirm('플랫폼 코드 업로드 작업을 요청하시겠습니까? 실제 등록 계정·권한이 필요합니다.'))return;
+ try{var v=await request('/manager/api/jobs','POST',{channel:channel,action:action,confirm_upload:action==='upload'});
+ message('작업 생성: '+v.id+' (PC 실행기 연결 필요)');await jobs()}catch(e){message(e.message)}
+}
+el('preview-job').addEventListener('click',function(){job('preview')});
+el('upload-job').addEventListener('click',function(){job('upload')});
+el('refresh-jobs').addEventListener('click',jobs);
+changeChannel('wechat').then(function(){if(token)login()});
+})();
+</script>
+</body></html>
