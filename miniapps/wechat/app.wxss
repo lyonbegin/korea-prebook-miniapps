@@ -1,0 +1,7 @@
+page { background:#f4f7f8; color:#122f40; font-family:sans-serif; }
+.container {padding:36rpx;} .hero {background:#14394b;color:white;padding:36rpx;border-radius:24rpx;}
+.title {font-size:38rpx;font-weight:bold;} .subtitle {font-size:24rpx;opacity:.85;margin-top:14rpx;}
+.section {margin:34rpx 0 20rpx;font-size:30rpx;font-weight:bold;}
+.card {padding:28rpx;margin:16rpx 0;background:white;border-radius:18rpx;}
+.name {font-weight:bold;font-size:28rpx;} .desc {margin-top:8rpx;color:#557181;font-size:24rpx;}
+.note {margin-top:24rpx;font-size:23rpx;color:#667d88;}

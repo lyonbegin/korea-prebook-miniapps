@@ -1,28 +1,32 @@
 # KOREA-PREBOOK · Korea Pre-Arrival Miniapps
 
-A standalone project for a Korean business to publish WeChat and Alipay miniapps. Customers prepare Korean reservations and purchases before arriving in Korea.
+Independent project for a Korean company's **WeChat and Alipay** miniapps. Positioning: **reserve or purchase before arriving in Korea**.
 
-## Scope
-- WeChat native miniapp: WXML, WXSS, wx API
-- Alipay native miniapp: AXML, ACSS, my API
-- Python/FastAPI common backend
-- Motel early check-in reservation inquiries
-- Clinic appointment inquiries
-- Korea online pre-purchase: hotel/motel delivery
-- Departure-day airport handoff and luggage transfer inquiries
-- Existing consultation SDK is **not implemented here**; integrate later.
+## Business services
+1. Motel-first early check-in reservation, using actual available arrival times.
+2. Korean clinic appointment inquiries and partner booking.
+3. Korean online goods pre-purchased from abroad; ship to a customer's registered motel/hotel.
+4. Departure-day ordinary-goods airport pickup and hotel-to-airport luggage transfer reservations.
 
-## Safety and reality checks
-This starter is an **inquiry prototype**, not confirmed bookings, paid transactions, or an approved/registered Mini Program. No real inventory or payment is connected. Production protects demo-write operations; merchant onboarding, industry review and payment certification remain separate.
+The existing AI/human consultation system is **out of scope**. Integrate through an SDK/API later. LINE and Xiaohongshu are excluded from this release.
 
-## Local backend
+## Structure
+- `miniapps/wechat`: native WXML/WXSS miniapp
+- `miniapps/alipay`: native AXML/ACSS miniapp
+- `backend`: FastAPI + SQLAlchemy inquiry prototype (not actual booking)
+- `docs`: development plan, vendor approvals, integration boundaries
+
+## Local test
 ```bash
 cd backend
-pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt
 PYTHONPATH=. pytest -q
-DEMO_WRITE_KEY=local-test uvicorn app.main:app --reload
+DEMO_WRITE_KEY=local-test-key uvicorn app.main:app --reload
 ```
+API: `/health`, `/v1/catalog`, and demo-only inquiry endpoints.
 
-Endpoints: `GET /health`, `GET /v1/catalog`, `POST /v1/inquiries` (demo-only), `GET /v1/inquiries/{id}` (demo-only).
+## Railway
+Use repository root as build context and the root `Dockerfile`. In production configure `APP_ENV=production` and a managed PostgreSQL `DATABASE_URL` (the Python `postgresql+psycopg://` dialect is supported). The production inquiry-write endpoint is intentionally disabled pending authenticated platform login.
 
-See `docs/DEVELOPMENT_PLAN.md` and `docs/PLATFORM_CHECKLIST.md`. The API server has its own `backend/Dockerfile` and Railway should use `backend` as the service root.
+## Release gates
+Merchant account, miniapp IDs, category approvals (motel, clinic, shopping, logistics), cross-border payments, registered request domains, supplier inventory, and native-device/platform reviews are **pending**. No actual checkout or confirmed reservation exists in this starter.
