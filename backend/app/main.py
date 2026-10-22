@@ -39,7 +39,7 @@ class Base(DeclarativeBase):
 
 
 class InquiryRow(Base):
-    __tablename__ = "inquiries"
+    __tablename__ = "korea_prebook_inquiries"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     customer_ref: Mapped[str] = mapped_column(String(80), nullable=False)
     platform: Mapped[str] = mapped_column(String(24), nullable=False)
