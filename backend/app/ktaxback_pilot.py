@@ -53,6 +53,9 @@ def mount_pilot(app,engine):
            sample_json TEXT NOT NULL DEFAULT '[]',error TEXT NOT NULL DEFAULT '',
            created_at TEXT NOT NULL,updated_at TEXT NOT NULL,
            UNIQUE(category_id,lang_code))"""))
+        c.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_pilot_retries
+          (version TEXT PRIMARY KEY, prior_task_count INTEGER NOT NULL, created_at TEXT NOT NULL)"""))
+
     def auth(token):
         expected=os.getenv("ADMIN_API_TOKEN","")
         if not token or not expected or not secrets.compare_digest(token,"Bearer "+expected):
@@ -94,6 +97,30 @@ def mount_pilot(app,engine):
                             "lang":lang,"at":timestamp()})
         return {"categories":CATEGORIES,"languages":LANGS,"tasks":len(CATEGORIES)*len(LANGS),"per_task":10,
                 "source":"original Olive Young global","legacy_data_imported":False}
+
+    @app.post("/manager/api/ktaxback/pilot/retry-selector-v2")
+    def retry_selector_v2(authorization:str|None=Header(None)):
+        auth(authorization)
+        version="visible_preferences_v2"
+        with engine.begin() as conn:
+            if conn.execute(text("""SELECT version FROM korea_prebook_kt_pilot_retries
+               WHERE version=:v"""),{"v":version}).scalar_one_or_none():
+                return {"enqueued":0,"reason":"already_applied"}
+            rows=conn.execute(text("""SELECT id,category_id,lang_code,state FROM
+               korea_prebook_kt_pilot_tasks
+               WHERE state IN ('failed','untranslated')""")).mappings().all()
+            # Versioned one-time recovery; preserve actual prior states in the
+            # source audit table and mark current task as queued.
+            conn.execute(text("""INSERT INTO korea_prebook_kt_pilot_retries
+                (version,prior_task_count,created_at) VALUES(:v,:n,:t)"""),
+                {"v":version,"n":len(rows),"t":timestamp()})
+            for row in rows:
+                conn.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
+                   SET state='queued',updated_at=:t,
+                     error='Retry scheduled after visible language selector correction'
+                   WHERE id=:id AND state IN ('failed','untranslated')"""),
+                   {"id":row["id"],"t":timestamp()})
+        return {"enqueued":len(rows),"version":version}
 
     @app.get("/manager/api/ktaxback/pilot/next")
     def next_task(authorization:str|None=Header(None)):
