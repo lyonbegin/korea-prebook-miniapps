@@ -10,7 +10,7 @@ import os
 import re
 import secrets
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from html import unescape
 from urllib.parse import urlparse
 
@@ -62,6 +62,11 @@ def mount_translation(app, engine):
         )"""))
 
     with engine.begin() as con:
+        con.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_translation_leases (
+            category_id TEXT NOT NULL, lang_code TEXT NOT NULL,
+            owner TEXT NOT NULL, lease_until TEXT NOT NULL,
+            PRIMARY KEY(category_id,lang_code)
+        )"""))
         con.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_translation_category_audit (
             category_id TEXT NOT NULL, lang_code TEXT NOT NULL,
             http_status INTEGER NOT NULL, requested INTEGER NOT NULL,
@@ -81,6 +86,47 @@ def mount_translation(app, engine):
             Table("korea_prebook_kt_products", MetaData(), autoload_with=engine),
             Table("korea_prebook_kt_product_translations", MetaData(), autoload_with=engine)
         )
+
+    class TranslationLease(BaseModel):
+        category_id: str = Field(pattern=r"^[0-9]{10}$")
+        lang_code: str
+        owner: str = Field(pattern=r"^[a-z0-9-]{24,60}$")
+
+    @app.post("/manager/api/ktaxback/translation/claim")
+    def claim(data: TranslationLease, authorization: str | None = Header(None)):
+        auth(authorization)
+        if data.lang_code not in LANG_TARGET:
+            raise HTTPException(422,"Unsupported language")
+        lease=Table("korea_prebook_kt_translation_leases",MetaData(),
+                    autoload_with=engine)
+        issued=utcnow()
+        until=(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat()
+        with engine.begin() as con:
+            dialect=pg_insert if engine.dialect.name=="postgresql" else sqlite_insert
+            stmt=dialect(lease).values(category_id=data.category_id,
+                lang_code=data.lang_code,owner=data.owner,lease_until=until)
+            stmt=stmt.on_conflict_do_update(
+                index_elements=["category_id","lang_code"],
+                set_={"owner":stmt.excluded.owner,"lease_until":stmt.excluded.lease_until},
+                where=lease.c.lease_until < issued)
+            con.execute(stmt)
+            current=con.execute(select(lease.c.owner,lease.c.lease_until).where(
+                lease.c.category_id==data.category_id,
+                lease.c.lang_code==data.lang_code)).first()
+        return {"acquired":bool(current and current.owner==data.owner),
+                "lease_until":current.lease_until if current else None}
+
+    @app.post("/manager/api/ktaxback/translation/release")
+    def release(data: TranslationLease, authorization: str | None = Header(None)):
+        auth(authorization)
+        lease=Table("korea_prebook_kt_translation_leases",MetaData(),
+                    autoload_with=engine)
+        with engine.begin() as con:
+            removed=con.execute(lease.delete().where(
+                lease.c.category_id==data.category_id,
+                lease.c.lang_code==data.lang_code,
+                lease.c.owner==data.owner)).rowcount
+        return {"released":bool(removed)}
 
     @app.get("/manager/api/ktaxback/translation/sample")
     def original_source_sample(category_id: str = Query("1000000008"), limit: int = Query(10, ge=1, le=30),
