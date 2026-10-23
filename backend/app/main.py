@@ -168,6 +168,8 @@ def create_app(
     mount_pilot(app, engine)
     from app.ktaxback_translation import mount_translation
     mount_translation(app, engine)
+    from app.ktaxback_category_translation import mount_category_translation
+    mount_category_translation(app, engine)
     return app
 
 
