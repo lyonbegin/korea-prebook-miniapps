@@ -154,6 +154,7 @@ async def main():
         LOG.info("VISIBLE_LANGUAGE_SELECTOR_RETRY %s",retry)
     except Exception as exc:
         LOG.warning("Language selector retry planning unavailable: %s",str(exc)[:300])
+    restricted=0
     async with async_playwright() as p:
         browser=await p.chromium.launch(headless=True,args=["--disable-dev-shm-usage"])
         try:
@@ -164,6 +165,13 @@ async def main():
                     break
                 LOG.info("FETCH %s %s requested=%s",task["category_id"],task["lang_code"],task["requested"])
                 data=await read_category(browser,task)
+                error=data.get("error","")
+                if any(flag in error for flag in (
+                        "Access restricted", "Just a moment", "しばらくお待ち",
+                        "requested verification", "Shopping Preferences unavailable")):
+                    restricted+=1
+                elif not error:
+                    restricted=0
                 try:
                     result=await api("/manager/api/ktaxback/pilot/result","POST",data)
                     LOG.info("SAVE cat=%s lang=%s selected=%s verified=%s untranslated=%s state=%s",
@@ -180,6 +188,14 @@ async def main():
                             "error":"DB ingest error: "+str(exc)[:450]})
                     except Exception:
                         LOG.exception("Failed persisting ingest error; task will be recovered")
+                if restricted>=3:
+                    LOG.warning("Source site denied three consecutive requests. Ending bounded pilot without retrying access restrictions.")
+                    try:
+                        blocked=await api("/manager/api/ktaxback/pilot/stop-on-restriction","POST",{
+                            "reason":"Three consecutive browser responses requested verification or access restriction"})
+                        LOG.warning("RESTRICTION_STOP %s",blocked)
+                    except Exception:LOG.exception("Could not persist source restriction stop")
+                    break
                 await asyncio.sleep(0.8)
         finally:await browser.close()
     report=await api("/manager/api/ktaxback/pilot/report")
