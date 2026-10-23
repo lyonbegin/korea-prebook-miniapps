@@ -160,6 +160,8 @@ def create_app(
     mount_sourcing(app, engine)
     from app.ktaxback import mount_ktaxback
     mount_ktaxback(app, engine)
+    from app.ktaxback_miniapp import mount_miniapp_shop
+    mount_miniapp_shop(app, engine)
     from app.ktaxback_bootstrap import bootstrap
     bootstrap(engine)  # empty original-schema tables and 150 collection targets only
     from app.oliveyoung_refresh import mount_oliveyoung_refresh
