@@ -158,6 +158,8 @@ def create_app(
     mount_manager(app, engine, CATALOG)
     from app.sourcing import mount_sourcing
     mount_sourcing(app, engine)
+    from app.ktaxback import mount_ktaxback
+    mount_ktaxback(app, engine)
     return app
 
 
