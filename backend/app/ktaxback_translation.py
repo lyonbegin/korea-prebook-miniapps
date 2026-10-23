@@ -108,6 +108,46 @@ def mount_translation(app, engine):
                 "included_category_ids":len(included),"items":items,
                 "source_language":"en","target_languages":LANG_TARGET,"source_api":SOURCE}
 
+    @app.get("/manager/api/ktaxback/translation/verified-category-samples")
+    def verified_category_samples(authorization: str | None = Header(None)):
+        """Real ten-item lists from English pilot's observed source responses.
+
+        This is not a synthetic category remapping and does not touch the old
+        SQLite source database. Multi-language translations attach by prdt_no.
+        """
+        auth(authorization)
+        products, translations = tables()
+        with engine.connect() as con:
+            pilot=con.execute(text("""SELECT category_id,category_name,sample_json
+                 FROM korea_prebook_kt_pilot_tasks
+                 WHERE lang_code='en' AND state='verified'
+                 ORDER BY category_id""")).mappings().all()
+            existing={}
+            for row in con.execute(select(
+                translations.c.prdt_no,translations.c.lang_code
+            ).where(translations.c.field_key == NAME_FIELD)).all():
+                existing.setdefault(row.prdt_no,[]).append(row.lang_code)
+            category_samples=[]
+            for record in pilot:
+                rows=json.loads(record["sample_json"])
+                ids=[r.get("prdt_no") for r in rows if r.get("prdt_no")]
+                if not ids:continue
+                matching=con.execute(select(products.c.prdt_no,products.c.prdt_name).where(
+                    products.c.prdt_no.in_(ids)
+                )).mappings().all()
+                lookup={r["prdt_no"]:dict(r) for r in matching}
+                items=[]
+                for ident in ids:
+                    product=lookup.get(ident)
+                    if product:
+                        items.append({"prdt_no":ident,"prdt_name":product["prdt_name"],
+                                      "existing_translations":existing.get(ident,[])})
+                category_samples.append({"category_id":record["category_id"],
+                     "category_name":record["category_name"],
+                     "items":items[:10],"source":"verified_en_pilot_page_json"})
+        return {"categories":category_samples,"target_languages":LANG_TARGET,
+                "source_endpoint":SOURCE,"old_sqlite_imported":False}
+
     @app.post("/manager/api/ktaxback/translation/capture")
     def capture_observed_translation(data: SourceTranslation, authorization: str | None = Header(None)):
         auth(authorization)
