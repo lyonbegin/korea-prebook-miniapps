@@ -166,6 +166,8 @@ def create_app(
     mount_oliveyoung_refresh(app, engine)
     from app.ktaxback_pilot import mount_pilot
     mount_pilot(app, engine)
+    from app.ktaxback_translation import mount_translation
+    mount_translation(app, engine)
     return app
 
 
