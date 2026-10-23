@@ -119,9 +119,17 @@ def mount_oliveyoung_refresh(app,engine):
 
     def create_job(data:RefreshIn, auto=False):
         ready()
-        known=set(categories())
-        ids=data.category_ids or [x for x in categories() if x!="1000000001"][:4]
-        ids=list(dict.fromkeys(ids))
+        available=sorted(x for x in categories() if x!="1000000001")
+        known=set(available)|{"1000000001"}
+        if data.category_ids:
+            ids=list(dict.fromkeys(data.category_ids))
+        else:
+            with engine.connect() as c:
+                previous=c.execute(text("""SELECT category_ids FROM korea_prebook_kt_refresh_jobs
+                    WHERE source='oliveyoung' ORDER BY created_at DESC LIMIT 1""")).scalar_one_or_none()
+            last=json.loads(previous)[-1] if previous else None
+            start=(available.index(last)+1)%len(available) if last in available else 0
+            ids=(available+available)[start:start+(8 if auto else 4)]
         if not ids or len(ids)>8 or any(cid not in known for cid in ids):
             raise HTTPException(422,"카테고리를 1~8개 선택하세요")
         with engine.begin() as c:
@@ -176,9 +184,10 @@ def mount_oliveyoung_refresh(app,engine):
                 ORDER BY created_at DESC LIMIT 1""")).scalar_one_or_none()
         if recent:
             timestamp=datetime.fromisoformat(recent)
-            if timestamp>datetime.now(timezone.utc)-timedelta(hours=24):
+            cadence=max(1,int(os.getenv("OLIVEYOUNG_REFRESH_HOURS","3")))
+            if timestamp>datetime.now(timezone.utc)-timedelta(hours=cadence):
                 return {"scheduled":False,"reason":"not_due"}
-        try:return {"scheduled":True,"job":create_job(RefreshIn())}
+        try:return {"scheduled":True,"job":create_job(RefreshIn(max_pages=2),auto=True)}
         except HTTPException as exc:
             if exc.status_code==409:return {"scheduled":False,"reason":"active_job"}
             raise
