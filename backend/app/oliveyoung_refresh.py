@@ -20,11 +20,11 @@ def now():
 
 class RefreshIn(BaseModel):
     category_ids: list[str] = Field(default_factory=list, max_length=8)
-    max_pages: int = Field(default=2, ge=1, le=10)
+    max_pages: int = Field(default=2, ge=1, le=30)
 
 class CaptureIn(BaseModel):
     category_id: str
-    page_index: int = Field(ge=1, le=10)
+    page_index: int = Field(ge=1, le=30)
     source_url: str
     payload: dict
 
@@ -103,6 +103,10 @@ def mount_oliveyoung_refresh(app,engine):
            fingerprint TEXT NOT NULL, sample_json TEXT NOT NULL, state TEXT NOT NULL,
            error TEXT NOT NULL, checked_at TEXT NOT NULL,
            PRIMARY KEY(job_id,category_id,page_index))"""))
+
+        c.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_fullscan
+           (id INTEGER PRIMARY KEY, active INTEGER NOT NULL, page_limit INTEGER NOT NULL,
+            started_at TEXT NOT NULL, completed_at TEXT)"""))
 
     def auth(v):
         key=os.getenv("ADMIN_API_TOKEN","")
@@ -187,12 +191,59 @@ def mount_oliveyoung_refresh(app,engine):
         return {"job":{"id":jid,"categories":json.loads(row["category_ids"]),
                        "max_pages":row["max_pages"]}}
 
+    class FullScanIn(BaseModel):
+        max_pages: int = Field(default=10,ge=1,le=30)
+
+    @app.post("/manager/api/ktaxback/refresh/fullscan",status_code=202)
+    def start_fullscan(data:FullScanIn,authorization:str|None=Header(None)):
+        auth(authorization);ready()
+        with engine.begin() as c:
+            c.execute(text("""INSERT INTO korea_prebook_kt_fullscan
+             (id,active,page_limit,started_at,completed_at) VALUES(1,1,:pages,:now,NULL)
+             ON CONFLICT(id) DO UPDATE SET active=1,page_limit=:pages,
+             started_at=:now,completed_at=NULL"""),{"pages":data.max_pages,"now":now()})
+            c.execute(text("""UPDATE korea_prebook_kt_category_targets SET
+                last_state=NULL,last_checked=NULL,last_error=NULL,last_products=0"""))
+        return {"active":True,"category_targets":len(categories()),
+                "max_pages_per_category":data.max_pages,
+                "existing_product_rows_preserved":True}
+
+    @app.post("/manager/api/ktaxback/refresh/fullscan/stop")
+    def stop_fullscan(authorization:str|None=Header(None)):
+        auth(authorization)
+        with engine.begin() as c:
+            c.execute(text("UPDATE korea_prebook_kt_fullscan SET active=0 WHERE id=1"))
+        return {"active":False}
+
     @app.post("/manager/api/ktaxback/refresh/worker/auto")
     def auto(authorization:str|None=Header(None)):
         auth(authorization);ready()
         with engine.connect() as c:
+            active_job=c.execute(text("""SELECT id FROM korea_prebook_kt_refresh_jobs
+                 WHERE state IN ('queued','running') LIMIT 1""")).scalar_one_or_none()
+            scan=c.execute(text("""SELECT active,page_limit FROM korea_prebook_kt_fullscan WHERE id=1""")).mappings().first()
+        if active_job:return {"scheduled":False,"reason":"active_job"}
+        if scan and scan["active"]:
+            with engine.connect() as c:
+                pending=[r[0] for r in c.execute(text("""SELECT category_id
+                 FROM korea_prebook_kt_category_targets WHERE last_checked IS NULL
+                 ORDER BY priority LIMIT 2""")).all()]
+            if pending:
+                return {"scheduled":True,
+                        "job":create_job(RefreshIn(category_ids=pending,max_pages=scan["page_limit"]),auto=True)}
+            with engine.begin() as c:
+                c.execute(text("""UPDATE korea_prebook_kt_fullscan SET active=0,completed_at=:t
+                                  WHERE id=1"""),{"t":now()})
+            return {"scheduled":False,"reason":"fullscan_finished"}
+        # If DB is empty, run pilot independently of any legacy SQLite import.
+        with engine.connect() as c:
+            total=c.execute(text("SELECT COUNT(*) FROM korea_prebook_kt_refresh_jobs")).scalar_one()
             recent=c.execute(text("""SELECT created_at FROM korea_prebook_kt_refresh_jobs
-                ORDER BY created_at DESC LIMIT 1""")).scalar_one_or_none()
+                 ORDER BY created_at DESC LIMIT 1""")).scalar_one_or_none()
+        if total==0:
+            return {"scheduled":True,
+                    "job":create_job(RefreshIn(category_ids=["1000000003"],max_pages=2),auto=True),
+                    "mode":"first_live_pilot"}
         if recent:
             timestamp=datetime.fromisoformat(recent)
             cadence=max(1,int(os.getenv("OLIVEYOUNG_REFRESH_HOURS","3")))
