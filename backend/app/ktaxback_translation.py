@@ -240,8 +240,11 @@ def mount_translation(app, engine):
                 if d:
                     for attr,label in colnames.items():
                         txt=str(d.get(attr) or "").strip()
-                        if txt:fields.append({"field_key":"details-info.details."+label,
-                                              "source_text":txt[:3000]})
+                        # Never truncate source text: the translator must
+                        # match an existing original DB value exactly.
+                        if txt and len(txt)<=3000:
+                            fields.append({"field_key":"details-info.details."+label,
+                                           "source_text":txt})
                 present=conn.execute(select(translations.c.lang_code,translations.c.field_key,
                     translations.c.source_text).where(translations.c.prdt_no==no)).mappings().all()
                 for field in fields:
