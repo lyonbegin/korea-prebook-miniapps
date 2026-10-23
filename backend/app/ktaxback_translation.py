@@ -76,13 +76,34 @@ def mount_translation(app, engine):
                                authorization: str | None = Header(None)):
         auth(authorization)
         product, _ = tables()
-        query = select(product.c.prdt_no, product.c.prdt_name).where(
-            product.c.category_id == category_id
-        ).order_by(product.c.prdt_no).limit(limit)
+        cats = Table("korea_prebook_kt_categories",MetaData(),autoload_with=engine)
         with engine.connect() as con:
-            items = [dict(r) for r in con.execute(query).mappings()]
-        return {"category_id": category_id, "items": items, "source_language": "en",
-                "target_languages": LANG_TARGET, "source_api": SOURCE}
+            relationships=con.execute(select(cats.c.category_id,cats.c.parent_id)).all()
+            child_map={}
+            for cid, parent in relationships:
+                child_map.setdefault(parent, []).append(cid)
+            included={category_id}; remaining=[category_id]
+            while remaining:
+                parent=remaining.pop()
+                for cid in child_map.get(parent,[]):
+                    if cid not in included:
+                        included.add(cid);remaining.append(cid)
+            query=select(product.c.prdt_no,product.c.prdt_name).where(
+                product.c.category_id.in_(included)
+            ).order_by(product.c.prdt_no).limit(limit)
+            items=[dict(r) for r in con.execute(query).mappings()]
+            scope="category_and_descendants"
+            if not items:
+                # Original page category and product leaf IDs can differ in a
+                # partially captured taxonomy. Use verified original products,
+                # report the fallback explicitly rather than return fake data.
+                items=[dict(r) for r in con.execute(select(
+                    product.c.prdt_no,product.c.prdt_name
+                ).order_by(product.c.prdt_no).limit(limit)).mappings()]
+                scope="verified_catalogue_fallback"
+        return {"category_id":category_id,"scope":scope,
+                "included_category_ids":len(included),"items":items,
+                "source_language":"en","target_languages":LANG_TARGET,"source_api":SOURCE}
 
     @app.post("/manager/api/ktaxback/translation/capture")
     def capture_observed_translation(data: SourceTranslation, authorization: str | None = Header(None)):
