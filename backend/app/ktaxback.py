@@ -15,7 +15,7 @@ from typing import Any
 from fastapi import Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import (
-    Column, Float, Integer, MetaData, PrimaryKeyConstraint, Table, Text,
+    Column, Float, Integer, Index, MetaData, PrimaryKeyConstraint, Table, Text,
     create_engine, inspect, select, text,
 )
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -165,6 +165,13 @@ def mount_ktaxback(app, engine):
         table = Table(PREFIX+schema.name, MetaData(), *columns, PrimaryKeyConstraint(*pk))
         table.create(engine, checkfirst=True)
         actual = Table(PREFIX+schema.name, MetaData(), autoload_with=engine)
+        for keys, suffix in ((("prdt_no", "lang_code"), "product_lang"),
+                             (("category_id",), "category"), (("brand_no",), "brand"),
+                             (("prdt_no",), "product")):
+            if all(key in actual.c for key in keys):
+                Index(actual.name + "_" + suffix, *(actual.c[key] for key in keys)).create(
+                    engine, checkfirst=True
+                )
         if set(actual.c.keys()) != set(names) or list(actual.primary_key.columns.keys()) != pk:
             raise HTTPException(409, "Existing table schema differs; migration not applied")
         with engine.begin() as conn:
@@ -320,9 +327,11 @@ def mount_ktaxback(app, engine):
         if start>=total:raise HTTPException(404,"No category results")
         subset=items[start:start+PAGE_SIZE]
         attrs=defaultdict(int);brands=defaultdict(int)
+        matched_ids = {p["prdt_no"] for p in items}
         for p in items:
             if p.get("brand_no"):brands[p["brand_no"]]+=1
-            for a in optional("product_attributes",250,prdt_no=p["prdt_no"]):
+        for a in optional("product_attributes",40000):
+            if a["prdt_no"] in matched_ids:
                 attrs[a["attr_name"]]+=1
         allbrands={b["brand_no"]:b.get("brand_name","") for b in optional("brands",10000)}
         return {
