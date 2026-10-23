@@ -53,7 +53,7 @@ def test_original_product_fields_and_api_compatibility(client):
     assert client.get("/brand-list.json").json()[0]["brandNo"]=="B1"
     assert client.get("/order-best.json").json()[0]["prdtNo"]=="GA000001"
     assert client.get("/oliveyoung_json_data/ctgr_1000000003/page_1.json").status_code==200
-    post(client,"products",[{"prdt_no":"GA000001","prdt_name":"Cream updated","sale_amt":10.0}])
+    post(client,"products",[{"prdt_no":"GA000001","prdt_name":"Cream updated","nrml_amt":20.0,"sale_amt":10.0}])
     assert client.get("/detail-data.json",params={"prdtNo":"GA000001"}).json()["product"]["saleAmt"]==10.0
     assert client.get("/manager/api/ktaxback/status",headers=AUTH).json()["counts"]["products"]==1
 
