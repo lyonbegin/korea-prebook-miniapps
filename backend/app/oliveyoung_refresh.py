@@ -240,10 +240,26 @@ def mount_oliveyoung_refresh(app,engine):
             total=c.execute(text("SELECT COUNT(*) FROM korea_prebook_kt_refresh_jobs")).scalar_one()
             recent=c.execute(text("""SELECT created_at FROM korea_prebook_kt_refresh_jobs
                  ORDER BY created_at DESC LIMIT 1""")).scalar_one_or_none()
-        if total==0:
+        with engine.connect() as c:
+            verified=c.execute(text("SELECT count(*) FROM korea_prebook_kt_capture_pages WHERE state='verified'")).scalar_one()
+            failures=c.execute(text("SELECT count(*) FROM korea_prebook_kt_refresh_jobs WHERE state='failed'")).scalar_one()
+        if verified==0 and failures < 3:
             return {"scheduled":True,
                     "job":create_job(RefreshIn(category_ids=["1000000003"],max_pages=2),auto=True),
                     "mode":"first_live_pilot"}
+        if verified==0:
+            return {"scheduled":False,"reason":"pilot_failed_3_times_review_errors"}
+        if verified and not scan:
+            # First real read-after-write success gates full catalogue collection;
+            # no user-provided legacy database may be imported as a shortcut.
+            with engine.begin() as c:
+                c.execute(text("""INSERT INTO korea_prebook_kt_fullscan
+                 (id,active,page_limit,started_at,completed_at)
+                 VALUES(1,1,10,:now,NULL) ON CONFLICT(id) DO NOTHING"""),
+                 {"now":now()})
+                c.execute(text("""UPDATE korea_prebook_kt_category_targets
+                   SET last_checked=NULL,last_state=NULL,last_error=NULL,last_products=0"""))
+            return {"scheduled":False,"reason":"pilot_verified_fullscan_initialized"}
         if recent:
             timestamp=datetime.fromisoformat(recent)
             cadence=max(1,int(os.getenv("OLIVEYOUNG_REFRESH_HOURS","3")))
