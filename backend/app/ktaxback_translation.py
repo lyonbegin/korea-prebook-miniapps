@@ -320,6 +320,15 @@ def mount_translation(app, engine):
             error = error or "Original translation API HTTP "+str(status)
 
         product, translations = tables()
+        # Reflect all tables BEFORE starting the write transaction. For in-memory
+        # SQLite the engine uses a shared connection: reflecting inside the
+        # transaction may open/close that connection and roll back the upsert.
+        names = Table("korea_prebook_kt_product_names_i18n",
+                      MetaData(), autoload_with=engine)
+        options = Table("korea_prebook_kt_product_options",
+                        MetaData(), autoload_with=engine)
+        detail_table = Table("korea_prebook_kt_product_details",
+                             MetaData(), autoload_with=engine)
         # Same transaction: imported translation and audit are committed together.
         with engine.begin() as con:
             if status == 200:
@@ -367,7 +376,7 @@ def mount_translation(app, engine):
                         if not match:
                             rejected += 1
                             continue
-                        opt=Table("korea_prebook_kt_product_options",MetaData(),autoload_with=engine)
+                        opt=options
                         originals=con.execute(select(opt.c.option_name).where(
                              opt.c.prdt_no==number).order_by(opt.c.option_id)).scalars().all()
                         idx=int(match.group(1))
@@ -383,7 +392,7 @@ def mount_translation(app, engine):
                         if not attr:
                             rejected += 1
                             continue
-                        detail=Table("korea_prebook_kt_product_details",MetaData(),autoload_with=engine)
+                        detail=detail_table
                         recorded=con.execute(select(detail.c[attr]).where(
                             detail.c.prdt_no==number,detail.c.lang_code=="en"
                         )).scalar_one_or_none()
@@ -404,9 +413,6 @@ def mount_translation(app, engine):
                     # well as the field-key translation table. Populate both
                     # only from a validated real translate-texts source pair.
                     if key == NAME_FIELD:
-                        names = Table(
-                            "korea_prebook_kt_product_names_i18n",
-                            MetaData(), autoload_with=engine)
                         nstmt = (pg_insert(names) if engine.dialect.name=="postgresql"
                                  else sqlite_insert(names)).values(
                                      prdt_no=number, lang_code=lang,
