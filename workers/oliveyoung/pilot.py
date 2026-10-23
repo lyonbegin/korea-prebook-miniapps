@@ -105,6 +105,9 @@ async def read_category(browser,task):
         evidence=await language_switch(page,lang)
         await page.goto(url,wait_until="domcontentloaded",timeout=45000)
         await page.wait_for_timeout(1500)
+        title=await page.title()
+        if "Just a moment" in title or "Access denied" in title:
+            raise RuntimeError("Site requested verification: "+title+"; cannot treat as successful crawl")
         if tasks:await asyncio.gather(*tasks,return_exceptions=True)
         if results.empty():
             for attempt in range(2):
@@ -125,11 +128,11 @@ async def read_category(browser,task):
         chosen=(payload.get("hits") or {}).get("hit") or []
         payload["hits"]["hit"]=chosen[:task["requested"]]
         return {"task_id":task["id"],"url":source,
-                "selected_language":evidence[:32],"title":(await page.title())[:120],
+                "selected_language":evidence[:240],"title":(await page.title())[:120],
                 "payload":payload}
     except Exception as exc:
         return {"task_id":task["id"],"url":url,
-                "selected_language":evidence[:32],
+                "selected_language":evidence[:240],
                 "title":"","payload":{},
                 "error":f"{type(exc).__name__}: {str(exc)[:540]}"}
     finally:
@@ -163,8 +166,14 @@ async def main():
                         result.get("untranslated"),result.get("state"))
                 except Exception as exc:
                     LOG.error("SAVE_FAIL cat=%s lang=%s err=%s",task["category_id"],task["lang_code"],str(exc)[:600])
-                    # The task is recovered by manager endpoint after expiry,
-                    # no fake success is emitted.
+                    try:
+                        await api("/manager/api/ktaxback/pilot/result","POST",{
+                            "task_id":task["id"],
+                            "url":"https://global.oliveyoung.com/display/category?"+urlencode({"ctgrNo":task["category_id"]}),
+                            "selected_language":"","payload":{},
+                            "error":"DB ingest error: "+str(exc)[:450]})
+                    except Exception:
+                        LOG.exception("Failed persisting ingest error; task will be recovered")
                 await asyncio.sleep(0.8)
         finally:await browser.close()
     report=await api("/manager/api/ktaxback/pilot/report")
