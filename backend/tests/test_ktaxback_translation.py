@@ -38,6 +38,12 @@ def test_real_source_pair_saved_with_readback_and_original_format(client):
     detail=client.get("/detail-data.json",params={"prdtNo":"GA10001","lang":"zh_cn"})
     assert detail.status_code==200,detail.text
     assert detail.json()["product"]["prdtName"]=="保湿霜"
+    from sqlalchemy import create_engine, text
+    # Dedicated original product_names_i18n is also populated by the same
+    # validated HTTP translation transaction; query via the public manager
+    # count rather than silently assuming a translated product name.
+    counts=client.get("/v1/ktaxback/pilot/summary").json()["table_counts"]
+    assert counts["product_names_i18n"]==1
     summary=client.get("/manager/api/ktaxback/translation/status",headers=AUTH).json()
     assert summary["persisted_rows_by_language"]==[{"lang_code":"zh_cn","rows":1}]
     assert summary["events"][0]["verified"]==1
