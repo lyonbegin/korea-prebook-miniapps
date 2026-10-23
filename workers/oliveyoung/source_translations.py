@@ -16,69 +16,82 @@ LOG=logging.getLogger("ktaxback_oliveyoung_translations")
 
 
 async def probe(browser:Browser, api):
-    """api is the authenticated existing Railway manager transport."""
-    status=await api("/manager/api/ktaxback/translation/status")
-    existing={row["lang_code"]:int(row["rows"]) for row in status.get("persisted_rows_by_language",[])}
-    sample=await api("/manager/api/ktaxback/translation/sample?category_id=1000000008&limit=10")
-    rows=sample.get("items",[])
-    if not rows:
-        LOG.warning("Original K-TAXBACK English category sample empty; no language request.")
-        return {"error":"empty_product_sample"}
-    results={}
+    """Run the exact user-scoped 10-category x 10-product x 3-language pilot.
+
+    Each product ID comes from prior *real* English product-data captures,
+    not inferred category aliases. Existing translations are skipped by ID.
+    Failures are auditable and never counted as saved rows.
+    """
+    report=await api("/manager/api/ktaxback/translation/verified-category-samples")
+    categories=report.get("categories",[])
+    if not categories:
+        LOG.error("Original 10-category live English capture evidence absent")
+        return {"error":"no_verified_english_category_samples"}
+    LOG.info("ORIGINAL_TRANSLATE_CATEGORY_COUNT %d",len(categories))
+    results=[]
     context=await browser.new_context(
         locale="en-US",
-        extra_http_headers={
-            "Origin":"https://global.oliveyoung.com",
-            "Referer":"https://global.oliveyoung.com/",
-        })
+        extra_http_headers={"Origin":"https://global.oliveyoung.com",
+                            "Referer":"https://global.oliveyoung.com/"})
+    blocked=False
     try:
-        for lang,target in LOCALES.items():
-            if existing.get(lang,0)>=10:
-                LOG.info("TRANSLATE_PROBE_SKIPPED %s (10 verified records already in PostgreSQL)",lang)
+        for cat in categories[:10]:
+            cid=cat["category_id"]
+            source_items=cat["items"][:10]
+            if not source_items:
+                LOG.warning("No captured English item IDs for category %s",cid)
                 continue
-            raw=[str(x["prdt_name"]) for x in rows if x.get("prdt_name")]
-            assignments=[{
-                "prdt_no":str(x["prdt_no"]),
-                "field_key":"detail-data.product.prdtNameEn",
-                "source_text":str(x["prdt_name"])
-            } for x in rows if x.get("prdt_name")]
-            if not raw:continue
-            payload={"source_language":"en","target_language":target,"texts":raw}
-            http_status=0;result={};error=""
-            try:
-                response=await context.request.post(
-                    API_URL, data=payload,
-                    headers={"Content-Type":"application/json",
-                             "Accept":"application/json",
-                             "Origin":"https://global.oliveyoung.com",
-                             "Referer":"https://global.oliveyoung.com/"},
-                    timeout=24000)
-                http_status=response.status
-                if http_status==200:
-                    result=await response.json()
-                    if not isinstance(result,dict):result={}
-                else:
-                    error="Source translate-texts HTTP "+str(http_status)
-                    LOG.warning("TRANSLATE_SOURCE_HTTP lang=%s status=%s",lang,http_status)
-            except Exception as exc:
-                error="Source translation network error: "+type(exc).__name__+" "+str(exc)[:250]
-                LOG.warning("TRANSLATE_SOURCE_ERROR %s %s",lang,error)
-            outcome=await api("/manager/api/ktaxback/translation/capture","POST",{
-                "lang_code":lang,
-                "source_url":API_URL,
-                "response_status":http_status,
-                "request_payload":payload,
-                "response_payload":result,
-                "assignments":assignments,
-                "error":error})
-            results[lang]=outcome
-            LOG.info("ORIGINAL_TRANSLATE_RESPONSE lang=%s http=%s received=%s verified=%s rejected=%s",
-                lang,http_status,outcome.get("translated_returned"),outcome.get("db_verified"),
-                outcome.get("rejected"))
-            if http_status in (401,403,429):
-                LOG.warning("Provider refused translation request; stop all other language probes.")
-                break
-            await asyncio.sleep(2.0)
+            for lang,target in LOCALES.items():
+                remaining=[x for x in source_items
+                           if lang not in x.get("existing_translations",[])]
+                if not remaining:
+                    LOG.info("CAT_TRANSLATION_SKIP cat=%s lang=%s (all already in PG)",cid,lang)
+                    continue
+                payload={"source_language":"en","target_language":target,
+                         "texts":[x["prdt_name"] for x in remaining]}
+                assignments=[{
+                    "prdt_no":str(x["prdt_no"]),
+                    "field_key":"detail-data.product.prdtNameEn",
+                    "source_text":str(x["prdt_name"])} for x in remaining]
+                status=0;response_json={};error=""
+                try:
+                    response=await context.request.post(
+                        API_URL,data=payload,
+                        headers={"Content-Type":"application/json",
+                                 "Accept":"application/json",
+                                 "Origin":"https://global.oliveyoung.com",
+                                 "Referer":"https://global.oliveyoung.com/"},
+                        timeout=25000)
+                    status=response.status
+                    if status==200:
+                        response_json=await response.json()
+                        if not isinstance(response_json,dict):response_json={}
+                    else:
+                        error="Translation provider returned HTTP "+str(status)
+                except Exception as exc:
+                    error=type(exc).__name__+": "+str(exc)[:250]
+                output=await api("/manager/api/ktaxback/translation/capture","POST",{
+                    "lang_code":lang,"source_url":API_URL,
+                    "response_status":status,"request_payload":payload,
+                    "response_payload":response_json,
+                    "assignments":assignments,"error":error})
+                result={"category_id":cid,"language":lang,"sampled":len(source_items),
+                        "requested":len(remaining),"http":status,
+                        "db_verified":output.get("db_verified",0),
+                        "rejected":output.get("rejected",0)}
+                results.append(result)
+                LOG.info("ORIGINAL_TRANSLATE_CATEGORY_RESULT %s",result)
+                if status in (401,403,429):
+                    LOG.warning("Original site denied translation; stop further requests without bypass or retry")
+                    blocked=True;break
+                await asyncio.sleep(2.0)
+            if blocked:break
     finally:
         await context.close()
-    return results
+    sums={}
+    for x in results:
+        y=sums.setdefault(x["language"],{"requests":0,"db_verified":0})
+        y["requests"]+=1;y["db_verified"]+=x["db_verified"]
+    LOG.info("ORIGINAL_TRANSLATE_CATEGORIES_FINAL %s",sums)
+    return {"categories":len(categories),"http_events":len(results),
+            "blocked":blocked,"by_language":sums,"results":results[:35]}
