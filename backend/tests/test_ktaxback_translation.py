@@ -50,6 +50,7 @@ def test_language_not_translated_and_rejected_source_do_not_pollute_db(client):
     r=client.post("/manager/api/ktaxback/translation/capture",headers=AUTH,
         json=payload(answer="Hydrating Cream"))
     assert r.status_code==200 and r.json()["db_verified"]==0
+    assert r.json()["rejection_reasons"]["unchanged_or_wrong_script"]==1
     assert client.post("/manager/api/ktaxback/translation/capture",headers=AUTH,
         json=payload(lang="vi_vn",target="vi")).status_code==422
     x=payload();x["source_url"]="https://untrusted.example.com/public/translate-texts"
@@ -60,3 +61,23 @@ def test_language_not_translated_and_rejected_source_do_not_pollute_db(client):
     r=client.post("/manager/api/ktaxback/translation/capture",headers=AUTH,json=x)
     assert r.status_code==200 and r.json()["db_inserted"]==0
     assert client.get("/manager/api/ktaxback/translation/status",headers=AUTH).json()["persisted_rows_by_language"]==[]
+
+def test_original_translation_rejection_is_audited_and_locale_data_is_not_overwritten(client):
+    prepare(client)
+    # Japanese source API 200 can still return the unchanged source string.
+    bad=payload(lang="jp",target="ja",answer="Hydrating Cream")
+    result=client.post("/manager/api/ktaxback/translation/capture",headers=AUTH,json=bad)
+    assert result.status_code==200,result.text
+    assert result.json()["db_inserted"]==0
+    assert result.json()["rejection_reasons"]["unchanged_or_wrong_script"]==1
+    assert "unchanged_or_wrong_script=1" in result.json()["error"]
+    good=payload(lang="jp",target="ja",answer="保湿クリーム")
+    result=client.post("/manager/api/ktaxback/translation/capture",headers=AUTH,json=good)
+    assert result.status_code==200,result.text
+    assert result.json()["db_verified"]==1
+    # Wrong original source cannot silently overwrite the verified translation.
+    mismatch=payload(lang="jp",target="ja",source="Wrong product",answer="間違った商品")
+    result=client.post("/manager/api/ktaxback/translation/capture",headers=AUTH,json=mismatch)
+    assert result.status_code==200,result.text
+    assert result.json()["rejection_reasons"]["source_mismatch"]==1
+    assert client.get("/detail-data.json",params={"prdtNo":"GA10001","lang":"jp"}).json()["product"]["prdtName"]=="保湿クリーム"
