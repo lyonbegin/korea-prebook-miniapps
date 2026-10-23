@@ -34,6 +34,12 @@ def utcnow():
     return datetime.now(timezone.utc).isoformat()
 
 
+class TranslationLease(BaseModel):
+    category_id: str = Field(pattern=r"^[0-9]{10}$")
+    lang_code: str
+    owner: str = Field(pattern=r"^[a-z0-9-]{24,60}$")
+
+
 class SourceAssignment(BaseModel):
     prdt_no: str = Field(min_length=2, max_length=60)
     field_key: str = Field(min_length=5, max_length=180)
@@ -86,11 +92,6 @@ def mount_translation(app, engine):
             Table("korea_prebook_kt_products", MetaData(), autoload_with=engine),
             Table("korea_prebook_kt_product_translations", MetaData(), autoload_with=engine)
         )
-
-    class TranslationLease(BaseModel):
-        category_id: str = Field(pattern=r"^[0-9]{10}$")
-        lang_code: str
-        owner: str = Field(pattern=r"^[a-z0-9-]{24,60}$")
 
     @app.post("/manager/api/ktaxback/translation/claim")
     def claim(data: TranslationLease, authorization: str | None = Header(None)):
