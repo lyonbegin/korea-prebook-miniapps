@@ -36,7 +36,7 @@ def safe(t):return unescape(str(t or "")).strip()[:1200]
 class Sample(BaseModel):
     task_id:str
     url:str
-    selected_language:str=Field(max_length=32)
+    selected_language:str=Field(max_length=240)
     title:str=Field(default="",max_length=120)
     payload:dict=Field(default_factory=dict)
     error:str=Field(default="",max_length=700)
@@ -146,7 +146,7 @@ def mount_pilot(app,engine):
                 if len(chosen)>=task["requested"]:break
             if not chosen:raise HTTPException(422,"No valid original product identifiers")
             p=table("products");brand=table("brands");cat=table("categories")
-            tr=table("product_translations");nam=table("product_names_i18n")
+            tr=table("product_translations")
             received=len(hits);written=verified=skipped=0;samples=[]
             # Save original-category identifiers, not synthetic product contents.
             upsert(conn,cat,{"category_id":task["category_id"],
@@ -175,7 +175,9 @@ def mount_pilot(app,engine):
                     else:entry["state"]="readback_mismatch"
                 else:
                     english=conn.execute(select(p.c.prdt_name).where(p.c.prdt_no==number)).scalar_one_or_none()
-                    localized=bool(english and english!=name and SCRIPT[lang].search(name))
+                    selected_codes={"jp":"ja","zh_cn":"zh","zh_tw":"zh-TW","vi_vn":"vi"}
+                    language_confirmed=("selected-code="+selected_codes[lang]) in data.selected_language
+                    localized=bool(language_confirmed and english and english!=name and SCRIPT[lang].search(name))
                     if not localized:
                         skipped+=1;entry["state"]="untranslated_or_missing_en"
                     else:
@@ -184,8 +186,6 @@ def mount_pilot(app,engine):
                              "field_key":"detail-data.product.prdtNameEn",
                              "source_text":english,"translated_text":name}
                         upsert(conn,tr,row,["prdt_no","lang_code","field_key"])
-                        upsert(conn,nam,{"prdt_no":number,"lang_code":lang,"prdt_name":name},
-                               ["prdt_no","lang_code"])
                         saved=conn.execute(select(tr.c.translated_text).where(
                           (tr.c.prdt_no==number)&(tr.c.lang_code==lang)&
                           (tr.c.field_key=="detail-data.product.prdtNameEn"))).scalar_one_or_none()
