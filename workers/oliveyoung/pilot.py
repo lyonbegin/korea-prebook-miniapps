@@ -1,5 +1,5 @@
-"""Bounded live verification run: 10 representative categories, 10 real product
-records per category, five Olive Young language preferences. No synthetic data.
+"""Bounded live verification run: 10 representative categories, 10 real products per category,
+four original Olive Young language/country preferences. No synthetic data.
 Railway uses existing admin token by reference. Previous full crawler disabled
 for this pilot. Every task result is persisted to the pilot DB report.
 """
@@ -10,10 +10,10 @@ from playwright.async_api import async_playwright
 
 API=os.getenv("MANAGER_BASE","https://prebook-api-production-9b80.up.railway.app").rstrip("/")
 KEY=os.getenv("ADMIN_API_TOKEN","")
-LANG_LOCALE={"en":"en-US","jp":"ja-JP","zh_cn":"zh-CN","zh_tw":"zh-TW","vi_vn":"vi-VN"}
-DATA_CODE={"jp":"ja","zh_cn":"zh","zh_tw":"zh-TW","vi_vn":"vi"}
+LANG_LOCALE={"en":"en-US","jp":"ja-JP","zh_cn":"zh-CN","zh_tw":"zh-TW"}
+DATA_CODE={"jp":"ja","zh_cn":"zh","zh_tw":"zh-TW"}
 DISPLAY={"en":"English","jp":"日本語","zh_cn":"中文（简体）",
-         "zh_tw":"中文（繁體）","vi_vn":"Tiếng Việt"}
+         "zh_tw":"中文（繁體）"}
 LOG=logging.getLogger("ktaxback_10x5_pilot")
 logging.basicConfig(level=logging.INFO,format="%(asctime)s %(levelname)s %(message)s")
 STOP=False
@@ -142,7 +142,7 @@ async def read_category(browser,task):
 
 async def main():
     if not KEY:raise SystemExit("ADMIN_API_TOKEN required")
-    LOG.info("Bounded 10-category × 5-language original-schema source verification worker booted")
+    LOG.info("Bounded 10-category × 4-language original-schema source verification worker booted")
     try:
         started=await api("/manager/api/ktaxback/pilot/start","POST")
     except Exception:
