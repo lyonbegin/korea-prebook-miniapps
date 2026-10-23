@@ -148,3 +148,59 @@ async def probe_categories(browser:Browser,api):
             await asyncio.sleep(2)
     finally:await context.close()
     return out
+
+
+async def probe_filters(browser:Browser,api):
+    """Small original-category filter option/group localization pilot.
+
+    Never synthesize localized values. The source K-TAXBACK SQLite schema stores
+    translated filter_group and option_name as the locale table's composite key.
+    """
+    src=await api("/manager/api/ktaxback/translation/filter-source?limit_per_category=6")
+    cats=src.get("categories",[])[:10]
+    out={}
+    context=await browser.new_context(locale="en-US")
+    stop=False
+    try:
+        for category in cats:
+            cid=category["category_id"]
+            rows=category.get("items",[])[:6]
+            if not rows:continue
+            for lang,target in LOCALES.items():
+                # Do not retransmit this category/language once its bounded
+                # source sample has been fully persisted.
+                stored=max((r.get("existing_language_rows",{}).get(lang,0) for r in rows),default=0)
+                if stored>=len(rows):continue
+                unique=list(dict.fromkeys(
+                    item for row in rows for item in (row["filter_group"],row["option_name"])
+                    if isinstance(item,str) and item.strip()))
+                if not unique:continue
+                payload={"source_language":"en","target_language":target,"texts":unique}
+                status=0;response={};error=""
+                try:
+                    result=await context.request.post(API_URL,data=payload,
+                        headers={"Content-Type":"application/json",
+                                 "Origin":"https://global.oliveyoung.com",
+                                 "Referer":"https://global.oliveyoung.com/"},
+                        timeout=25000)
+                    status=result.status
+                    if status==200:
+                        response=await result.json()
+                        if not isinstance(response,dict):response={}
+                    else:error="Source HTTP "+str(status)
+                except Exception as ex:error=type(ex).__name__+" "+str(ex)[:200]
+                result=await api("/manager/api/ktaxback/translation/filter-capture","POST",{
+                    "lang_code":lang,"source_url":API_URL,"response_status":status,
+                    "request_payload":payload,"response_payload":response,
+                    "assignments":[{"category_id":cid,"filter_group":r["filter_group"],
+                                    "option_name":r["option_name"],
+                                    "option_count":r["option_count"]} for r in rows],
+                    "error":error})
+                out.setdefault(cid,{})[lang]=result
+                LOG.info("ORIGINAL_FILTER_I18N %s %s %s",cid,lang,result)
+                if status in (401,403,429):
+                    stop=True;break
+                await asyncio.sleep(2.0)
+            if stop:break
+    finally:await context.close()
+    return {"source_categories":len(cats),"results":out,"provider_blocked":stop}
