@@ -34,9 +34,9 @@ def test_original_product_fields_and_api_compatibility(client):
     post(client,"products",[{"prdt_no":"GA000001","prdt_name":"Cream",
         "nrml_amt":20.0,"sale_amt":12.5,"brand_no":"B1",
         "category_id":"1000000003","best_yn":"Y","review_cnt":13}])
-    post(client,"product_options",[{"prdt_no":"GA000001","option_name":"50ml",
+    post(client,"product_options",[{"option_id":1,"prdt_no":"GA000001","option_name":"50ml",
                                     "sale_amt":12.5,"in_stock":1,"is_default":1}])
-    post(client,"product_images",[{"prdt_no":"GA000001",
+    post(client,"product_images",[{"image_id":1,"prdt_no":"GA000001",
                                     "image_path":"prdtImg/sample.jpg",
                                     "image_type":"gallery","sort_order":0,"lang_code":"en"}])
     post(client,"product_details",[{"prdt_no":"GA000001","lang_code":"en",
