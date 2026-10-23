@@ -1,4 +1,4 @@
-"""10 representative original Olive Young categories × 5 source languages,
+"""10 representative original Olive Young categories × 4 source languages,
 10 real items each: direct capture -> original K-TAXBACK PostgreSQL tables.
 
 No legacy SQLite data is imported. Untranslated source text is reported as
@@ -22,12 +22,11 @@ CATEGORIES={
  "1000000087":"Makeup Brush & Tools","1000000095":"Wellness",
  "1000000119":"Men's Care","1000000134":"Supplements",
 }
-LANGS=("en","jp","zh_cn","zh_tw","vi_vn")
+LANGS=("en","jp","zh_cn","zh_tw")
 SCRIPT={
  "jp":re.compile("[\u3040-\u30ff\u3400-\u9fff]"),
  "zh_cn":re.compile("[\u3400-\u9fff]"),
  "zh_tw":re.compile("[\u3400-\u9fff]"),
- "vi_vn":re.compile("[ăâđêôơưĂÂĐÊÔƠƯà-ỹÀ-Ỹ]"),
 }
 PREFIX="korea_prebook_kt_"
 def timestamp():return datetime.now(timezone.utc).isoformat()
@@ -75,6 +74,12 @@ def mount_pilot(app,engine):
     def prepare(authorization:str|None=Header(None)):
         auth(authorization)
         with engine.begin() as conn:
+            # User expressly excluded Vietnamese. Keep historic rows as audit
+            # evidence but never schedule/claim them again.
+            conn.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
+                SET state='excluded',error='Excluded by project owner',updated_at=:now
+                WHERE lang_code='vi_vn' AND state IN ('queued','running')"""),
+                {"now":timestamp()})
             # Pilot replaces the previously scheduled 150-category fullscan.
             conn.execute(text("UPDATE korea_prebook_kt_fullscan SET active=0 WHERE id=1"))
             conn.execute(text("""UPDATE korea_prebook_kt_refresh_jobs SET state='failed',
@@ -108,7 +113,7 @@ def mount_pilot(app,engine):
                 return {"enqueued":0,"reason":"already_applied"}
             rows=conn.execute(text("""SELECT id,category_id,lang_code,state FROM
                korea_prebook_kt_pilot_tasks
-               WHERE state IN ('failed','untranslated')""")).mappings().all()
+               WHERE state IN ('failed','untranslated') AND lang_code!='vi_vn'""")).mappings().all()
             # Versioned one-time recovery; preserve actual prior states in the
             # source audit table and mark current task as queued.
             conn.execute(text("""INSERT INTO korea_prebook_kt_pilot_retries
@@ -118,7 +123,7 @@ def mount_pilot(app,engine):
                 conn.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
                    SET state='queued',updated_at=:t,
                      error='Retry scheduled after visible language selector correction'
-                   WHERE id=:id AND state IN ('failed','untranslated')"""),
+                   WHERE id=:id AND state IN ('failed','untranslated') AND lang_code!='vi_vn'"""),
                    {"id":row["id"],"t":timestamp()})
         return {"enqueued":len(rows),"version":version}
 
@@ -131,7 +136,7 @@ def mount_pilot(app,engine):
         with engine.begin() as c:
             affected=c.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
                  SET state='blocked',error=:reason,updated_at=:t
-                 WHERE state IN ('queued','running')"""),
+                 WHERE state IN ('queued','running') AND lang_code!='vi_vn'"""),
                 {"reason":"Source site access restriction: "+data.reason,
                  "t":timestamp()}).rowcount
         return {"stopped":True,"unattempted_or_running_marked_blocked":affected,
@@ -144,10 +149,10 @@ def mount_pilot(app,engine):
             cutoff=(datetime.now(timezone.utc)-timedelta(minutes=7)).isoformat()
             conn.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
                   SET state='queued',error='Recovered after worker restart',updated_at=:t
-                  WHERE state='running' AND updated_at<:stale"""),
+                  WHERE state='running' AND lang_code!='vi_vn' AND updated_at<:stale"""),
                   {"t":timestamp(),"stale":cutoff})
             sql="""SELECT id,category_id,category_name,lang_code,requested
-              FROM korea_prebook_kt_pilot_tasks WHERE state='queued'
+              FROM korea_prebook_kt_pilot_tasks WHERE state='queued' AND lang_code!='vi_vn'
               ORDER BY CASE WHEN lang_code='en' THEN 0 WHEN lang_code='jp' THEN 1
                 WHEN lang_code='zh_cn' THEN 2 WHEN lang_code='zh_tw' THEN 3 ELSE 4 END,
                 category_id LIMIT 1"""
@@ -256,7 +261,7 @@ def mount_pilot(app,engine):
             states=[dict(row) for row in conn.execute(text("""SELECT category_id,
                 category_name,lang_code,state,requested,received,selected,written,
                 verified,untranslated,language_evidence,error FROM korea_prebook_kt_pilot_tasks
-                ORDER BY category_id,lang_code""")).mappings()]
+                AND lang_code!='vi_vn' ORDER BY category_id,lang_code""")).mappings()]
             stored={}
             for name in ("products","brands","categories","category_filters","product_images",
                          "product_options","product_details","product_translations",
@@ -275,7 +280,7 @@ def mount_pilot(app,engine):
         auth(authorization)
         with engine.connect() as conn:
             tasks=[dict(r) for r in conn.execute(text(
-              "SELECT * FROM korea_prebook_kt_pilot_tasks ORDER BY category_id,lang_code")).mappings()]
+              "SELECT * FROM korea_prebook_kt_pilot_tasks AND lang_code!='vi_vn' ORDER BY category_id,lang_code")).mappings()]
             counts={}
             for name in ("products","brands","categories","category_filters","product_images",
                          "product_options","product_details","product_translations",
