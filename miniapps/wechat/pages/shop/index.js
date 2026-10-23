@@ -132,6 +132,12 @@ Page({
   this.setData({products:(products||[]).filter(Boolean).map(productView),
     total:products.length,hasMore:false,loading:false});
  },
+ onProductImageError(e){
+  const id=e.currentTarget.dataset.id;
+  if(!id)return;
+  this.setData({products:(this.data.products||[]).map(p=>
+    p.id===id?Object.assign({},p,{hasImage:false,image:''}):p)});
+ },
  onProductTap(e){
   const id=e.currentTarget.dataset.id;
   if(!id)return;
