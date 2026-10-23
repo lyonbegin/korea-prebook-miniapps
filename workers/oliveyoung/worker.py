@@ -110,9 +110,26 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
             # Capture at least one response before proceeding. Avoid sending
             # unrelated API traffic or infinite loops on a changed website.
             if queue.empty():
-                try:source,data=await asyncio.wait_for(queue.get(),timeout=7)
-                except asyncio.TimeoutError:
-                    reason="No product-data HTTP 200 JSON response after page load"
+                retry=0
+                while queue.empty() and retry<3:
+                    try:source,data=await asyncio.wait_for(queue.get(),timeout=8+retry*4)
+                    except asyncio.TimeoutError:
+                        retry+=1
+                        if retry<3:
+                            LOG.warning("[category] %s product-data absent; retry %d/2 url=%s",category,retry,page.url)
+                            await page.reload(wait_until="domcontentloaded",timeout=35000)
+                            await page.wait_for_timeout(1500)
+                            await page.mouse.wheel(0,800)
+                            if pending:await asyncio.gather(*pending,return_exceptions=True)
+                        continue
+                    else:break
+                if not queue.empty() and retry>0:
+                    source,data=queue.get_nowait()
+                if queue.empty() and retry>=3:
+                    title=await page.title()
+                    reason=("No product-data HTTP 200 after 3 attempts"
+                            +" current_url="+str(page.url)[:150]
+                            +" title="+str(title)[:80])
                     LOG.warning("[category] %s %s",category,reason)
                     await api("/manager/api/ktaxback/refresh/worker/"+jid+"/page_error","POST",{
                         "category_id":category,"page_index":page_seq+1,
