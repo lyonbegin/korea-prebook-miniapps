@@ -66,7 +66,7 @@
         data-id="{{item.id}}" onTap="onProductTap">
         <view class="product-picture">
           <image a:if="{{item.hasImage}}" class="product-photo"
-            src="{{item.image}}" mode="aspectFit" lazy-load="true"/>
+            src="{{item.image}}" data-id="{{item.id}}" onError="onProductImageError" mode="aspectFit" lazy-load="true"/>
           <view a:else class="picture-placeholder">K-TAXBACK</view>
           <view a:if="{{item.discount > 0}}" class="sale-label">{{item.discount}}% OFF</view>
           <view a:elif="{{item.new}}" class="new-label">NEW</view>
