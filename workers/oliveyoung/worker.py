@@ -46,6 +46,7 @@ def extract_hits(data):
 async def gather_details(context,job_id,prdt_nos):
     successes=0;errors=[]
     for no in prdt_nos[:DETAIL_LIMIT]:
+        await api("/manager/api/ktaxback/refresh/worker/"+job_id+"/heartbeat","POST")
         page=await context.new_page()
         captured={}
         outstanding=[]
@@ -127,6 +128,7 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
             page_seq+=1
             hits=extract_hits(data)
             LOG.info("[raw] category=%s page=%d items=%d",category,page_seq,len(hits))
+            await api("/manager/api/ktaxback/refresh/worker/"+jid+"/heartbeat","POST")
             result=await api("/manager/api/ktaxback/refresh/worker/"+jid+"/capture","POST",{
                 "category_id":category,"page_index":page_seq,"source_url":source,"payload":data})
             pages+=1;found+=result["accepted"]
@@ -159,6 +161,7 @@ async def run_job(job):
             context=await browser.new_context(locale="en-US",timezone_id="Asia/Seoul")
             for cid in cats[:MAX_CATEGORIES]:
                 try:
+                    await api("/manager/api/ktaxback/refresh/worker/"+jid+"/heartbeat","POST")
                     pages,products=await collect_category(context,jid,cid,pages_allowed,detail_numbers)
                     total_pages+=pages;total_products+=products
                     LOG.info("[category] %s pages=%d products=%d",cid,pages,products)
@@ -188,6 +191,13 @@ async def main():
     last_auto=0
     while not EXIT:
         try:
+            # A deploy/rolling restart may leave an old job marked 'running'.
+            # Only recover after an expired heartbeat; keep verified DB data.
+            try:
+                recovered=await api("/manager/api/ktaxback/refresh/worker/recover","POST")
+                if recovered.get("recovered"):LOG.warning("[recover] %s",recovered)
+            except urllib.error.HTTPError as exc:
+                LOG.warning("[recover] HTTP %s",exc.code)
             if AUTO and time.monotonic()-last_auto>90:
                 try:
                     outcome=await api("/manager/api/ktaxback/refresh/worker/auto","POST")
