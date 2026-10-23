@@ -25,7 +25,7 @@ h3{font-size:16px;margin:15px 0 11px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .product{border:1px solid #eceef3;border-radius:13px;overflow:hidden;cursor:pointer;background:#fff}
 .image{height:160px;margin:7px;background:linear-gradient(135deg,#fff7f8,#f5f7fb);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative}
-.image img{width:100%;height:100%;object-fit:contain}.image .pill{position:absolute;top:6px;left:6px;background:#ff3152;color:white;padding:4px 6px;border-radius:5px;font-size:10px;font-weight:800}
+.image img{width:100%;height:100%;object-fit:contain}.picture-placeholder{font-size:12px;font-weight:900;color:#b8a4ad}.image .pill{position:absolute;top:6px;left:6px;background:#ff3152;color:white;padding:4px 6px;border-radius:5px;font-size:10px;font-weight:800}
 .meta{padding:6px 9px 13px}.meta b{font-size:11px}.meta .name{font-size:12px;line-height:1.4;height:37px;overflow:hidden;margin-top:5px}.price{font-size:16px;font-weight:900;color:#ff3152;margin-top:8px}
 .old{font-size:10px;color:#9aa;text-decoration:line-through;margin-left:5px}
 .msg{color:#7d8491;text-align:center;padding:33px 10px;font-size:12px}
@@ -84,7 +84,9 @@ function render(){
  ui();$("products").replaceChildren();$("counter").textContent=products.length+" ITEMS";
  for(const p of products){
  const c=el("article","product");const img=el("div","image");
- if(p.image){const photo=el("img");photo.src=p.image;photo.alt=p.name;photo.loading="lazy";img.append(photo)}
+ if(p.image){const photo=el("img");photo.src=p.image;photo.alt=p.name;photo.loading="lazy";
+ photo.onerror=()=>{photo.remove();img.append(el("span","picture-placeholder","K-TAXBACK"))};
+ img.append(photo)}else{img.append(el("span","picture-placeholder","K-TAXBACK"))}
  if(p.discount){img.append(el("span","pill",p.discount+"% OFF"))}
  const meta=el("div","meta");meta.append(el("b","",p.brand),el("div","name",p.name));
  const price=el("div","price",money(p.price));
