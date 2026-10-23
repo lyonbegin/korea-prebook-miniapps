@@ -65,6 +65,13 @@ def bootstrap(engine):
         actual={c["name"] for c in inspect(engine).get_columns(PREFIX+name)}
         if actual!=expected:
             raise RuntimeError("K-TAXBACK table schema conflict: "+name)
+    # Existing tables were created before the original category_filters unique
+    # constraint was restored. CREATE ALL never adds constraints to an existing
+    # table: make the three-column natural key explicit and idempotent.
+    with engine.begin() as conn:
+        conn.execute(text("""CREATE UNIQUE INDEX IF NOT EXISTS
+          korea_prebook_kt_category_filters_natural_key
+          ON korea_prebook_kt_category_filters(category_id,filter_group,option_name)"""))
     reg=Table(PREFIX+"definitions",MetaData(),autoload_with=engine)
     with engine.begin() as con:
         for name in SCHEMA:
