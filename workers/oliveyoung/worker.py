@@ -21,6 +21,10 @@ logging.basicConfig(level=logging.INFO,format="%(asctime)s %(levelname)s %(messa
 ENDPOINTS={"detail-data.json":"detail-data","details-info.json":"details-info"}
 EXIT=False
 
+class SourceAccessRestricted(RuntimeError):
+    """Normal request received vendor verification/access restriction."""
+
+
 def stop(*_):
     global EXIT
     EXIT=True
@@ -103,6 +107,11 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
     try:
         await page.goto(url,wait_until="domcontentloaded",timeout=50000)
         await page.wait_for_timeout(1800)
+        title=await page.title()
+        if any(word in title for word in ("Just a moment","Access restricted",
+            "Access denied","しばらくお待ち","잠시만")):
+            raise SourceAccessRestricted("Olive Young source requested verification: "
+                +title[:100]+"; actual "+page.url[:190])
         for _ in range(max_pages):
             if pending:await asyncio.gather(*pending,return_exceptions=True)
             if queue.empty():
@@ -203,6 +212,9 @@ async def run_job(job):
                           "source_url":"https://global.oliveyoung.com/display/category?"+urlencode({"ctgrNo":cid}),
                           "payload":{"error":message}})
                     except Exception:LOG.exception("Could not persist category failure %s",cid)
+                    if isinstance(exc,SourceAccessRestricted):
+                        LOG.warning("[source-access] Stopping job rather than repeatedly requesting blocked category pages")
+                        break
             if total_pages and DETAIL_LIMIT and detail_numbers:
                 ok,failed=await gather_details(context,jid,sorted(detail_numbers))
                 LOG.info("[detail] completed=%d failures=%d",ok,len(failed))
