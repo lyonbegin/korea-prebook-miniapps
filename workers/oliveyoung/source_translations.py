@@ -71,7 +71,7 @@ async def probe(browser:Browser, api):
                 except Exception as exc:
                     error=type(exc).__name__+": "+str(exc)[:250]
                 output=await api("/manager/api/ktaxback/translation/capture","POST",{
-                    "lang_code":lang,"source_url":API_URL,
+                    "category_id":cid,"lang_code":lang,"source_url":API_URL,
                     "response_status":status,"request_payload":payload,
                     "response_payload":response_json,
                     "assignments":assignments,"error":error})
