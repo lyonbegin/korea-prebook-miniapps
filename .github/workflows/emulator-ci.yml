@@ -1,0 +1,23 @@
+name: Browser Miniapp Emulator Source Checks
+on:
+  push:
+    paths:
+      - 'scripts/emulators/**'
+      - '.github/workflows/emulator-ci.yml'
+  workflow_dispatch:
+jobs:
+  bun-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - name: Compile server emulators and management UI
+        run: |
+          bun build scripts/emulators/wechat-emulator.ts --target=bun --outdir=/tmp/wechat-em
+          bun build scripts/emulators/alipay-emulator.ts --target=bun --outdir=/tmp/alipay-em
+          bun build scripts/emulators/miniapp-emulator-console.ts --target=bun --outdir=/tmp/console-em
+      - name: Static integration contract
+        run: |
+          bun -e 'import fs from "node:fs";const root="scripts/emulators/";for(const f of ["wechat-emulator.ts","alipay-emulator.ts"]){const t=fs.readFileSync(root+f,"utf8");if(!t.includes("miniapp-browser-emulator")||!t.includes("KOREA_PREBOOK_H5_EVENT")||!t.includes("ktaxback-original-live-production.up.railway.app"))throw Error("Broken emulator contract "+f)}const c=fs.readFileSync(root+"miniapp-emulator-console.ts","utf8");if(!c.includes("wechat-emulator-production.up.railway.app")||!c.includes("alipay-emulator-production.up.railway.app"))throw Error("Console target mismatch")'

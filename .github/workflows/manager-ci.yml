@@ -36,4 +36,19 @@ jobs:
           node --check miniapps/wechat/pages/shop/detail.js
           node --check miniapps/alipay/pages/shop/index.js
           node --check miniapps/alipay/pages/shop/detail.js
-          node -e "for (const p of ['wechat','alipay']) { const app=require('./miniapps/'+p+'/app.json'); if(app.pages[0]!=='pages/shop/index' || !app.pages.includes('pages/shop/detail') || !app.pages.includes('pages/index/index')) throw new Error(p+' missing K-TAXBACK startup/navigation'); }"
+          node - <<'NODE'
+          const fs=require('fs');
+          const h5='https://ktaxback-original-live-production.up.railway.app/k-taxback-shop.html';
+          for(const p of ['wechat','alipay']){
+            const base='miniapps/'+p;
+            const app=require('./'+base+'/app.json');
+            if(app.pages[0]!=='pages/index/index')throw Error(p+' prearrival first page missing');
+            if(!app.pages.includes('pages/shop/index')||!app.pages.includes('pages/shop/detail'))throw Error(p+' missing shopping pages');
+            const shell=fs.readFileSync(base+'/pages/shop/index.'+(p==='wechat'?'wxml':'axml'),'utf8');
+            if(!shell.includes('<web-view src="{{shopUrl}}"></web-view>'))throw Error(p+' original H5 web-view missing');
+            const config=fs.readFileSync(base+'/app.js','utf8');
+            if(!config.includes(h5))throw Error(p+' H5 URL mismatch');
+            const route=fs.readFileSync(base+'/pages/index/index.js','utf8');
+            if(!route.includes("navigateTo({url:'/pages/shop/index'})"))throw Error(p+' shopping navigation missing');
+          }
+          NODE
