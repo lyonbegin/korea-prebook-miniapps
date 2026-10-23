@@ -238,6 +238,16 @@ async def main():
                     except Exception:LOG.exception("Could not persist source restriction stop")
                     break
                 await asyncio.sleep(0.8)
+            # The ORIGINAL C:\\tour\\batch_translate.py independently calls
+            # translation.oliveyoung.com with source/target/texts and captures
+            # each response pair; locale flags alone do not localize catalogue.
+            try:
+                from source_translations import probe
+                translated=await probe(browser, api)
+                LOG.info("LIVE_TRANSLATION_SOURCE_DB_REPORT %s",
+                         json.dumps(translated,ensure_ascii=False)[:2400])
+            except Exception as exc:
+                LOG.exception("Original translate-texts probe failed (will not fabricate strings): %s",exc)
         finally:
             for context in contexts.values():await context.close()
             await browser.close()
