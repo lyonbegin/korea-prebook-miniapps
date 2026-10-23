@@ -149,6 +149,11 @@ async def main():
         LOG.exception("Could not prepare pilot tasks");raise
     LOG.info("Requested categories=%d langs=%s entries/task=%d",
              len(started["categories"]),started["languages"],started["per_task"])
+    try:
+        retry=await api("/manager/api/ktaxback/pilot/retry-selector-v2","POST")
+        LOG.info("VISIBLE_LANGUAGE_SELECTOR_RETRY %s",retry)
+    except Exception as exc:
+        LOG.warning("Language selector retry planning unavailable: %s",str(exc)[:300])
     async with async_playwright() as p:
         browser=await p.chromium.launch(headless=True,args=["--disable-dev-shm-usage"])
         try:
