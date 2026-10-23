@@ -4,7 +4,7 @@ Railway uses existing admin token by reference. Previous full crawler disabled
 for this pilot. Every task result is persisted to the pilot DB report.
 """
 from __future__ import annotations
-import asyncio,json,logging,os,signal,urllib.error,urllib.request,re
+import asyncio,json,logging,os,signal,urllib.error,urllib.request,re,time
 from urllib.parse import urlencode
 from playwright.async_api import async_playwright
 
@@ -262,7 +262,29 @@ async def main():
         else:d["failed" if st=="failed" else "pending"]+=1
     LOG.info("FINAL_SUMMARY %s",json.dumps(summary,ensure_ascii=False))
     LOG.info("ORIGINAL_DB_COUNTS %s",json.dumps(report["db_counts"],ensure_ascii=False))
-    while not STOP:await asyncio.sleep(60)
+    # The separate price/detail collector updates English product rows.
+    # Periodically re-check the source_text version; translate only absent or
+    # stale product translations. PostgreSQL leases prevent overlap on deploys.
+    poll_hours=max(1,int(os.getenv("TRANSLATION_REFRESH_HOURS","6")))
+    last_translation=time.monotonic()
+    while not STOP:
+        await asyncio.sleep(60)
+        if time.monotonic()-last_translation >= poll_hours*3600 and not STOP:
+            last_translation=time.monotonic()
+            LOG.info("PERIODIC_ORIGINAL_TRANSLATION_REFRESH starting")
+            try:
+                from source_translations import probe
+                async with async_playwright() as p:
+                    browser=await p.chromium.launch(
+                        headless=True,args=["--disable-dev-shm-usage"])
+                    try:
+                        result=await probe(browser,api)
+                        LOG.info("PERIODIC_ORIGINAL_TRANSLATION_REFRESH %s",
+                                 json.dumps(result,ensure_ascii=False)[:2500])
+                    finally:
+                        await browser.close()
+            except Exception:
+                LOG.exception("Periodic source translation failed; original values preserved")
 
 if __name__=="__main__":
     asyncio.run(main())
