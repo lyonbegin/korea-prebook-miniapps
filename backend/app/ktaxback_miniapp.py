@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from fastapi import HTTPException, Query
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 from sqlalchemy import MetaData, Table, select
 
 CDN = "https://cdn-image.oliveyoung.com/"
@@ -161,6 +163,12 @@ def mount_miniapp_shop(app, engine):
                 "products":cards,"categories":sections,"total":total,
                 "page":page,"pageSize":size,"hasMore":start+size<total,
                 "currency":"USD","checkoutAvailable":False}
+
+    @app.get("/v1/ktaxback/miniapp/preview", response_class=HTMLResponse, include_in_schema=False)
+    def native_ui_preview():
+        # Visual review only. Actual WeChat/Alipay render native WXML/AXML.
+        return Path(__file__).with_name("ktaxback_native_preview.html").read_text(
+            encoding="utf-8")
 
     @app.get("/v1/ktaxback/miniapp/home")
     def home(lang:str="zh_cn"):
