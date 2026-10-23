@@ -298,7 +298,7 @@ def mount_pilot(app,engine):
             stored={}
             for name in ("products","brands","categories","category_filters","product_images",
                          "product_options","product_details","product_translations",
-                         "category_names_i18n","category_filters_i18n"):
+                         "product_names_i18n","category_names_i18n","category_filters_i18n"):
                 stored[name]=conn.execute(text(
                     "SELECT COUNT(*) FROM "+PREFIX+name)).scalar_one()
             locales=[dict(row) for row in conn.execute(text("""SELECT lang_code,
