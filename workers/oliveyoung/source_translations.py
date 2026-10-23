@@ -103,3 +103,48 @@ async def probe(browser:Browser, api):
     LOG.info("ORIGINAL_TRANSLATE_CATEGORIES_FINAL %s",totals)
     return {"categories":len(categories),"http_events":len(results),
             "blocked":blocked,"by_language":totals}
+
+
+async def probe_categories(browser:Browser,api):
+    """One small original-source category-title translation batch per language."""
+    source=await api("/manager/api/ktaxback/translation/category-source")
+    rows=source.get("items",[])
+    if not rows:
+        LOG.warning("No real English category titles saved yet")
+        return {"error":"empty_source_categories"}
+    out={}
+    context=await browser.new_context(locale="en-US")
+    try:
+        for lang,target in LOCALES.items():
+            pending=[r for r in rows if lang not in r.get("existing_langs",[])]
+            if not pending:continue
+            payload={"source_language":"en","target_language":target,
+                     "texts":[r["source_text"] for r in pending]}
+            status=0;response={};error=""
+            try:
+                r=await context.request.post(API_URL,data=payload,
+                    headers={"Content-Type":"application/json",
+                             "Origin":"https://global.oliveyoung.com",
+                             "Referer":"https://global.oliveyoung.com/"},
+                    timeout=24000)
+                status=r.status
+                if status==200:
+                    response=await r.json()
+                    if not isinstance(response,dict):response={}
+                else:error="Provider HTTP "+str(status)
+            except Exception as exc:
+                error=type(exc).__name__+" "+str(exc)[:250]
+            result=await api("/manager/api/ktaxback/translation/category-capture","POST",{
+                "lang_code":lang,"source_url":API_URL,"response_status":status,
+                "request_payload":payload,"response_payload":response,
+                "assignments":[{"category_id":r["category_id"],
+                                "source_text":r["source_text"]} for r in pending],
+                "error":error})
+            out[lang]=result
+            LOG.info("ORIGINAL_CATEGORY_TRANSLATION %s %s",lang,result)
+            if status in (401,403,429):
+                LOG.warning("Source translation restriction; stop other categories")
+                break
+            await asyncio.sleep(2)
+    finally:await context.close()
+    return out
