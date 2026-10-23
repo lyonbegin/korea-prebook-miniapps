@@ -82,6 +82,38 @@ def mount_translation(app, engine):
             PRIMARY KEY(category_id,lang_code)
         )"""))
 
+    # Backfill previously source-verified name pairs from product_translations
+    # into the ORIGINAL product_names_i18n table. This reads only existing
+    # Railway PostgreSQL rows; no legacy SQLite import, no synthetic translation.
+    with engine.begin() as con:
+        names = Table("korea_prebook_kt_product_names_i18n",
+                      MetaData(),autoload_with=engine)
+        products = Table("korea_prebook_kt_products",MetaData(),
+                         autoload_with=engine)
+        source_translations = Table("korea_prebook_kt_product_translations",
+                                    MetaData(),autoload_with=engine)
+        pairs = con.execute(select(
+            source_translations.c.prdt_no,
+            source_translations.c.lang_code,
+            source_translations.c.translated_text
+        ).select_from(source_translations.join(
+            products,products.c.prdt_no==source_translations.c.prdt_no
+        )).where(
+            source_translations.c.field_key==NAME_FIELD,
+            source_translations.c.lang_code.in_(list(LANG_TARGET)),
+            source_translations.c.source_text==products.c.prdt_name,
+            source_translations.c.translated_text.is_not(None),
+            source_translations.c.translated_text!=products.c.prdt_name
+        )).mappings().all()
+        for pair in pairs:
+            row={"prdt_no":pair["prdt_no"],"lang_code":pair["lang_code"],
+                 "prdt_name":pair["translated_text"]}
+            stmt=(pg_insert(names) if engine.dialect.name=="postgresql"
+                  else sqlite_insert(names)).values(**row)
+            con.execute(stmt.on_conflict_do_update(
+                index_elements=["prdt_no","lang_code"],
+                set_={"prdt_name":stmt.excluded.prdt_name}))
+
     def auth(token):
         expected = os.getenv("ADMIN_API_TOKEN") or ""
         if not expected or not token or not secrets.compare_digest(token, "Bearer "+expected):
