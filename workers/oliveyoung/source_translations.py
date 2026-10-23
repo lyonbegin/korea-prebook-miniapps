@@ -18,7 +18,7 @@ LOG=logging.getLogger("ktaxback_oliveyoung_translations")
 async def probe(browser:Browser, api):
     """api is the authenticated existing Railway manager transport."""
     status=await api("/manager/api/ktaxback/translation/status")
-    existing={row["lang_code"] for row in status.get("events",[])}
+    existing={row["lang_code"]:int(row["rows"]) for row in status.get("persisted_rows_by_language",[])}
     sample=await api("/manager/api/ktaxback/translation/sample?category_id=1000000008&limit=10")
     rows=sample.get("items",[])
     if not rows:
@@ -33,8 +33,8 @@ async def probe(browser:Browser, api):
         })
     try:
         for lang,target in LOCALES.items():
-            if lang in existing:
-                LOG.info("TRANSLATE_PROBE_SKIPPED %s (already audited)",lang)
+            if existing.get(lang,0)>=10:
+                LOG.info("TRANSLATE_PROBE_SKIPPED %s (10 verified records already in PostgreSQL)",lang)
                 continue
             raw=[str(x["prdt_name"]) for x in rows if x.get("prdt_name")]
             assignments=[{
