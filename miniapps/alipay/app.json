@@ -1,1 +1,13 @@
-{"pages":["pages/index/index"],"window":{"defaultTitle":"Korea Prebook","titleBarColor":"#14394b"}}
+{
+  "pages": [
+    "pages/shop/index",
+    "pages/shop/detail",
+    "pages/index/index"
+  ],
+  "window": {
+    "defaultTitle": "K-TAXBACK",
+    "titleBarColor": "#ffffff",
+    "backgroundColor": "#ffffff",
+    "pullRefresh": true
+  }
+}
