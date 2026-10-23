@@ -149,6 +149,31 @@ def mount_pilot(app,engine):
         return {"stopped":True,"unattempted_or_running_marked_blocked":affected,
                 "real_saved_rows_preserved":True}
 
+    @app.post("/manager/api/ktaxback/pilot/retry-fish-preferences")
+    def one_time_preference_validation(authorization:str|None=Header(None)):
+        """Exactly three category tests, one per target language, never bulk-crawl."""
+        auth(authorization)
+        version="fish_saved_country_language_v1"
+        selected=("jp","zh_cn","zh_tw")
+        with engine.begin() as conn:
+            exists=conn.execute(text("""SELECT version FROM korea_prebook_kt_pilot_retries
+                WHERE version=:v"""),{"v":version}).scalar_one_or_none()
+            if exists:return {"scheduled":False,"reason":"already_created"}
+            conn.execute(text("""INSERT INTO korea_prebook_kt_pilot_retries
+                (version,prior_task_count,created_at) VALUES(:v,3,:now)"""),
+                {"v":version,"now":timestamp()})
+            total=0
+            for lang in selected:
+                total+=conn.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
+                   SET state='queued',received=0,selected=0,written=0,verified=0,
+                    untranslated=0,language_evidence='',error='',
+                    updated_at=:now
+                   WHERE lang_code=:lang AND category_id='1000000008' AND
+                     state IN ('failed','untranslated','blocked')"""),
+                   {"now":timestamp(),"lang":lang}).rowcount
+        return {"scheduled":True,"categories":1,"languages":list(selected),
+                "tasks":total,"version":version}
+
     @app.get("/manager/api/ktaxback/pilot/next")
     def next_task(authorization:str|None=Header(None)):
         auth(authorization)
