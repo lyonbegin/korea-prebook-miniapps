@@ -9,7 +9,9 @@ import json, os, re, secrets, uuid, hashlib
 from html import unescape
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse
+from pathlib import Path
 from fastapi import Header, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import MetaData, Table, inspect, select, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -107,6 +109,10 @@ def mount_oliveyoung_refresh(app,engine):
         c.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_fullscan
            (id INTEGER PRIMARY KEY, active INTEGER NOT NULL, page_limit INTEGER NOT NULL,
             started_at TEXT NOT NULL, completed_at TEXT)"""))
+
+    @app.get("/manager/ktaxback",response_class=HTMLResponse,include_in_schema=False)
+    def original_collector_manager():
+        return Path(__file__).with_name("ktaxback_collector.html").read_text(encoding="utf-8")
 
     def auth(v):
         key=os.getenv("ADMIN_API_TOKEN","")
