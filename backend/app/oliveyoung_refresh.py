@@ -27,6 +27,12 @@ class CaptureIn(BaseModel):
     source_url: str
     payload: dict
 
+class ProductDetailIn(BaseModel):
+    prdt_no: str
+    source_url: str
+    detail_data: dict | None = None
+    details_info: dict | None = None
+
 class JobUpdate(BaseModel):
     state: str
     message: str = Field(default="", max_length=1200)
@@ -239,12 +245,6 @@ def mount_oliveyoung_refresh(app,engine):
                     "msg":data.category_id+" page "+str(data.page_index)+" -> "+str(len(unique))+" products"
                 })
         return {"accepted":len(unique),"changed_prices":changes,"job_id":jid}
-
-    class ProductDetailIn(BaseModel):
-        prdt_no: str
-        source_url: str
-        detail_data: dict | None = None
-        details_info: dict | None = None
 
     @app.post("/manager/api/ktaxback/refresh/worker/{jid}/detail")
     def update_product_detail(jid:str,data:ProductDetailIn,
