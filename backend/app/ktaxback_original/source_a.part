@@ -1,0 +1,900 @@
+// K-TaxBack — 실제 프로덕션 JSON(main-vue-data.json 등)을 같은 폴더에서
+// fetch 로 동적 로딩해서 그린다. 하드코딩된 상품/배너 배열은 없다.
+//
+// 홈 화면은 main-vue-data.json 의 cornerList 를 그대로 순회하며 렌더링한다.
+// 각 corner 의 setContsMap 안에 set_1, set_2… 가 있고, 그 안에 IMAGE/TEXT/PRODUCT/
+// SET_NAME 중 하나(또는 IMAGE+TEXT 조합)가 들어있다. 이 파일이 하드코딩을 안 하는
+// 대신, 실제 화면 레이아웃(히어로냐 브랜드그리드냐)을 데이터만으로 100% 구분할 수는
+// 없어서(둘 다 IMAGE+TEXT 구조가 같음) — C100022 코너는 전부 한 캐러셀로 그린다.
+// 정확한 시각 분리가 필요하면 백엔드 쪽에 corner 를 나누는 필드가 있는지 확인 필요.
+import React, { useState, useRef, useEffect } from "https://esm.sh/react@18.2.0";
+import ReactDOM from "https://esm.sh/react-dom@18.2.0/client";
+import { motion, AnimatePresence } from "https://esm.sh/framer-motion@11.3.24?deps=react@18.2.0,react-dom@18.2.0";
+import {
+  Menu, Search, ShoppingBag, X, ChevronRight, ChevronLeft, ChevronDown, ChevronUp,
+  Heart, Star, Pause, Play, Home, Grid3x3, Tag, User, Download, Loader2,
+  Droplet, Palette, Waves, Scissors, SmilePlus, Sun, Music2, Paintbrush,
+  Gem, HeartPulse, Pill, Coffee, Gift, Globe, Headset, Truck, SlidersHorizontal, Share2, Check,
+} from "https://esm.sh/lucide-react@0.383.0?deps=react@18.2.0";
+
+// 지원 언어. code 는 DB(product_translations/lang_code, 완전스냅샷 폴더)와 그대로 맞춘다.
+// 'en' 은 오버레이/스냅샷 자체가 없는 정본이라 항상 표시 가능.
+const LANGUAGES = [
+  { code: "en", label: "English", short: "Eng (US$)" },
+  { code: "jp", label: "日本語", short: "JP (¥)" },
+  { code: "vi_vn", label: "Tiếng Việt", short: "VI (₫)" },
+  { code: "zh_cn", label: "中文（简体）", short: "简体中文" },
+  { code: "zh_tw", label: "中文（繁體）", short: "繁體中文" },
+];
+function langShortLabel(code) {
+  return (LANGUAGES.find((l) => l.code === code) || LANGUAGES[0]).short;
+}
+// 헤더에 표시할 "현재 언어" — 영어로 된 라벨이 아니라 그 나라 글씨 그대로
+// (English/日本語/Tiếng Việt/中文（简体）/中文（繁體）).
+function langNativeLabel(code) {
+  return (LANGUAGES.find((l) => l.code === code) || LANGUAGES[0]).label;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// NAV_TABS/CATEGORY_SUBMENU 등에 박힌 순수 UI 문구 — 카테고리ID/속성ID(attrValNo)가
+// 없어서 DB(category_names_i18n/category_filters_i18n)로는 못 찾는 문자열들이다.
+// DB 매칭이 불가능해서 여기 직접 번역해 넣는다. lang 이 en 이거나 사전에 없는
+// 문자열이면 원문(영어) 그대로 돌려준다 — 빠진 항목이 있어도 화면이 깨지지 않는다.
+// ══════════════════════════════════════════════════════════════════
+const UI_STRINGS = {
+  // ── 상단 탭바 / 햄버거메뉴 상단 목록 (NAV_TABS 계열) ──
+  "In-Store": { jp: "店舗", vi_vn: "Tại cửa hàng", zh_cn: "店内精选", zh_tw: "店內精選" },
+  "Best": { jp: "ベスト", vi_vn: "Bán chạy", zh_cn: "热销", zh_tw: "熱銷" },
+  "New": { jp: "新着", vi_vn: "Hàng mới", zh_cn: "新品", zh_tw: "新品" },
+  "Sale": { jp: "セール", vi_vn: "Giảm giá", zh_cn: "特惠", zh_tw: "特惠" },
+  "Events": { jp: "イベント", vi_vn: "Sự kiện", zh_cn: "活动", zh_tw: "活動" },
+  "Membership": { jp: "メンバーシップ", vi_vn: "Hội viên", zh_cn: "会员", zh_tw: "會員" },
+  "Brands": { jp: "ブランド", vi_vn: "Thương hiệu", zh_cn: "品牌", zh_tw: "品牌" },
+
+  // ── CATEGORY_SUBMENU heading ──
+  "Skincare Product": { jp: "スキンケア商品", vi_vn: "Sản phẩm chăm sóc da", zh_cn: "护肤产品", zh_tw: "護膚產品" },
+  "Makeup Product": { jp: "メイクアップ商品", vi_vn: "Sản phẩm trang điểm", zh_cn: "彩妆产品", zh_tw: "彩妝產品" },
+  "Body Product": { jp: "ボディケア商品", vi_vn: "Sản phẩm chăm sóc cơ thể", zh_cn: "身体护理产品", zh_tw: "身體護理產品" },
+  "Hair Product": { jp: "ヘアケア商品", vi_vn: "Sản phẩm chăm sóc tóc", zh_cn: "护发产品", zh_tw: "護髮產品" },
+  "Mask Product": { jp: "マスク商品", vi_vn: "Sản phẩm mặt nạ", zh_cn: "面膜产品", zh_tw: "面膜產品" },
+  "Suncare Product": { jp: "サンケア商品", vi_vn: "Sản phẩm chống nắng", zh_cn: "防晒产品", zh_tw: "防曬產品" },
+
+  // ── CATEGORY_SUBMENU group title ──
+  "Skin Type": { jp: "肌タイプ", vi_vn: "Loại da", zh_cn: "肤质", zh_tw: "膚質" },
+  "Skin Concern": { jp: "肌悩み", vi_vn: "Vấn đề về da", zh_cn: "肌肤问题", zh_tw: "肌膚問題" },
+  "Featured Ingredients": { jp: "注目成分", vi_vn: "Thành phần nổi bật", zh_cn: "特色成分", zh_tw: "特色成分" },
+  "Face": { jp: "フェイス", vi_vn: "Mặt", zh_cn: "面部", zh_tw: "面部" },
+  "Eye": { jp: "アイ", vi_vn: "Mắt", zh_cn: "眼部", zh_tw: "眼部" },
+  "Lip": { jp: "リップ", vi_vn: "Môi", zh_cn: "唇部", zh_tw: "唇部" },
+  "Scent": { jp: "香り", vi_vn: "Hương thơm", zh_cn: "香味", zh_tw: "香味" },
+  "Hair Type": { jp: "髪質", vi_vn: "Loại tóc", zh_cn: "发质", zh_tw: "髮質" },
+  "Hair Care Benefit": { jp: "ヘアケア効果", vi_vn: "Công dụng chăm sóc tóc", zh_cn: "护发功效", zh_tw: "護髮功效" },
+  "UVA Star Rating": { jp: "UVA星評価", vi_vn: "Xếp hạng sao UVA", zh_cn: "UVA星级", zh_tw: "UVA星級" },
+  "Sun Protection Formulation": { jp: "紫外線防止剤タイプ", vi_vn: "Dạng chống nắng", zh_cn: "防晒配方类型", zh_tw: "防曬配方類型" },
+  "Fomulation": { jp: "剤形", vi_vn: "Dạng sản phẩm", zh_cn: "剂型", zh_tw: "劑型" },
+  "Format": { jp: "フォーマット", vi_vn: "Định dạng", zh_cn: "形态", zh_tw: "形態" },
+
+  // ── attrValNo 기반 속성 필터 옵션 라벨 (카테고리ID 없음, DB 매칭 불가) ──
+  "Combination&Normal": { jp: "混合肌・普通肌", vi_vn: "Da hỗn hợp & thường", zh_cn: "混合性&中性", zh_tw: "混合性&中性" },
+  "Dry": { jp: "乾燥肌", vi_vn: "Da khô", zh_cn: "干性", zh_tw: "乾性" },
+  "Oily": { jp: "脂性肌", vi_vn: "Da dầu", zh_cn: "油性", zh_tw: "油性" },
+  "Sensitive": { jp: "敏感肌", vi_vn: "Da nhạy cảm", zh_cn: "敏感性", zh_tw: "敏感性" },
+  "Acne": { jp: "ニキビ", vi_vn: "Mụn", zh_cn: "痘痘", zh_tw: "痘痘" },
+  "Brightening": { jp: "美白", vi_vn: "Làm sáng da", zh_cn: "美白", zh_tw: "美白" },
+  "Dullness": { jp: "くすみ", vi_vn: "Da xỉn màu", zh_cn: "暗沉", zh_tw: "暗沉" },
+  "Moisturising": { jp: "保湿", vi_vn: "Dưỡng ẩm", zh_cn: "保湿", zh_tw: "保濕" },
+  "Soothing": { jp: "鎮静", vi_vn: "Làm dịu", zh_cn: "舒缓", zh_tw: "舒緩" },
+  "Fine Dust Removal": { jp: "微細ホコリ除去", vi_vn: "Loại bỏ bụi mịn", zh_cn: "去除细尘", zh_tw: "去除細塵" },
+  "Visible Pores": { jp: "毛穴ケア", vi_vn: "Se khít lỗ chân lông", zh_cn: "毛孔护理", zh_tw: "毛孔護理" },
+  "Well-aging": { jp: "エイジングケア", vi_vn: "Chống lão hóa", zh_cn: "抗老化", zh_tw: "抗老化" },
+  "Hyaluronic acid": { jp: "ヒアルロン酸", vi_vn: "Axit hyaluronic", zh_cn: "玻尿酸", zh_tw: "玻尿酸" },
+  "Panthenol": { jp: "パンテノール", vi_vn: "Panthenol", zh_cn: "泛醇", zh_tw: "泛醇" },
+  "Centella Asiatica Extract (Cica Care)": { jp: "ツボクサエキス（シカケア）", vi_vn: "Chiết xuất rau má (Cica)", zh_cn: "积雪草提取物（Cica）", zh_tw: "積雪草萃取（Cica）" },
+  "Ceramide": { jp: "セラミド", vi_vn: "Ceramide", zh_cn: "神经酰胺", zh_tw: "神經醯胺" },
+  "Niacinamide": { jp: "ナイアシンアミド", vi_vn: "Niacinamide", zh_cn: "烟酰胺", zh_tw: "菸鹼醯胺" },
+  "Collagen": { jp: "コラーゲン", vi_vn: "Collagen", zh_cn: "胶原蛋白", zh_tw: "膠原蛋白" },
+  "Hand Care": { jp: "ハンドケア", vi_vn: "Chăm sóc tay", zh_cn: "护手", zh_tw: "護手" },
+  "Sculpting": { jp: "引き締め", vi_vn: "Săn chắc", zh_cn: "塑形", zh_tw: "塑形" },
+  "Cellulite": { jp: "セルライト", vi_vn: "Cellulite", zh_cn: "橘皮组织", zh_tw: "橘皮組織" },
+  "Citrus": { jp: "シトラス", vi_vn: "Cam chanh", zh_cn: "柑橘", zh_tw: "柑橘" },
+  "Floral": { jp: "フローラル", vi_vn: "Hoa cỏ", zh_cn: "花香", zh_tw: "花香" },
+  "Fresh": { jp: "フレッシュ", vi_vn: "Tươi mát", zh_cn: "清新", zh_tw: "清新" },
+  "Fruity": { jp: "フルーティー", vi_vn: "Trái cây", zh_cn: "果香", zh_tw: "果香" },
+  "Woody": { jp: "ウッディ", vi_vn: "Gỗ", zh_cn: "木质", zh_tw: "木質" },
+  "Green": { jp: "グリーン", vi_vn: "Xanh mát", zh_cn: "绿意", zh_tw: "綠意" },
+  "Musk": { jp: "ムスク", vi_vn: "Xạ hương", zh_cn: "麝香", zh_tw: "麝香" },
+  "Sweet": { jp: "スイート", vi_vn: "Ngọt ngào", zh_cn: "甜香", zh_tw: "甜香" },
+  "Fragrance-free": { jp: "無香料", vi_vn: "Không mùi hương", zh_cn: "无香", zh_tw: "無香" },
+  "Coloured": { jp: "カラーリング毛", vi_vn: "Tóc nhuộm", zh_cn: "染发", zh_tw: "染髮" },
+  "Curly & Wavy": { jp: "くせ毛・ウェーブ", vi_vn: "Tóc xoăn & gợn sóng", zh_cn: "卷发&波浪发", zh_tw: "捲髮&波浪髮" },
+  "Fine": { jp: "細毛", vi_vn: "Tóc mỏng", zh_cn: "细软发", zh_tw: "細軟髮" },
+  "Greying": { jp: "白髪", vi_vn: "Tóc bạc", zh_cn: "白发", zh_tw: "白髮" },
+  "Hair loss": { jp: "抜け毛", vi_vn: "Rụng tóc", zh_cn: "脱发", zh_tw: "脫髮" },
+  "Weakened": { jp: "ダメージ毛", vi_vn: "Tóc yếu", zh_cn: "受损发质", zh_tw: "受損髮質" },
+  "Anti-Dandruff": { jp: "フケ防止", vi_vn: "Ngừa gàu", zh_cn: "去屑", zh_tw: "去屑" },
+  "Anti-Frizz": { jp: "うねり防止", vi_vn: "Chống xù tóc", zh_cn: "抗毛躁", zh_tw: "抗毛躁" },
+  "Balancing": { jp: "バランスケア", vi_vn: "Cân bằng", zh_cn: "平衡护理", zh_tw: "平衡護理" },
+  "Colour Protection": { jp: "カラー保護", vi_vn: "Bảo vệ màu nhuộm", zh_cn: "护色", zh_tw: "護色" },
+  "Damage Repair": { jp: "ダメージ補修", vi_vn: "Phục hồi hư tổn", zh_cn: "损伤修复", zh_tw: "損傷修復" },
+  "Hair Growth": { jp: "育毛", vi_vn: "Kích thích mọc tóc", zh_cn: "生发", zh_tw: "生髮" },
+  "Heat Protection": { jp: "熱保護", vi_vn: "Bảo vệ nhiệt", zh_cn: "护热", zh_tw: "護熱" },
+  "Hydrating": { jp: "うるおい", vi_vn: "Cấp ẩm", zh_cn: "保湿", zh_tw: "保濕" },
+  "Scalp Treatment": { jp: "頭皮ケア", vi_vn: "Chăm sóc da đầu", zh_cn: "头皮护理", zh_tw: "頭皮護理" },
+  "Shine": { jp: "ツヤ", vi_vn: "Bóng mượt", zh_cn: "亮泽", zh_tw: "亮澤" },
+  "Thickening": { jp: "ボリュームケア", vi_vn: "Dày tóc", zh_cn: "增量", zh_tw: "增量" },
+  "Volumising": { jp: "ボリュームアップ", vi_vn: "Tạo phồng", zh_cn: "蓬松", zh_tw: "蓬鬆" },
+  "Blackheads": { jp: "角栓・黒ずみ", vi_vn: "Mụn đầu đen", zh_cn: "黑头", zh_tw: "黑頭" },
+  "Deep Cleansing": { jp: "毛穴の奥までクレンジング", vi_vn: "Làm sạch sâu", zh_cn: "深层清洁", zh_tw: "深層清潔" },
+  "Houttuynia Cordata Extract": { jp: "ドクダミエキス", vi_vn: "Chiết xuất diếp cá", zh_cn: "鱼腥草提取物", zh_tw: "魚腥草萃取" },
+  "Allantoin": { jp: "アラントイン", vi_vn: "Allantoin", zh_cn: "尿囊素", zh_tw: "尿囊素" },
+  "Tea Tree": { jp: "ティーツリー", vi_vn: "Tràm trà", zh_cn: "茶树", zh_tw: "茶樹" },
+  "Madecassoside": { jp: "マデカソシド", vi_vn: "Madecassoside", zh_cn: "羟基积雪草苷", zh_tw: "羥基積雪草苷" },
+  "3-Star": { jp: "★3つ", vi_vn: "3 sao", zh_cn: "3星", zh_tw: "3星" },
+  "4-Star": { jp: "★4つ", vi_vn: "4 sao", zh_cn: "4星", zh_tw: "4星" },
+  "Mineral": { jp: "ミネラル", vi_vn: "Vật lý (khoáng chất)", zh_cn: "物理性", zh_tw: "物理性" },
+  "Synthetic": { jp: "紫外線吸収剤", vi_vn: "Hóa học", zh_cn: "化学性", zh_tw: "化學性" },
+  "No White Cast": { jp: "白浮きなし", vi_vn: "Không để lại vệt trắng", zh_cn: "不泛白", zh_tw: "不泛白" },
+  "Ampoules": { jp: "アンプル", vi_vn: "Tinh chất cô đặc", zh_cn: "安瓶", zh_tw: "安瓶" },
+  "Cream": { jp: "クリーム", vi_vn: "Dạng kem", zh_cn: "面霜", zh_tw: "面霜" },
+  "Gel": { jp: "ジェル", vi_vn: "Dạng gel", zh_cn: "凝胶", zh_tw: "凝膠" },
+  "Stick": { jp: "スティック", vi_vn: "Dạng thỏi", zh_cn: "棒状", zh_tw: "棒狀" },
+  "Cushion": { jp: "クッション", vi_vn: "Dạng cushion", zh_cn: "气垫", zh_tw: "氣墊" },
+
+  // ── Hair pillTabs (tree 로딩 실패시 폴백 경로에서만 쓰임) ──
+  "Treatments": { jp: "トリートメント", vi_vn: "Dầu xả/Trị liệu", zh_cn: "护理", zh_tw: "護理" },
+  "Hair Wash": { jp: "ヘアウォッシュ", vi_vn: "Gội đầu", zh_cn: "洗发", zh_tw: "洗髮" },
+  "Hair Styling": { jp: "ヘアスタイリング", vi_vn: "Tạo kiểu tóc", zh_cn: "造型", zh_tw: "造型" },
+  "Hair Color & Perms": { jp: "カラー・パーマ", vi_vn: "Nhuộm & Uốn tóc", zh_cn: "染烫", zh_tw: "染燙" },
+  "Hair Styling Devices": { jp: "ヘアスタイリング家電", vi_vn: "Dụng cụ tạo kiểu tóc", zh_cn: "造型工具", zh_tw: "造型工具" },
+  "Hair Perfume": { jp: "ヘアパフューム", vi_vn: "Nước hoa tóc", zh_cn: "护发香氛", zh_tw: "護髮香氛" },
+};
+function t(str, lang) {
+  if (!str || !lang || lang === "en") return str;
+  return UI_STRINGS[str]?.[lang] || str;
+}
+
+const INK = "#1a1a1a";
+const SUB = "#767676";
+const LINE = "#e8e8e8";
+const RAIL_BG = "#f0f8df";
+const GREEN = "#4f8a10";
+const RED = "#e8394a";
+const GOLD = "#ffb400";
+const FONT_STACK = "'Pretendard', -apple-system, 'Helvetica Neue', Arial, sans-serif";
+
+// 실제 이미지 CDN 베이스. JSON 의 imagePath/contsMbleImagePath 는 여기 뒤에 붙는 상대경로다.
+const IMG_BASE = "https://cdn-image.oliveyoung.com/";
+function img(path) { return path ? IMG_BASE + path.replace(/^\/+/, "") : ""; }
+
+// 실제 사이트(global.oliveyoung.com) 카테고리 페이지 URL. 원본 메뉴 HTML의
+// href="/display/category?query=&attrValNo=AT000079&attrNo=&ctgrNo=1000000011" 형태를
+// 그대로 따른다. attrValNo 를 안 주면(속성 필터 코드가 없는 항목) 카테고리 전체 링크가 된다.
+// 이 앱엔 카테고리별 상품 목록 화면이 없어서(K-Pop 제외), 실제 사이트를 새 탭으로 연다.
+const SITE_ORIGIN = "https://global.oliveyoung.com";
+function categoryUrl(ctgrNo, attrValNo) {
+  return `${SITE_ORIGIN}/display/category?query=&attrValNo=${attrValNo || ""}&attrNo=&ctgrNo=${ctgrNo}`;
+}
+
+function FontLoader() {
+  return <style>{`
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+*{box-sizing:border-box;}
+.oy-scroll::-webkit-scrollbar{display:none;}
+.oy-scroll{scrollbar-width:none;}
+`}</style>;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// JSON 로더 — 같은 폴더에서 fetch. 실패해도 화면이 죽지 않게 null 반환.
+// ══════════════════════════════════════════════════════════════════
+const _cache = new Map();
+async function loadJson(name) {
+  if (_cache.has(name)) return _cache.get(name);
+  try {
+    const res = await fetch(`./${name}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    _cache.set(name, data);
+    return data;
+  } catch (e) {
+    console.warn(`[OY] ${name} 로딩 실패:`, e.message);
+    return null;
+  }
+}
+
+// name 뒤에 언어 쿼리를 붙인다. name 에 이미 ? 가 있으면(예: categoryPagePath
+// 결과, prdtNo= 가 붙은 상세 요청) & 로 이어붙이고, 없으면 ? 로 새로 시작한다.
+function withLang(name, lang) {
+  const sep = name.includes("?") ? "&" : "?";
+  return `${name}${sep}lang=${encodeURIComponent(lang || "en")}`;
+}
+
+// HTML 엔티티 디코드. contsCont 등에 &lt;br&gt;, &amp;, &rsquo;, &times; 가 섞여 온다.
+// 브라우저 DOM 을 빌려 정확하게 푼다(직접 정규식으로 다 대응하면 놓치는 게 나온다).
+function decodeEntities(str) {
+  if (!str) return "";
+  const el = document.createElement("textarea");
+  el.innerHTML = str;
+  return el.value;
+}
+// <br> 기준으로 줄바꿈. decodeEntities 이후 실제 <br> 태그가 남는다.
+function decodeLines(str) {
+  return decodeEntities(str).split(/<br\s*\/?>/i).map((s) => s.trim()).filter(Boolean);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// JSON 저장/삭제 — loadJson 과 짝. 위시리스트/장바구니처럼 사용자가
+// 바꾸는 데이터는 여기로 서버(DB)에 반영한다. 실패해도 화면은 이미
+// 낙관적으로 바뀐 상태를 유지한다 — 재시도는 다음 로드에서 자연히 맞춰진다.
+// ══════════════════════════════════════════════════════════════════
+async function postJson(name, body) {
+  try {
+    const res = await fetch(`./${name}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.warn(`[OY] ${name} 저장 실패:`, e.message);
+    return null;
+  }
+}
+async function deleteJson(name) {
+  try {
+    const res = await fetch(`./${name}`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.warn(`[OY] ${name} 삭제 실패:`, e.message);
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 실제 API 상품 레코드 → 화면에서 쓰는 정규화된 형태로 변환.
+// order-best.json / cornerList PRODUCT / new-arrivals / flash-deal 이 전부 이 필드셋을 쓴다.
+// (product-data-kpop.json 의 hits.hit[].fields 는 필드명이 달라 별도 매퍼를 둔다.)
+// ══════════════════════════════════════════════════════════════════
+function mapProduct(raw) {
+  if (!raw || !raw.prdtNo) return null;
+  const reg = parseFloat(raw.nrmlAmt ?? raw.minNrmlAmt ?? 0) || 0;
+  const sale = parseFloat(raw.saleAmt ?? raw.minSaleAmt ?? reg) || reg;
+  const saleMax = parseFloat(raw.maxSaleAmt ?? sale) || sale;
+  const dscntRt = parseFloat(raw.eventSlprcDscntRt ?? 0) || 0;
+  const badges = [];
+  if (raw.bestYn === "Y") badges.push("BEST");
+  if (raw.newYn === "Y") badges.push("NEW");
+  if (raw.flashYn === "Y") badges.push("FLASH DEAL");
+  return {
+    id: raw.prdtNo,
+    brand: raw.brandName || "",
+    title: decodeEntities(raw.prdtName || ""),
+    image: img(raw.imagePath),
+    priceRegular: reg,
+    priceSale: sale,
+    priceSaleMax: saleMax > sale ? saleMax : null, // 옵션별로 가격이 다를 때만(최소~최대 표기용)
+    discount: dscntRt > 0 ? Math.round(dscntRt) : null,
+    rating: raw.avgScore ? parseFloat(raw.avgScore) : null,
+    reviews: raw.reviewCnt ? parseInt(raw.reviewCnt, 10) : 0,
+    soldOut: raw.soldOutYn === "Y",
+    badge: badges[0] || null,
+    giftWithPurchase: raw.giftYn === "Y",
+  };
+}
+
+// product-data-kpop.json 의 opensearch 결과용 매퍼(필드명이 다름: reviewScore 등).
+function mapSearchHit(fields) {
+  if (!fields || !fields.prdtNo) return null;
+  const reg = parseFloat(fields.nrmlAmt ?? 0) || 0;
+  const sale = parseFloat(fields.saleAmt ?? reg) || reg;
+  const dscntRt = parseFloat(fields.eventSlprcDscntRt ?? 0) || 0;
+  const badges = [];
+  if (fields.bestYn === "Y") badges.push("BEST");
+  if (fields.newYn === "Y") badges.push("NEW");
+  return {
+    id: fields.prdtNo,
+    brand: fields.brandName || "",
+    title: decodeEntities(fields.prdtName || ""),
+    image: img(fields.imagePath),
+    priceRegular: reg,
+    priceSale: sale,
+    discount: dscntRt > 0 ? Math.round(dscntRt) : null,
+    rating: fields.reviewScore ?? null,
+    reviews: fields.reviewCnt ?? 0,
+    soldOut: fields.soldOutYn === "Y",
+    badge: badges[0] || null,
+    brandNo: fields.brandNo,
+    attrValList: fields.attrValList || [], // 실제 속성 태그(예: "Moisturising","Vegan") — 필터 매칭에 씀
+  };
+}
+
+function usd(n) { return `US$${Number(n).toFixed(2)}`; }
+
+// detail-data.json 의 { product: {...} } 하나를 화면에서 쓰는 형태로 정규화.
+// 이 데이터엔 review 가 null 이라 평점/리뷰수가 없다 — catalogFallback(목록 카드에서
+// 이미 갖고 있던 avgScore/reviewCnt)이 있으면 그걸로 보충한다. 리뷰 카드 자체는
+// 이 JSON 에 아예 없어서(별도 API 라 추정) 지어내지 않고 섹션을 만들지 않는다.
+function mapProductDetail(raw, catalogFallback) {
+  if (!raw || !raw.prdtNo) return null;
+  const reg = parseFloat(raw.nrmlAmt ?? 0) || 0;
+  const sale = parseFloat(raw.saleAmt ?? reg) || reg;
+  const badges = [];
+  if (raw.bestYn === "Y") badges.push("BEST");
+  if (raw.newYn === "Y") badges.push("NEW");
+  if (raw.sellingFastYn === "Y") badges.push("SELLING FAST");
+  const breadcrumb = (raw.allPathCtgrNameEn || "").split(/&gt;|>/).map((s) => s.trim()).filter(Boolean);
+  return {
+    id: raw.prdtNo,
+    brand: raw.brandNameEn || raw.brandName || "",
+    title: decodeEntities(raw.prdtNameEn || raw.prdtName || ""),
+    images: (raw.thumbnailList || []).map((t) => img(t.imagePath)).filter(Boolean).length
+      ? raw.thumbnailList.map((t) => img(t.imagePath)).filter(Boolean)
+      : (raw.imagePath ? [img(raw.imagePath)] : []),
+    priceRegular: reg,
+    priceSale: sale,
+    discount: raw.discountRate ? Math.round(raw.discountRate) : null,
+    rating: catalogFallback?.rating ?? null,
+    reviews: catalogFallback?.reviews ?? 0,
+    badges,
+    breadcrumb,
+    minQty: raw.minBuyPsbltQty || 1,
+    maxQty: raw.maxBuyPsbltQty || 10,
+    options: (raw.optionList || []).map((o) => ({
+      name: o.snglOptnNameEn || o.snglOptnName || "",
+      sale: parseFloat(o.saleAmt ?? sale) || sale,
+      inStock: o.sellStatCode === "10",
+      isDefault: o.rprstYn === "Y",
+    })),
+  };
+}
+
+// details-info.json 의 optimDtlDesc/dtlDesc(HTML) 안 <img data-src="..."> 를 이미지 URL
+// 배열로만 추출해서 쓴다. 원본 HTML을 dangerouslySetInnerHTML 로 그대로 심으면 우리가
+// 통제 못하는 마크업이 섞여 들어올 수 있어서, 이미지 주소만 뽑아 우리 <img> 태그로
+// 다시 그리는 쪽을 택했다.
+function extractImgUrls(htmlStr) {
+  if (!htmlStr) return [];
+  const decoded = decodeEntities(htmlStr);
+  const urls = [];
+  const re = /(?:data-src|src)="([^"]+)"/g;
+  let m;
+  while ((m = re.exec(decoded))) {
+    if (!/\.gif(\?|$)/i.test(m[1])) urls.push(m[1]);
+  }
+  return [...new Set(urls)];
+}
+
+// details-info.json 의 details 하나 → Product Info / How to Use 탭에서 쓰는 형태.
+// 서버가 클릭한 상품의 prdtNo 로 조회해 돌려준 값이라 이 상품 전용 데이터다.
+// DB 에 상세 텍스트가 없는 상품이면 서버가 null 을 주고, 그러면 이 함수도 null.
+function mapDetailsInfo(raw) {
+  if (!raw) return null;
+  const lines = (str) => decodeEntities(str || "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+  return {
+    images: extractImgUrls(raw.optimDtlDesc || raw.dtlDesc || ""),
+    whyWeLoveIt: lines(raw.whyWeLoveItText),
+    ingredients: lines(raw.ftrdIngrdText),
+    howToUse: lines(raw.howToUseText),
+  };
+}
+
+// review-list.json 의 reviewList[] 항목 하나 → 리뷰 카드용 정규화.
+function mapReview(raw) {
+  const ymd = raw.reviewRgstYmd || "";
+  const date = ymd.length === 8 ? `${ymd.slice(0, 4)}.${ymd.slice(4, 6)}.${ymd.slice(6, 8)}` : ymd;
+  const photos = (raw.reviewMediaList || []).map((m) => img(m.imagePath)).filter(Boolean);
+  return {
+    id: raw.prdtReviewNo,
+    score: raw.previewScore || 0,
+    text: decodeEntities(raw.conText || ""),
+    author: raw.loginId || "",
+    option: raw.snglOptnName || "",
+    date,
+    good: raw.goodCnt || 0,
+    photos,
+  };
+}
+
+// relation-list.json 의 ctgrRelation(카테고리 연관) + brandRelation(브랜드 연관)을
+// 합쳐서 하나의 "관련 상품" 목록으로 만든다. 필드셋이 order-best.json 과 동일해서
+// mapProduct 를 그대로 재사용한다.
+function mapRelationList(raw) {
+  if (!raw) return [];
+  const combined = [...(raw.ctgrRelation || []), ...(raw.brandRelation || [])];
+  const seen = new Set();
+  const out = [];
+  combined.forEach((p) => {
+    const mp = mapProduct(p);
+    if (mp && !seen.has(mp.id)) { seen.add(mp.id); out.push(mp); }
+  });
+  return out;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 홈 코너 파서 — corner.setContsMap 의 각 set 을 배너/상품/제목 중 하나로 정규화.
+// ══════════════════════════════════════════════════════════════════
+function parseBannerSet(setObj) {
+  const imageArr = setObj.IMAGE;
+  const textObj = setObj.TEXT;
+  let image = null, url = null, alt = "";
+  if (Array.isArray(imageArr) && imageArr[0]) {
+    const it = imageArr[0];
+    image = img(it.contsMbleImagePath || it.contsPcImagePath);
+    url = it.contsUrlUseYn === "Y" ? it.contsUrl : null;
+    alt = it.contsMbleAltrnText || it.contsPcAltrnText || "";
+  }
+  const captions = [];
+  if (textObj) {
+    // TEXT 는 두 가지 형태로 온다:
+    //  1) 배열 그 자체: [{contsCont, sortSeq}, ...]                (C100009, C100011, C100013 등)
+    //  2) 그룹 객체: {"1": [{...}], "2": [{...}]}                   (C100022 등)
+    // 어느 쪽이든 "TEXT 항목들의 배열"로 정규화한 뒤 sortSeq 순으로 합친다.
+    const groups = Array.isArray(textObj) ? [textObj] : Object.values(textObj);
+    groups.forEach((arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.slice().sort((a, b) => (a.sortSeq || 0) - (b.sortSeq || 0)).forEach((it) => {
+        decodeLines(it.contsCont || it.contsMbleCont || "").forEach((line) => captions.push(line));
+      });
+    });
+  }
+  if (!image && !captions.length) return null;
+  return { image, url, alt, captions };
+}
+
+function parseCorner(corner) {
+  const scm = corner.setContsMap;
+  if (!scm) return null;
+  const setKeys = Object.keys(scm).sort((a, b) => {
+    const na = parseInt(a.split("_")[1], 10), nb = parseInt(b.split("_")[1], 10);
+    return na - nb;
+  });
+
+  const sectionTitle = [];
+  const products = [];
+  const banners = [];
+
+  setKeys.forEach((k) => {
+    const setObj = scm[k];
+    // 한 세트 안에 SET_NAME+PRODUCT 가 같이 오거나(C100067) PRODUCT+IMAGE/TEXT 가
+    // 같이 오는 경우(C100011)가 실제 데이터에 있다. early return 으로 하나만
+    // 처리하면 나머지가 조용히 누락된다 — 반드시 독립적으로 다 체크해야 한다.
+    if (setObj.SET_NAME) {
+      const it = Array.isArray(setObj.SET_NAME) ? setObj.SET_NAME[0] : null;
+      if (it?.contsCont) sectionTitle.push(decodeEntities(it.contsCont));
+    }
+    if (setObj.PRODUCT) {
+      (Array.isArray(setObj.PRODUCT) ? setObj.PRODUCT : [setObj.PRODUCT]).forEach((p) => {
+        const mp = mapProduct(p);
+        if (mp) products.push(mp);
+      });
+    }
+    if (setObj.IMAGE || setObj.TEXT) {
+      const b = parseBannerSet(setObj);
+      if (b) banners.push(b);
+    }
+  });
+
+  return {
+    id: corner.dispPageConrNo,
+    template: corner.dispConrTmplNo,
+    name: corner.dispConrName || sectionTitle[0] || null,
+    products, banners,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 공용 UI 조각
+// ══════════════════════════════════════════════════════════════════
+function PromoBar({ onClose }) {
+  return (
+    <div style={{ background: "#c7f0e8", padding: "7px 14px", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", fontSize: 12, fontWeight: 700, color: INK }}>
+      Enjoy Double Perks On Your First Order
+      <button onClick={onClose} style={{ position: "absolute", right: 10, background: "none", border: "none", cursor: "pointer", padding: 2 }}>
+        <X size={14} color={INK} />
+      </button>
+    </div>
+  );
+}
+
+function HeaderNav({ onMenu, title = "K-TaxBack", onBack, cartCount = 0, onCart, lang, onOpenLangSheet }) {
+  // 햄버거를 오른쪽 끝(검색/장바구니 옆)으로 옮겼다 — 왼쪽 자리는 K-TaxBack 을
+  // nanoom 4번째 메뉴로 끼워 넣었을 때 그쪽이 왼쪽 위에 "지도로" 오버레이 버튼을
+  // 띄우는데, 왼쪽에 햄버거가 같이 있으면 그 버튼에 가려 안 보였다.
+  return (
+    <div style={{ display: "flex", alignItems: "center", padding: "11px 14px", borderBottom: `1px solid ${LINE}` }}>
+      {onBack ? (
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><ChevronLeft size={22} color={INK} /></button>
+      ) : (
+        <div style={{ width: 22 }} />
+      )}
+      <h1 style={{ flex: 1, textAlign: "center", fontSize: 15, fontWeight: 900, letterSpacing: title === "K-TaxBack" ? 1.5 : 0, color: INK, margin: 0 }}>{title}</h1>
+      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+        <button onClick={onMenu} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}><Menu size={20} color={INK} /></button>
+        <Search size={20} color={INK} style={{ cursor: "pointer" }} />
+        <button onClick={onCart} style={{ position: "relative", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+          <ShoppingBag size={20} color={INK} />
+          {cartCount > 0 && (
+            <span style={{ position: "absolute", top: -6, right: -7, background: RED, color: "#fff", fontSize: 9, fontWeight: 800, minWidth: 15, height: 15, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>{cartCount}</span>
+          )}
+        </button>
+        <button onClick={onOpenLangSheet} style={{ display: "flex", alignItems: "center", gap: 3,
+          background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 11.5, fontWeight: 700,
+          color: INK, fontFamily: "inherit", whiteSpace: "nowrap" }}>
+          <Globe size={17} color={INK} />{langNativeLabel(lang)}
+        </button>
+      </div>
+
+    </div>
+  );
+}
+
+const NAV_TABS = [
+  ["In-Store", "home"], ["Best", "bestsellers"], ["New", "newarrivals"],
+  ["Sale", "flashdeal"], ["K-Pop", "kpop"], ["Events", null], ["Membership", null],
+];
+function CategoryTabsBar({ active, onNavigate, lang = "en" }) {
+  return (
+    <div className="oy-scroll" style={{ display: "flex", gap: 18, padding: "10px 14px", overflowX: "auto", borderBottom: `1px solid ${LINE}` }}>
+      {NAV_TABS.map(([label, page]) => (
+        <button key={label} onClick={() => page && onNavigate(page)}
+          style={{ background: "none", border: "none", cursor: page ? "pointer" : "default", padding: 0, whiteSpace: "nowrap",
+            fontSize: 12.5, fontWeight: active === page ? 800 : 500, color: active === page ? INK : SUB }}>
+          {t(label, lang)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function StarRow({ rating, size = 11 }) {
+  if (rating == null) return null;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+      <Star size={size} color={GOLD} fill={GOLD} />
+      <span style={{ fontSize: size + 1, color: SUB, fontWeight: 600 }}>{rating.toFixed ? rating.toFixed(1) : rating}</span>
+    </span>
+  );
+}
+
+function SectionHeader({ title, right }) {
+  if (!title) return null;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 14px", marginBottom: 10 }}>
+      <h3 style={{ fontSize: 15, fontWeight: 800, color: INK, margin: 0 }}>{title}</h3>
+      {right}
+    </div>
+  );
+}
+
+function ProductCard({ item, liked, onLike, onOpen }) {
+  return (
+    <div onClick={() => onOpen && onOpen(item)} style={{ cursor: onOpen ? "pointer" : "default" }}>
+      <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", background: "#f4f4f4", aspectRatio: "1" }}>
+        {item.image && <img src={item.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.currentTarget.style.opacity = 0.15; }} />}
+        {item.badge && (
+          <span style={{ position: "absolute", top: 6, left: 6, background: item.badge === "BEST" ? RED : INK, color: "#fff", fontSize: 9.5, fontWeight: 800, padding: "2px 6px", borderRadius: 3 }}>{item.badge}</span>
+        )}
+        {item.discount ? (
+          <span style={{ position: "absolute", bottom: 6, left: 6, background: "rgba(0,0,0,.65)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "2px 6px", borderRadius: 3 }}>{item.discount}% OFF</span>
+        ) : null}
+        {item.soldOut && (
+          <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: INK, border: `1px solid ${INK}`, borderRadius: 6, padding: "3px 10px" }}>SOLD OUT</span>
+          </div>
+        )}
+        <button onClick={(e) => { e.stopPropagation(); onLike(item); }} style={{ position: "absolute", top: 6, right: 6, background: "rgba(255,255,255,.85)", border: "none", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <Heart size={13} color={liked ? RED : "#999"} fill={liked ? RED : "none"} />
+        </button>
+      </div>
+      <p style={{ fontSize: 11.5, fontWeight: 700, color: INK, margin: "7px 0 0" }}>{item.brand}</p>
+      <p style={{ fontSize: 11, color: "#555", margin: "2px 0 4px", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 5, flexWrap: "wrap" }}>
+        {item.discount ? <span style={{ fontSize: 12.5, fontWeight: 800, color: RED }}>{item.discount}%</span> : null}
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: INK }}>
+          {usd(item.priceSale)}{item.priceSaleMax ? ` - ${usd(item.priceSaleMax)}` : ""}
+        </span>
+      </div>
+      {item.priceRegular !== item.priceSale && (
+        <span style={{ fontSize: 10, color: "#bbb", textDecoration: "line-through" }}>
+          {usd(item.priceRegular)}{item.priceSaleMax ? ` - ${usd(item.priceRegular)}` : ""}
+        </span>
+      )}
+      <div style={{ marginTop: 3 }}><StarRow rating={item.rating} size={10} /></div>
+      {item.giftWithPurchase && (
+        <div style={{ marginTop: 4, display: "inline-block", fontSize: 9.5, fontWeight: 700, color: GREEN, background: "#eef7e2", borderRadius: 5, padding: "2px 6px" }}>Gift with Purchase</div>
+      )}
+    </div>
+  );
+}
+
+function ProductGrid({ items, liked, onLike, onOpen, cols = 2 }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 12, padding: "0 14px" }}>
+      {items.map((p) => <ProductCard key={p.id} item={p} liked={!!liked[p.id]} onLike={onLike} onOpen={onOpen} />)}
+    </div>
+  );
+}
+
+function BannerSlide({ banner }) {
+  const content = (
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      {banner.image ? (
+        <img src={banner.image} alt={banner.alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.currentTarget.style.display = "none"; }} />
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#eee,#f7f7f7)" }} />
+      )}
+      {banner.captions.length > 0 && (
+        <div style={{ position: "absolute", left: 0, bottom: 0, padding: "16px 18px", background: "linear-gradient(to top, rgba(0,0,0,.45), transparent)", width: "100%" }}>
+          {banner.captions.map((c, i) => (
+            <p key={i} style={{ margin: i === 0 ? 0 : "3px 0 0", fontSize: i === 0 ? 17 : 12, fontWeight: i === 0 ? 800 : 600, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,.4)" }}>{c}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+  return banner.url ? <a href={banner.url} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", height: "100%" }}>{content}</a> : content;
+}
+
+// 홈 히어로 캐러셀 — C100022 코너의 배너들(실제 이미지+캡션)을 자동 순환.
+function HeroCarousel({ banners }) {
+  const [idx, setIdx] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  useEffect(() => {
+    if (!playing || banners.length < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % banners.length), 3500);
+    return () => clearInterval(t);
+  }, [playing, banners.length]);
+  if (!banners.length) return null;
+  return (
+    <div style={{ position: "relative", height: 260, overflow: "hidden", background: "#f4f4f4" }}>
+      <AnimatePresence mode="wait">
+        <motion.div key={idx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} style={{ position: "absolute", inset: 0 }}>
+          <BannerSlide banner={banners[idx]} />
+        </motion.div>
+      </AnimatePresence>
+      {banners.length > 1 && (
+        <div style={{ position: "absolute", right: 12, bottom: 12, display: "flex", alignItems: "center", gap: 6, background: "rgba(0,0,0,.35)", borderRadius: 999, padding: "3px 8px" }}>
+          <span style={{ fontSize: 10.5, color: "#fff", fontWeight: 700 }}>{idx + 1}/{banners.length}</span>
+          <button onClick={() => setPlaying((p) => !p)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex" }}>
+            {playing ? <Pause size={11} color="#fff" /> : <Play size={11} color="#fff" />}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BannerGrid({ banners }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "0 14px 20px" }}>
+      {banners.map((b, i) => (
+        <div key={i} style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "1.5" }}><BannerSlide banner={b} /></div>
+      ))}
+    </div>
+  );
+}
+
+function LoadingBlock({ label }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", color: SUB, gap: 10 }}>
+      <Loader2 size={26} className="oy-spin" style={{ animation: "oy-spin 1s linear infinite" }} />
+      <style>{`@keyframes oy-spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+      <p style={{ fontSize: 12.5 }}>{label || "불러오는 중..."}</p>
+    </div>
+  );
+}
+
+function ErrorBlock({ label }) {
+  return (
+    <div style={{ textAlign: "center", padding: "60px 20px", color: SUB }}>
+      <p style={{ fontSize: 12.5 }}>{label}</p>
+    </div>
+  );
+}
+
+function FooterSection() {
+  return (
+    <div style={{ marginTop: 24, paddingBottom: 20 }}>
+      <div style={{ padding: "16px 14px", borderTop: `8px solid #f5f5f5` }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: INK, margin: "0 0 10px" }}>Customer Service</p>
+        <div style={{ display: "flex", gap: 8 }}>
+          {["Contact Us", "Track Orders", "FAQs"].map((t) => (
+            <span key={t} style={{ flex: 1, textAlign: "center", border: `1px solid ${LINE}`, borderRadius: 8, padding: "9px 0", fontSize: 11.5, fontWeight: 700, color: INK }}>{t}</span>
+          ))}
+        </div>
+      </div>
+      <div style={{ margin: "14px", background: "#fdf6b2", borderRadius: 12, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontSize: 12, color: "#7a6a00", margin: 0, fontWeight: 600 }}>Enjoy easy and convenient shopping experience</p>
+          <p style={{ fontSize: 14, fontWeight: 900, color: INK, margin: "4px 0 0" }}>In K-TaxBack Mobile App</p>
+        </div>
+        <Download size={26} color={INK} />
+      </div>
+      <div style={{ padding: "0 14px", fontSize: 11, color: SUB, lineHeight: 2 }}>
+        <p style={{ margin: 0 }}>About K-TaxBack &nbsp; My Account &nbsp; Terms &amp; Policies &nbsp; Help</p>
+        <p style={{ margin: "6px 0 0", fontSize: 10.5 }}>K-TaxBack</p>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// 하단 오토하이드 탭바 — 스크롤 컨테이너 "밖"(뷰포트 고정 셸의 형제)에서만 써야
+// 화면 진짜 하단에 고정된다. 컨테이너 안에 넣으면 콘텐츠와 같이 흘러가버린다.
+// ══════════════════════════════════════════════════════════════════
+function useAutoHideOnScroll(scrollElRef) {
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+  useEffect(() => {
+    const el = scrollElRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const y = el.scrollTop;
+      const diff = y - lastY.current;
+      if (y <= 4) setHidden(false);
+      else if (diff > 4) setHidden(true);
+      else if (diff < -4) setHidden(false);
+      lastY.current = y;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [scrollElRef]);
+  return hidden;
+}
+
+function BottomTabBar({ hidden, page, onNavigate }) {
+  const tabs = [["home", "Home", Home], ["categories", "Categories", Grid3x3], ["brands", "Brands", Tag], ["wishlist", "Wishlist", Heart], ["account", "Account", User]];
+  return (
+    <motion.div animate={{ y: hidden ? "100%" : "0%" }} transition={{ duration: 0.25, ease: "easeInOut" }}
+      style={{ position: "absolute", left: 0, right: 0, bottom: 0, zIndex: 40, background: "#fff", borderTop: `1px solid ${LINE}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderBottom: `1px solid ${LINE}`, fontSize: 11.5, fontWeight: 700, color: INK }}>
+        <Truck size={14} color={INK} />SAVE US$20 with K-TaxBack APP !
+      </div>
+      <div style={{ display: "flex" }}>
+        {tabs.map(([key, label, Icon]) => {
+          const on = page === key;
+          return (
+            <button key={key} onClick={() => onNavigate(key)}
+              style={{ flex: 1, background: "none", border: "none", cursor: "pointer", padding: "8px 0 10px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <Icon size={19} color={on ? INK : "#aaa"} strokeWidth={on ? 2.3 : 1.8} />
+              <span style={{ fontSize: 9.5, fontWeight: on ? 800 : 500, color: on ? INK : "#aaa" }}>{label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
+
+// 카테고리 레일 14개 — best-seller-data.json 의 ctgrList 에서 실제 이름/번호를 가져온다.
+// (아이콘은 대응 데이터가 없어 의미상 가장 가까운 lucide 아이콘으로 수동 매핑했다.)
+// 실제 사이드메뉴 HTML(layer-body)에서 그대로 뽑은 데이터.
+// 처음 6개(Skincare~Suncare)만 <button name="cateViewBtn">라 서브메뉴 드릴다운이 있고,
+// 나머지 8개(K-Pop~Special Value Sets)는 <a href="/display/category?ctgrNo=...">라
+// 서브메뉴 없이 바로 그 카테고리 페이지로 링크한다 — 원본 사이트와 동일하게 구분한다.
+const CATEGORY_RAIL_RAW = [
+  { id: "1000000008", label: "Skincare", iconImg: "brandImg/1287/90019c1a-4b95-4e30-91ab-2bac6dab4a00.png", hasSubmenu: true },
+  { id: "1000000031", label: "Makeup", iconImg: "brandImg/1498/fcf7b0a2-37e5-4ea7-a877-d2509ed70b78.png", hasSubmenu: true },
+  { id: "1000000052", label: "Bath & Body", iconImg: "brandImg/1373/efbbc1cf-fd84-4983-aa9a-fae8a9685d89.png", hasSubmenu: true },
+  { id: "1000000070", label: "Hair", iconImg: "brandImg/1507/ed3f523f-e751-40c1-9bfa-820f7384d037.png", hasSubmenu: true },
+  { id: "1000000003", label: "Face Masks", iconImg: "brandImg/1453/1368eb26-77e1-49a3-a08d-2036072aa197.png", hasSubmenu: true },
+  { id: "1000000011", label: "Suncare", iconImg: "brandImg/1982/a5bc6042-decc-4e8c-ba8f-f15573c6dae5.png", hasSubmenu: true },
+  { id: "1000000162", label: "K-Pop", iconImg: "brandImg/1889/7930e817-e3d2-4068-9744-9d335db20174.png", hasSubmenu: false },
+  { id: "1000000087", label: "Makeup Brush & Tools", iconImg: "brandImg/1536/248b264b-6058-4e17-b7d8-615f8a641100.png", hasSubmenu: false },
+  { id: "1000000083", label: "Accessories", iconImg: "brandImg/1301/53cd8c06-e921-4164-8ddc-94036311c5e7.png", hasSubmenu: false },
+  { id: "1000000095", label: "Wellness", iconImg: "brandImg/1918/3f276999-afc4-4116-b84e-0e73260ba4e7.png", hasSubmenu: false },
+  { id: "1000000119", label: "Men`s Care", iconImg: "brandImg/1403/4426c9f4-a7a5-409f-8aa1-9adaf04809a6.png", hasSubmenu: false },
+  { id: "1000000134", label: "Supplements", iconImg: "brandImg/1906/99b23e28-c875-4891-9661-968c74dbc458.png", hasSubmenu: false },
+  { id: "1000000137", label: "Food & Drink", iconImg: "brandImg/1391/98bb0632-02a6-4681-88cc-ec0b2434a7dd.png", hasSubmenu: false },
+  { id: "1000000151", label: "Special Value Sets", iconImg: "brandImg/1054/95234526-f11c-4615-84fe-5ee85bea406d.png", hasSubmenu: false },
+];
+
+// 드릴다운 6개의 실제 서브메뉴 콘텐츠. product types(썸네일행) + 속성 그룹(칩) + 프로모배너.
+const CATEGORY_SUBMENU = {
+  "1000000008": { // Skincare
+    heading: "Skincare Product",
+    productTypes: [
+      { label: "Moisturizers", ctgrNo: "1000000009", iconImg: "brandImg/1988/d784c176-8933-40c1-b5b9-89693c25175b.png" },
+      { label: "Cleansers", ctgrNo: "1000000010", iconImg: "brandImg/1500/1ad9e5d9-18d2-433a-89d8-56d84d77b7ce.png" },
+      { label: "Gift Set", ctgrNo: "1000000012", iconImg: "brandImg/1709/37d7e8ea-f039-42d4-94f1-dcc722fd7200.png" },
+      { label: "Acne & Blemish Treatments", ctgrNo: "1000000261", iconImg: "brandImg/1002/00f35e74-53e9-49f3-8cfe-3d53452e4ac9.png" },
+    ],
+    groups: [
+      { title: "Skin Type", options: [
+        { label: "Combination&Normal", attrValNo: "AT000037" },
+        { label: "Dry", attrValNo: "AT000038" },
+        { label: "Oily", attrValNo: "AT000039" },
+        { label: "Sensitive", attrValNo: "AT000040" },
+      ] },
+      { title: "Skin Concern", options: [
+        { label: "Acne", attrValNo: "AT000014" },
+        { label: "Brightening", attrValNo: "AT000016" },
+        { label: "Dullness", attrValNo: "AT000019" },
+        { label: "Moisturising", attrValNo: "AT000023" },
+        { label: "Soothing", attrValNo: "AT000028" },
+        { label: "Fine Dust Removal", attrValNo: "AT000034" },
+        { label: "Visible Pores", attrValNo: "AT000032" },
+        { label: "Well-aging", attrValNo: "AT000033" },
+      ] },
+      { title: "Featured Ingredients", options: [
+        { label: "Hyaluronic acid", attrValNo: "AT001122" },
+        { label: "Panthenol", attrValNo: "AT000994" },
+        { label: "Centella Asiatica Extract (Cica Care)", attrValNo: "AT000468" },
+        { label: "Ceramide", attrValNo: "AT000592" },
+        { label: "Niacinamide", attrValNo: "AT000217" },
+        { label: "Collagen", attrValNo: "AT000936" },
+      ] },
+    ],
+    promos: [{ image: "display/1460/66f6419e-d114-4063-a6c4-7f1a9a5c30bd.jpg", caption: "Best Soothing Pick\nfor Hydrated Skin" }],
+  },
+  "1000000031": { // Makeup
+    heading: "Makeup Product",
+    productTypes: [
+      { label: "Face", ctgrNo: "1000000032", iconImg: "brandImg/1329/d98d7ca4-8367-47b8-a126-dc354587f81f.png" },
+      { label: "Eye", ctgrNo: "1000000040", iconImg: "brandImg/1645/fc45432d-8942-4cc0-9ddc-925e106ec760.png" },
+      { label: "Lip", ctgrNo: "1000000045", iconImg: "brandImg/1431/9fcc9150-6c66-46c3-8e92-2b79844c3c67.png" },
+      { label: "Nail", ctgrNo: "1000000049", iconImg: "brandImg/1984/ba2f1e48-476d-4019-90ed-7e367d6153f1.png" },
+    ],
+    groups: [
+      { title: "Face", options: [
+        { label: "BB & CC Cream", ctgrNo: "1000000033" },
+        { label: "Foundation", ctgrNo: "1000000034" },
+        { label: "Makeup Cushion", ctgrNo: "1000000179" },
+        { label: "Face Primer", ctgrNo: "1000000035" },
+        { label: "Powder & Pact", ctgrNo: "1000000036" },
+        { label: "Concealer", ctgrNo: "1000000037" },
+        { label: "Blush", ctgrNo: "1000000038" },
+        { label: "Contour", ctgrNo: "1000000039" },
+      ] },
+      { title: "Eye", options: [
+        { label: "Eyebrow", ctgrNo: "1000000041" },
+        { label: "Eyeshadow", ctgrNo: "1000000042" },
+        { label: "Eyeliner", ctgrNo: "1000000043" },
+        { label: "Eyelashes", ctgrNo: "1000000044" },
+      ] },
+      { title: "Lip", options: [
+        { label: "Lip Stick", ctgrNo: "1000000046" },
+        { label: "Lip Gloss & Lip Tint", ctgrNo: "1000000047" },
+        { label: "Lip Balm & Treatment", ctgrNo: "1000000048" },
+      ] },
+    ],
+    promos: [{ image: "display/1656/f28e4349-0040-4377-a386-0bd000097085.jpg", caption: "Fresh Skin, Summer Ready" }],
+  },
+  "1000000052": { // Bath & Body
+    heading: "Body Product",
+    productTypes: [
+      { label: "Bath & Shower", ctgrNo: "1000000053", iconImg: "brandImg/1067/f52d7b99-1586-4e11-8858-0ba6a646f600.png" },
+      { label: "Body Moisturizers", ctgrNo: "1000000058", iconImg: "brandImg/1305/d76a2cb6-e74e-4153-b095-a194a814977b.png" },
+      { label: "Hands Care", ctgrNo: "1000000063", iconImg: "brandImg/1801/8b8e2c92-8adb-4dfc-90af-471b015913cf.png" },
+      { label: "Fragrance", ctgrNo: "1000000205", iconImg: "brandImg/1652/e3196acd-ed94-4e64-921c-fa5ed3224087.jpg" },
+    ],
+    groups: [
+      { title: "Skin Type", options: [
+        { label: "Combination&Normal", attrValNo: "AT000037" },
+        { label: "Dry", attrValNo: "AT000038" },
+        { label: "Oily", attrValNo: "AT000039" },
+        { label: "Sensitive", attrValNo: "AT000040" },
+      ] },
+      { title: "Skin Concern", options: [
+        { label: "Well-aging", attrValNo: "AT000033" },
+        { label: "Hand Care", attrValNo: "AT000022" },
+        { label: "Sculpting", attrValNo: "AT000026" },
+        { label: "Moisturising", attrValNo: "AT000023" },
+        { label: "Cellulite", attrValNo: "AT000017" },
+      ] },
+      { title: "Scent", options: [
+        { label: "Citrus", attrValNo: "AT000048" },
+        { label: "Floral", attrValNo: "AT000049" },
+        { label: "Fresh", attrValNo: "AT000050" },
+        { label: "Fruity", attrValNo: "AT000051" },
+        { label: "Woody", attrValNo: "AT000056" },
+        { label: "Green", attrValNo: "AT000052" },
+        { label: "Musk", attrValNo: "AT000053" },
+        { label: "Sweet", attrValNo: "AT000055" },
+        { label: "Fragrance-free", attrValNo: "AT000058" },
+      ] },
+    ],
+    promos: [{ image: "display/1885/43f744fe-21ab-461b-bcb2-39e9651c1d9c.jpg", caption: "Survival Beauty\nUV & Trouble Body Care" }],
+  },
