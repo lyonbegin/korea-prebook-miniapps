@@ -55,6 +55,13 @@ def mount_pilot(app,engine):
         c.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_pilot_retries
           (version TEXT PRIMARY KEY, prior_task_count INTEGER NOT NULL, created_at TEXT NOT NULL)"""))
 
+    with engine.begin() as c:
+        c.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
+            SET state='excluded',error='vi_vn removed by project owner',
+                updated_at=:at
+            WHERE lang_code='vi_vn' AND state IN ('queued','running')"""),
+            {"at":timestamp()})
+
     def auth(token):
         expected=os.getenv("ADMIN_API_TOKEN","")
         if not token or not expected or not secrets.compare_digest(token,"Bearer "+expected):
@@ -261,7 +268,7 @@ def mount_pilot(app,engine):
             states=[dict(row) for row in conn.execute(text("""SELECT category_id,
                 category_name,lang_code,state,requested,received,selected,written,
                 verified,untranslated,language_evidence,error FROM korea_prebook_kt_pilot_tasks
-                AND lang_code!='vi_vn' ORDER BY category_id,lang_code""")).mappings()]
+                WHERE lang_code!='vi_vn' ORDER BY category_id,lang_code""")).mappings()]
             stored={}
             for name in ("products","brands","categories","category_filters","product_images",
                          "product_options","product_details","product_translations",
@@ -280,7 +287,7 @@ def mount_pilot(app,engine):
         auth(authorization)
         with engine.connect() as conn:
             tasks=[dict(r) for r in conn.execute(text(
-              "SELECT * FROM korea_prebook_kt_pilot_tasks AND lang_code!='vi_vn' ORDER BY category_id,lang_code")).mappings()]
+              "SELECT * FROM korea_prebook_kt_pilot_tasks WHERE lang_code!='vi_vn' ORDER BY category_id,lang_code")).mappings()]
             counts={}
             for name in ("products","brands","categories","category_filters","product_images",
                          "product_options","product_details","product_translations",
