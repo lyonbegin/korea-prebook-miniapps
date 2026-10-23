@@ -4,7 +4,7 @@ Railway uses existing admin token by reference. Previous full crawler disabled
 for this pilot. Every task result is persisted to the pilot DB report.
 """
 from __future__ import annotations
-import asyncio,json,logging,os,signal,urllib.error,urllib.request
+import asyncio,json,logging,os,signal,urllib.error,urllib.request,re
 from urllib.parse import urlencode
 from playwright.async_api import async_playwright
 
@@ -36,58 +36,72 @@ def req(path,method="GET",data=None):
 async def api(path,method="GET",data=None):
     return await asyncio.to_thread(req,path,method,data)
 
-async def language_switch(page,lang):
-    """Click the VISIBLE Shopping Preferences UI, not hidden duplicate text."""
-    if lang=="en":return "English default"
-    code=DATA_CODE[lang]
-    await page.goto("https://global.oliveyoung.com/display/category?ctgrNo=1000000008",
-                    wait_until="domcontentloaded",timeout=45000)
-    await page.wait_for_timeout(900)
-    current_title=await page.title()
-    if "Just a moment" in current_title or "しばらくお待ち" in current_title:
-        raise RuntimeError("Shopping Preferences unavailable: site verification page")
-    evidence=["page-title="+str(current_title)[:36]]
-    try:
-        # Playwright :visible avoids the invisible templates and mobile header,
-        # which previously made .first.click() time out on the hidden element.
-        triggers=page.locator(':text("Shopping Preferences"):visible')
-        if not await triggers.count():
-            triggers=page.locator('text=/Shopping Preferences/i').locator(':visible')
-        if await triggers.count():
-            await triggers.last.click(timeout=5500)
-            evidence.append("preferences-open")
-        else:
-            raise RuntimeError("Visible Shopping Preferences control absent")
-        english=page.locator(':text-is("English"):visible')
-        if await english.count():
-            await english.last.click(timeout=4000)
-            evidence.append("language-list-open")
-        options=page.locator(f'[data-code="{code}"]:visible')
-        if not await options.count():
-            # Some language popup versions open via custom selectbox.
-            selectbox=page.locator(".selectbox:visible").filter(has_text="English")
-            if await selectbox.count():
-                await selectbox.last.click(timeout=4000)
-                evidence.append("selectbox-open")
-            options=page.locator(f'[data-code="{code}"]:visible')
-        if not await options.count():
-            raise RuntimeError("Visible language item data-code="+code+" absent")
-        await options.last.click(timeout=4500)
-        evidence.append("selected-code="+code)
-        save=page.locator(':text-is("Save"):visible')
-        if await save.count():
-            await save.last.click(timeout=4000)
-            evidence.append("save-clicked")
-    except Exception as exc:
-        evidence.append("SELECTOR_FAILED:"+type(exc).__name__+":"+str(exc)[:120])
-    return "|".join(evidence)
+PREFERENCES = {
+    "jp": {"country":"JAPAN","language":("日本語","Japanese")},
+    "zh_cn": {"country":"CHINA","language":("中文（简体）","Chinese (Simplified)")},
+    "zh_tw": {"country":"TAIWAN","language":("中文（繁體）","Chinese (Traditional)")},
+}
 
-async def read_category(browser,task):
+async def click_visible(page, labels, timeout=3500):
+    """Click exact visible text (the original site duplicates hidden modal markup)."""
+    for label in labels:
+        locator=page.get_by_text(label,exact=True)
+        for i in reversed(range(min(await locator.count(),12))):
+            node=locator.nth(i)
+            try:
+                if await node.is_visible():
+                    await node.click(timeout=timeout)
+                    return label
+            except Exception:pass
+    raise RuntimeError("Visible selector absent: "+"/".join(labels))
+
+async def set_preferences(context, lang):
+    """Fish-verified click sequence, persistent context shared across all categories."""
+    if lang=="en":return "English original"
+    config=PREFERENCES[lang]
+    setup=await context.new_page()
+    try:
+        await setup.goto("https://global.oliveyoung.com/",
+                         wait_until="domcontentloaded",timeout=45000)
+        await setup.wait_for_timeout(1000)
+        title=await setup.title()
+        if any(x in title for x in ("Just a moment","Access restricted","しばらくお待ち")):
+            raise RuntimeError("Global site access restriction: "+title)
+        # Confirmed by real TinyFish interaction on 2026-10-23:
+        # Shopping Preferences > Shipping Location > country >
+        # Language > locale > Save > reopen to verify persistence.
+        trigger=setup.get_by_role("button",name=re.compile("Shopping Preferences",re.I))
+        if await trigger.count():
+            visible=[trigger.nth(i) for i in range(min(await trigger.count(),10))
+                     if await trigger.nth(i).is_visible()]
+            if visible:await visible[-1].click(timeout=5000)
+            else:await click_visible(setup,("Shopping Preferences",))
+        else:
+            await click_visible(setup,("Shopping Preferences",))
+        # Country dropdown sometimes initially renders 'Global (Select Location)'.
+        await click_visible(setup,("Global (Select Location)","Shipping Location"))
+        await click_visible(setup,(config["country"],))
+        # Language is a distinct dropdown; exact English is the initial value.
+        await click_visible(setup,("English","Language"))
+        selected=await click_visible(setup,config["language"])
+        await click_visible(setup,("Save",))
+        await setup.wait_for_timeout(400)
+        # Re-open and check both values persist before collecting any products.
+        if await trigger.count():
+            candidate=trigger.last
+            if await candidate.is_visible():await candidate.click(timeout=5000)
+            else:await click_visible(setup,("Shopping Preferences",))
+        else:await click_visible(setup,("Shopping Preferences",))
+        body=await setup.locator("body").inner_text(timeout=4000)
+        if config["country"] not in body or not any(x in body for x in config["language"]):
+            raise RuntimeError("Preferences were not confirmed after Save")
+        return "confirmed-country="+config["country"]+"|selected-code="+DATA_CODE[lang]+"|saved-language="+selected
+    finally:
+        await setup.close()
+
+async def read_category(context,task,evidence):
     lang=task["lang_code"];cat=task["category_id"]
     url="https://global.oliveyoung.com/display/category?"+urlencode({"ctgrNo":cat})
-    kwargs={"locale":LANG_LOCALE[lang],
-            "extra_http_headers":{"Accept-Language":LANG_LOCALE[lang].replace("-","-")+",en;q=0.7"}}
-    context=await browser.new_context(**kwargs)
     page=await context.new_page()
     results=asyncio.Queue()
     tasks=[]
@@ -101,9 +115,7 @@ async def read_category(browser,task):
         except Exception as exc:
             failures.append(type(exc).__name__)
     page.on("response",lambda r:tasks.append(asyncio.create_task(on_response(r))))
-    evidence=""
     try:
-        evidence=await language_switch(page,lang)
         await page.goto(url,wait_until="domcontentloaded",timeout=45000)
         await page.wait_for_timeout(1500)
         title=await page.title()
@@ -138,7 +150,7 @@ async def read_category(browser,task):
                 "error":f"{type(exc).__name__}: {str(exc)[:540]}"}
     finally:
         if tasks:await asyncio.gather(*tasks,return_exceptions=True)
-        await page.close();await context.close()
+        await page.close()
 
 async def main():
     if not KEY:raise SystemExit("ADMIN_API_TOKEN required")
@@ -155,6 +167,7 @@ async def main():
     except Exception as exc:
         LOG.warning("Language selector retry planning unavailable: %s",str(exc)[:300])
     restricted=0
+    contexts={}; locale_evidence={}
     async with async_playwright() as p:
         browser=await p.chromium.launch(headless=True,args=["--disable-dev-shm-usage"])
         try:
@@ -164,7 +177,30 @@ async def main():
                     LOG.info("Pilot queue empty. Remain idle; no automatic full category crawl.")
                     break
                 LOG.info("FETCH %s %s requested=%s",task["category_id"],task["lang_code"],task["requested"])
-                data=await read_category(browser,task)
+                lang=task["lang_code"]
+                if lang not in LANG_LOCALE:
+                    LOG.warning("Unsupported locale excluded from collector: %s",lang)
+                    continue
+                if lang not in locale_evidence:
+                    if lang not in contexts:
+                        contexts[lang]=await browser.new_context(
+                            locale=LANG_LOCALE[lang],
+                            extra_http_headers={"Accept-Language":LANG_LOCALE[lang]+",en;q=0.7"})
+                    try:
+                        locale_evidence[lang]=await set_preferences(contexts[lang],lang)
+                        LOG.info("FISH_CONFIRMED_PREFERENCES %s %s",lang,locale_evidence[lang])
+                    except Exception as exc:
+                        locale_evidence[lang]="PREFERENCES_FAILED:"+str(exc)[:160]
+                        LOG.warning("Preference setup for %s failed: %s",lang,exc)
+                evidence=locale_evidence[lang]
+                if evidence.startswith("PREFERENCES_FAILED"):
+                    data={"task_id":task["id"],
+                          "url":"https://global.oliveyoung.com/display/category?"+
+                                urlencode({"ctgrNo":task["category_id"]}),
+                          "selected_language":evidence[:240],
+                          "payload":{},"error":evidence[:500]}
+                else:
+                    data=await read_category(contexts[lang],task,evidence)
                 error=data.get("error","")
                 if any(flag in error for flag in (
                         "Access restricted", "Just a moment", "しばらくお待ち",
@@ -197,7 +233,9 @@ async def main():
                     except Exception:LOG.exception("Could not persist source restriction stop")
                     break
                 await asyncio.sleep(0.8)
-        finally:await browser.close()
+        finally:
+            for context in contexts.values():await context.close()
+            await browser.close()
     report=await api("/manager/api/ktaxback/pilot/report")
     summary={}
     for t in report.get("tasks",[]):
