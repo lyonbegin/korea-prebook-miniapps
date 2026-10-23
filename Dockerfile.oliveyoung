@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/playwright/python:v1.64.0-noble
+WORKDIR /app
+RUN pip install --no-cache-dir playwright==1.64.0
+COPY workers/oliveyoung/worker.py /app/worker.py
+ENV PYTHONUNBUFFERED=1
+CMD ["python", "-u", "/app/worker.py"]
