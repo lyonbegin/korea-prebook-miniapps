@@ -269,10 +269,27 @@ def mount_oliveyoung_refresh(app,engine):
             if pending:
                 return {"scheduled":True,
                         "job":create_job(RefreshIn(category_ids=pending,max_pages=scan["page_limit"]),auto=True)}
+            # A page can be temporarily empty or blocked; retry failures
+            # at most three times (with a gap) instead of treating them as
+            # successfully completed source categories.
+            before=(datetime.now(timezone.utc)-timedelta(minutes=3)).isoformat()
+            with engine.connect() as c:
+                failed=c.execute(text("""SELECT t.category_id,
+                    (SELECT COUNT(*) FROM korea_prebook_kt_capture_pages p
+                     WHERE p.category_id=t.category_id AND p.state='failed') AS attempts
+                    FROM korea_prebook_kt_category_targets t
+                    WHERE t.last_state='failed' AND t.last_checked<:before
+                    ORDER BY t.priority"""),{"before":before}).mappings().all()
+            retry_ids=[x["category_id"] for x in failed if x["attempts"]<3][:2]
+            if retry_ids:
+                return {"scheduled":True,
+                        "job":create_job(RefreshIn(category_ids=retry_ids,
+                         max_pages=scan["page_limit"]),auto=True),
+                        "mode":"retry_failed_categories"}
             with engine.begin() as c:
                 c.execute(text("""UPDATE korea_prebook_kt_fullscan SET active=0,completed_at=:t
                                   WHERE id=1"""),{"t":now()})
-            return {"scheduled":False,"reason":"fullscan_finished"}
+            return {"scheduled":False,"reason":"fullscan_finished_with_failures_retained"}
         # If DB is empty, run pilot independently of any legacy SQLite import.
         with engine.connect() as c:
             total=c.execute(text("SELECT COUNT(*) FROM korea_prebook_kt_refresh_jobs")).scalar_one()
