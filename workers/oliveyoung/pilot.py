@@ -166,6 +166,11 @@ async def main():
         LOG.info("VISIBLE_LANGUAGE_SELECTOR_RETRY %s",retry)
     except Exception as exc:
         LOG.warning("Language selector retry planning unavailable: %s",str(exc)[:300])
+    try:
+        smoke=await api("/manager/api/ktaxback/pilot/retry-fish-preferences","POST")
+        LOG.info("FISH_SAVED_COUNTRY_LANGUAGE_SMOKE %s",smoke)
+    except Exception as exc:
+        LOG.warning("Preference smoke-test scheduler unavailable: %s",str(exc)[:250])
     restricted=0
     contexts={}; locale_evidence={}
     async with async_playwright() as p:
