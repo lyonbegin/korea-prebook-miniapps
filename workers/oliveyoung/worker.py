@@ -14,6 +14,7 @@ KEY=os.getenv("ADMIN_API_TOKEN","")
 AUTO=os.getenv("OLIVEYOUNG_AUTO_REFRESH","0")=="1"
 REFRESH_WAIT=max(15,int(os.getenv("POLL_SECONDS","40")))
 DETAIL_LIMIT=max(0,min(50,int(os.getenv("DETAIL_LIMIT","10"))))
+CATEGORY_ITEM_LIMIT=max(1,min(30,int(os.getenv("CATEGORY_ITEM_LIMIT","10"))))
 MAX_CATEGORIES=8
 LOG=logging.getLogger("oliveyoung_refresh")
 logging.basicConfig(level=logging.INFO,format="%(asctime)s %(levelname)s %(message)s")
@@ -144,8 +145,9 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
                 break
             visited.add(signature)
             page_seq+=1
-            hits=extract_hits(data)
-            LOG.info("[raw] category=%s page=%d items=%d",category,page_seq,len(hits))
+            hits=extract_hits(data)[:CATEGORY_ITEM_LIMIT]
+            data={**data,"hits":{**data["hits"],"hit":data["hits"]["hit"][:CATEGORY_ITEM_LIMIT]}}
+            LOG.info("[raw] category=%s page=%d source_items=%d selected=%d",category,page_seq,(data["hits"].get("found") or len(hits)),len(hits))
             await api("/manager/api/ktaxback/refresh/worker/"+jid+"/heartbeat","POST")
             result=await api("/manager/api/ktaxback/refresh/worker/"+jid+"/capture","POST",{
                 "category_id":category,"page_index":page_seq,"source_url":source,"payload":data})
@@ -227,7 +229,7 @@ async def main():
                 LOG.warning("[recover] HTTP %s",exc.code)
             if AUTO and time.monotonic()-last_auto>90:
                 try:
-                    outcome=await api("/manager/api/ktaxback/refresh/worker/auto","POST")
+                    outcome=await api("/manager/api/ktaxback/refresh/worker/auto-limited","POST")
                     LOG.info("[auto] %s",outcome)
                 except urllib.error.HTTPError as exc:
                     LOG.warning("[auto] HTTP %s: source collection planner is unavailable",exc.code)
