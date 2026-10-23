@@ -1,11 +1,11 @@
 {
   "pages": [
+    "pages/index/index",
     "pages/shop/index",
-    "pages/shop/detail",
-    "pages/index/index"
+    "pages/shop/detail"
   ],
   "window": {
-    "navigationBarTitleText": "K-TAXBACK",
+    "navigationBarTitleText": "KOREA PREBOOK",
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#ffffff",

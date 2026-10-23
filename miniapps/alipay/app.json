@@ -1,11 +1,11 @@
 {
   "pages": [
+    "pages/index/index",
     "pages/shop/index",
-    "pages/shop/detail",
-    "pages/index/index"
+    "pages/shop/detail"
   ],
   "window": {
-    "defaultTitle": "K-TAXBACK",
+    "defaultTitle": "KOREA PREBOOK",
     "titleBarColor": "#ffffff",
     "backgroundColor": "#ffffff",
     "pullRefresh": true
