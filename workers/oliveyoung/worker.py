@@ -87,6 +87,7 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
     pages=0
     found=0
     visited=set()
+    exhausted=False
     async def on_response(response):
         if "product-data" not in response.url or response.status!=200:
             return
@@ -136,17 +137,22 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
                 pid=str(p.get("prdtNo") or "").strip()
                 if pid:detail_numbers.add(pid)
             queue.task_done()
-            if pages>=max_pages:break
             more=page.locator("#pagination button.btn-page-more")
+            if pages>=max_pages:
+                try:exhausted=not await more.is_visible(timeout=2400)
+                except Exception:exhausted=False
+                break
             try:
-                if not await more.is_visible(timeout=2200):break
+                if not await more.is_visible(timeout=2200):
+                    exhausted=True
+                    break
                 await more.scroll_into_view_if_needed(timeout=3000)
                 await more.click(timeout=6000)
                 await page.wait_for_timeout(1100)
             except Exception as exc:
                 LOG.info("[category] pagination stopped: %s",str(exc)[:130])
                 break
-        return pages,found
+        return pages,found,exhausted
     finally:
         if pending:await asyncio.gather(*pending,return_exceptions=True)
         await page.close()
@@ -162,9 +168,13 @@ async def run_job(job):
             for cid in cats[:MAX_CATEGORIES]:
                 try:
                     await api("/manager/api/ktaxback/refresh/worker/"+jid+"/heartbeat","POST")
-                    pages,products=await collect_category(context,jid,cid,pages_allowed,detail_numbers)
+                    pages,products,exhausted=await collect_category(context,jid,cid,pages_allowed,detail_numbers)
                     total_pages+=pages;total_products+=products
-                    LOG.info("[category] %s pages=%d products=%d",cid,pages,products)
+                    await api("/manager/api/ktaxback/refresh/worker/"+jid+"/category_done","POST",{
+                        "category_id":cid,"pages":pages,"exhausted":exhausted,
+                        "message":("No product-data response" if pages==0 else
+                                   "Page limit reached; more results may exist" if not exhausted else "")})
+                    LOG.info("[category] %s pages=%d products=%d exhausted=%s",cid,pages,products,exhausted)
                 except Exception as exc:
                     message=f"{cid}: {type(exc).__name__} {str(exc)[:220]}"
                     errors.append(message);LOG.exception(message)
