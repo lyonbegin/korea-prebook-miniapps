@@ -37,48 +37,49 @@ async def api(path,method="GET",data=None):
     return await asyncio.to_thread(req,path,method,data)
 
 async def language_switch(page,lang):
-    """Use actual Olive Young Shopping Preferences selector; never infer translation from locale."""
+    """Click the VISIBLE Shopping Preferences UI, not hidden duplicate text."""
     if lang=="en":return "English default"
     code=DATA_CODE[lang]
-    await page.goto("https://global.oliveyoung.com/main-vue",
+    await page.goto("https://global.oliveyoung.com/display/category?ctgrNo=1000000008",
                     wait_until="domcontentloaded",timeout=45000)
-    await page.wait_for_timeout(1300)
-    evidence=[]
+    await page.wait_for_timeout(900)
+    current_title=await page.title()
+    if "Just a moment" in current_title or "しばらくお待ち" in current_title:
+        raise RuntimeError("Shopping Preferences unavailable: site verification page")
+    evidence=["page-title="+str(current_title)[:36]]
     try:
-        popup=page.get_by_text("Shopping Preferences",exact=False)
-        if await popup.count():
-            await popup.first.click(timeout=4500)
-            evidence.append("shopping-preferences-open")
-    except Exception as e:
-        evidence.append("preferences-click:"+type(e).__name__)
-    # Olive Young popup has custom .selectbox dropdown and data-code options.
-    try:
-        opts=page.locator(f'[data-code="{code}"]')
-        if not await opts.count():
-            english=page.get_by_text("English",exact=True)
-            if await english.count():
-                await english.last.click(timeout=3500)
-                evidence.append("language-dropdown-open")
+        # Playwright :visible avoids the invisible templates and mobile header,
+        # which previously made .first.click() time out on the hidden element.
+        triggers=page.locator(':text("Shopping Preferences"):visible')
+        if not await triggers.count():
+            triggers=page.locator('text=/Shopping Preferences/i').locator(':visible')
+        if await triggers.count():
+            await triggers.last.click(timeout=5500)
+            evidence.append("preferences-open")
         else:
-            try:
-                if not await opts.last.is_visible(timeout=1200):
-                    english=page.get_by_text("English",exact=True)
-                    if await english.count():await english.last.click(timeout=3500)
-            except Exception:pass
-        opts=page.locator(f'[data-code="{code}"]')
-        if not await opts.count():
-            raise ValueError("Language option data-code="+code+" absent")
-        await opts.last.click(timeout=4500)
+            raise RuntimeError("Visible Shopping Preferences control absent")
+        english=page.locator(':text-is("English"):visible')
+        if await english.count():
+            await english.last.click(timeout=4000)
+            evidence.append("language-list-open")
+        options=page.locator(f'[data-code="{code}"]:visible')
+        if not await options.count():
+            # Some language popup versions open via custom selectbox.
+            selectbox=page.locator(".selectbox:visible").filter(has_text="English")
+            if await selectbox.count():
+                await selectbox.last.click(timeout=4000)
+                evidence.append("selectbox-open")
+            options=page.locator(f'[data-code="{code}"]:visible')
+        if not await options.count():
+            raise RuntimeError("Visible language item data-code="+code+" absent")
+        await options.last.click(timeout=4500)
         evidence.append("selected-code="+code)
-        save=page.get_by_text("Save",exact=True)
+        save=page.locator(':text-is("Save"):visible')
         if await save.count():
-            try:
-                await save.last.click(timeout=3500)
-                evidence.append("save-clicked")
-            except Exception as e:evidence.append("save-not-clickable:"+type(e).__name__)
-    except Exception as e:
-        evidence.append("SELECTOR_FAILED:"+type(e).__name__+":"+str(e)[:80])
-        return "|".join(evidence)
+            await save.last.click(timeout=4000)
+            evidence.append("save-clicked")
+    except Exception as exc:
+        evidence.append("SELECTOR_FAILED:"+type(exc).__name__+":"+str(exc)[:120])
     return "|".join(evidence)
 
 async def read_category(browser,task):
