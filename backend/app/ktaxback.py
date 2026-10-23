@@ -293,6 +293,147 @@ def mount_ktaxback(app, engine):
         base["optimDtlDesc"]="".join('<img data-src="'+x["image_path"].replace('"',"&quot;")+'">' for x in imgs)
         return {"details":base}
 
+    def assemble_corner(page_key,lang):
+        lang=language(lang)
+        if not inspect(engine).has_table(PREFIX+"home_corners"):
+            raise HTTPException(503,"K-TAXBACK home catalogue not imported")
+        corners=sorted(entries("home_corners",2000,page_key=page_key),
+                       key=lambda c:c.get("sort_seq") or 0)
+        allsets=optional("home_corner_sets",1000)
+        allbanners=optional("home_banners",5000)
+        allitems=optional("home_corner_products",10000)
+        by_sets=defaultdict(list);by_banners=defaultdict(list);by_items=defaultdict(list)
+        for x in allsets:by_sets[x["corner_pk"]].append(x)
+        for x in allbanners:by_banners[x["set_id"]].append(x)
+        for x in allitems:by_items[x["set_id"]].append(x)
+        corner_list=[]
+        for corner in corners:
+            setmap={}
+            for setrow in sorted(by_sets[corner["corner_pk"]],
+                                 key=lambda v:v.get("sort_order") or 0):
+                entry={}
+                if setrow.get("set_name"):
+                    entry["SET_NAME"]=[{"contsCont":setrow["set_name"],"sortSeq":0}]
+                products=[]
+                for linked in sorted(by_items[setrow["set_id"]],
+                                     key=lambda v:v.get("sort_order") or 0):
+                    p=one("products",prdt_no=linked["prdt_no"])
+                    if p:products.append(product_record(p,lang))
+                if products:entry["PRODUCT"]=products
+                banners=by_banners[setrow["set_id"]]
+                if banners:
+                    b=banners[0]
+                    if b.get("image_path"):
+                        entry["IMAGE"]=[{
+                            "contsMbleImagePath":b["image_path"],
+                            "contsPcImagePath":b["image_path"],
+                            "contsUrl":b.get("url"),
+                            "contsUrlUseYn":"Y" if b.get("url") else "N",
+                            "contsMbleAltrnText":b.get("alt_text"),
+                            "contsPcAltrnText":b.get("alt_text")
+                        }]
+                    captions=[b.get("caption_1"),b.get("caption_2"),b.get("caption_3")]
+                    captions=[x for x in captions if x]
+                    if captions:
+                        entry["TEXT"]={str(i):[{"contsCont":v,"sortSeq":i}]
+                                       for i,v in enumerate(captions)}
+                setmap[setrow["set_key"]]=entry
+            corner_list.append({
+                "dispPageConrNo":corner["corner_id"],
+                "dispConrTmplNo":corner["template_no"],
+                "dispConrName":corner.get("corner_name"),
+                "sortSeq":str(corner.get("sort_seq") or 0),
+                "langCode":"en",
+                "setContsMap":setmap
+            })
+        return {"cornerList":corner_list}
+
+    @app.get("/main-vue-data.json")
+    def home(lang:str="en"):
+        return assemble_corner("home",lang)
+
+    @app.get("/new-arrivals-data.json")
+    def new_arrivals(lang:str="en"):
+        return assemble_corner("newarrivals",lang)
+
+    @app.get("/flash-deal-vue-data.json")
+    def flash_deals(lang:str="en"):
+        return {"pageInfo":assemble_corner("flashdeal",lang)}
+
+    @app.get("/featured-brands.json")
+    def featured_brands(lang:str="en"):
+        return assemble_corner("brands",lang)["cornerList"]
+
+    @app.get("/best-seller-data.json")
+    def bestseller_categories(lang:str="en"):
+        language(lang)
+        cats=entries("categories",1000)
+        names={x["category_id"]:x["category_name"] for x in optional(
+            "category_names_i18n",1000,lang_code=lang)}
+        ordered=sorted([c for c in cats if c.get("depth")==1 and
+                        c["category_id"]!="1000000001"],
+                       key=lambda x:-(x.get("product_count") or 0))
+        return {"ctgrList":[{"ctgrNo":c["category_id"],
+                             "ctgrName":names.get(c["category_id"],c["category_name"])}
+                            for c in ordered]}
+
+    @app.get("/review-list.json")
+    def review_list(prdtNo:str=Query(...),lang:str="en"):
+        product(prdtNo);language(lang)
+        rows=optional("reviews",5000,prdt_no=prdtNo,lang_code=lang) if lang!="en" else []
+        own=bool(rows)
+        if not rows:rows=optional("reviews",5000,prdt_no=prdtNo,lang_code="en")
+        rows.sort(key=lambda r:r.get("sort_order") or 0)
+        answer=[]
+        for i,r in enumerate(rows):
+            media=[{"imagePath":m["image_path"]} for m in optional(
+                "review_media",500,review_key=r["review_key"])]
+            body=(r.get("body") or "")
+            if lang!="en" and not own:
+                body=trans(prdtNo,lang,f"review-list.reviewList[{i}].conText") or body
+            answer.append({"prdtReviewNo":r["review_no"],"previewScore":r.get("score"),
+                           "conText":body,"loginId":None,"snglOptnName":r.get("option_name"),
+                           "reviewRgstYmd":r.get("written_at"),"goodCnt":r.get("good_cnt"),
+                           "reviewMediaList":media})
+        return {"reviewList":answer,"totalCount":len(answer)}
+
+    @app.get("/relation-list.json")
+    def relations(prdtNo:str=Query(...),lang:str="en"):
+        p=product(prdtNo);language(lang)
+        result={}
+        for bucket,relation_type,key in (("ctgrRelation","category","category_id"),
+                                         ("brandRelation","brand","brand_no")):
+            rows=optional("product_relations",3000,prdt_no=prdtNo,
+                          relation_type=relation_type,lang_code=lang) if lang!="en" else []
+            if not rows:rows=optional("product_relations",3000,prdt_no=prdtNo,
+                                     relation_type=relation_type,lang_code="en")
+            related=[]
+            for r in sorted(rows,key=lambda x:x.get("sort_order") or 0):
+                pr=one("products",prdt_no=r["related_prdt_no"])
+                if pr:related.append(product_record(pr,lang))
+            if not related and p.get(key):
+                related=[product_record(x,lang) for x in sorted(
+                    [x for x in entries("products",20000,**{key:p[key]}) if x["prdt_no"]!=prdtNo],
+                    key=lambda x:-(x.get("review_cnt") or 0))[:8]]
+            result[bucket]=related
+        return result
+
+    @app.get("/product-data-kpop.json")
+    def kpop(lang:str="en"):
+        language(lang)
+        if not one("categories",category_id="1000000162"):
+            raise HTTPException(404,"K-pop category not imported")
+        categories=entries("categories",1000)
+        ids={"1000000162"}
+        for _ in range(15):
+            before=len(ids)
+            ids.update(c["category_id"] for c in categories if c.get("parent_id") in ids)
+            if len(ids)==before:break
+        rows=[p for p in entries("products",20000) if p.get("category_id") in ids]
+        rows.sort(key=lambda p:p["prdt_no"])
+        return {"hits":{"found":len(rows),"hit":[{"fields":product_record(p,lang)} for p in rows[:500]]},
+                "brandFacets":[]}
+
     @app.get("/brand-list.json")
     def brand_list():
         return [{
