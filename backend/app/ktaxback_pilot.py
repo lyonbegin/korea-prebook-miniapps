@@ -207,6 +207,27 @@ def mount_pilot(app,engine):
                 "received":received,"selected":len(chosen),"written":written,"verified":verified,
                 "untranslated":skipped,"sample":samples[:2]}
 
+    @app.get("/v1/ktaxback/pilot/summary")
+    def public_pilot_summary():
+        """Safe read-only counts from production PostgreSQL; no login tokens or raw source HTML."""
+        with engine.connect() as conn:
+            states=[dict(row) for row in conn.execute(text("""SELECT category_id,
+                category_name,lang_code,state,requested,received,selected,written,
+                verified,untranslated,error FROM korea_prebook_kt_pilot_tasks
+                ORDER BY category_id,lang_code""")).mappings()]
+            stored={}
+            for name in ("products","brands","categories","category_filters","product_images",
+                         "product_options","product_details","product_translations",
+                         "category_names_i18n","category_filters_i18n"):
+                stored[name]=conn.execute(text(
+                    "SELECT COUNT(*) FROM "+PREFIX+name)).scalar_one()
+            locales=[dict(row) for row in conn.execute(text("""SELECT lang_code,
+              COUNT(*) AS stored FROM korea_prebook_kt_product_translations
+              GROUP BY lang_code ORDER BY lang_code""")).mappings()]
+        return {"categories":len(CATEGORIES),"languages":list(LANGS),
+                "tasks":states,"table_counts":stored,"translation_languages":locales,
+                "legacy_sqlite_imported":False}
+
     @app.get("/manager/api/ktaxback/pilot/report")
     def report(authorization:str|None=Header(None)):
         auth(authorization)
