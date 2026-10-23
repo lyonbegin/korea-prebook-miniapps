@@ -192,6 +192,9 @@ def mount_ktaxback(app, engine):
             if set(row) - allowed_fields or any(row.get(k) is None for k in pk):
                 raise HTTPException(422, "Invalid row columns or missing key")
         rows = [{k:v for k,v in row.items() if k in allowed_fields} for row in data.rows]
+        fields = set(rows[0])
+        if any(set(row) != fields for row in rows):
+            raise HTTPException(422, "Each batch must contain the same column set")
         with engine.begin() as con:
             dialect = engine.dialect.name
             if dialect == "postgresql":
@@ -200,7 +203,7 @@ def mount_ktaxback(app, engine):
                 stmt = sqlite_insert(t).values(rows)
             else:
                 raise HTTPException(503,"Database dialect unsupported")
-            updates={c:stmt.excluded[c] for c in allowed_fields if c not in pk}
+            updates={c:stmt.excluded[c] for c in fields if c not in pk}
             if updates:
                 stmt=stmt.on_conflict_do_update(index_elements=pk,set_=updates)
             else:
