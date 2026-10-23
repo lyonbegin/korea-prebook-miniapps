@@ -488,12 +488,28 @@ def mount_ktaxback(app, engine):
         lang=language(lang);cats=entries("categories",1000)
         names={x["category_id"]:x["category_name"] for x in optional("category_names_i18n",2000,lang_code=lang)}
         flt=defaultdict(lambda:defaultdict(list))
+        counts=defaultdict(int)
         for f in optional("category_filters",30000):
             flt[f["category_id"]][f["filter_group"]].append({"name":f["option_name"],"count":f["option_count"]})
+            counts[f["category_id"]]+=1
+        translated_filters=defaultdict(lambda:defaultdict(list))
+        if lang!="en":
+            for f in optional("category_filters_i18n",30000,lang_code=lang):
+                translated_filters[f["category_id"]][f["filter_group"]].append({
+                    "name":f["option_name"],"count":f["option_count"]})
+        def groups(data):
+            return [{"filterGroup":g,"options":o} for g,o in data.items()]
         nodes={c["category_id"]:{
             "categoryId":c["category_id"],"categoryName":names.get(c["category_id"],c["category_name"]),
             "depth":c.get("depth"),"productCount":c.get("product_count"),
-            "availableFilters":[{"filterGroup":g,"options":o} for g,o in flt[c["category_id"]].items()],
+            "availableFilters":groups(translated_filters[c["category_id"]])
+              if counts[c["category_id"]]>0 and
+                 sum(map(len,translated_filters[c["category_id"]].values()))>=counts[c["category_id"]]
+              else groups(flt[c["category_id"]]),
+            "availableFiltersI18n":groups(translated_filters[c["category_id"]])
+              if translated_filters[c["category_id"]] else [],
+            "localizedFiltersComplete":bool(counts[c["category_id"]]>0 and
+                sum(map(len,translated_filters[c["category_id"]].values()))>=counts[c["category_id"]]),
             "subCategories":[]
         } for c in cats}
         roots=[]
