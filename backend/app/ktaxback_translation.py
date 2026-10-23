@@ -135,9 +135,11 @@ def mount_translation(app, engine):
                  ORDER BY category_id""")).mappings().all()
             existing={}
             for row in con.execute(select(
-                translations.c.prdt_no,translations.c.lang_code
+                translations.c.prdt_no,translations.c.lang_code,
+                translations.c.source_text
             ).where(translations.c.field_key == NAME_FIELD)).all():
-                existing.setdefault(row.prdt_no,[]).append(row.lang_code)
+                existing.setdefault(row.prdt_no,[]).append(
+                    (row.lang_code,row.source_text))
             category_samples=[]
             for record in pilot:
                 rows=json.loads(record["sample_json"])
@@ -152,7 +154,7 @@ def mount_translation(app, engine):
                     product=lookup.get(ident)
                     if product:
                         items.append({"prdt_no":ident,"prdt_name":product["prdt_name"],
-                                      "existing_translations":existing.get(ident,[])})
+                                      "existing_translations":[lang for lang,src in existing.get(ident,[]) if src==product["prdt_name"]]})
                 category_samples.append({"category_id":record["category_id"],
                      "category_name":record["category_name"],
                      "items":items[:10],"source":"verified_en_pilot_page_json"})
