@@ -273,6 +273,7 @@ def mount_translation(app, engine):
         req_lang = data.request_payload.get("target_language")
         status = int(data.response_status)
         accepted = verified = rejected = 0
+        reasons = {"unchanged_or_wrong_script":0,"unknown_product":0,"source_mismatch":0,"field_mismatch":0,"unmapped_output":0}
         error = data.error
         if status == 200:
             if data.request_payload.get("source_language") != "en" \
@@ -316,14 +317,17 @@ def mount_translation(app, engine):
                 for (original, number, key), assignment in assignment_index.items():
                     translated = source_to_translated.get(original)
                     if not translated or translated == original or not LANG_SCRIPTS[lang].search(translated):
+                        reasons["unchanged_or_wrong_script"] += 1
                         rejected += 1
                         continue
                     exists = con.execute(select(product.c.prdt_name).where(
                         product.c.prdt_no == number)).scalar_one_or_none()
                     if not exists:
+                        reasons["unknown_product"] += 1
                         rejected += 1
                         continue
                     if key == NAME_FIELD and exists != original:
+                        reasons["source_mismatch"] += 1
                         rejected += 1
                         continue
                     if key.startswith("detail-data.product.optionList["):
@@ -375,6 +379,11 @@ def mount_translation(app, engine):
                     else:
                         raise HTTPException(500, "Translation DB read-back failed")
 
+            if status == 200 and rejected and not error:
+                error = "Translation rejected: " + ", ".join(
+                    k+"="+str(v) for k,v in reasons.items() if v
+                )
+
             if data.category_id:
                 con.execute(text("""INSERT INTO korea_prebook_kt_translation_category_audit
                      (category_id,lang_code,http_status,requested,source_returned,
@@ -400,7 +409,7 @@ def mount_translation(app, engine):
                 "http_status": status, "requested": len(sent),
                 "translated_returned": len(returned), "db_inserted": accepted,
                 "db_verified": verified, "rejected": rejected,
-                "source": SOURCE, "error": error}
+                "source": SOURCE, "error": error, "rejection_reasons":reasons}
 
     @app.get("/v1/ktaxback/translations/examples")
     def public_translation_examples():
