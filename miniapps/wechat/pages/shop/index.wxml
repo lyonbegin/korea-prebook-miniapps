@@ -66,7 +66,7 @@
         data-id="{{item.id}}" bindtap="onProductTap">
         <view class="product-picture">
           <image wx:if="{{item.hasImage}}" class="product-photo"
-            src="{{item.image}}" mode="aspectFit" lazy-load="true"/>
+            src="{{item.image}}" data-id="{{item.id}}" binderror="onProductImageError" mode="aspectFit" lazy-load="true"/>
           <view wx:else class="picture-placeholder">K-TAXBACK</view>
           <view wx:if="{{item.discount > 0}}" class="sale-label">{{item.discount}}% OFF</view>
           <view wx:elif="{{item.new}}" class="new-label">NEW</view>
