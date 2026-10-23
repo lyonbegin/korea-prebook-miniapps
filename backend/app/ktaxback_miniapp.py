@@ -27,7 +27,7 @@ TOP = (
     ("1000000134", "Supplements", "健康补充品", "サプリメント", "健康補充品"),
 )
 NAME_PATH = "detail-data.product.prdtNameEn"
-DISPLAY = {"en":1, "zh_cn":2, "jp":3, "zh_tw":4}
+DISPLAY = {"en":0, "zh_cn":1, "jp":2, "zh_tw":3}
 
 def image_url(v):
     if not v:
@@ -48,19 +48,22 @@ def mount_miniapp_shop(app, engine):
         def table(name):
             return Table("korea_prebook_kt_"+name, MetaData(),autoload_with=engine)
         with engine.connect() as con:
-            products = [dict(v) for v in con.execute(select(table("products"))).mappings()]
+            product_table=table("products")
+            translation_table=table("product_translations")
+            pilot_table=table("pilot_tasks")
+            products = [dict(v) for v in con.execute(select(product_table)).mappings()]
             brands = {x["brand_no"]:x for x in con.execute(select(table("brands"))).mappings()}
             cats = [dict(v) for v in con.execute(select(table("categories"))).mappings()]
             names = {(x["prdt_no"], x["lang_code"]):x["prdt_name"] for x in con.execute(
                 select(table("product_names_i18n"))).mappings()}
-            for tr in con.execute(select(table("product_translations")).where(
-                    table("product_translations").c.field_key==NAME_PATH)).mappings():
+            for tr in con.execute(select(translation_table).where(
+                    translation_table.c.field_key==NAME_PATH)).mappings():
                 names.setdefault((tr["prdt_no"], tr["lang_code"]), tr["translated_text"])
             category_names = {(x["category_id"],x["lang_code"]):x["category_name"]
                               for x in con.execute(select(table("category_names_i18n"))).mappings()}
-            pilot = [dict(x) for x in con.execute(select(table("pilot_tasks")).
-                     where(table("pilot_tasks").c.lang_code=="en",
-                           table("pilot_tasks").c.state=="verified")).mappings()]
+            pilot = [dict(x) for x in con.execute(select(pilot_table).
+                     where(pilot_table.c.lang_code=="en",
+                           pilot_table.c.state=="verified")).mappings()]
         return products,brands,cats,names,category_names,pilot
 
     def grouped(products,categories,pilot):
