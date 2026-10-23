@@ -164,6 +164,8 @@ def create_app(
     bootstrap(engine)  # empty original-schema tables and 150 collection targets only
     from app.oliveyoung_refresh import mount_oliveyoung_refresh
     mount_oliveyoung_refresh(app, engine)
+    from app.ktaxback_pilot import mount_pilot
+    mount_pilot(app, engine)
     return app
 
 
