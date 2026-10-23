@@ -204,3 +204,55 @@ async def probe_filters(browser:Browser,api):
             if stop:break
     finally:await context.close()
     return {"source_categories":len(cats),"results":out,"provider_blocked":stop}
+
+
+async def probe_details(browser:Browser,api):
+    """Translate actual original option/details strings; preserve original DB fields."""
+    data=await api("/manager/api/ktaxback/translation/detail-source")
+    samples=data.get("samples",[])
+    if not samples:return {"source_products":0,"results":[]}
+    count=0;done=[];blocked=False
+    ctx=await browser.new_context(locale="en-US")
+    try:
+        for product in samples[:10]:
+            no=product["prdt_no"]
+            fields=product.get("fields",[])
+            for lang,target in LOCALES.items():
+                remaining=[x for x in fields if lang not in x.get("existing_langs",[])]
+                if not remaining:continue
+                # Limit to 20 actual field values per source request, without
+                # rewriting original option ordering or translating HTML.
+                remaining=remaining[:20]
+                unique=list(dict.fromkeys(x["source_text"] for x in remaining))
+                payload={"source_language":"en","target_language":target,"texts":unique}
+                response_data={};status=0;error=""
+                try:
+                    res=await ctx.request.post(API_URL,data=payload,
+                        headers={"Content-Type":"application/json",
+                                 "Origin":"https://global.oliveyoung.com",
+                                 "Referer":"https://global.oliveyoung.com/"},
+                        timeout=25000)
+                    status=res.status
+                    if status==200:
+                        response_data=await res.json()
+                        if not isinstance(response_data,dict):response_data={}
+                    else:error="Source HTTP "+str(status)
+                except Exception as exc:error=type(exc).__name__+" "+str(exc)[:210]
+                output=await api("/manager/api/ktaxback/translation/capture","POST",{
+                    "lang_code":lang,"source_url":API_URL,"response_status":status,
+                    "request_payload":payload,"response_payload":response_data,
+                    "assignments":[{"prdt_no":no,"field_key":x["field_key"],
+                                    "source_text":x["source_text"]} for x in remaining],
+                    "error":error})
+                result={"product":no,"lang":lang,"http":status,
+                        "saved":output.get("db_inserted",0),
+                        "verified":output.get("db_verified",0),
+                        "rejected":output.get("rejected",0)}
+                LOG.info("ORIGINAL_OPTION_DETAILS_I18N %s",result)
+                done.append(result);count+=output.get("db_verified",0)
+                if status in (401,403,429):blocked=True;break
+                await asyncio.sleep(2)
+            if blocked:break
+    finally:await ctx.close()
+    return {"source_products":len(samples),"events":len(done),
+            "db_verified":count,"provider_blocked":blocked}
