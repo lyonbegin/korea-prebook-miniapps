@@ -1,0 +1,109 @@
+<view class="kt-app">
+  <view class="shop-top">
+    <view class="shop-brand-row">
+      <view class="shop-brand">K-TAXBACK</view>
+      <view class="shop-top-right">K-BEAUTY · KOREA</view>
+    </view>
+    <view class="shop-title">{{words.title}}</view>
+    <scroll-view class="lang-scroll" scroll-x="true" show-scrollbar="false">
+      <view class="lang-list">
+        <view wx:for="{{langs}}" wx:key="code"
+          class="lang-pill {{item.code === lang ? 'lang-selected' : ''}}"
+          data-lang="{{item.code}}" bindtap="onLangTap">{{item.title}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="shop-content">
+    <view class="search-row">
+      <text class="search-icon">⌕</text>
+      <input class="search-input" placeholder="{{words.search}}" placeholder-class="placeholder"
+        value="{{search}}" bindinput="onKeywordInput" confirm-type="search"
+        bindconfirm="onSearch" />
+      <view class="search-action" bindtap="onSearch">GO</view>
+    </view>
+
+    <view wx:if="{{tab !== 'wishlist' && tab !== 'cart'}}">
+      <view class="promo-strip">
+        <view class="promo-overline">THE KOREAN BEAUTY EDIT</view>
+        <view class="promo-heading">K-TAXBACK <text>✦</text></view>
+        <view class="promo-sub">SKINCARE · MAKEUP · HAIR · BODY</view>
+        <view class="promo-tag">KOREA BEAUTY SELECTION</view>
+      </view>
+
+      <scroll-view class="sort-scroller" scroll-x="true" show-scrollbar="false">
+        <view class="sort-line">
+          <view data-sort="best" bindtap="onSortTap" class="sort-chip {{activeSort==='best'?'selected':''}}">★ {{words.best}}</view>
+          <view data-sort="new" bindtap="onSortTap" class="sort-chip {{activeSort==='new'?'selected':''}}">✦ {{words.new}}</view>
+          <view data-sort="sale" bindtap="onSortTap" class="sort-chip {{activeSort==='sale'?'selected':''}}">% {{words.sale}}</view>
+          <view data-sort="price_asc" bindtap="onSortTap" class="sort-chip {{activeSort==='price_asc'?'selected':''}}">↗ {{words.price}}</view>
+        </view>
+      </scroll-view>
+
+      <view class="section-heading">{{words.categories}} <text class="section-heading-line"></text></view>
+      <scroll-view class="category-scroller" scroll-x="true" show-scrollbar="false">
+        <view class="category-line">
+          <view wx:for="{{categories}}" wx:key="id"
+            data-id="{{item.id}}" bindtap="onCategoryTap"
+            class="category-pill {{activeCategory===item.id?'category-active':''}}">
+            {{item.label}}
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="results-heading">
+      <view class="results-heading-title">
+        <text wx:if="{{tab==='wishlist'}}">♡ {{words.wishlist}}</text>
+        <text wx:elif="{{tab==='cart'}}">▣ {{words.cart}}</text>
+        <text wx:else>{{activeSort==='best'?'BEST SELLERS':activeSort==='new'?'NEW ARRIVALS':activeSort==='sale'?'HOT DEAL':'K-BEAUTY PRODUCTS'}}</text>
+      </view>
+      <view class="results-count">{{total}} ITEMS</view>
+    </view>
+
+    <view class="product-grid" wx:if="{{products.length > 0}}">
+      <view class="product-item" wx:for="{{products}}" wx:key="id"
+        data-id="{{item.id}}" bindtap="onProductTap">
+        <view class="product-picture">
+          <image wx:if="{{item.hasImage}}" class="product-photo"
+            src="{{item.image}}" mode="aspectFit" lazy-load="true"/>
+          <view wx:else class="picture-placeholder">K-TAXBACK</view>
+          <view wx:if="{{item.discount > 0}}" class="sale-label">{{item.discount}}% OFF</view>
+          <view wx:elif="{{item.new}}" class="new-label">NEW</view>
+        </view>
+        <view class="product-meta">
+          <view class="product-brand">{{item.brand}}</view>
+          <view class="product-name">{{item.name}}</view>
+          <view class="product-price-row">
+            <text class="product-price">{{item.priceText}}</text>
+            <text wx:if="{{item.hasDiscount}}" class="product-old">{{item.regularText}}</text>
+          </view>
+          <view wx:if="{{item.reviewCount > 0}}" class="review-count">★ {{item.reviewCount}}</view>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="shop-message">LOADING...</view>
+    <view wx:if="{{!loading && products.length===0}}" class="shop-message">{{status || words.empty}}</view>
+    <view wx:if="{{status && products.length>0}}" class="shop-warning">{{status}}</view>
+    <view wx:if="{{hasMore && !loading}}" class="load-more" bindtap="onMore">{{words.more}}  ↓</view>
+    <view wx:if="{{tab==='cart'}}" class="bag-disclaimer">本地购物清单 · 尚未开放下单及付款</view>
+  </view>
+
+  <view class="native-tabs">
+    <view class="tab-cell {{tab==='home'?'tab-active':''}}" data-tab="home" bindtap="onTabTap">
+      <view class="tab-icon">⌂</view><view>HOME</view>
+    </view>
+    <view class="tab-cell {{tab==='category'?'tab-active':''}}" data-tab="category" bindtap="onTabTap">
+      <view class="tab-icon">▦</view><view>{{words.categories}}</view>
+    </view>
+    <view class="tab-cell {{tab==='wishlist'?'tab-active':''}}" data-tab="wishlist" bindtap="onTabTap">
+      <view class="tab-icon">♡</view><view>{{words.wishlist}}</view>
+    </view>
+    <view class="tab-cell {{tab==='cart'?'tab-active':''}}" data-tab="cart" bindtap="onTabTap">
+      <view class="tab-icon">▣</view><view>{{words.cart}} {{bagCount}}</view>
+    </view>
+    <view class="tab-cell" data-tab="services" bindtap="onTabTap">
+      <view class="tab-icon">✈</view><view>{{words.services}}</view>
+    </view>
+  </view>
+</view>
