@@ -185,24 +185,27 @@ def mount_miniapp_shop(app, engine):
         product,brands,_,names,_,_=raw()
         row=next((p for p in product if p["prdt_no"]==prdt_no),None)
         if row is None:raise HTTPException(404,"Product not in catalogue")
-        t=lambda name:Table("korea_prebook_kt_"+name,MetaData(),autoload_with=engine)
+        images_t=Table("korea_prebook_kt_product_images",MetaData(),autoload_with=engine)
+        options_t=Table("korea_prebook_kt_product_options",MetaData(),autoload_with=engine)
+        details_t=Table("korea_prebook_kt_product_details",MetaData(),autoload_with=engine)
+        translations_t=Table("korea_prebook_kt_product_translations",MetaData(),autoload_with=engine)
         with engine.connect() as con:
-            image_rows=[dict(x) for x in con.execute(select(t("product_images")).where(
-                t("product_images").c.prdt_no==prdt_no,
-                t("product_images").c.image_type=="gallery")).mappings()]
-            options=[dict(x) for x in con.execute(select(t("product_options")).where(
-                t("product_options").c.prdt_no==prdt_no)).mappings()]
-            desc=con.execute(select(t("product_details")).where(
-                t("product_details").c.prdt_no==prdt_no,
-                t("product_details").c.lang_code==lang)).mappings().first()
+            image_rows=[dict(x) for x in con.execute(select(images_t).where(
+                images_t.c.prdt_no==prdt_no,
+                images_t.c.image_type=="gallery")).mappings()]
+            options=[dict(x) for x in con.execute(select(options_t).where(
+                options_t.c.prdt_no==prdt_no)).mappings()]
+            desc=con.execute(select(details_t).where(
+                details_t.c.prdt_no==prdt_no,
+                details_t.c.lang_code==lang)).mappings().first()
             if not desc:
-                desc=con.execute(select(t("product_details")).where(
-                    t("product_details").c.prdt_no==prdt_no,
-                    t("product_details").c.lang_code=="en")).mappings().first()
+                desc=con.execute(select(details_t).where(
+                    details_t.c.prdt_no==prdt_no,
+                    details_t.c.lang_code=="en")).mappings().first()
             tr={x["field_key"]:x["translated_text"] for x in con.execute(
-                select(t("product_translations")).where(
-                    t("product_translations").c.prdt_no==prdt_no,
-                    t("product_translations").c.lang_code==lang)).mappings()}
+                select(translations_t).where(
+                    translations_t.c.prdt_no==prdt_no,
+                    translations_t.c.lang_code==lang)).mappings()}
         gallery=[image_url(x["image_path"]) for x in sorted(image_rows,
             key=lambda x:x.get("sort_order") or 0) if image_url(x["image_path"])]
         if not gallery and row.get("image_path"):
