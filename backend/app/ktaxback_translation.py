@@ -327,6 +327,24 @@ def mount_translation(app, engine):
                 "db_verified": verified, "rejected": rejected,
                 "source": SOURCE, "error": error}
 
+    @app.get("/v1/ktaxback/translations/examples")
+    def public_translation_examples():
+        """Public products' translated names only, for production DB/API audit."""
+        products,translations=tables()
+        examples={}
+        with engine.connect() as con:
+            for lang in LANG_TARGET:
+                rows=con.execute(select(
+                    translations.c.prdt_no,translations.c.source_text,
+                    translations.c.translated_text).where(
+                    translations.c.lang_code==lang,
+                    translations.c.field_key==NAME_FIELD).order_by(
+                    translations.c.prdt_no).limit(3)).mappings().all()
+                examples[lang]=[dict(row) for row in rows]
+        return {"source":"translation.oliveyoung.com/public/translate-texts",
+                "examples":examples,"languages":list(LANG_TARGET),
+                "legacy_sqlite_imported":False}
+
     @app.get("/manager/api/ktaxback/translation/status")
     def translation_status(authorization: str | None = Header(None)):
         auth(authorization)
