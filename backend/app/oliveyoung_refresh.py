@@ -20,6 +20,10 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 def now():
     return datetime.now(timezone.utc).isoformat()
 
+class FullScanIn(BaseModel):
+        max_pages: int = Field(default=30,ge=1,le=100)
+
+
 class RefreshIn(BaseModel):
     category_ids: list[str] = Field(default_factory=list, max_length=8)
     max_pages: int = Field(default=2, ge=1, le=100)
@@ -228,9 +232,6 @@ def mount_oliveyoung_refresh(app,engine):
         row=job_record(jid)
         return {"job":{"id":jid,"categories":json.loads(row["category_ids"]),
                        "max_pages":row["max_pages"]}}
-
-    class FullScanIn(BaseModel):
-        max_pages: int = Field(default=30,ge=1,le=100)
 
     @app.post("/manager/api/ktaxback/refresh/fullscan",status_code=202)
     def start_fullscan(data:FullScanIn,authorization:str|None=Header(None)):
