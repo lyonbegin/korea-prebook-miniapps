@@ -2,7 +2,7 @@
 types, composite primary keys).  Creates EMPTY tables; never imports old rows.
 """
 from sqlalchemy import (Column, Float, Identity, Index, Integer, MetaData,
-                        PrimaryKeyConstraint, Table, Text, inspect, text)
+                        PrimaryKeyConstraint, Table, Text, UniqueConstraint, inspect, text)
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
@@ -55,7 +55,9 @@ def bootstrap(engine):
             if field in PK_IDENTITY and is_pk and engine.dialect.name=="postgresql":
                 cols.append(Column(field, typ, Identity(), **kw))
             else:cols.append(Column(field, typ, **kw))
-        Table(PREFIX+name, metadata,*cols,PrimaryKeyConstraint(*key))
+        rules=[UniqueConstraint("category_id","filter_group","option_name")]
+        if name!="category_filters":rules=[]
+        Table(PREFIX+name, metadata,*cols,PrimaryKeyConstraint(*key),*rules)
     metadata.create_all(engine, checkfirst=True)
     # No modifications to already existing original K-TAXBACK tables.
     for name,spec in SCHEMA.items():
@@ -63,10 +65,11 @@ def bootstrap(engine):
         actual={c["name"] for c in inspect(engine).get_columns(PREFIX+name)}
         if actual!=expected:
             raise RuntimeError("K-TAXBACK table schema conflict: "+name)
+    reg=Table(PREFIX+"definitions",MetaData(),autoload_with=engine)
     with engine.begin() as con:
         for name in SCHEMA:
             stmt=(pg_insert if engine.dialect.name=="postgresql" else sqlite_insert)(
-                Table(PREFIX+"definitions",MetaData(),autoload_with=engine)
+                reg
             ).values(name=name,description="created empty from original schema")
             con.execute(stmt.on_conflict_do_nothing(index_elements=["name"]))
         con.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_category_targets
