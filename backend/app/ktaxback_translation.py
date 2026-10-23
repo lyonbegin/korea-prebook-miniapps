@@ -208,6 +208,50 @@ def mount_translation(app, engine):
         return {"categories":category_samples,"target_languages":LANG_TARGET,
                 "source_endpoint":SOURCE,"old_sqlite_imported":False}
 
+    @app.get("/manager/api/ktaxback/translation/detail-source")
+    def detail_source(authorization:str|None=Header(None)):
+        """Only originals present in the live PostgreSQL product detail/option rows."""
+        auth(authorization)
+        products=Table("korea_prebook_kt_products",MetaData(),autoload_with=engine)
+        options=Table("korea_prebook_kt_product_options",MetaData(),autoload_with=engine)
+        details=Table("korea_prebook_kt_product_details",MetaData(),autoload_with=engine)
+        translations=Table("korea_prebook_kt_product_translations",MetaData(),autoload_with=engine)
+        colnames={"why_we_love_it":"whyWeLoveItText",
+                  "featured_ingredients":"ftrdIngrdText","how_to_use":"howToUseText"}
+        samples=[]
+        with engine.connect() as conn:
+            category=conn.execute(select(details.c.prdt_no).where(
+                details.c.lang_code=="en").order_by(
+                details.c.prdt_no).limit(10)).scalars().all()
+            if not category:
+                category=conn.execute(select(options.c.prdt_no).distinct().limit(10)).scalars().all()
+            for no in category:
+                p=conn.execute(select(products.c.prdt_no).where(products.c.prdt_no==no)).scalar_one_or_none()
+                if not p:continue
+                d=conn.execute(select(details).where(details.c.prdt_no==no,
+                                    details.c.lang_code=="en")).mappings().first()
+                o=conn.execute(select(options).where(options.c.prdt_no==no).order_by(
+                    options.c.option_id).limit(15)).mappings().all()
+                fields=[]
+                for i,entry in enumerate(o):
+                    name=str(entry.get("option_name") or "").strip()
+                    if name:fields.append({"field_key":f"detail-data.product.optionList[{i}].snglOptnNameEn",
+                                            "source_text":name})
+                if d:
+                    for attr,label in colnames.items():
+                        txt=str(d.get(attr) or "").strip()
+                        if txt:fields.append({"field_key":"details-info.details."+label,
+                                              "source_text":txt[:3000]})
+                present=conn.execute(select(translations.c.lang_code,translations.c.field_key,
+                    translations.c.source_text).where(translations.c.prdt_no==no)).mappings().all()
+                for field in fields:
+                    field["existing_langs"]=[x["lang_code"] for x in present if
+                        x["field_key"]==field["field_key"] and
+                        x["source_text"]==field["source_text"]]
+                samples.append({"prdt_no":no,"fields":fields})
+        return {"samples":samples,"languages":LANG_TARGET,"source":SOURCE,
+                "uses_original_option_indices":True}
+
     @app.post("/manager/api/ktaxback/translation/capture")
     def capture_observed_translation(data: SourceTranslation, authorization: str | None = Header(None)):
         auth(authorization)
@@ -277,9 +321,36 @@ def mount_translation(app, engine):
                         rejected += 1
                         continue
                     if key == NAME_FIELD and exists != original:
-                        # Prevent attaching a translation to an unrelated stale item.
                         rejected += 1
                         continue
+                    if key.startswith("detail-data.product.optionList["):
+                        match=re.search(r"optionList\[(\d+)\]",key)
+                        if not match:
+                            rejected += 1
+                            continue
+                        opt=Table("korea_prebook_kt_product_options",MetaData(),autoload_with=engine)
+                        originals=con.execute(select(opt.c.option_name).where(
+                             opt.c.prdt_no==number).order_by(opt.c.option_id)).scalars().all()
+                        idx=int(match.group(1))
+                        if idx>=len(originals) or originals[idx] != original:
+                            rejected += 1
+                            continue
+                    if key.startswith("details-info.details."):
+                        attr={
+                         "whyWeLoveItText":"why_we_love_it",
+                         "ftrdIngrdText":"featured_ingredients",
+                         "howToUseText":"how_to_use",
+                        }.get(key.rsplit(".",1)[-1])
+                        if not attr:
+                            rejected += 1
+                            continue
+                        detail=Table("korea_prebook_kt_product_details",MetaData(),autoload_with=engine)
+                        recorded=con.execute(select(detail.c[attr]).where(
+                            detail.c.prdt_no==number,detail.c.lang_code=="en"
+                        )).scalar_one_or_none()
+                        if str(recorded or "").strip() != original.strip():
+                            rejected += 1
+                            continue
                     row = {"prdt_no": number, "lang_code": lang, "field_key": key,
                            "source_text": original, "translated_text": translated}
                     insert = pg_insert(translations) if engine.dialect.name == "postgresql" \
