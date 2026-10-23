@@ -81,6 +81,22 @@ table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;b
 <div id="tf-result" style="margin-top:12px"></div>
 <p class="muted">수집 결과는 상품 후보입니다. 관리자 검수 후 등록하고, 채널별 화면 구성에서 실제 노출 여부를 선택합니다. 결제·예약·게시 신청을 자동 실행하지 않습니다.</p>
 </section>
+<section id="olive-refresh">
+<h2>⑤ 올리브영 → K-TAXBACK 자동 업데이트</h2>
+<p class="muted">기존 olive.py 상품 목록·가격 + scrape_product_details.py 상세·옵션·이미지 수집을 서버 Worker로 실행합니다. 원본 DB 입력 후 자동 순환 갱신됩니다.</p>
+<div class="row">
+ <label style="flex:2">카테고리 ID (비우면 순환 자동 선택)
+ <input id="olive-category" placeholder="예: 1000000003"></label>
+ <label style="flex:1">페이지 수
+ <select id="olive-pages" style="padding:10px;border:1px solid #ccd6e2;border-radius:8px"><option value="1">1</option><option value="2" selected>2</option><option value="5">5</option><option value="10">10</option></select></label>
+</div>
+<div class="row">
+ <button id="olive-run" class="primary">지금 원본 수집·갱신</button>
+ <button id="olive-reload">갱신 상태·로그</button>
+</div>
+<p id="olive-notice" class="muted">로그인 후 DB 등록 상태를 확인합니다.</p>
+<div id="olive-log" class="muted"></div>
+</section>
 </div>
 <div>
 <section class="preview-shell"><div class="row spread"><h2>실시간 미니앱 미리보기</h2><span id="channel-tag" class="pill">WeChat</span></div>
@@ -290,8 +306,40 @@ el('tf-source').addEventListener('change',tfPick);
 el('tf-reload').addEventListener('click',tfLoad);
 el('tf-save-profile').addEventListener('click',tfSaveProfile);
 el('tf-start').addEventListener('click',tfStart);
+/* Original Olive Young refreshing -- independent of TinyFish. */
+async function oliveLogs(){
+ if(!authorized())return;
+ var log=el('olive-log');log.replaceChildren();
+ try{
+  var a=await request('/manager/api/ktaxback/refresh/jobs');
+  var jobs=a.jobs||[];
+  el('olive-notice').textContent='전용 브라우저 Worker · 수집 결과는 K-TAXBACK 상품/가격 테이블에 직접 반영';
+  if(!jobs.length){log.textContent='아직 수집 작업이 없습니다.';return}
+  jobs.slice(0,12).forEach(function(j){
+   var row=document.createElement('div');
+   row.style.cssText='padding:7px 0;border-bottom:1px solid #e1e7ef';
+   row.textContent=(j.state||'')+' · '+(j.category_ids||'')+
+    ' · 페이지 '+j.pages+' · 상품 '+j.processed+
+    ' · 가격변경 '+j.changed_prices+' · '+(j.message||'');
+   log.appendChild(row);
+  });
+ }catch(e){el('olive-notice').textContent=e.message}
+}
+async function oliveStart(){
+ if(!authorized())return;
+ var id=el('olive-category').value.trim();
+ try{
+  var v=await request('/manager/api/ktaxback/refresh/jobs','POST',{
+   category_ids:id?[id]:[],max_pages:Number(el('olive-pages').value)});
+  el('olive-notice').textContent='수집 작업 등록: '+v.id+' (전용 Railway Worker에서 실행)';
+  await oliveLogs();
+ }catch(e){el('olive-notice').textContent=e.message}
+}
+el('olive-run').addEventListener('click',oliveStart);
+el('olive-reload').addEventListener('click',oliveLogs);
+
 var baseLogin=login;
-login=async function(){await baseLogin();if(authorized())await tfLoad()};
+login=async function(){await baseLogin();if(authorized()){await tfLoad();await oliveLogs()}};
 
 changeChannel('wechat').then(function(){if(token)login()});
 })();
