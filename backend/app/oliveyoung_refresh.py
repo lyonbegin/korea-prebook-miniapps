@@ -240,6 +240,89 @@ def mount_oliveyoung_refresh(app,engine):
                 })
         return {"accepted":len(unique),"changed_prices":changes,"job_id":jid}
 
+    class ProductDetailIn(BaseModel):
+        prdt_no: str
+        source_url: str
+        detail_data: dict | None = None
+        details_info: dict | None = None
+
+    @app.post("/manager/api/ktaxback/refresh/worker/{jid}/detail")
+    def update_product_detail(jid:str,data:ProductDetailIn,
+                              authorization:str|None=Header(None)):
+        auth(authorization)
+        job=job_record(jid)
+        if job["state"]!="running":raise HTTPException(409,"작업 실행 중이 아님")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{2,60}",data.prdt_no):
+            raise HTTPException(422,"잘못된 상품 번호")
+        parsed=urlparse(data.source_url)
+        if parsed.scheme!="https" or parsed.hostname!="global.oliveyoung.com":
+            raise HTTPException(422,"출처가 올리브영이 아님")
+        payload=(data.detail_data or {}).get("product")
+        if not isinstance(payload,dict) or str(payload.get("prdtNo"))!=data.prdt_no:
+            raise HTTPException(422,"상품번호와 상세 응답 불일치")
+        details=(data.details_info or {}).get("details")
+        if not isinstance(details,dict):details={}
+        required=("korea_prebook_kt_product_options","korea_prebook_kt_product_images",
+                  "korea_prebook_kt_product_details")
+        if not all(inspect(engine).has_table(t) for t in required):
+            raise HTTPException(409,"상품 상세·옵션·이미지 테이블을 먼저 이관해야 합니다")
+        tables=[Table(n,MetaData(),autoload_with=engine) for n in required]
+        opts,img,det=tables
+        from html import unescape
+        opts_list=payload.get("optionList") or []
+        gallery=payload.get("thumbnailList") or []
+        # Original seed.py deletes and rebuilds the complete options/gallery
+        # for one product, keeping other languages' records.
+        with engine.begin() as c:
+            pr=Table("korea_prebook_kt_products",MetaData(),autoload_with=engine)
+            old=c.execute(select(pr).where(pr.c.prdt_no==data.prdt_no)).mappings().first()
+            if old is None:raise HTTPException(409,"목록 상품을 먼저 저장해야 합니다")
+            updated=normalize_hit(payload)
+            if updated:
+                update={k:v for k,v in updated.items() if k in pr.c and k!="prdt_no"}
+                for key in ("sale_amt","nrml_amt"):
+                    if update.get(key)==0 and old.get(key):update.pop(key,None)
+                if update:
+                    c.execute(pr.update().where(pr.c.prdt_no==data.prdt_no).values(**update))
+            c.execute(opts.delete().where(opts.c.prdt_no==data.prdt_no))
+            for entry in opts_list[:100]:
+                if not isinstance(entry,dict):continue
+                name=entry.get("snglOptnNameEn") or entry.get("snglOptnName")
+                if not name:continue
+                try:price=float(entry.get("saleAmt")) if entry.get("saleAmt") is not None else None
+                except (TypeError,ValueError):price=None
+                c.execute(opts.insert().values(prdt_no=data.prdt_no,option_name=str(name)[:500],
+                    sale_amt=price,in_stock=1 if entry.get("sellStatCode")=="10" else 0,
+                    is_default=1 if entry.get("rprstYn")=="Y" else 0))
+            c.execute(img.delete().where(
+                (img.c.prdt_no==data.prdt_no)&(img.c.lang_code=="en")&
+                (img.c.image_type.in_(["gallery","description"]))))
+            images=[]
+            for idx,entry in enumerate(gallery[:100]):
+                if isinstance(entry,dict) and entry.get("imagePath"):
+                    images.append({"prdt_no":data.prdt_no,"image_path":str(entry["imagePath"])[:1500],
+                                   "image_type":"gallery","sort_order":idx,"lang_code":"en"})
+            if details:
+                raw=details.get("optimDtlDesc") or details.get("dtlDesc") or ""
+                from html import unescape as html_unescape
+                urls=re.findall(r'(?:data-src|src)="([^"]+)"',html_unescape(raw))
+                for idx,u in enumerate(dict.fromkeys(urls)):
+                    if not re.search(r"\.gif(?:\?|$)",u,re.I):
+                        images.append({"prdt_no":data.prdt_no,"image_path":u[:1500],
+                                       "image_type":"description","sort_order":idx,"lang_code":"en"})
+            if images:c.execute(img.insert(),images)
+            if details:
+                row={"prdt_no":data.prdt_no,"lang_code":"en",
+                     "why_we_love_it":unescape(str(details.get("whyWeLoveItText") or "")),
+                     "featured_ingredients":unescape(str(details.get("ftrdIngrdText") or "")),
+                     "how_to_use":unescape(str(details.get("howToUseText") or ""))}
+                stmt=pg_insert(det).values(**row) if engine.dialect.name=="postgresql" else sqlite_insert(det).values(**row)
+                c.execute(stmt.on_conflict_do_update(
+                    index_elements=["prdt_no","lang_code"],
+                    set_={k:stmt.excluded[k] for k in row if k not in ("prdt_no","lang_code")}))
+        return {"prdt_no":data.prdt_no,"options":len(opts_list),"images":len(images),
+                "description_updated":bool(details)}
+
     @app.post("/manager/api/ktaxback/refresh/worker/{jid}/finish")
     def finish(jid:str,data:JobUpdate,authorization:str|None=Header(None)):
         auth(authorization)
