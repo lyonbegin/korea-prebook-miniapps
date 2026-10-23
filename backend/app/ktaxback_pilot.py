@@ -213,7 +213,7 @@ def mount_pilot(app,engine):
         with engine.connect() as conn:
             states=[dict(row) for row in conn.execute(text("""SELECT category_id,
                 category_name,lang_code,state,requested,received,selected,written,
-                verified,untranslated,error FROM korea_prebook_kt_pilot_tasks
+                verified,untranslated,language_evidence,error FROM korea_prebook_kt_pilot_tasks
                 ORDER BY category_id,lang_code""")).mappings()]
             stored={}
             for name in ("products","brands","categories","category_filters","product_images",
