@@ -1,0 +1,63 @@
+<view class="detail-page">
+  <view class="detail-header">
+    <view class="detail-back" bindtap="onBack">‹</view>
+    <view class="detail-logo">K-TAXBACK</view>
+    <view class="detail-tag">K-BEAUTY</view>
+  </view>
+  <view wx:if="{{loading}}" class="detail-loading">{{words.loading}}</view>
+  <view wx:if="{{error}}" class="detail-loading">{{error}}</view>
+  <view wx:if="{{product}}">
+    <swiper class="gallery" circular="true" indicator-dots="true" indicator-active-color="#ff3152">
+      <swiper-item wx:for="{{images}}" wx:key="*this">
+        <view class="gallery-card"><image class="gallery-image" src="{{item}}" mode="aspectFit"/></view>
+      </swiper-item>
+      <swiper-item wx:if="{{images.length === 0}}">
+        <view class="gallery-card gallery-fallback">K-TAXBACK</view>
+      </swiper-item>
+    </swiper>
+    <view class="detail-body">
+      <view class="detail-brand">{{product.brand}}</view>
+      <view class="detail-name">{{product.name}}</view>
+      <view class="detail-codes">K-TAXBACK · {{product.prdtNo}}</view>
+      <view class="detail-price">
+        <text wx:if="{{product.discount > 0}}" class="discount">{{product.discount}}%</text>
+        <text class="current-price">{{product.priceText}}</text>
+        <text wx:if="{{product.hasDiscount}}" class="old-price">{{product.regularText}}</text>
+      </view>
+      <view wx:if="{{product.reviewCount > 0}}" class="detail-review">★ {{product.reviewCount}}</view>
+      <view class="detail-separator"></view>
+
+      <view wx:if="{{options.length > 0}}">
+        <view class="block-title">{{words.options}}</view>
+        <view wx:for="{{options}}" wx:key="index" class="option-line {{chosen===item.index?'chosen':''}} {{!item.available?'unavailable':''}}"
+          data-index="{{item.index}}" bindtap="onOptionTap">
+          <text class="option-name">{{item.name}}</text><text class="option-price">{{item.priceText}}</text>
+        </view>
+      </view>
+
+      <view class="quantity-line">
+        <view class="block-title">QTY</view>
+        <view class="quantity-controls">
+          <view class="qty-button" bindtap="onMinus">−</view>
+          <view class="qty-value">{{quantity}}</view>
+          <view class="qty-button" bindtap="onPlus">＋</view>
+        </view>
+      </view>
+
+      <view wx:if="{{description.summary}}" class="details-section">
+        <view class="block-title">{{words.intro}}</view><view class="detail-copy">{{description.summary}}</view>
+      </view>
+      <view wx:if="{{description.ingredients}}" class="details-section">
+        <view class="block-title">{{words.ingredients}}</view><view class="detail-copy">{{description.ingredients}}</view>
+      </view>
+      <view wx:if="{{description.howToUse}}" class="details-section">
+        <view class="block-title">{{words.use}}</view><view class="detail-copy">{{description.howToUse}}</view>
+      </view>
+      <view class="checkout-note">{{words.notice}}</view>
+    </view>
+    <view class="detail-fixed">
+      <view class="wish-button {{liked?'wish-active':''}}" bindtap="onWish">{{liked?'♥':'♡'}}<view>{{words.wish}}</view></view>
+      <view class="add-button {{product.soldOut?'disabled':''}}" bindtap="onAddBag">{{words.bag}}</view>
+    </view>
+  </view>
+</view>
