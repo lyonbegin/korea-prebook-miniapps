@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K-TAXBACK Native Miniapp UI Preview</title>
+<style>
+*{box-sizing:border-box}body{background:#edf0f5;margin:0;color:#151515;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.phone{max-width:445px;margin:0 auto;min-height:100vh;background:white;padding-bottom:80px;position:relative;box-shadow:0 0 35px #dce1ec}
+.brand{padding:22px 19px 12px;border-bottom:1px solid #eceef3}
+.brandtop{display:flex;justify-content:space-between;align-items:center}
+.brandtop strong{font-size:25px;letter-spacing:-1px}.brandtop small{font-size:9px;color:#737887;letter-spacing:2px}
+.brand h1{font-size:15px;margin:6px 0 13px}.row{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:1px 0 7px}.row::-webkit-scrollbar{display:none}
+.lang{padding:7px 11px;border:1px solid #e7eaf2;border-radius:20px;background:white;color:#737887;font-size:11px;white-space:nowrap;cursor:pointer}
+.lang.active{background:#fff0f3;border-color:#ff3152;color:#ff3152;font-weight:bold}
+.main{padding:0 16px 10px}.search{display:flex;border:1px solid #c8cdd6;border-radius:30px;align-items:center;padding:5px 7px 5px 16px;gap:7px;margin:19px 0}
+.search input{flex:1;min-width:0;border:0;outline:0;font-size:13px;padding:9px 0}
+button{cursor:pointer}.go{border:0;border-radius:20px;background:#ff3152;color:white;padding:9px 13px;font-size:12px;font-weight:900}
+.hero{background:linear-gradient(130deg,#ffe9ee,#fff2f5 55%,#f6f2ff);border-radius:15px;padding:20px;margin:10px 0 17px}
+.hero small{color:#a54862;font-size:10px;font-weight:900;letter-spacing:1.2px}
+.hero h2{font-size:30px;letter-spacing:-1px;margin:4px 0}.hero h2 span{color:#ff3152}
+.hero p{color:#814a5b;font-size:10px;letter-spacing:1px;margin:3px 0 13px}.hero b{background:#ff3152;color:white;border-radius:20px;padding:7px 9px;font-size:9px}
+.chip{padding:10px 15px;border-radius:30px;border:1px solid #e7eaf2;white-space:nowrap;color:#555;font-size:12px;background:white;font-weight:700}
+.chip.on{background:#ff3152;color:#fff;border-color:#ff3152}
+h3{font-size:16px;margin:15px 0 11px}
+.cats{margin-bottom:18px}.cats .chip{font-size:11px;padding:9px 12px}.cats .chip.on{background:#fff0f3;color:#ff3152}
+.heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.heading strong{font-size:16px}.heading small{color:#999;font-size:11px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.product{border:1px solid #eceef3;border-radius:13px;overflow:hidden;cursor:pointer;background:#fff}
+.image{height:160px;margin:7px;background:linear-gradient(135deg,#fff7f8,#f5f7fb);border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative}
+.image img{width:100%;height:100%;object-fit:contain}.image .pill{position:absolute;top:6px;left:6px;background:#ff3152;color:white;padding:4px 6px;border-radius:5px;font-size:10px;font-weight:800}
+.meta{padding:6px 9px 13px}.meta b{font-size:11px}.meta .name{font-size:12px;line-height:1.4;height:37px;overflow:hidden;margin-top:5px}.price{font-size:16px;font-weight:900;color:#ff3152;margin-top:8px}
+.old{font-size:10px;color:#9aa;text-decoration:line-through;margin-left:5px}
+.msg{color:#7d8491;text-align:center;padding:33px 10px;font-size:12px}
+.nav{position:fixed;bottom:0;width:100%;max-width:445px;display:flex;justify-content:space-around;background:#fff;border-top:1px solid #e8eaf0;padding:11px 4px 18px;z-index:20}
+.nav button{background:none;border:0;color:#777;font-size:10px;flex:1}.nav button.active{color:#ff3152;font-weight:900}.nav button span{display:block;font-size:21px}
+.overlay{position:fixed;inset:0;background:#0006;z-index:30;display:none;justify-content:center;align-items:end}
+.sheet{background:#fff;max-width:445px;width:100%;border-radius:17px 17px 0 0;padding:15px;max-height:91vh;overflow:auto}
+.sheet .close{float:right;border:0;font-size:25px;background:none}.gallery{width:100%;height:220px;object-fit:contain;background:#fff7f8}
+.detailname{font-size:18px;font-weight:900;margin:10px 0}.detailprice{font-size:23px;font-weight:900;color:#ff3152}
+.opt{width:100%;text-align:left;border:1px solid #ddd;padding:11px;border-radius:10px;margin:6px 0;background:#fff}.opt.selected{border-color:#ff3152;background:#fff0f3}.notice{font-size:11px;color:#777;margin:14px 0;line-height:1.5}
+</style></head>
+<body><div class="phone">
+<header class="brand"><div class="brandtop"><strong>K-TAXBACK</strong><small>K-BEAUTY · KOREA</small></div>
+<h1 id="welcome">韩国美妆精选</h1><div class="row" id="langs"></div></header>
+<main class="main">
+<div class="search"><span>⌕</span><input id="search" placeholder="搜索韩国商品或品牌"><button class="go" id="searchbtn">GO</button></div>
+<section class="hero"><small>THE KOREAN BEAUTY EDIT</small><h2>K-TAXBACK <span>✦</span></h2><p>SKINCARE · MAKEUP · HAIR · BODY</p><b>KOREA BEAUTY SELECTION</b></section>
+<div class="row" id="sorts"></div><h3 id="catTitle">分类</h3><div class="row cats" id="cats"></div>
+<div class="heading"><strong id="shelf">BEST SELLERS</strong><small id="counter">0 ITEMS</small></div>
+<div class="grid" id="products"></div><div class="msg" id="status">Loading...</div><button id="more" style="display:none;width:100%;margin:16px 0;border:1px solid #ffd2da;color:#ff3152;background:#fff;border-radius:20px;padding:12px">加载更多 ↓</button>
+</main><nav class="nav" id="nav">
+<button data-tab="home" class="active"><span>⌂</span>HOME</button>
+<button data-tab="category"><span>▦</span>分类</button>
+<button data-tab="wishlist"><span>♡</span>收藏</button>
+<button data-tab="cart"><span>▣</span>购物袋</button>
+<button data-tab="services"><span>✈</span>韩国旅行</button>
+</nav></div>
+<div class="overlay" id="overlay"><div class="sheet"><button class="close" id="close">×</button><div id="details"></div></div></div>
+<script>
+(function(){
+const langLabels=[["zh_cn","简体中文"],["zh_tw","繁體中文"],["jp","日本語"],["en","English"]];
+const labels={
+zh_cn:{title:"韩国美妆精选",cat:"分类",best:"热卖",new:"新品",sale:"优惠",price:"价格",search:"搜索韩国商品或品牌",empty:"暂无商品",bag:"加入本地购物袋"},
+zh_tw:{title:"韓國美妝精選",cat:"分類",best:"熱賣",new:"新品",sale:"優惠",price:"價格",search:"搜尋韓國商品或品牌",empty:"暫無商品",bag:"加入本地購物袋"},
+jp:{title:"韓国コスメセレクト",cat:"カテゴリー",best:"人気",new:"新着",sale:"セール",price:"価格",search:"商品・ブランドを検索",empty:"商品がありません",bag:"バッグに追加"},
+en:{title:"K-Beauty Edit",cat:"Categories",best:"Best",new:"New",sale:"Sale",price:"Price",search:"Search Korean beauty",empty:"No products",bag:"Add to local bag"}
+};
+let lang="zh_cn",sort="best",cat="all",page=1,tab="home",keyword="",saved={favorites:[],bag:[]},categories=[],products=[],more=false;
+try{saved=JSON.parse(localStorage.getItem("ktax-preview-saved")||"{}");saved.favorites=saved.favorites||[];saved.bag=saved.bag||[]}catch(e){}
+const $=id=>document.getElementById(id);
+const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n};
+const money=n=>"US$"+Number(n||0).toFixed(2);
+async function read(url){const r=await fetch(url);if(!r.ok)throw Error("HTTP "+r.status);return r.json()}
+function chip(parent,text,selected,fn){const b=el("button","chip"+(selected?" on":""),text);b.onclick=fn;parent.append(b)}
+function ui(){
+ $("welcome").textContent=labels[lang].title;$("catTitle").textContent=labels[lang].cat;$("search").placeholder=labels[lang].search;
+ $("langs").replaceChildren();langLabels.forEach(a=>chip($("langs"),a[1],lang===a[0],()=>{lang=a[0];load(true)}));
+ $("sorts").replaceChildren();[["best",labels[lang].best],["new",labels[lang].new],["sale",labels[lang].sale],["price_asc",labels[lang].price]]
+ .forEach(a=>chip($("sorts"),a[1],sort===a[0],()=>{sort=a[0];load(true)}));
+ $("cats").replaceChildren();chip($("cats"),lang==="en"?"All":"全部",cat==="all",()=>{cat="all";load(true)});
+ categories.forEach(x=>chip($("cats"),x.label,cat===x.id,()=>{cat=x.id;load(true)}));
+ $("shelf").textContent=tab==="wishlist"?"WISHLIST":tab==="cart"?"SHOPPING BAG":sort==="best"?"BEST SELLERS":sort==="new"?"NEW ARRIVALS":sort==="sale"?"HOT DEAL":"K-BEAUTY PRODUCTS";
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab))
+}
+function render(){
+ ui();$("products").replaceChildren();$("counter").textContent=products.length+" ITEMS";
+ for(const p of products){
+ const c=el("article","product");const img=el("div","image");
+ if(p.image){const photo=el("img");photo.src=p.image;photo.alt=p.name;photo.loading="lazy";img.append(photo)}
+ if(p.discount){img.append(el("span","pill",p.discount+"% OFF"))}
+ const meta=el("div","meta");meta.append(el("b","",p.brand),el("div","name",p.name));
+ const price=el("div","price",money(p.price));
+ if(p.regularPrice>p.price)price.append(el("small","old",money(p.regularPrice)));
+ meta.append(price);c.append(img,meta);c.onclick=()=>detail(p.id);$("products").append(c)
+ }
+ $("status").textContent=products.length? "":labels[lang].empty;
+ $("more").style.display=more?"block":"none"
+}
+async function load(reset){
+ if(tab==="wishlist"||tab==="cart"){
+ products=tab==="wishlist"?saved.favorites:saved.bag.map(x=>x.product);more=false;render();return
+ }
+ if(reset){page=1;products=[]}
+ $("status").textContent="Loading...";
+ try{
+ const q=new URLSearchParams({lang,category:cat,sort,keyword,page:String(page),size:"20"});
+ const data=await read("/v1/ktaxback/miniapp/products?"+q.toString());
+ categories=data.categories||[];products=reset?data.products:products.concat(data.products);
+ more=data.hasMore;render()
+ }catch(e){$("status").textContent="Error: "+e.message}
+}
+async function detail(id){
+ $("overlay").style.display="flex";$("details").replaceChildren();$("details").append(el("div","msg","Loading..."));
+ try{
+ const d=await read("/v1/ktaxback/miniapp/products/"+encodeURIComponent(id)+"?lang="+lang);
+ const root=$("details");root.replaceChildren();const p=d.product;
+ if(d.images&&d.images.length){const image=el("img","gallery");image.src=d.images[0];root.append(image)}
+ root.append(el("div","detailname",p.brand+" "+p.name),el("div","detailprice",money(p.price)));
+ let selected=0;
+ (d.options||[]).forEach((o,i)=>{const b=el("button","opt"+(i===0?" selected":""),o.name+" "+(o.price!==null?money(o.price):""));b.onclick=()=>{selected=i;root.querySelectorAll(".opt").forEach(x=>x.classList.remove("selected"));b.classList.add("selected")};root.append(b)});
+ for(const k of ["summary","ingredients","howToUse"]){if(d.description&&d.description[k])root.append(el("p","notice",d.description[k]))}
+ root.append(el("p","notice","本地预览购物清单 · 未开放订单与支付"));
+ const wish=el("button","opt","♡ Wishlist");wish.onclick=()=>{if(!saved.favorites.some(x=>x.id===p.id))saved.favorites.push(p);localStorage.setItem("ktax-preview-saved",JSON.stringify(saved));wish.textContent="♥ Saved"};root.append(wish);
+ const add=el("button","go",labels[lang].bag);add.style.width="100%";add.onclick=()=>{saved.bag.push({product:p,option:(d.options||[])[selected]?.name||"",quantity:1});localStorage.setItem("ktax-preview-saved",JSON.stringify(saved));add.textContent="✓ Saved to local bag"};root.append(add)
+ }catch(e){$("details").textContent=e.message}
+}
+$("close").onclick=()=>{$("overlay").style.display="none"};
+$("overlay").onclick=e=>{if(e.target===$("overlay"))$("overlay").style.display="none"};
+$("searchbtn").onclick=()=>{keyword=$("search").value;tab="home";load(true)};
+$("search").onkeydown=e=>{if(e.key==="Enter")$("searchbtn").click()};
+$("more").onclick=()=>{page++;load(false)};
+$("nav").onclick=e=>{
+ const b=e.target.closest("button");if(!b)return;tab=b.dataset.tab;
+ if(tab==="services"){alert("Existing travel/reservation services remain in the native miniapp's separate menu.");tab="home"}
+ if(tab==="home"||tab==="category"){cat="all";sort="best";keyword=""}
+ load(true)
+};
+load(true)
+})();
+</script></body></html>
