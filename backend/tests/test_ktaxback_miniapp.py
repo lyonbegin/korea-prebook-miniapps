@@ -21,18 +21,18 @@ def fixture_catalog(cli):
     seed(cli,"products",[
         {"prdt_no":"GA12345","prdt_name":"Original Serum","brand_no":"B01",
          "category_id":"1000000008","sale_amt":18,"nrml_amt":30,"best_yn":"Y",
-         "review_cnt":100,"image_path":"prdtImg/catalog.jpg"},
+         "review_cnt":100,"new_yn":"N","image_path":"prdtImg/catalog.jpg"},
         {"prdt_no":"GA54321","prdt_name":"Another Cream","brand_no":"B01",
-         "category_id":"1000000008","sale_amt":8,"nrml_amt":10,"new_yn":"Y",
-         "image_path":"prdtImg/cream.jpg"},
+         "category_id":"1000000008","sale_amt":8,"nrml_amt":10,"new_yn":"Y","best_yn":"N",
+         "review_cnt":0,"image_path":"prdtImg/cream.jpg"},
     ])
     seed(cli,"product_names_i18n",[{
         "prdt_no":"GA12345","lang_code":"zh_cn","prdt_name":"精华液"}])
     seed(cli,"product_options",[{
-        "prdt_no":"GA12345","option_name":"50ml","sale_amt":18,
+        "option_id":1,"prdt_no":"GA12345","option_name":"50ml","sale_amt":18,
         "in_stock":1,"is_default":1}])
     seed(cli,"product_images",[{
-        "prdt_no":"GA12345","lang_code":"en","image_type":"gallery",
+        "image_id":1,"prdt_no":"GA12345","lang_code":"en","image_type":"gallery",
         "image_path":"prdtImg/gallery.jpg","sort_order":0}])
     seed(cli,"product_details",[{
         "prdt_no":"GA12345","lang_code":"en","why_we_love_it":"Feels light",
