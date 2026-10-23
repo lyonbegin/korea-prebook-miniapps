@@ -46,6 +46,10 @@ th{background:#f7faff;position:sticky;top:0}.scroll{overflow:auto;max-height:480
 <div class="toolbar"><button id="translation-reload" class="primary">원본 번역 요청·DB 결과 다시 조회</button>
 <span id="translation-note" class="muted">관리자 인증 후 조회</span></div>
 <div class="metrics" id="translation-metrics"></div>
+<h3>대표 카테고리별 번역 API 수집·DB 검증</h3>
+<div class="scroll"><table><thead><tr>
+<th>카테고리</th><th>언어</th><th>HTTP</th><th>원문</th><th>응답</th><th>DB 검증</th><th>거부</th><th>오류</th>
+</tr></thead><tbody id="translation-category-events"></tbody></table></div>
 <h3>원본 HTTP 요청·응답 및 PostgreSQL 저장 내역</h3>
 <div class="scroll"><table><thead><tr><th>언어</th><th>HTTP 상태</th><th>원문 건수</th><th>번역 응답</th><th>DB 저장</th><th>재조회 검증</th><th>거부</th><th>오류</th></tr></thead><tbody id="translation-events"></tbody></table></div>
 </section>
@@ -179,6 +183,17 @@ async function translationReport(){
    card.append(label,value);root.append(card);
   });
   $("translation-note").textContent="원본 API 응답 기준 · DB 검증 건수만 표시 (vi_vn 제외)";
+  const catRows=$("translation-category-events");catRows.replaceChildren();
+  (r.category_results||[]).forEach(evt=>{
+    const tr=document.createElement("tr");
+    ["category_id","lang_code","http_status","requested","source_returned",
+     "db_verified","rejected","error"].forEach(key=>cell(tr,evt[key]));
+    if(evt.http_status!==200)tr.className="failed";
+    catRows.append(tr);
+  });
+  if(!(r.category_results||[]).length){
+    const tr=document.createElement("tr");cell(tr,"카테고리별 번역 응답 기록 없음");catRows.append(tr);
+  }
   const table=$("translation-events");table.replaceChildren();
   (r.events||[]).forEach(evt=>{
    const tr=document.createElement("tr");
