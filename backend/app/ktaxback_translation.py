@@ -41,6 +41,7 @@ class SourceAssignment(BaseModel):
 
 
 class SourceTranslation(BaseModel):
+    category_id: str = Field(default="", max_length=12)
     lang_code: str
     source_url: str
     response_status: int = Field(ge=0, le=599)
@@ -58,6 +59,16 @@ def mount_translation(app, engine):
             requested INTEGER NOT NULL, returned INTEGER NOT NULL,
             accepted INTEGER NOT NULL, verified INTEGER NOT NULL,
             rejected INTEGER NOT NULL, error TEXT NOT NULL, recorded_at TEXT NOT NULL
+        )"""))
+
+    with engine.begin() as con:
+        con.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_translation_category_audit (
+            category_id TEXT NOT NULL, lang_code TEXT NOT NULL,
+            http_status INTEGER NOT NULL, requested INTEGER NOT NULL,
+            source_returned INTEGER NOT NULL, db_verified INTEGER NOT NULL,
+            rejected INTEGER NOT NULL, error TEXT NOT NULL,
+            observed_at TEXT NOT NULL,
+            PRIMARY KEY(category_id,lang_code)
         )"""))
 
     def auth(token):
@@ -154,6 +165,8 @@ def mount_translation(app, engine):
         lang = data.lang_code
         if lang not in LANG_TARGET:
             raise HTTPException(422, "Unsupported target language; vi_vn excluded")
+        if data.category_id and not re.fullmatch(r"[0-9]{10}",data.category_id):
+            raise HTTPException(422, "Invalid real Olive Young category")
         parsed = urlparse(data.source_url)
         if parsed.scheme != "https" or parsed.hostname != "translation.oliveyoung.com" \
            or parsed.path != "/public/translate-texts":
@@ -239,6 +252,18 @@ def mount_translation(app, engine):
                     else:
                         raise HTTPException(500, "Translation DB read-back failed")
 
+            if data.category_id:
+                con.execute(text("""INSERT INTO korea_prebook_kt_translation_category_audit
+                     (category_id,lang_code,http_status,requested,source_returned,
+                      db_verified,rejected,error,observed_at)
+                     VALUES (:cid,:lang,:http,:req,:returned,:verified,:rejected,:error,:now)
+                     ON CONFLICT(category_id,lang_code) DO UPDATE SET
+                       http_status=:http,requested=:req,source_returned=:returned,
+                       db_verified=:verified,rejected=:rejected,
+                       error=:error,observed_at=:now"""),
+                     {"cid":data.category_id,"lang":lang,"http":status,
+                      "req":len(sent),"returned":len(returned),"verified":verified,
+                      "rejected":rejected,"error":error[:600],"now":utcnow()})
             con.execute(text("""INSERT INTO korea_prebook_kt_translation_audit (
                 id,lang_code,source_endpoint,http_status,requested,returned,accepted,
                 verified,rejected,error,recorded_at)
@@ -248,7 +273,8 @@ def mount_translation(app, engine):
                  "requested": len(sent), "returned": len(returned),
                  "accepted": accepted, "verified": verified, "rejected": rejected,
                  "error": error[:600], "now": utcnow()})
-        return {"lang_code": lang, "http_status": status, "requested": len(sent),
+        return {"category_id":data.category_id,"lang_code": lang,
+                "http_status": status, "requested": len(sent),
                 "translated_returned": len(returned), "db_inserted": accepted,
                 "db_verified": verified, "rejected": rejected,
                 "source": SOURCE, "error": error}
@@ -266,5 +292,12 @@ def mount_translation(app, engine):
                 SELECT lang_code,COUNT(*) AS rows FROM korea_prebook_kt_product_translations
                 WHERE lang_code IN ('jp','zh_cn','zh_tw') GROUP BY lang_code
             """)).mappings()]
+            categories=[dict(row) for row in con.execute(text("""
+                SELECT category_id,lang_code,http_status,requested,
+                       source_returned,db_verified,rejected,error,observed_at
+                FROM korea_prebook_kt_translation_category_audit
+                ORDER BY category_id,lang_code
+            """)).mappings()]
         return {"source": SOURCE, "languages": list(LANG_TARGET), "events": events,
-                "persisted_rows_by_language": actual}
+                "persisted_rows_by_language": actual,
+                "category_results":categories}
