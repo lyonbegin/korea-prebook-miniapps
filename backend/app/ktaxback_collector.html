@@ -38,6 +38,17 @@ th{background:#f7faff;position:sticky;top:0}.scroll{overflow:auto;max-height:480
 <h3>언어별 원본 테이블 저장 검증</h3>
 <div class="scroll"><table><thead><tr><th>카테고리</th><th>언어</th><th>원본 응답</th><th>선택 10건</th><th>실제 DB 저장</th><th>검증</th><th>미번역</th><th>결과/오류</th></tr></thead><tbody id="pilot-tasks"></tbody></table></div>
 </section>
+<section id="original-translation">
+<h2>원본 올리브영 번역 API · 언어별 DB 저장 검증</h2>
+<p class="muted">기존 batch_translate.py가 사용하는 https://translation.oliveyoung.com/public/translate-texts
+실제 HTTP 응답을 기준으로만 저장합니다. 상품명이나 옵션의 영어 문장을 다국어로 위장하지 않습니다.
+접근 제한(403 등)은 실패 이력으로 남기며, 베트남어는 수집 대상에서 제외했습니다.</p>
+<div class="toolbar"><button id="translation-reload" class="primary">원본 번역 요청·DB 결과 다시 조회</button>
+<span id="translation-note" class="muted">관리자 인증 후 조회</span></div>
+<div class="metrics" id="translation-metrics"></div>
+<h3>원본 HTTP 요청·응답 및 PostgreSQL 저장 내역</h3>
+<div class="scroll"><table><thead><tr><th>언어</th><th>HTTP 상태</th><th>원문 건수</th><th>번역 응답</th><th>DB 저장</th><th>재조회 검증</th><th>거부</th><th>오류</th></tr></thead><tbody id="translation-events"></tbody></table></div>
+</section>
 <section><h2>PostgreSQL 테이블별 실제 저장 건수</h2>
 <div id="metrics" class="metrics"></div>
 <p class="muted" id="counts-note">0이면 미수집 상태입니다. 숫자는 서버 DB의 SELECT COUNT(*) 결과입니다.</p></section>
@@ -152,6 +163,34 @@ async function loadProducts(){
   if(!data.rows?.length)root.textContent="DB에 저장된 상품 없음";
  }catch(e){notice("상품 조회: "+e.message)}
 }
+async function translationReport(){
+ if(!token)return;
+ try{
+  const r=await api("/manager/api/ktaxback/translation/status");
+  const root=$("translation-metrics");root.replaceChildren();
+  const counts={jp:0,zh_cn:0,zh_tw:0};
+  (r.persisted_rows_by_language||[]).forEach(x=>{
+   if(x.lang_code in counts)counts[x.lang_code]=x.rows;
+  });
+  Object.entries(counts).forEach(([lang,count])=>{
+   const card=document.createElement("div");card.className="metric";
+   const label=document.createElement("span");label.textContent=lang+" 번역 레코드";
+   const value=document.createElement("strong");value.textContent=Number(count).toLocaleString("ko-KR");
+   card.append(label,value);root.append(card);
+  });
+  $("translation-note").textContent="원본 API 응답 기준 · DB 검증 건수만 표시 (vi_vn 제외)";
+  const table=$("translation-events");table.replaceChildren();
+  (r.events||[]).forEach(evt=>{
+   const tr=document.createElement("tr");
+   ["lang_code","http_status","requested","returned","accepted","verified","rejected","error"].forEach(key=>cell(tr,evt[key]));
+   if(evt.http_status!==200)tr.className="failed";
+   table.append(tr);
+  });
+  if(!(r.events||[]).length){const tr=document.createElement("tr");cell(tr,"번역 API 호출 기록 없음");table.append(tr)}
+ }catch(e){$("translation-note").textContent=e.message}
+}
+$("translation-reload").onclick=translationReport;
+
 async function pilotReport(){
  if(!token)return;
  try{
@@ -203,7 +242,7 @@ async function act(url,data){
  if(!token){notice("먼저 인증해주세요");return}
  try{const v=await api(url,"POST",data);notice(JSON.stringify(v));await refresh()}catch(e){notice(e.message)}
 }
-$("connect").onclick=async()=>{token=$("auth").value.trim();sessionStorage.setItem("prebook_admin_token",token);await refresh();await pilotReport()};
+$("connect").onclick=async()=>{token=$("auth").value.trim();sessionStorage.setItem("prebook_admin_token",token);await refresh();await pilotReport();await translationReport()};
 $("reload").onclick=refresh;
 $("cat-search").oninput=showCategories;$("cat-state").onchange=showCategories;
 $("product-load").onclick=loadProducts;
