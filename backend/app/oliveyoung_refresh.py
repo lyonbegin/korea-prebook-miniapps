@@ -5,7 +5,8 @@ network response -> seed.py upsert), without a Windows Chrome dependency.
 """
 from __future__ import annotations
 
-import json, os, re, secrets, uuid
+import json, os, re, secrets, uuid, hashlib
+from html import unescape
 from datetime import datetime, timezone, timedelta
 from urllib.parse import urlparse
 from fastapi import Header, HTTPException
@@ -94,6 +95,15 @@ def mount_oliveyoung_refresh(app,engine):
            previous_price REAL, current_price REAL, source VARCHAR(40) NOT NULL,
            job_id VARCHAR(36) NOT NULL, observed_at TEXT NOT NULL)"""))
 
+        c.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_capture_pages
+          (job_id VARCHAR(36) NOT NULL, category_id TEXT NOT NULL, page_index INTEGER NOT NULL,
+           source_url TEXT, raw_items INTEGER NOT NULL, normalized INTEGER NOT NULL,
+           inserted INTEGER NOT NULL, updated INTEGER NOT NULL, verified INTEGER NOT NULL,
+           brands INTEGER NOT NULL, categories INTEGER NOT NULL, filters INTEGER NOT NULL,
+           fingerprint TEXT NOT NULL, sample_json TEXT NOT NULL, state TEXT NOT NULL,
+           error TEXT NOT NULL, checked_at TEXT NOT NULL,
+           PRIMARY KEY(job_id,category_id,page_index))"""))
+
     def auth(v):
         key=os.getenv("ADMIN_API_TOKEN","")
         if not key or not v or not secrets.compare_digest(v,"Bearer "+key):
@@ -106,9 +116,10 @@ def mount_oliveyoung_refresh(app,engine):
             raise HTTPException(409,"K-TAXBACK 카테고리 스키마를 먼저 이관해야 합니다")
 
     def categories():
-        t=Table("korea_prebook_kt_categories",MetaData(),autoload_with=engine)
+        # Original 150 olive.py category targets, not imported old DB records.
         with engine.connect() as c:
-            return [str(x) for x in c.execute(select(t.c.category_id)).scalars().all()]
+            return [str(x) for x in c.execute(text(
+                "SELECT category_id FROM korea_prebook_kt_category_targets ORDER BY priority")).scalars().all()]
 
     def job_record(jid):
         with engine.connect() as c:
@@ -119,8 +130,8 @@ def mount_oliveyoung_refresh(app,engine):
 
     def create_job(data:RefreshIn, auto=False):
         ready()
-        available=sorted(x for x in categories() if x!="1000000001")
-        known=set(available)|{"1000000001"}
+        available=[x for x in categories() if x!="1000000001"]
+        known=set(categories())
         if data.category_ids:
             ids=list(dict.fromkeys(data.category_ids))
         else:
@@ -192,6 +203,63 @@ def mount_oliveyoung_refresh(app,engine):
             if exc.status_code==409:return {"scheduled":False,"reason":"active_job"}
             raise
 
+    @app.get("/manager/api/ktaxback/refresh/overview")
+    def overview(authorization:str|None=Header(None)):
+        auth(authorization)
+        t=Table("korea_prebook_kt_products",MetaData(),autoload_with=engine)
+        with engine.connect() as c:
+            counts={}
+            for name in ("products","brands","categories","category_filters","product_images",
+                         "product_options","product_details","product_attributes"):
+                counts[name]=c.execute(text("SELECT count(*) FROM korea_prebook_kt_"+name)).scalar_one()
+            statuses=[dict(x) for x in c.execute(text("""
+                SELECT category_id,priority,display_name,last_state,last_error,last_checked,
+                  last_products FROM korea_prebook_kt_category_targets ORDER BY priority
+            """)).mappings()]
+            pages=[dict(x) for x in c.execute(text("""
+                SELECT job_id,category_id,page_index,raw_items,normalized,inserted,updated,
+                 verified,brands,categories,filters,state,error,checked_at,source_url
+                 FROM korea_prebook_kt_capture_pages ORDER BY checked_at DESC LIMIT 100
+            """)).mappings()]
+        return {"source":"global.oliveyoung.com","original_category_targets":len(statuses),
+                "catalogue_db":counts,"categories":statuses,"pages":pages,
+                "legacy_db_imported":False}
+
+    @app.get("/manager/api/ktaxback/refresh/catalogue")
+    def catalogue(category_id:str="",q:str="",limit:int=30,
+                  authorization:str|None=Header(None)):
+        auth(authorization)
+        if limit<1 or limit>100:raise HTTPException(422,"limit 1..100")
+        t=Table("korea_prebook_kt_products",MetaData(),autoload_with=engine)
+        query=select(t.c.prdt_no,t.c.prdt_name,t.c.brand_no,t.c.category_id,
+                     t.c.sale_amt,t.c.nrml_amt,t.c.image_path)
+        if category_id:query=query.where(t.c.category_id==category_id)
+        if q:query=query.where(t.c.prdt_name.ilike("%"+q[:80]+"%"))
+        with engine.connect() as c:
+            rows=[dict(x) for x in c.execute(query.limit(limit)).mappings()]
+        return {"rows":rows,"count":len(rows)}
+
+    @app.post("/manager/api/ktaxback/refresh/worker/{jid}/page_error")
+    def page_error(jid:str,data:CaptureIn,authorization:str|None=Header(None)):
+        auth(authorization)
+        job=job_record(jid)
+        if job["state"]!="running" or data.category_id not in json.loads(job["category_ids"]):
+            raise HTTPException(409,"No running job for category")
+        reason=str(data.payload.get("error") or "No Olive Young product-data response")[:1200]
+        with engine.begin() as c:
+            c.execute(text("""INSERT INTO korea_prebook_kt_capture_pages
+                (job_id,category_id,page_index,source_url,raw_items,normalized,inserted,
+                 updated,verified,brands,categories,filters,fingerprint,sample_json,state,error,checked_at)
+                 VALUES(:job,:cat,:page,:url,0,0,0,0,0,0,0,0,'','[]','failed',:err,:at)
+                 ON CONFLICT(job_id,category_id,page_index) DO UPDATE
+                 SET state='failed',error=:err,checked_at=:at"""),
+                 {"job":jid,"cat":data.category_id,"page":data.page_index,
+                  "url":data.source_url[:1000],"err":reason,"at":now()})
+            c.execute(text("""UPDATE korea_prebook_kt_category_targets
+                SET last_state='failed',last_error=:error,last_checked=:at
+                WHERE category_id=:id"""),{"error":reason,"at":now(),"id":data.category_id})
+        return {"logged":True,"category":data.category_id,"error":reason}
+
     @app.post("/manager/api/ktaxback/refresh/worker/{jid}/capture")
     def capture(jid:str,data:CaptureIn,authorization:str|None=Header(None)):
         auth(authorization)
@@ -208,52 +276,151 @@ def mount_oliveyoung_refresh(app,engine):
         hits=data.payload["hits"].get("hit",[])
         if not isinstance(hits,list) or len(hits)>MAX_HITS:
             raise HTTPException(422,"응답 개수 초과/형식 오류")
-        unique={}
+        unique={};fields={}
         for hit in hits:
             if isinstance(hit,dict) and isinstance(hit.get("fields"),dict):
                 normalized=normalize_hit(hit["fields"])
-                if normalized:unique[normalized["prdt_no"]]=normalized
+                if normalized:
+                    unique[normalized["prdt_no"]]=normalized
+                    fields[normalized["prdt_no"]]=hit["fields"]
         if hits and not unique:
             raise HTTPException(422,"유효한 상품 식별번호를 찾지 못했습니다")
-        t=Table("korea_prebook_kt_products",MetaData(),autoload_with=engine)
-        allowed=set(t.c.keys())
-        changes=0
+        fingerprint=hashlib.sha256(json.dumps(data.payload,
+            ensure_ascii=False,sort_keys=True).encode()).hexdigest()
+        p=Table("korea_prebook_kt_products",MetaData(),autoload_with=engine)
+        b=Table("korea_prebook_kt_brands",MetaData(),autoload_with=engine)
+        cat=Table("korea_prebook_kt_categories",MetaData(),autoload_with=engine)
+        attrs=Table("korea_prebook_kt_product_attributes",MetaData(),autoload_with=engine)
+        filters=Table("korea_prebook_kt_category_filters",MetaData(),autoload_with=engine)
+        definitions=Table("korea_prebook_kt_attribute_defs",MetaData(),autoload_with=engine)
+        old_added=updated=changes=brand_count=cat_count=filter_count=0
+        seen={};new_fields=set(p.c.keys())
+        dialect=engine.dialect.name
+        def upsert(connection,table,row,keys):
+            stmt=pg_insert(table).values(**row) if dialect=="postgresql" else sqlite_insert(table).values(**row)
+            others={col:stmt.excluded[col] for col in row if col not in keys}
+            if others:stmt=stmt.on_conflict_do_update(index_elements=keys,set_=others)
+            else:stmt=stmt.on_conflict_do_nothing(index_elements=keys)
+            connection.execute(stmt)
+
         with engine.begin() as c:
-            for row in unique.values():
-                number=row["prdt_no"]
-                previous=c.execute(select(t).where(t.c.prdt_no==number)).mappings().first()
-                record={k:v for k,v in row.items() if k in allowed}
-                if previous is None:
-                    record.setdefault("nrml_amt",0.0)
-                    record.setdefault("sale_amt",0.0)
+            existing=c.execute(text("""SELECT fingerprint,state FROM korea_prebook_kt_capture_pages
+                WHERE job_id=:j AND category_id=:id AND page_index=:n"""),
+                {"j":jid,"id":data.category_id,"n":data.page_index}).mappings().first()
+            if existing:
+                if existing["fingerprint"] != fingerprint:
+                    raise HTTPException(409,"Different response for already saved page")
+                return {"accepted":len(unique),"changed_prices":0,
+                        "verified":len(unique),"duplicate_page":True,"job_id":jid}
+            for facet in data.payload.get("categoryFacets") or []:
+                textval=unescape(str(facet.get("value") or ""))
+                if ">" in textval:
+                    parent,rest=textval.split(">",1)
                 else:
-                    # Original seed.py logic: partial pages cannot erase valid
-                    # values; zero price from missing data must not clobber.
+                    parent,rest=None,textval
+                parts=rest.split("^")
+                if len(parts)!=3:continue
+                depth,cid,cname=parts
+                if not re.fullmatch(r"\d{10}",cid):continue
+                if not depth.isdigit():continue
+                seen[cid]=(cname,parent,int(depth),int(facet.get("count") or 0))
+            seen.setdefault(data.category_id,(data.category_id,None,9,0))
+            # FK parent placeholders if observed category parent missing.
+            for cid,(name,parent,depth,n) in seen.items():
+                if parent and parent not in seen:
+                    upsert(c,cat,{"category_id":parent,"category_name":parent,"depth":1,"product_count":0},["category_id"])
+                previous=c.execute(select(cat.c.category_name).where(cat.c.category_id==cid)).scalar_one_or_none()
+                updated_name=name if name!=cid else (previous or cid)
+                upsert(c,cat,{"category_id":cid,"category_name":updated_name,"depth":depth,"parent_id":parent,"product_count":n},["category_id"])
+                cat_count+=1
+            facet_brands={}
+            for facet in data.payload.get("brandFacets") or []:
+                value=unescape(str(facet.get("value") or ""))
+                split=value.split("^",1)
+                if len(split)==2:facet_brands[split[0]]=split[1]
+            for number,row in unique.items():
+                raw=fields[number];brand=row.get("brand_no")
+                if brand:
+                    label=unescape(str(raw.get("brandName") or facet_brands.get(brand) or brand))
+                    if label==brand:
+                        old_brand=c.execute(select(b.c.brand_name).where(b.c.brand_no==brand)).scalar_one_or_none()
+                        label=old_brand or label
+                    upsert(c,b,{"brand_no":brand,"brand_name":label},["brand_no"])
+                    brand_count+=1
+                cid=row.get("category_id")
+                if cid and cid not in seen:
+                    upsert(c,cat,{"category_id":cid,"category_name":cid,"depth":9,"product_count":0},["category_id"])
+                previous=c.execute(select(p).where(p.c.prdt_no==number)).mappings().first()
+                record={k:v for k,v in row.items() if k in new_fields}
+                if previous is None:
+                    record.setdefault("nrml_amt",0.0);record.setdefault("sale_amt",0.0)
+                    old_added+=1
+                else:
+                    updated+=1
                     for price_col in ("nrml_amt","sale_amt"):
                         if record.get(price_col)==0 and previous.get(price_col):
                             record.pop(price_col,None)
-                dialect=engine.dialect.name
-                stmt=pg_insert(t).values(**record) if dialect=="postgresql" else sqlite_insert(t).values(**record)
-                values={col:stmt.excluded[col] for col in record if col!="prdt_no"}
-                if values:stmt=stmt.on_conflict_do_update(index_elements=["prdt_no"],set_=values)
-                else:stmt=stmt.on_conflict_do_nothing(index_elements=["prdt_no"])
-                c.execute(stmt)
+                upsert(c,p,record,["prdt_no"])
                 new_price=record.get("sale_amt")
                 old_price=previous.get("sale_amt") if previous else None
                 if new_price is not None and old_price is not None and abs(float(new_price)-float(old_price))>0.0001:
                     c.execute(text("""INSERT INTO korea_prebook_kt_price_history
-                     (id,prdt_no,previous_price,current_price,source,job_id,observed_at)
-                     VALUES(:id,:prdt,:old,:new,'oliveyoung',:jid,:at)"""),
-                     {"id":str(uuid.uuid4()),"prdt":number,"old":old_price,"new":new_price,"jid":jid,"at":now()})
+                      (id,prdt_no,previous_price,current_price,source,job_id,observed_at)
+                      VALUES(:id,:prdt,:old,:new,'oliveyoung',:jid,:at)"""),
+                      {"id":str(uuid.uuid4()),"prdt":number,"old":old_price,
+                       "new":new_price,"jid":jid,"at":now()})
                     changes+=1
+                for rawattr in raw.get("attrFacet") or []:
+                    parts=str(rawattr).split(":")
+                    if len(parts)<3:continue
+                    group,label=unescape(parts[0].strip()),unescape(parts[-1].strip())
+                    attr_id=parts[1].split("^")[-1]
+                    if not group or not label:continue
+                    if re.fullmatch(r"AT\d+",attr_id):
+                        upsert(c,definitions,{"attr_id":attr_id,"attr_group":group,"attr_name":label},["attr_id"])
+                    upsert(c,attrs,{"prdt_no":number,"attr_name":label,
+                                   "attr_id":attr_id if re.fullmatch(r"AT\d+",attr_id) else None},
+                           ["prdt_no","attr_name"])
+            for rawattr in data.payload.get("attrFacets") or []:
+                parts=str(rawattr.get("value") or "").split(":")
+                if len(parts)<3:continue
+                group,label=unescape(parts[0].strip()),unescape(parts[-1].strip())
+                if not group or not label:continue
+                # Original source has category-filter uniqueness on three fields.
+                stmt=pg_insert(filters).values(category_id=data.category_id,
+                      filter_group=group,option_name=label,option_count=int(rawattr.get("count") or 0)) if dialect=="postgresql" else sqlite_insert(filters).values(
+                      category_id=data.category_id,filter_group=group,option_name=label,option_count=int(rawattr.get("count") or 0))
+                c.execute(stmt.on_conflict_do_update(
+                    index_elements=["category_id","filter_group","option_name"],
+                    set_={"option_count":stmt.excluded.option_count}))
+                filter_count+=1
+            saved=set(c.execute(select(p.c.prdt_no).where(p.c.prdt_no.in_(list(unique)))).scalars().all()) if unique else set()
+            if len(saved)!=len(unique):
+                raise HTTPException(500,"DB read-after-write verification failed")
+            c.execute(text("""INSERT INTO korea_prebook_kt_capture_pages
+                (job_id,category_id,page_index,source_url,raw_items,normalized,inserted,updated,
+                 verified,brands,categories,filters,fingerprint,sample_json,state,error,checked_at)
+                VALUES(:j,:cid,:pg,:url,:raw,:norm,:ins,:upd,:verified,:brands,:cats,:flt,
+                       :fingerprint,:sample,'verified','',:ts)"""),
+                {"j":jid,"cid":data.category_id,"pg":data.page_index,"url":data.source_url[:1000],
+                 "raw":len(hits),"norm":len(unique),"ins":old_added,"upd":updated,
+                 "verified":len(saved),"brands":brand_count,"cats":cat_count,"flt":filter_count,
+                 "fingerprint":fingerprint,
+                 "sample":json.dumps(list(unique.values())[:2],ensure_ascii=False)[:7000],"ts":now()})
             c.execute(text("""UPDATE korea_prebook_kt_refresh_jobs
-                SET pages=pages+1,processed=processed+:n,
-                changed_prices=changed_prices+:changes,message=:msg
-                WHERE id=:jid"""),{
-                    "n":len(unique),"changes":changes,"jid":jid,
-                    "msg":data.category_id+" page "+str(data.page_index)+" -> "+str(len(unique))+" products"
-                })
-        return {"accepted":len(unique),"changed_prices":changes,"job_id":jid}
+                SET pages=pages+1,processed=processed+:n,changed_prices=changed_prices+:changes,message=:msg
+                WHERE id=:jid"""),
+                {"n":len(saved),"changes":changes,"jid":jid,
+                 "msg":data.category_id+" page "+str(data.page_index)+
+                 " saved="+str(len(saved))+" new="+str(old_added)})
+            c.execute(text("""UPDATE korea_prebook_kt_category_targets SET
+                last_state='verified',last_error='',last_checked=:ts,
+                last_products=last_products+:n,display_name=:name WHERE category_id=:id"""),
+                {"id":data.category_id,"n":len(saved),"ts":now(),
+                 "name":seen[data.category_id][0] if seen[data.category_id][0]!=data.category_id else None})
+        return {"accepted":len(unique),"inserted":old_added,"updated":updated,
+                "verified":len(saved),"brands":brand_count,"categories":cat_count,
+                "filters":filter_count,"changed_prices":changes,"job_id":jid}
 
     @app.post("/manager/api/ktaxback/refresh/worker/{jid}/detail")
     def update_product_detail(jid:str,data:ProductDetailIn,
