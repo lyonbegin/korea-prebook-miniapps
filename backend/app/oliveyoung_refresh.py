@@ -178,6 +178,32 @@ def mount_oliveyoung_refresh(app,engine):
                 ORDER BY created_at DESC LIMIT 50""")).mappings().all()
         return {"jobs":[dict(x) for x in rows]}
 
+    @app.post("/manager/api/ktaxback/refresh/worker/recover")
+    def recover_stale(authorization:str|None=Header(None)):
+        auth(authorization)
+        threshold=(datetime.now(timezone.utc)-timedelta(seconds=240)).isoformat()
+        # started_at is refreshed by the worker's heartbeat and detail updates.
+        with engine.begin() as c:
+            stale=c.execute(text("""SELECT id,pages,processed FROM korea_prebook_kt_refresh_jobs
+                WHERE state='running' AND started_at<:before"""),{"before":threshold}).mappings().all()
+            for row in stale:
+                c.execute(text("""UPDATE korea_prebook_kt_refresh_jobs
+                 SET state='failed',message=:msg,finished_at=:now WHERE id=:id AND state='running'"""),
+                 {"id":row["id"],"now":now(),
+                  "msg":"Worker interrupted; verified pages="+str(row["pages"]) +
+                        ", saved items="+str(row["processed"])+". Data preserved; next categories will continue."})
+        return {"recovered":len(stale),"interrupted":[x["id"] for x in stale]}
+
+    @app.post("/manager/api/ktaxback/refresh/worker/{jid}/heartbeat")
+    def heartbeat(jid:str,authorization:str|None=Header(None)):
+        auth(authorization)
+        with engine.begin() as c:
+            updated=c.execute(text("""UPDATE korea_prebook_kt_refresh_jobs
+                SET started_at=:now WHERE id=:id AND state='running'"""),
+                {"now":now(),"id":jid}).rowcount
+        if not updated:raise HTTPException(409,"Job not running")
+        return {"id":jid,"heartbeat":True}
+
     @app.get("/manager/api/ktaxback/refresh/worker/next")
     def next_job(authorization:str|None=Header(None)):
         auth(authorization)
