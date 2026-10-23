@@ -110,7 +110,11 @@ async def collect_category(context,jid,category,max_pages,detail_numbers):
             if queue.empty():
                 try:source,data=await asyncio.wait_for(queue.get(),timeout=7)
                 except asyncio.TimeoutError:
-                    LOG.warning("[category] %s no product-data response",category)
+                    reason="No product-data HTTP 200 JSON response after page load"
+                    LOG.warning("[category] %s %s",category,reason)
+                    await api("/manager/api/ktaxback/refresh/worker/"+jid+"/page_error","POST",{
+                        "category_id":category,"page_index":page_seq+1,
+                        "source_url":url,"payload":{"error":reason}})
                     break
             else:
                 source,data=queue.get_nowait()
@@ -161,6 +165,12 @@ async def run_job(job):
                 except Exception as exc:
                     message=f"{cid}: {type(exc).__name__} {str(exc)[:220]}"
                     errors.append(message);LOG.exception(message)
+                    try:
+                        await api("/manager/api/ktaxback/refresh/worker/"+jid+"/page_error","POST",{
+                          "category_id":cid,"page_index":1,
+                          "source_url":"https://global.oliveyoung.com/display/category?"+urlencode({"ctgrNo":cid}),
+                          "payload":{"error":message}})
+                    except Exception:LOG.exception("Could not persist category failure %s",cid)
             if total_pages and DETAIL_LIMIT and detail_numbers:
                 ok,failed=await gather_details(context,jid,sorted(detail_numbers))
                 LOG.info("[detail] completed=%d failures=%d",ok,len(failed))
@@ -174,22 +184,22 @@ async def run_job(job):
 
 async def main():
     if not KEY:raise SystemExit("ADMIN_API_TOKEN required; worker cannot start without manager authentication")
-    LOG.info("Worker started. Automatic daily updates=%s, details/job=%d, server=%s",AUTO,DETAIL_LIMIT,ROOT)
+    LOG.info("Worker started. Automatic category refresh=%s, details/job=%d, server=%s",AUTO,DETAIL_LIMIT,ROOT)
     last_auto=0
     while not EXIT:
         try:
-            if AUTO and time.monotonic()-last_auto>1800:
+            if AUTO and time.monotonic()-last_auto>90:
                 try:
                     outcome=await api("/manager/api/ktaxback/refresh/worker/auto","POST")
                     LOG.info("[auto] %s",outcome)
                 except urllib.error.HTTPError as exc:
-                    LOG.warning("[auto] HTTP %s; waiting for initial K-TAXBACK database import",exc.code)
+                    LOG.warning("[auto] HTTP %s: source collection planner is unavailable",exc.code)
                 last_auto=time.monotonic()
             try:
                 response=await api("/manager/api/ktaxback/refresh/worker/next")
             except urllib.error.HTTPError as exc:
                 if exc.code==409:
-                    LOG.info("Initial catalog import not ready; idle")
+                    LOG.info("Fresh K-TAXBACK original-schema tables are bootstrapping; idle")
                     response={"job":None}
                 else:raise
             job=response.get("job")
