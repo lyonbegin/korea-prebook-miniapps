@@ -22,11 +22,11 @@ def now():
 
 class RefreshIn(BaseModel):
     category_ids: list[str] = Field(default_factory=list, max_length=8)
-    max_pages: int = Field(default=2, ge=1, le=30)
+    max_pages: int = Field(default=2, ge=1, le=100)
 
 class CaptureIn(BaseModel):
     category_id: str
-    page_index: int = Field(ge=1, le=30)
+    page_index: int = Field(ge=1, le=100)
     source_url: str
     payload: dict
 
@@ -35,6 +35,12 @@ class ProductDetailIn(BaseModel):
     source_url: str
     detail_data: dict | None = None
     details_info: dict | None = None
+
+class CategoryDoneIn(BaseModel):
+    category_id: str
+    pages: int = Field(ge=0,le=100)
+    exhausted: bool = False
+    message: str = Field(default="",max_length=400)
 
 class JobUpdate(BaseModel):
     state: str
@@ -224,7 +230,7 @@ def mount_oliveyoung_refresh(app,engine):
                        "max_pages":row["max_pages"]}}
 
     class FullScanIn(BaseModel):
-        max_pages: int = Field(default=10,ge=1,le=30)
+        max_pages: int = Field(default=30,ge=1,le=100)
 
     @app.post("/manager/api/ktaxback/refresh/fullscan",status_code=202)
     def start_fullscan(data:FullScanIn,authorization:str|None=Header(None)):
@@ -287,7 +293,7 @@ def mount_oliveyoung_refresh(app,engine):
             with engine.begin() as c:
                 c.execute(text("""INSERT INTO korea_prebook_kt_fullscan
                  (id,active,page_limit,started_at,completed_at)
-                 VALUES(1,1,10,:now,NULL) ON CONFLICT(id) DO NOTHING"""),
+                 VALUES(1,1,30,:now,NULL) ON CONFLICT(id) DO NOTHING"""),
                  {"now":now()})
                 c.execute(text("""UPDATE korea_prebook_kt_category_targets
                    SET last_checked=NULL,last_state=NULL,last_error=NULL,last_products=0"""))
@@ -337,6 +343,27 @@ def mount_oliveyoung_refresh(app,engine):
         with engine.connect() as c:
             rows=[dict(x) for x in c.execute(query.limit(limit)).mappings()]
         return {"rows":rows,"count":len(rows)}
+
+    @app.post("/manager/api/ktaxback/refresh/worker/{jid}/category_done")
+    def category_done(jid:str,data:CategoryDoneIn,authorization:str|None=Header(None)):
+        auth(authorization)
+        job=job_record(jid)
+        if job["state"]!="running" or data.category_id not in json.loads(job["category_ids"]):
+            raise HTTPException(409,"Category not in running job")
+        if data.pages==0:
+            result="failed"
+        elif data.exhausted:
+            result="complete"
+        else:
+            result="partial"
+        with engine.begin() as c:
+            c.execute(text("""UPDATE korea_prebook_kt_category_targets
+              SET last_state=:state,last_checked=:ts,last_error=:msg
+              WHERE category_id=:id"""),{"state":result,"ts":now(),
+                "msg":data.message if result!="complete" else "",
+                "id":data.category_id})
+        return {"category_id":data.category_id,"state":result,
+                "exhausted":data.exhausted,"pages":data.pages}
 
     @app.post("/manager/api/ktaxback/refresh/worker/{jid}/page_error")
     def page_error(jid:str,data:CaptureIn,authorization:str|None=Header(None)):
