@@ -122,6 +122,21 @@ def mount_pilot(app,engine):
                    {"id":row["id"],"t":timestamp()})
         return {"enqueued":len(rows),"version":version}
 
+    class BlockedReason(BaseModel):
+        reason: str = Field(min_length=1,max_length=500)
+
+    @app.post("/manager/api/ktaxback/pilot/stop-on-restriction")
+    def stop_on_restriction(data:BlockedReason,authorization:str|None=Header(None)):
+        auth(authorization)
+        with engine.begin() as c:
+            affected=c.execute(text("""UPDATE korea_prebook_kt_pilot_tasks
+                 SET state='blocked',error=:reason,updated_at=:t
+                 WHERE state IN ('queued','running')"""),
+                {"reason":"Source site access restriction: "+data.reason,
+                 "t":timestamp()}).rowcount
+        return {"stopped":True,"unattempted_or_running_marked_blocked":affected,
+                "real_saved_rows_preserved":True}
+
     @app.get("/manager/api/ktaxback/pilot/next")
     def next_task(authorization:str|None=Header(None)):
         auth(authorization)
