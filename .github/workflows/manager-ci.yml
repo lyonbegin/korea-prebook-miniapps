@@ -32,3 +32,8 @@ jobs:
           node --check miniapps/wechat/pages/index/index.js
           node --check miniapps/alipay/app.js
           node --check miniapps/alipay/pages/index/index.js
+          node --check miniapps/wechat/pages/shop/index.js
+          node --check miniapps/wechat/pages/shop/detail.js
+          node --check miniapps/alipay/pages/shop/index.js
+          node --check miniapps/alipay/pages/shop/detail.js
+          node -e "for (const p of ['wechat','alipay']) { const app=require('./miniapps/'+p+'/app.json'); if(app.pages[0]!=='pages/shop/index' || !app.pages.includes('pages/shop/detail') || !app.pages.includes('pages/index/index')) throw new Error(p+' missing K-TAXBACK startup/navigation'); }"
