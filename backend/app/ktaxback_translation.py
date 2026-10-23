@@ -93,14 +93,17 @@ def mount_translation(app, engine):
             ).order_by(product.c.prdt_no).limit(limit)
             items=[dict(r) for r in con.execute(query).mappings()]
             scope="category_and_descendants"
-            if not items:
-                # Original page category and product leaf IDs can differ in a
-                # partially captured taxonomy. Use verified original products,
-                # report the fallback explicitly rather than return fake data.
-                items=[dict(r) for r in con.execute(select(
-                    product.c.prdt_no,product.c.prdt_name
-                ).order_by(product.c.prdt_no).limit(limit)).mappings()]
-                scope="verified_catalogue_fallback"
+            if len(items)<limit:
+                # Source data is not invented: fill a thin category's sample
+                # with other real original English products already held in PG.
+                # The response explicitly reports this wider sampling scope.
+                ids=[x["prdt_no"] for x in items]
+                fill=select(product.c.prdt_no,product.c.prdt_name).order_by(
+                    product.c.prdt_no).limit(limit)
+                if ids:fill=fill.where(~product.c.prdt_no.in_(ids))
+                extra=[dict(r) for r in con.execute(fill).mappings()]
+                items.extend(extra[:limit-len(items)])
+                scope="category_plus_verified_original_products" if ids else "verified_catalogue_fallback"
         return {"category_id":category_id,"scope":scope,
                 "included_category_ids":len(included),"items":items,
                 "source_language":"en","target_languages":LANG_TARGET,"source_api":SOURCE}
