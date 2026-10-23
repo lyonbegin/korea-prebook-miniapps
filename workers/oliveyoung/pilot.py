@@ -242,10 +242,13 @@ async def main():
             # translation.oliveyoung.com with source/target/texts and captures
             # each response pair; locale flags alone do not localize catalogue.
             try:
-                from source_translations import probe
+                from source_translations import probe,probe_categories
                 translated=await probe(browser, api)
                 LOG.info("LIVE_TRANSLATION_SOURCE_DB_REPORT %s",
                          json.dumps(translated,ensure_ascii=False)[:2400])
+                labels=await probe_categories(browser,api)
+                LOG.info("LIVE_CATEGORY_I18N_DB_REPORT %s",
+                         json.dumps(labels,ensure_ascii=False)[:1800])
             except Exception as exc:
                 LOG.exception("Original translate-texts probe failed (will not fabricate strings): %s",exc)
         finally:
@@ -281,6 +284,10 @@ async def main():
                         result=await probe(browser,api)
                         LOG.info("PERIODIC_ORIGINAL_TRANSLATION_REFRESH %s",
                                  json.dumps(result,ensure_ascii=False)[:2500])
+                        from source_translations import probe_categories
+                        labels=await probe_categories(browser,api)
+                        LOG.info("PERIODIC_CATEGORY_I18N_REFRESH %s",
+                                 json.dumps(labels,ensure_ascii=False)[:1600])
                     finally:
                         await browser.close()
             except Exception:
