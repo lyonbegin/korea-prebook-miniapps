@@ -34,7 +34,7 @@ th{background:#f7faff;position:sticky;top:0}.scroll{overflow:auto;max-height:480
 <section><h2>전체 카테고리 수집 제어</h2>
 <div class="toolbar">
 <label>카테고리 ID <input id="category" placeholder="비우면 서버가 순차 선택"></label>
-<label>최대 페이지 <select id="pages"><option>1</option><option>2</option><option selected>10</option><option>20</option><option>30</option></select></label>
+<label>최대 페이지 <select id="pages"><option>1</option><option>2</option><option>10</option><option>20</option><option selected>30</option><option>50</option><option>100</option></select></label>
 <button class="primary" id="run-one">선택 카테고리 수집</button>
 <button id="run-all">전체 150개 순차 수집 시작</button>
 <button class="danger" id="stop">전체 순회 중지</button>
@@ -42,7 +42,7 @@ th{background:#f7faff;position:sticky;top:0}.scroll{overflow:auto;max-height:480
 <p class="muted">전체 순회는 2개 카테고리씩 순차 실행하며, 개별 응답이 DB에 실제 저장되고 다시 조회되는지 검증합니다. 페이지 제한에 도달한 카테고리는 완전 수집으로 간주하지 않습니다. 이미 존재하는 상품 데이터는 지우지 않습니다.</p></section>
 <div class="split">
 <section><h2>카테고리별 수집·검증 상태 <span id="cat-count"></span></h2>
-<div class="toolbar"><input id="cat-search" placeholder="카테고리번호·명칭 검색"><select id="cat-state"><option value="">전체 상태</option><option value="verified">DB 검증 완료</option><option value="failed">실패</option><option value="pending">미수집</option></select></div>
+<div class="toolbar"><input id="cat-search" placeholder="카테고리번호·명칭 검색"><select id="cat-state"><option value="">전체 상태</option><option value="complete">전체 페이지 완료</option><option value="partial">일부 페이지만</option><option value="verified">저장 검증 중</option><option value="failed">실패</option><option value="pending">미수집</option></select></div>
 <div class="scroll"><table><thead><tr><th>카테고리</th><th>상태</th><th>처리 건수</th><th>확인시간</th></tr></thead><tbody id="cats"></tbody></table></div></section>
 <section><h2>카테고리별 실제 저장 상품</h2>
 <div class="toolbar"><input id="product-category" placeholder="카테고리 ID"><button id="product-load">해당 카테고리 DB 조회</button></div>
