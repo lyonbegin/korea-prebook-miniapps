@@ -253,6 +253,10 @@ async def main():
                 filters=await probe_filters(browser,api)
                 LOG.info("LIVE_FILTER_I18N_DB_REPORT %s",
                          json.dumps(filters,ensure_ascii=False)[:2200])
+                from source_translations import probe_details
+                details=await probe_details(browser,api)
+                LOG.info("LIVE_PRODUCT_DETAILS_I18N_DB_REPORT %s",
+                         json.dumps(details,ensure_ascii=False)[:1400])
             except Exception as exc:
                 LOG.exception("Original translate-texts probe failed (will not fabricate strings): %s",exc)
         finally:
@@ -296,6 +300,10 @@ async def main():
                         filters=await probe_filters(browser,api)
                         LOG.info("PERIODIC_FILTER_I18N_REFRESH %s",
                                  json.dumps(filters,ensure_ascii=False)[:1600])
+                        from source_translations import probe_details
+                        details=await probe_details(browser,api)
+                        LOG.info("PERIODIC_PRODUCT_DETAILS_I18N_REFRESH %s",
+                                 json.dumps(details,ensure_ascii=False)[:1500])
                     finally:
                         await browser.close()
             except Exception:
