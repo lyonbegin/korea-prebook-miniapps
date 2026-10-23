@@ -205,16 +205,9 @@ def mount_ktaxback(app, engine):
                 stmt=stmt.on_conflict_do_update(index_elements=pk,set_=updates)
             else:
                 stmt=stmt.on_conflict_do_nothing(index_elements=pk)
-            # A batch may contain repeated primary keys from source snapshots.
-            # Single row statements avoid PG cardinality errors for duplicates.
-            for row in rows:
-                ins = pg_insert(t).values(**row) if dialect == "postgresql" else sqlite_insert(t).values(**row)
-                updates={key:ins.excluded[key] for key in row if key not in pk}
-                if updates:
-                    ins=ins.on_conflict_do_update(index_elements=pk,set_=updates)
-                else:
-                    ins=ins.on_conflict_do_nothing(index_elements=pk)
-                con.execute(ins)
+            # SQLite catalogue source primary keys are unique per table; one
+            # transactional bulk upsert avoids millions of SQL round trips.
+            con.execute(stmt)
         return {"table":table_name, "received":len(rows), "status":"committed"}
 
     @app.get("/manager/api/ktaxback/status")
