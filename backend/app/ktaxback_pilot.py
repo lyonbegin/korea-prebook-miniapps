@@ -32,6 +32,10 @@ PREFIX="korea_prebook_kt_"
 def timestamp():return datetime.now(timezone.utc).isoformat()
 def safe(t):return unescape(str(t or "")).strip()[:1200]
 
+class BlockedReason(BaseModel):
+        reason: str = Field(min_length=1,max_length=500)
+
+
 class Sample(BaseModel):
     task_id:str
     url:str
@@ -133,9 +137,6 @@ def mount_pilot(app,engine):
                    WHERE id=:id AND state IN ('failed','untranslated') AND lang_code!='vi_vn'"""),
                    {"id":row["id"],"t":timestamp()})
         return {"enqueued":len(rows),"version":version}
-
-    class BlockedReason(BaseModel):
-        reason: str = Field(min_length=1,max_length=500)
 
     @app.post("/manager/api/ktaxback/pilot/stop-on-restriction")
     def stop_on_restriction(data:BlockedReason,authorization:str|None=Header(None)):
