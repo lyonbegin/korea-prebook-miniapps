@@ -368,6 +368,25 @@ def mount_translation(app, engine):
                         set_={"source_text": statement.excluded.source_text,
                               "translated_text": statement.excluded.translated_text}
                     ))
+                    # Original seed.py maintains a dedicated name table as
+                    # well as the field-key translation table. Populate both
+                    # only from a validated real translate-texts source pair.
+                    if key == NAME_FIELD:
+                        names = Table(
+                            "korea_prebook_kt_product_names_i18n",
+                            MetaData(), autoload_with=engine)
+                        nstmt = (pg_insert(names) if engine.dialect.name=="postgresql"
+                                 else sqlite_insert(names)).values(
+                                     prdt_no=number, lang_code=lang,
+                                     prdt_name=translated)
+                        con.execute(nstmt.on_conflict_do_update(
+                            index_elements=["prdt_no","lang_code"],
+                            set_={"prdt_name":nstmt.excluded.prdt_name}))
+                        confirmed = con.execute(select(names.c.prdt_name).where(
+                            names.c.prdt_no==number,names.c.lang_code==lang
+                        )).scalar_one_or_none()
+                        if confirmed != translated:
+                            raise HTTPException(500,"Localized product name read-back mismatch")
                     accepted += 1
                     readback = con.execute(select(translations.c.translated_text).where(
                         translations.c.prdt_no == number,
