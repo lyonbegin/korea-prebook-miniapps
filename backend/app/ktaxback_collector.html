@@ -28,6 +28,16 @@ th{background:#f7faff;position:sticky;top:0}.scroll{overflow:auto;max-height:480
 <button class="primary" id="connect">관리자 로그인·실제 DB 조회</button><button id="reload">새로고침</button></div>
 <div id="notice" role="status">관리자 인증 후 실시간 수집 상태를 불러옵니다.</div>
 <p class="muted">상품·카테고리·브랜드·필터·상세·옵션·이미지는 기존 K-TAXBACK 열 이름을 유지합니다. 원본 DB의 상품 데이터는 별도 승인 전까지 이전하지 않습니다.</p></section>
+<section>
+<h2>대표 10개 카테고리 × 상품 10개 × 언어별 실수집 검증</h2>
+<p class="muted">원본 DB의 상품을 가져오지 않고 올리브영 라이브 응답으로 실수집한 데이터만 계수합니다.
+영어 외 언어는 사이트에서 실제 번역된 상품명을 반환한 경우에만 원본 product_translations / product_names_i18n 테이블에 기록됩니다.
+같은 영어 상품명이면 '미번역'으로 기록하고 번역 데이터를 조작하지 않습니다.</p>
+<div class="toolbar"><button id="pilot-reload" class="primary">언어별 실수집·DB 검증 새로고침</button><span id="pilot-note" class="muted">인증 후 조회 가능</span></div>
+<div class="scroll"><table><thead><tr><th>대표 카테고리</th><th>영어 en</th><th>일본어 jp</th><th>중국어 간체 zh_cn</th><th>중국어 번체 zh_tw</th><th>베트남어 vi_vn</th></tr></thead><tbody id="pilot-grid"></tbody></table></div>
+<h3>언어별 원본 테이블 저장 검증</h3>
+<div class="scroll"><table><thead><tr><th>카테고리</th><th>언어</th><th>원본 응답</th><th>선택 10건</th><th>실제 DB 저장</th><th>검증</th><th>미번역</th><th>결과/오류</th></tr></thead><tbody id="pilot-tasks"></tbody></table></div>
+</section>
 <section><h2>PostgreSQL 테이블별 실제 저장 건수</h2>
 <div id="metrics" class="metrics"></div>
 <p class="muted" id="counts-note">0이면 미수집 상태입니다. 숫자는 서버 DB의 SELECT COUNT(*) 결과입니다.</p></section>
@@ -142,6 +152,40 @@ async function loadProducts(){
   if(!data.rows?.length)root.textContent="DB에 저장된 상품 없음";
  }catch(e){notice("상품 조회: "+e.message)}
 }
+async function pilotReport(){
+ if(!token)return;
+ try{
+  const r=await api("/manager/api/ktaxback/pilot/report");
+  const lookup={};(r.tasks||[]).forEach(x=>lookup[x.category_id+"_"+x.lang_code]=x);
+  const grid=$("pilot-grid");grid.replaceChildren();
+  Object.entries(r.categories||{}).forEach(([cid,label])=>{
+   const row=document.createElement("tr");cell(row,label+" ("+cid+")");
+   ["en","jp","zh_cn","zh_tw","vi_vn"].forEach(lang=>{
+    const x=lookup[cid+"_"+lang];
+    const td=cell(row,x?(x.state+": "+x.verified+"/"+x.requested):"미실행");
+    if(x?.state==="failed")td.className="failed";
+    if(x?.state==="verified")td.className="verified";
+   });grid.append(row)
+  });
+  const tbody=$("pilot-tasks");tbody.replaceChildren();
+  (r.tasks||[]).forEach(t=>{
+   const row=document.createElement("tr");cell(row,t.category_name);
+   cell(row,t.lang_code);cell(row,t.received);cell(row,t.selected);
+   cell(row,t.written);cell(row,t.verified);cell(row,t.untranslated);
+   const status=cell(row,t.state+(t.error?" — "+t.error:""));
+   status.title=(t.sample||[]).map(v=>v.prdt_no+" "+v.source_name+" "+v.state).join("\n");
+   if(t.state==="failed")status.className="failed";
+   tbody.append(row)
+  });
+  const translated=(r.stored_translation_rows_by_language||[])
+    .map(x=>x.lang_code+" "+x.rows+"건").join(" · ");
+  $("pilot-note").textContent="원본 PostgreSQL products "+(r.db_counts.products||0)+
+     "건 · product_translations "+(r.db_counts.product_translations||0)+
+     "건 ("+translated+") · 기존 SQLite 상품 이관: 없음";
+ }catch(e){$("pilot-note").textContent="언어별 데이터 조회 오류: "+e.message}
+}
+$("pilot-reload").onclick=pilotReport;
+
 async function refresh(){
  if(!token){notice("토큰을 입력하세요.");return}
  try{
@@ -159,7 +203,7 @@ async function act(url,data){
  if(!token){notice("먼저 인증해주세요");return}
  try{const v=await api(url,"POST",data);notice(JSON.stringify(v));await refresh()}catch(e){notice(e.message)}
 }
-$("connect").onclick=async()=>{token=$("auth").value.trim();sessionStorage.setItem("prebook_admin_token",token);await refresh()};
+$("connect").onclick=async()=>{token=$("auth").value.trim();sessionStorage.setItem("prebook_admin_token",token);await refresh();await pilotReport()};
 $("reload").onclick=refresh;
 $("cat-search").oninput=showCategories;$("cat-state").onchange=showCategories;
 $("product-load").onclick=loadProducts;
