@@ -1,0 +1,39 @@
+.detail-page{background:#fff;color:#191919;min-height:100vh;padding-bottom:165rpx;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+.detail-header{display:flex;align-items:center;padding:30rpx 28rpx;border-bottom:1rpx solid #eceef3;gap:22rpx;background:#fff;}
+.detail-back{font-size:60rpx;width:55rpx;line-height:55rpx;color:#202124;}
+.detail-logo{font-weight:900;letter-spacing:-1rpx;font-size:36rpx;flex:1;}
+.detail-tag{color:#ff3152;background:#fff0f3;padding:9rpx 17rpx;border-radius:8rpx;font-size:17rpx;font-weight:900;}
+.detail-loading{padding:80rpx 25rpx;text-align:center;color:#999;}
+.gallery{height:705rpx;background:linear-gradient(140deg,#fff7f8,#f4f6fa);}
+.gallery-card{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.gallery-image{width:93%;height:93%;}
+.gallery-fallback{font-size:28rpx;color:#d8b8bd;font-weight:900;}
+.detail-body{padding:30rpx;}
+.detail-brand{font-size:25rpx;font-weight:800;color:#505562;}
+.detail-name{font-size:36rpx;font-weight:900;line-height:1.42;margin-top:10rpx;}
+.detail-codes{color:#9fa3ac;font-size:21rpx;margin:9rpx 0 20rpx;}
+.detail-price{display:flex;gap:15rpx;align-items:baseline;flex-wrap:wrap;margin:12rpx 0;}
+.discount{font-size:35rpx;color:#ff3152;font-weight:900;}
+.current-price{font-size:41rpx;font-weight:900;}
+.old-price{font-size:25rpx;text-decoration:line-through;color:#a0a4ad;}
+.detail-review{font-size:24rpx;color:#d49c30;margin-top:6rpx;}
+.detail-separator{height:16rpx;background:#f7f8fa;margin:29rpx -30rpx;}
+.block-title{font-size:29rpx;font-weight:900;margin:24rpx 0 17rpx;}
+.option-line{display:flex;gap:12rpx;justify-content:space-between;padding:19rpx;border:2rpx solid #e3e5ed;border-radius:14rpx;margin-bottom:13rpx;font-size:24rpx;}
+.option-line.chosen{border-color:#ff3152;background:#fff0f3;color:#c51536;}
+.option-line.unavailable{opacity:.36;}
+.option-name{flex:1;}
+.option-price{font-weight:850;white-space:nowrap;}
+.quantity-line{margin:26rpx 0 20rpx;display:flex;align-items:center;justify-content:space-between;}
+.quantity-controls{display:flex;align-items:center;border:2rpx solid #e2e5eb;border-radius:10rpx;overflow:hidden;}
+.qty-button{width:58rpx;height:59rpx;text-align:center;line-height:59rpx;font-size:35rpx;}
+.qty-value{padding:0 20rpx;font-size:26rpx;font-weight:850;}
+.details-section{border-top:1rpx solid #eceef3;margin-top:20rpx;padding-top:9rpx;}
+.detail-copy{font-size:25rpx;color:#5c6270;line-height:1.65;white-space:pre-wrap;}
+.checkout-note{font-size:22rpx;color:#858a96;text-align:center;padding:50rpx 0;}
+.detail-fixed{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;gap:14rpx;padding:14rpx 25rpx 40rpx;border-top:1rpx solid #eceef3;}
+.wish-button{text-align:center;border:2rpx solid #e2e4ec;border-radius:17rpx;padding:9rpx 16rpx;font-size:40rpx;min-width:92rpx;}
+.wish-button view{font-size:17rpx;color:#666;}
+.wish-button.wish-active{border-color:#ff3152;color:#ff3152;}
+.add-button{flex:1;border-radius:48rpx;background:#ff3152;color:#fff;font-size:29rpx;font-weight:900;text-align:center;padding:24rpx 14rpx;}
+.add-button.disabled{background:#d0d2d7;}
