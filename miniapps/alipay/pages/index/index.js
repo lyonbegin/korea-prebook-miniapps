@@ -19,5 +19,5 @@ Page({
    fail:()=>this.setData({status:'网络暂时不可用，显示演示目录'})
   });
  },
- onServiceTap(){my.showToast({content:'预约功能尚未开放'})}
+ onServiceTap(e){if(e.currentTarget.dataset.kind==='korea_online_shopping'){my.navigateTo({url:'/pages/shop/index'});return;} my.showToast({content:'预约功能尚未开放'})}
 });
