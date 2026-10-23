@@ -253,6 +253,44 @@ def mount_oliveyoung_refresh(app,engine):
             c.execute(text("UPDATE korea_prebook_kt_fullscan SET active=0 WHERE id=1"))
         return {"active":False}
 
+    @app.post("/manager/api/ktaxback/refresh/worker/auto-limited")
+    def limited_auto(authorization:str|None=Header(None)):
+        """Recurring source updates only for the user-approved 10 categories.
+
+        This is independent of historical 150-category fullscan state.
+        One category batch per cadence; never enqueue a 150-category pass.
+        """
+        auth(authorization);ready()
+        from app.ktaxback_pilot import CATEGORIES
+        allowed=list(CATEGORIES)
+        with engine.begin() as conn:
+            conn.execute(text("""CREATE TABLE IF NOT EXISTS korea_prebook_kt_limited_schedule
+              (id INTEGER PRIMARY KEY, last_at TEXT, next_index INTEGER NOT NULL)"""))
+            query="SELECT last_at,next_index FROM korea_prebook_kt_limited_schedule WHERE id=1"
+            if engine.dialect.name=="postgresql":query+=" FOR UPDATE"
+            row=conn.execute(text(query)).mappings().first()
+            if row and row["last_at"]:
+                cadence=max(1,int(os.getenv("OLIVEYOUNG_REFRESH_HOURS","3")))
+                if datetime.fromisoformat(row["last_at"])>datetime.now(timezone.utc)-timedelta(hours=cadence):
+                    return {"scheduled":False,"reason":"not_due","next_index":row["next_index"]}
+            active=conn.execute(text("""SELECT id FROM korea_prebook_kt_refresh_jobs
+                 WHERE state IN ('queued','running') LIMIT 1""")).scalar_one_or_none()
+            if active:
+                return {"scheduled":False,"reason":"active_job","id":active}
+            idx=(row["next_index"] if row else 0)%len(allowed)
+            candidates=(allowed+allowed)[idx:idx+2]
+            # create_job inserts the durable queue task with original category IDs
+            job=create_job(RefreshIn(category_ids=candidates,max_pages=1),auto=True)
+            if row:
+                conn.execute(text("""UPDATE korea_prebook_kt_limited_schedule
+                    SET last_at=:time,next_index=:idx WHERE id=1"""),
+                    {"time":now(),"idx":(idx+2)%len(allowed)})
+            else:
+                conn.execute(text("""INSERT INTO korea_prebook_kt_limited_schedule
+                    (id,last_at,next_index) VALUES(1,:time,:idx)"""),
+                    {"time":now(),"idx":2})
+        return {"scheduled":True,"job":job,"mode":"ten_verified_categories_only"}
+
     @app.post("/manager/api/ktaxback/refresh/worker/auto")
     def auto(authorization:str|None=Header(None)):
         auth(authorization);ready()
