@@ -36,7 +36,8 @@ Page({
   this.load();
  },
  load(){
-  const url=this.data.source==='offer'?
+  const url=getApp().globalData.demoMode?
+    getApp().globalData.apiBase+'/demo/api/products/'+encodeURIComponent(this.data.id):this.data.source==='offer'?
    getApp().globalData.apiBase+'/v1/offers/'+encodeURIComponent(this.data.id):
    getApp().globalData.apiBase+'/v1/ktaxback/miniapp/products/'+encodeURIComponent(this.data.id)+'?lang='+encodeURIComponent(this.data.lang);
   this.setData({loading:true,error:''});
