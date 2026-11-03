@@ -14,3 +14,6 @@ page{background:#fff;color:#1a1d23}
 .consult-notes{height:165rpx}
 .consult-save{background:#191e26;color:#fff;margin-top:28rpx;border-radius:30rpx;font-size:27rpx;font-weight:800}
 .consult-alert{padding:30rpx;color:#c55560}
+
+.consult-status{border:1rpx solid #dde2e8;border-radius:14rpx;padding:18rpx;margin-top:22rpx}
+.consult-refresh{background:#fff;color:#191e26;border:1rpx solid #9ca4af;margin-top:20rpx;border-radius:30rpx}
