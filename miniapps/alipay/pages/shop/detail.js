@@ -24,21 +24,21 @@ function toast(text){
 }
 Page({
  data:{
-  id:'',lang:'zh_cn',words:COPY.zh_cn,loading:true,
+  id:'',lang:'zh_cn',source:'cosmetics',words:COPY.zh_cn,loading:true,
   product:null,images:[],options:[],description:{summary:'',ingredients:'',howToUse:''},
   chosen:-1,quantity:1,liked:false,error:'',optionText:''
  },
  onLoad(query){
   const id=String(query.id||'');
   const lang=COPY[query.lang]?query.lang:'zh_cn';
-  this.setData({id,lang,words:COPY[lang]});
+  this.setData({id,lang,source:query.source==='offer'?'offer':'cosmetics',words:COPY[lang]});
   if(!/^[A-Za-z0-9_-]{2,60}$/.test(id)){this.setData({loading:false,error:COPY[lang].error});return;}
   this.load();
  },
  load(){
-  const url=getApp().globalData.apiBase+
-   '/v1/ktaxback/miniapp/products/'+encodeURIComponent(this.data.id)+
-   '?lang='+encodeURIComponent(this.data.lang);
+  const url=this.data.source==='offer'?
+   getApp().globalData.apiBase+'/v1/offers/'+encodeURIComponent(this.data.id):
+   getApp().globalData.apiBase+'/v1/ktaxback/miniapp/products/'+encodeURIComponent(this.data.id)+'?lang='+encodeURIComponent(this.data.lang);
   this.setData({loading:true,error:''});
   APP.request({url,method:'GET',dataType:'json',
     success:res=>{
@@ -48,9 +48,12 @@ Page({
       }
       const data=res.data;
       const product=data.product;
-      product.priceText='US$'+Number(product.price||0).toFixed(2);
-      product.regularText='US$'+Number(product.regularPrice||0).toFixed(2);
-      product.hasDiscount=Number(product.regularPrice||0)>Number(product.price||0);
+      product.hasPrice=product.price!==null&&product.price!==undefined;
+      product.priceText=product.hasPrice?(product.currency==='KRW'?'₩'+Number(product.price).toLocaleString():'US$'+Number(product.price).toFixed(2)):'价格请咨询';
+      product.regularText=product.regularPrice===null||product.regularPrice===undefined?'':'US$'+Number(product.regularPrice).toFixed(2);
+      product.hasDiscount=product.hasPrice&&product.regularPrice!==null&&product.regularPrice!==undefined&&Number(product.regularPrice)>Number(product.price);
+      product.prdtNo=product.prdtNo||product.marketingOfferId||product.id;
+      product.source=this.data.source;
       const opts=(data.options||[]).map((x,i)=>({
         name:x.name,available:!!x.available,
         index:i,priceText:x.price===null||x.price===undefined?'':'US$'+Number(x.price).toFixed(2)
@@ -68,6 +71,9 @@ Page({
   });
  },
  onBack(){APP.navigateBack({delta:1});},
+ onConsult(){const product=this.data.product;if(!product)return;
+  APP.navigateTo({url:'/pages/consult/index?id='+encodeURIComponent(String(product.id))+'&source='+this.data.source});
+ },
  onImageTap(e){},
  onOptionTap(e){
   const n=Number(e.currentTarget.dataset.index);
@@ -86,7 +92,7 @@ Page({
   this.setData({liked});
   toast(this.data.words.wish);
  },
- onAddBag(){
+ onAddBag(){if(this.data.source!=='cosmetics')return;
   const p=this.data.product;if(!p||p.soldOut)return;
   const opts=this.data.options||[];
   if(opts.length && (this.data.chosen<0||!opts[this.data.chosen].available)){

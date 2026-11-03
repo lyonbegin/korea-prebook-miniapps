@@ -2,7 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/shop/index",
-    "pages/shop/detail"
+    "pages/shop/detail",
+    "pages/consult/index"
   ],
   "window": {
     "defaultTitle": "KOREA PREBOOK",

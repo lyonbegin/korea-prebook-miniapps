@@ -18,7 +18,7 @@
     <view class="detail-body">
       <view class="detail-brand">{{product.brand}}</view>
       <view class="detail-name">{{product.name}}</view>
-      <view class="detail-codes">K-TAXBACK · {{product.prdtNo}}</view>
+      <view class="detail-codes">{{source==='cosmetics'?'K-TAXBACK':'MARKETING OFFER'}} · {{product.prdtNo}}</view>
       <view class="detail-price">
         <text a:if="{{product.discount > 0}}" class="discount">{{product.discount}}%</text>
         <text class="current-price">{{product.priceText}}</text>
@@ -35,7 +35,7 @@
         </view>
       </view>
 
-      <view class="quantity-line">
+      <view a:if="{{source==='cosmetics'}}" class="quantity-line">
         <view class="block-title">QTY</view>
         <view class="quantity-controls">
           <view class="qty-button" onTap="onMinus">−</view>
@@ -53,11 +53,12 @@
       <view a:if="{{description.howToUse}}" class="details-section">
         <view class="block-title">{{words.use}}</view><view class="detail-copy">{{description.howToUse}}</view>
       </view>
-      <view class="checkout-note">{{words.notice}}</view>
+      <view class="checkout-note">{{source==='offer'?'该商品提供咨询预约，实际预订尚未确认。':words.notice}}</view>
     </view>
     <view class="detail-fixed">
       <view class="wish-button {{liked?'wish-active':''}}" onTap="onWish">{{liked?'♥':'♡'}}<view>{{words.wish}}</view></view>
-      <view class="add-button {{product.soldOut?'disabled':''}}" onTap="onAddBag">{{words.bag}}</view>
+      <view a:if="{{source==='cosmetics'}}" class="add-button {{product.soldOut?'disabled':''}}" onTap="onAddBag">{{words.bag}}</view>
+      <view class="consult-button" onTap="onConsult">视频咨询 · 상담하기</view>
     </view>
   </view>
 </view>

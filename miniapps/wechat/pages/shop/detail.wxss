@@ -37,3 +37,5 @@
 .wish-button.wish-active{border-color:#ff3152;color:#ff3152;}
 .add-button{flex:1;border-radius:48rpx;background:#ff3152;color:#fff;font-size:29rpx;font-weight:900;text-align:center;padding:24rpx 14rpx;}
 .add-button.disabled{background:#d0d2d7;}
+
+.consult-button{flex:1;border-radius:48rpx;background:#171c24;color:#fff;font-size:27rpx;font-weight:850;text-align:center;padding:24rpx 10rpx}
