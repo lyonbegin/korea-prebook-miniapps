@@ -36,19 +36,30 @@ jobs:
           node --check miniapps/wechat/pages/shop/detail.js
           node --check miniapps/alipay/pages/shop/index.js
           node --check miniapps/alipay/pages/shop/detail.js
+          node --check miniapps/wechat/pages/consult/index.js
+          node --check miniapps/alipay/pages/consult/index.js
           node - <<'NODE'
           const fs=require('fs');
-          const h5='https://ktaxback-original-live-production.up.railway.app/k-taxback-shop.html';
           for(const p of ['wechat','alipay']){
             const base='miniapps/'+p;
             const app=require('./'+base+'/app.json');
-            if(app.pages[0]!=='pages/index/index')throw Error(p+' prearrival first page missing');
-            if(!app.pages.includes('pages/shop/index')||!app.pages.includes('pages/shop/detail'))throw Error(p+' missing shopping pages');
-            const shell=fs.readFileSync(base+'/pages/shop/index.'+(p==='wechat'?'wxml':'axml'),'utf8');
-            if(!shell.includes('<web-view src="{{shopUrl}}"></web-view>'))throw Error(p+' original H5 web-view missing');
-            const config=fs.readFileSync(base+'/app.js','utf8');
-            if(!config.includes(h5))throw Error(p+' H5 URL mismatch');
-            const route=fs.readFileSync(base+'/pages/index/index.js','utf8');
-            if(!route.includes("navigateTo({url:'/pages/shop/index'})"))throw Error(p+' shopping navigation missing');
+            for(const page of ['pages/index/index','pages/shop/detail','pages/consult/index']){
+              if(!app.pages.includes(page))throw Error(p+' missing '+page);
+            }
+            if(app.pages[0]!=='pages/index/index')throw Error(p+' unified catalogue must be first');
+            const ext=p==='wechat'?'wxml':'axml';
+            for(const page of ['pages/index/index','pages/shop/index','pages/shop/detail','pages/consult/index']){
+              const markup=fs.readFileSync(base+'/'+page+'.'+ext,'utf8');
+              if(/<web-view[\\s>]/i.test(markup))throw Error(p+' web-view prohibited in native miniapp: '+page);
+            }
+            const homeJs=fs.readFileSync(base+'/pages/index/index.js','utf8');
+            const detailJs=fs.readFileSync(base+'/pages/shop/detail.js','utf8');
+            const consultJs=fs.readFileSync(base+'/pages/consult/index.js','utf8');
+            const names=['lifting','skin','botox','filler','rhinoplasty','eye','face_contour','breast','body','hair_treatment','hair_removal','kmed','dental','others','cosmetics','aesthetic','nail','hair_salon','guide'];
+            for(const category of names)if(!homeJs.includes('"id":"'+category+'"'))throw Error(p+' missing top-level '+category);
+            if(homeJs.includes('restaurant_table')||homeJs.includes('airport_luggage_delivery'))throw Error(p+' legacy categories remain');
+            if(!homeJs.includes("'/v1/offers?category_id=") || !homeJs.includes("'/v1/ktaxback/miniapp/products?"))throw Error(p+' shared offers and cosmetics catalogues missing');
+            if(!detailJs.includes("'/pages/consult/index?id='"))throw Error(p+' product detail consultation route missing');
+            if(!consultJs.includes('booking_confirmed:false'))throw Error(p+' unconfirmed consultation must not claim booking');
           }
           NODE
