@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KOREA-PREBOOK | 상담 요청 관리</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;color:#222;background:#fafafa}
+main{max-width:1200px;margin:24px auto;padding:0 18px}h1{font-size:24px}h2{font-size:18px}
+p{line-height:1.6}input,select,button{font:inherit;padding:9px;border:1px solid #bbb;border-radius:5px}
+button{cursor:pointer;background:#fff}button.primary{background:#222;color:#fff;border-color:#222}
+.panel{background:#fff;padding:20px;border:1px solid #ddd;margin:14px 0;border-radius:8px}
+label{display:block;font-weight:600;margin:10px 0 5px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.field{flex:1;min-width:180px}.field input,.field select{width:100%}
+#token{min-width:320px;flex:1}#message{min-height:24px;color:#9d2929}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid #e5e5e5;text-align:left;padding:10px;vertical-align:middle}
+th{background:#fafafa}td{overflow-wrap:anywhere}
+.selected{background:#f0f3f6}.table-scroll{overflow:auto}
+small{color:#5f656d}code{font:12px ui-monospace,monospace}
+@media(max-width:700px){h1{font-size:21px}table{min-width:750px}}
+</style></head><body><main>
+<h1>상품별 상담 요청 관리</h1>
+<p>WeChat·Alipay에서 접수된 요청을 확인하고 실제 상담사를 지정하는 운영 화면입니다.
+<strong>HITEL 비공개 상담 세션을 생성·초대하지 않은 상태에서는 영상 연결 완료로 처리하지 마십시오.</strong></p>
+<section class="panel"><h2>관리자 인증</h2>
+<div class="row"><input id="token" placeholder="ADMIN_API_TOKEN (이 화면에만 일시 입력)" type="password" autocomplete="off">
+<button class="primary" id="refresh">요청 불러오기</button></div>
+<p><small>관리자 토큰을 웹 저장소에 기록하지 않습니다. 페이지를 닫으면 다시 입력하셔야 합니다.</small></p>
+<div id="message" role="status"></div></section>
+<section class="panel"><h2>요청 목록</h2>
+<div class="table-scroll"><table><thead><tr><th>생성 시각(UTC)</th><th>플랫폼</th><th>상품</th><th>담당자</th><th>희망일</th><th>상태</th><th>선택</th></tr></thead>
+<tbody id="rows"><tr><td colspan="7">관리자 인증 후 조회할 수 있습니다.</td></tr></tbody></table></div></section>
+<section class="panel" id="edit" hidden><h2>선택한 상담 요청</h2>
+<p id="context"></p><div class="row">
+<div class="field"><label for="state">상태</label><select id="state"><option value="assigned">담당 상담사 지정</option><option value="ready">비공개 영상 세션 지정</option><option value="cancelled">요청 취소</option><option value="closed">요청 종료</option></select></div>
+<div class="field"><label for="counselor">상담사 ID</label><input id="counselor" maxlength="120" placeholder="실제 등록된 상담사 ID"></div>
+<div class="field"><label for="session">HITEL 비공개 상담 UUID (ready일 때만)</label><input id="session" maxlength="80" placeholder="초대 완료된 세션 UUID"></div></div>
+<p><small>비공개 HITEL 서버에서 사전에 생성하고 참여자 초대까지 마친 실제 세션 UUID만 등록하십시오. 입력만으로 영상 연결 또는 참가 권한이 생기지는 않습니다.</small></p>
+<button class="primary" id="save">선택한 요청 상태 저장</button></section>
+</main><script>
+let selected=null;
+const $=id=>document.getElementById(id);
+function message(s){$('message').textContent=s;}
+function cell(row,value){const td=document.createElement('td');td.textContent=value??'';row.appendChild(td);}
+function adminHeaders(){return {'Authorization':'Bearer '+$('token').value.trim(),'Content-Type':'application/json'};}
+async function refresh(){
+ message('조회 중…');
+ try{
+  const response=await fetch('/manager/api/product-consultations',{headers:adminHeaders()});
+  const data=await response.json();
+  if(!response.ok)throw Error(data.detail||'조회가 거부되었습니다.');
+  const tbody=$('rows');tbody.replaceChildren();
+  if(!data.requests.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=7;td.textContent='접수된 상담 요청이 없습니다.';tr.appendChild(td);tbody.appendChild(tr);}
+  for(const item of data.requests){
+   const tr=document.createElement('tr');
+   if(selected&&item.id===selected.id)tr.className='selected';
+   cell(tr,item.created_at);cell(tr,item.platform);cell(tr,item.title_snapshot+' ['+item.item_id+']');
+   cell(tr,item.counselor_id||'미지정');
+   cell(tr,(item.desired_date||'')+' '+(item.desired_time||''));
+   cell(tr,item.status);
+   const td=document.createElement('td'),button=document.createElement('button');
+   button.textContent='관리';button.onclick=()=>choose(item);td.appendChild(button);tr.appendChild(td);tbody.appendChild(tr);
+  }
+  message('상담 요청 '+data.requests.length+'건을 조회했습니다.');
+ }catch(e){message(e.message||String(e));}
+}
+function choose(item){
+ selected=item;$('edit').hidden=false;
+ $('context').textContent=item.title_snapshot+' · '+item.platform+' · 요청 ID '+item.id;
+ $('state').value=item.status==='requested'?'assigned':item.status;
+ $('counselor').value=item.counselor_id||'';$('session').value=item.hitel_session_id||'';
+}
+async function save(){
+ if(!selected)return;
+ const status=$('state').value;
+ const counselor_id=$('counselor').value.trim();
+ const hitel_session_id=status==='ready'?$('session').value.trim():'';
+ if(status==='ready'&&(!counselor_id||!hitel_session_id)){message('준비 상태에는 상담사와 비공개 세션 UUID가 모두 필요합니다.');return;}
+ if(!confirm('실제 상담 요청의 상태를 변경하시겠습니까?'))return;
+ message('저장 중…');
+ try{
+  const res=await fetch('/manager/api/product-consultations/'+encodeURIComponent(selected.id),{
+   method:'PUT',headers:adminHeaders(),body:JSON.stringify({status,counselor_id,hitel_session_id})});
+  const data=await res.json();if(!res.ok)throw Error(data.detail||'저장 실패');
+  $('edit').hidden=true;selected=null;await refresh();
+ }catch(e){message(e.message||String(e));}
+}
+$('refresh').addEventListener('click',refresh);
+$('save').addEventListener('click',save);
+</script></body></html>
