@@ -10,6 +10,7 @@ Page({
  onSearchConfirm(){this.applySearch()},
  applySearch(){const q=(this.data.query||'').trim().toLocaleLowerCase();const visible=(this.data.products||[]).filter(p=>!q||(p.name+' '+(p.subtitle||'')).toLocaleLowerCase().includes(q));this.setData({visibleProducts:visible})},
  loadListings(){
+   if(getApp().globalData.demoMode){this.loadDemoListings();return;}
    const category=this.data.activeCategory,includeOffers=category!=='cosmetics',includeCosmetics=category==='cosmetics'||category==='all';
    const requestId=this._listingRequestId=(this._listingRequestId||0)+1;
    this.setData({products:[],visibleProducts:[],loading:true,networkError:false,ready:false});
@@ -31,6 +32,31 @@ Page({
           image:p.image||'',priceText:'US$'+Number(p.price||0).toFixed(2)})));
         }else failed++;finish()},fail:()=>{if(requestId!==this._listingRequestId)return;failed++;finish()}});
    }
+ },
+ loadDemoListings(){
+   const requestId=this._listingRequestId=(this._listingRequestId||0)+1;
+   this.setData({products:[],visibleProducts:[],loading:true,networkError:false,ready:false});
+   my.request({
+     url:getApp().globalData.apiBase+'/demo/api/products',
+     method:'GET',dataType:'json',
+     success:(res)=>{
+       if(requestId!==this._listingRequestId)return;
+       if((res.statusCode||res.status)!==200||!res.data||!Array.isArray(res.data.products)){
+         this.setData({loading:false,ready:true,networkError:true});return;
+       }
+       const all=res.data.products.map(p=>({
+         id:p.id,source:p.category==='cosmetics'?'cosmetics':'offer',
+         categoryId:p.category,name:p.name,subtitle:'DEMO · '+p.provider,
+         image:'',priceText:p.price_krw===null?'价格请咨询':'₩'+Number(p.price_krw).toLocaleString()
+       }));
+       const items=this.data.activeCategory==='all'?all:all.filter(p=>p.categoryId===this.data.activeCategory);
+       this.setData({products:items,loading:false,ready:true,networkError:false});
+       this.applySearch();
+     },
+     fail:()=>{
+       if(requestId===this._listingRequestId)this.setData({loading:false,ready:true,networkError:true});
+     }
+   });
  },
  onProductTap(e){const id=String(e.currentTarget.dataset.id||''),source=e.currentTarget.dataset.source;
    if(!/^[A-Za-z0-9_-]{2,60}$/.test(id))return;
