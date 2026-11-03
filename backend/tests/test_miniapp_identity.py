@@ -207,3 +207,62 @@ def test_expired_session_is_rejected(monkeypatch):
     assert c.get("/v1/miniapp-auth/me", headers={
         "Authorization": "Bearer " + issued
     }).status_code == 401
+
+
+
+def test_same_account_same_product_is_idempotent_and_reopens_after_close(monkeypatch):
+    import app.miniapp_identity as mod
+
+    def auth_code(url, params, timeout):
+        identity = "openid-first-person" if params["js_code"] != "another-user" else "openid-second-person"
+        return ProviderResponse({"openid": identity})
+    monkeypatch.setattr(mod.httpx, "get", auth_code)
+    c, _, offer = secured(monkeypatch)
+    first_auth = c.post("/v1/miniapp-auth/exchange", json={
+        "platform": "wechat", "code": "first-user"
+    }).json()["access_token"]
+    first_headers = {"Authorization": "Bearer " + first_auth}
+    payload = {"platform": "wechat", "source": "offer", "item_id": offer}
+    first = c.post("/v1/product-consultations", json=payload, headers=first_headers)
+    repeat = c.post("/v1/product-consultations", json=payload, headers=first_headers)
+    assert first.status_code == repeat.status_code == 201
+    assert first.json()["request_id"] == repeat.json()["request_id"]
+    assert len(c.get("/v1/product-consultations/mine", headers=first_headers).json()["requests"]) == 1
+    second_auth = c.post("/v1/miniapp-auth/exchange", json={
+        "platform": "wechat", "code": "another-user"
+    }).json()["access_token"]
+    other_headers = {"Authorization": "Bearer " + second_auth}
+    other = c.post("/v1/product-consultations", json=payload, headers=other_headers)
+    assert other.status_code == 201
+    assert other.json()["request_id"] != first.json()["request_id"]
+    admin = {"Authorization": "Bearer admin-test-token"}
+    assert c.put("/manager/api/product-consultations/" + first.json()["request_id"],
+                 headers=admin, json={"status": "closed"}).status_code == 200
+    again = c.post("/v1/product-consultations", json=payload, headers=first_headers)
+    assert again.status_code == 201
+    assert again.json()["request_id"] != first.json()["request_id"]
+
+
+def test_one_account_can_request_two_independent_marketing_offers(monkeypatch):
+    import app.miniapp_identity as mod
+    monkeypatch.setattr(mod.httpx, "get", lambda *a, **k: ProviderResponse({
+        "openid": "openid-first-person"
+    }))
+    c, _, offer = secured(monkeypatch)
+    other = c.post("/manager/api/offers", json={
+        "category_id": "botox", "title_zh": "另一种活动",
+        "treatment_key": "same-botox", "counselor_id": "counselor-one",
+        "status": "published",
+    }, headers={"Authorization": "Bearer admin-test-token"}).json()["id"]
+    token = c.post("/v1/miniapp-auth/exchange", json={
+        "platform": "wechat", "code": "valid-code"
+    }).json()["access_token"]
+    headers = {"Authorization": "Bearer " + token}
+    one = c.post("/v1/product-consultations", json={
+        "platform": "wechat", "source": "offer", "item_id": offer
+    }, headers=headers)
+    two = c.post("/v1/product-consultations", json={
+        "platform": "wechat", "source": "offer", "item_id": other
+    }, headers=headers)
+    assert one.status_code == two.status_code == 201
+    assert one.json()["request_id"] != two.json()["request_id"]
