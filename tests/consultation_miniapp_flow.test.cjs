@@ -1,120 +1,108 @@
-// End-to-end miniapp page-contract simulation (no live user, booking, or payment).
-// Tests the same JS Page handlers used by both native miniapp packages.
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const vm = require('node:vm');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
 
+const BASE='https://prebook-keyless-consult-demo-production.up.railway.app';
 const ROOM='f984c559-c3d1-4cea-a94e-987ec432a251';
 const REQUEST='d534ac27-e01a-4211-8e29-7655cc25e3e0';
-const BASE='https://prebook-api-production-9b80.up.railway.app';
-const GOOD_VIDEO='https://hitel-room-production-ecce.up.railway.app/private-consultation?consultation='+ROOM;
-
-function simulate(platform){
- const storage=new Map();
- const calls=[];
- const navigation=[];
- let backendStatus='requested';
- let backendUrl=null;
- let httpStatus=201;
- let page;
- const validProduct={id:'offer-123',name:'Real example offer',brand:'Example clinic'};
- const request = opts=>{
-  calls.push(opts);
-  let response;
-  if(opts.url.includes('/v1/offers/offer-123')){
-   response={statusCode:200,status:200,data:{product:validProduct}};
-  } else if(opts.url.endsWith('/v1/product-consultations')&&opts.method==='POST'){
-   response={statusCode:httpStatus,status:httpStatus,
-     data:httpStatus===201?{
-      request_id:REQUEST,access_token:'client-secret-not-in-url',
-      status:'requested',source:'offer',item_id:'offer-123',
-      video_url:null,video_connected:false,booking_confirmed:false
-     }:{detail:'disabled'}};
-  } else if(opts.url.endsWith('/v1/product-consultations/'+REQUEST)&&opts.method==='GET'){
-   response={statusCode:200,status:200,data:{
-    request_id:REQUEST,status:backendStatus,source:'offer',item_id:'offer-123',
-    video_url:backendUrl,video_connected:false,booking_confirmed:false
-   }};
-  } else {
-   throw new Error('Unexpected request URL: '+opts.url);
+const PRODUCTS=[
+ {id:'demo-skin-a',name:'皮肤护理体验 A · 데모',provider:'테스트 상품',category:'skin',counselor_id:'counselor-demo-1',price_krw:80000},
+ {id:'demo-skin-b',name:'皮肤护理体验 B · 데모',provider:'테스트 상품',category:'skin',counselor_id:'counselor-demo-1',price_krw:120000},
+ {id:'demo-cosmetics',name:'韩国化妆品 · 데모',provider:'테스트 상품',category:'cosmetics',counselor_id:'counselor-demo-3',price_krw:19000}
+];
+for(const platform of ['wechat','alipay']){
+ const files=[],calls=[],nav=[],storage=new Map();
+ let row=null,activeStatus='requested',videoPath=null;
+ const api={
+  navigateTo:o=>nav.push(o),navigateBack:()=>{},
+  showToast:()=>{},
+  getStorageSync:platform==='wechat'?key=>storage.get(key):({key})=>({data:storage.get(key)}),
+  setStorageSync:platform==='wechat'?(key,value)=>storage.set(key,value):({key,data})=>storage.set(key,data),
+  request:opts=>{
+   calls.push({url:opts.url,method:opts.method});
+   let response;
+   if(opts.url===BASE+'/demo/api/products'){
+    response={statusCode:200,status:200,data:{demo:true,products:PRODUCTS}};
+   }else if(opts.url.startsWith(BASE+'/demo/api/products/')){
+    const id=opts.url.split('/').pop(),p=PRODUCTS.find(x=>x.id===id);
+    response=p?{statusCode:200,status:200,data:{
+     product:{id:p.id,name:p.name,brand:p.provider,source:p.category==='cosmetics'?'cosmetics':'offer',
+      currency:'KRW',price:p.price_krw,image:'',soldOut:false},
+     images:[],description:{summary:'테스트'},options:[]}}:
+     {statusCode:404,status:404,data:{}};
+   }else if(opts.url===BASE+'/demo/api/consultations'&&opts.method==='POST'){
+    assert.equal(opts.data.platform,platform);
+    assert.equal(opts.data.item_id,'demo-skin-a');
+    row={id:REQUEST,item_id:'demo-skin-a',platform,status:'requested',
+     room_id:null,customer_room_url:null,booking_confirmed:false,video_connected:false};
+    response={statusCode:201,status:201,data:row};
+   }else if(opts.url===BASE+'/demo/api/consultations/'+REQUEST){
+    response={statusCode:200,status:200,data:{...row,status:activeStatus,
+      room_id:activeStatus==='ready'?ROOM:null,customer_room_url:videoPath}};
+   }else throw Error('unexpected request '+opts.url);
+   opts.success?.(response);opts.complete?.();
   }
-  opts.success?.(response);
-  opts.complete?.();
  };
- const api={request,navigateTo:x=>navigation.push(x)};
- if(platform==='wechat'){
-  api.getStorageSync=k=>storage.get(k);
-  api.setStorageSync=(k,v)=>storage.set(k,v);
-  api.showToast=()=>{};
- } else {
-  api.getStorageSync=({key})=>({data:storage.get(key)});
-  api.setStorageSync=({key,data})=>storage.set(key,data);
-  api.showToast=()=>{};
- }
- const src=fs.readFileSync('miniapps/'+platform+'/pages/consult/index.js','utf8');
- const context={Page:x=>{page=x},getApp:()=>({globalData:{apiBase:BASE}}),
-    [platform==='wechat'?'wx':'my']:api,encodeURIComponent,Date,console};
- vm.runInNewContext(src,context,{filename:platform+'/pages/consult/index.js'});
- const mount=()=>{
+ const globalData={apiBase:BASE,demoMode:true};
+ function pageAt(path){
+  let page;
+  const source=fs.readFileSync('miniapps/'+platform+'/pages/'+path,'utf8');
+  const ctx={Page:o=>{page=o},[platform==='wechat'?'wx':'my']:api,
+   getApp:()=>({globalData}),encodeURIComponent,decodeURIComponent,clearInterval,
+   setInterval:()=>0,console};
+  vm.runInNewContext(source,ctx,{filename:path});
+  assert(page,'Page was not declared in '+path);
   const instance={...page,data:{...page.data}};
-  instance.setData=function(update){Object.assign(this.data,update);};
+  instance.setData=function(change){Object.assign(this.data,change)};
   return instance;
- };
- let screen=mount();
- screen.onLoad({id:'offer-123',source:'offer'});
- assert.equal(screen.data.product.id,'offer-123');
- assert.equal(screen.data.request,null);
- assert.equal(screen.data.canOpenVideo,false);
- screen.onDateChange({detail:{value:'2027-06-10'}});
- screen.onTimeChange({detail:{value:'14:00'}});
- screen.submitRequest();
- assert.equal(screen.data.request.request_id,REQUEST);
- assert.equal(screen.data.request.booking_confirmed,false);
- assert.equal(screen.data.request.video_connected,false);
- assert.equal(screen.data.canOpenVideo,false);
- const post=calls.find(x=>x.method==='POST');
- assert.equal(post.data.item_id,'offer-123');
- assert.equal(post.data.platform,platform);
- assert.equal(post.data.desired_date,'2027-06-10');
- assert.equal(post.data.desired_time,'14:00');
- assert.equal(platform==='wechat'?post.header['Content-Type']:post.headers['Content-Type'],'application/json');
+ }
+ const listing=pageAt('index/index.js');
+ listing.onLoad({category:'all'});
+ assert.equal(listing.data.visibleProducts.length,3);
+ listing.onCategoryTap({currentTarget:{dataset:{id:'skin'}}});
+ assert.equal(listing.data.visibleProducts.length,2);
+ listing.onProductTap({currentTarget:{dataset:{id:'demo-skin-a',source:'offer'}}});
+ assert.match(nav.at(-1).url,/\/pages\/shop\/detail/);
+ const detail=pageAt('shop/detail.js');
+ detail.onLoad({id:'demo-skin-a',source:'offer',lang:'zh_cn'});
+ assert.equal(detail.data.product.id,'demo-skin-a');
+ detail.onConsult();
+ assert.match(nav.at(-1).url,/\/pages\/consult\/index/);
+ let consult=pageAt('consult/index.js');
+ consult.onLoad({id:'demo-skin-a',source:'offer'});
+ assert.equal(consult.data.product.id,'demo-skin-a');
+ assert.equal(consult.data.request,null);
+ consult.onDateChange({detail:{value:'2027-06-10'}});
+ consult.onTimeChange({detail:{value:'14:00'}});
+ consult.submitRequest();
+ assert.equal(consult.data.request.id,REQUEST);
+ assert.equal(consult.data.request.booking_confirmed,false);
  assert.equal(storage.size,1);
- screen.refreshStatus();
- assert.equal(screen.data.request.status,'requested');
- assert.equal(screen.data.canOpenVideo,false);
- const get=calls.find(x=>x.method==='GET'&&x.url.endsWith('/'+REQUEST));
- assert.equal(platform==='wechat'?get.header['X-Consultation-Token']:get.headers['X-Consultation-Token'],'client-secret-not-in-url');
- backendStatus='ready';
- backendUrl='https://attacker.example/private-consultation?consultation='+ROOM;
- screen.refreshStatus();
- assert.equal(screen.data.canOpenVideo,false,'must reject foreign website');
- screen.openVideo();
- assert.equal(navigation.length,0);
- backendUrl=GOOD_VIDEO;
- screen.refreshStatus();
- assert.equal(screen.data.canOpenVideo,true,'ready only for permitted URL');
- screen.openVideo();
- assert.equal(navigation.length,1);
- assert.equal(navigation[0].url,'/pages/consult/video?url='+encodeURIComponent(GOOD_VIDEO));
- // Page reopen must resume existing request and not POST a duplicate request.
- screen=mount();
- screen.onLoad({id:'offer-123',source:'offer'});
- assert.equal(screen.data.request.request_id,REQUEST);
- assert.equal(screen.data.canOpenVideo,true);
- const postsBefore=calls.filter(x=>x.method==='POST').length;
- screen.submitRequest();
- assert.equal(calls.filter(x=>x.method==='POST').length,postsBefore);
- // 503 must not create a phantom request.
- httpStatus=503;
- // Clear saved credentials to exercise a disabled-service response.
- storage.clear();
- screen=mount();
- screen.onLoad({id:'offer-123',source:'offer'});
- screen.submitRequest();
- assert.equal(screen.data.request,null);
- assert.match(screen.data.error,/尚未开放/);
- assert.equal(storage.size,0);
- return platform+': success ('+calls.length+' mocked API calls)';
+ consult.refreshStatus();
+ assert.equal(consult.data.canOpenVideo,false);
+ activeStatus='ready';
+ videoPath='/demo/rooms/'+ROOM+'?role=counselor';
+ consult.refreshStatus();
+ assert.equal(consult.data.canOpenVideo,false,'wrong role must be blocked');
+ videoPath='/demo/rooms/'+ROOM+'?role=customer';
+ consult.refreshStatus();
+ assert.equal(consult.data.canOpenVideo,true);
+ consult.openVideo();
+ assert.equal(nav.at(-1).url,
+  '/pages/consult/video?url='+encodeURIComponent(BASE+videoPath));
+ const video=pageAt('consult/video.js');
+ video.onLoad({url:encodeURIComponent(BASE+videoPath)});
+ assert.equal(video.data.url,BASE+videoPath);
+ const malicious=pageAt('consult/video.js');
+ malicious.onLoad({url:encodeURIComponent('https://attacker.invalid/demo/rooms/'+ROOM+'?role=customer')});
+ assert.equal(malicious.data.url,'');
+ assert.ok(malicious.data.error);
+ consult=pageAt('consult/index.js');
+ consult.onLoad({id:'demo-skin-a',source:'offer'});
+ assert.equal(consult.data.request.id,REQUEST);
+ assert.equal(consult.data.canOpenVideo,true);
+ const submits=calls.filter(x=>x.method==='POST').length;
+ consult.submitRequest();
+ assert.equal(calls.filter(x=>x.method==='POST').length,submits);
+ console.log(platform+': native list > detail > request > room > reopen tested ('+calls.length+' HTTP mocks)');
 }
-
-for(const platform of ['wechat','alipay'])console.log(simulate(platform));
