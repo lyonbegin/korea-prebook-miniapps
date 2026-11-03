@@ -120,10 +120,15 @@ def mount_product_consultations(app, engine):
     def public_row(row):
         # Never expose the counselor's internal identifier or the access hash.
         url = None
-        if row["status"] == "ready" and row["hitel_session_id"]:
-            base = os.getenv("HITEL_PRIVATE_CONSULT_URL", "").strip()
-            if base.startswith("https://") and "?" not in base and "#" not in base:
-                url = base.rstrip("/") + "?" + urlencode(
+        platform_enabled = os.getenv(
+            row["platform"].upper() + "_HITEL_VIDEO_ENABLED", ""
+        ).lower() == "true"
+        if row["status"] == "ready" and row["hitel_session_id"] and platform_enabled:
+            base = os.getenv("HITEL_PRIVATE_CONSULT_URL", "").strip().rstrip("/")
+            # Only the specifically audited native miniapp webview host is permitted.
+            # Other https:// endpoints must never become external redirect links.
+            if base == "https://hitel-room-production-ecce.up.railway.app/private-consultation":
+                url = base + "?" + urlencode(
                     {"consultation": row["hitel_session_id"]}
                 )
         return {
