@@ -167,4 +167,6 @@ $('wechat-send').onclick=()=>send('wechat');
 $('alipay-send').onclick=()=>send('alipay');
 $('refresh').onclick=()=>refresh().catch(e=>$('operator-message').textContent=e.message);
 boot();
+// A newly assigned room appears without requiring the customer to log in or reload.
+setInterval(()=>{if(!document.hidden)refresh().catch(()=>{});},8000);
 </script></body></html>
