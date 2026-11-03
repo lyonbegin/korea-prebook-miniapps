@@ -1,0 +1,2 @@
+<view a:if="{{error}}" class="error">{{error}}</view>
+<web-view a:if="{{url}}" src="{{url}}"></web-view>
