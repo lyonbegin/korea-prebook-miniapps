@@ -1,0 +1,201 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>위챗알리 상담방 · 영상 기능 테스트</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f6f6;color:#171717;font:14px system-ui,-apple-system,sans-serif}
+main{max-width:1050px;margin:28px auto;padding:0 16px}
+h1{font-size:22px;margin:5px 0}p{line-height:1.6}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+.panel{border:1px solid #ddd;background:white;padding:14px;border-radius:12px}
+.panel h2{font-size:15px;margin:0 0 10px}
+video{width:100%;aspect-ratio:16/10;background:#111;border-radius:6px;object-fit:contain}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid #aaa;background:white;border-radius:7px;padding:11px 14px;font:inherit;cursor:pointer}
+button.primary{background:#171717;color:white}
+#status{background:white;border:1px solid #ddd;border-radius:9px;padding:15px;margin:14px 0;line-height:1.8}
+#events{font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap;background:white;padding:13px;border:1px solid #ddd;border-radius:9px;max-height:200px;overflow:auto}
+small{color:#626262}a{color:inherit}button:disabled{opacity:.45}
+@media(max-width:650px){.grid{grid-template-columns:1fr}}
+</style></head><body><main>
+<div><small>KOREA PREBOOK · 데모 영상통화 (별도 인증키 없음)</small></div>
+<h1 id="title">상품별 상담방</h1>
+<p>실제 브라우저 카메라·마이크와 WebRTC로 연결을 시험합니다. 이 화면은 테스트 데이터만 사용하며 의료·결제·정식 상담 기능이 아닙니다. 다른 브라우저 창에서 상대 역할로 입장한 후, 양쪽 모두 카메라를 준비하십시오.</p>
+<div id="status" role="status">영상 서버에 연결하는 중입니다.</div>
+<div class="grid">
+ <div class="panel"><h2>내 화면</h2><video id="local" autoplay playsinline muted></video></div>
+ <div class="panel"><h2>상대방 화면</h2><video id="remote" autoplay playsinline></video></div>
+</div>
+<div class="controls">
+ <button class="primary" id="prepare">카메라·마이크 준비</button>
+ <button id="mic" disabled>마이크 끄기</button>
+ <button id="camera" disabled>카메라 끄기</button>
+ <button id="reconnect">다시 연결</button>
+ <button id="leave">퇴장</button>
+ <a href="/demo">실험실로 돌아가기</a>
+</div>
+<p><small>상태는 실제 RTCPeerConnection이 연결되었을 때만 ‘통화 연결됨’으로 표시됩니다. STUN 연결이 불가능한 외부 네트워크에서는 TURN 서버가 없으므로 연결되지 않을 수 있습니다.</small></p>
+<div id="events"></div>
+<script>
+const $=id=>document.getElementById(id);
+const room=location.pathname.match(/\/demo\/rooms\/([0-9a-f-]{36})$/i)?.[1]||'';
+const role=new URLSearchParams(location.search).get('role');
+let ws=null,pc=null,localStream=null,remoteReady=false,peerPresent=false,
+  offerSent=false,iceQueue=[],closing=false;
+if(!room||!['customer','counselor'].includes(role)){
+ $('status').textContent='잘못된 테스트 상담방 주소입니다.';
+ $('prepare').disabled=true;
+ throw new Error('Invalid demo room');
+}
+$('title').textContent=(role==='customer'?'고객':'상담사')+' 영상 상담 · 데모';
+function log(message){
+ const lines=$('events').textContent.split('\n').filter(Boolean);
+ lines.push(new Date().toLocaleTimeString()+' '+message);
+ $('events').textContent=lines.slice(-35).join('\n');
+}
+function status(message){$('status').textContent=message;log(message);}
+function send(type,data){
+ if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type,data}));
+}
+function closePeer(){
+ offerSent=false;iceQueue=[];
+ if(pc){pc.ontrack=null;pc.onicecandidate=null;pc.onconnectionstatechange=null;pc.close();pc=null;}
+ $('remote').srcObject=null;
+}
+function createPeer(){
+ if(pc)return pc;
+ const connection=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+ for(const track of localStream?.getTracks()||[])connection.addTrack(track,localStream);
+ connection.onicecandidate=e=>{
+  if(e.candidate)send('signal',{candidate:e.candidate.toJSON()});
+ };
+ connection.ontrack=e=>{
+  $('remote').srcObject=e.streams[0]||new MediaStream([e.track]);
+  $('remote').play().catch(()=>{});
+  log('상대방 미디어 스트림 수신');
+ };
+ connection.onconnectionstatechange=()=>{
+  const state=connection.connectionState;
+  if(state==='connected')status('통화 연결됨 · 영상·음성 경로 수립');
+  else if(state==='failed')status('WebRTC 연결 실패 · 네트워크 또는 STUN 조건을 확인하십시오.');
+  else if(state==='disconnected')status('상대방과 미디어 연결이 끊어졌습니다.');
+  else status('WebRTC 상태: '+state);
+ };
+ pc=connection;
+ return connection;
+}
+async function maybeOffer(){
+ if(role!=='counselor'||!localStream||!peerPresent||!remoteReady||offerSent||!ws||ws.readyState!==1)return;
+ const p=createPeer();
+ offerSent=true;
+ try{
+  const offer=await p.createOffer();
+  await p.setLocalDescription(offer);
+  send('signal',{description:p.localDescription});
+  status('상대방에게 WebRTC 연결 요청을 전송하였습니다.');
+ }catch(e){
+  offerSent=false;status('연결 요청 실패: '+e.message);
+ }
+}
+async function processSignal(data){
+ if(!data||typeof data!=='object')return;
+ if(data.description){
+  if(!localStream){status('상대방이 대화를 요청했습니다. 먼저 카메라를 준비하십시오.');return;}
+  const p=createPeer();
+  await p.setRemoteDescription(data.description);
+  while(iceQueue.length){try{await p.addIceCandidate(iceQueue.shift());}catch(e){log('ICE 후보 처리 실패');}}
+  if(data.description.type==='offer'){
+   const answer=await p.createAnswer();
+   await p.setLocalDescription(answer);
+   send('signal',{description:p.localDescription});
+   status('상대방에게 WebRTC 응답을 전송하였습니다.');
+  }
+ }else if(data.candidate){
+  const p=createPeer();
+  if(p.remoteDescription)await p.addIceCandidate(data.candidate);
+  else iceQueue.push(data.candidate);
+ }
+}
+function connect(){
+ closing=false;closePeer();peerPresent=false;remoteReady=false;
+ const scheme=location.protocol==='https:'?'wss:':'ws:';
+ ws=new WebSocket(scheme+'//'+location.host+'/demo/rooms/'+encodeURIComponent(room)+'/signal?role='+role);
+ status('영상 신호 서버에 연결 중…');
+ ws.onopen=()=>{
+  status('영상 신호 서버 연결됨 · 상대방을 기다립니다.');
+  if(localStream)send('ready');
+ };
+ ws.onmessage=async event=>{
+  let data;try{data=JSON.parse(event.data);}catch{return;}
+  try{
+   if(data.type==='joined'){
+    peerPresent=!!data.peer_present;
+    remoteReady=!!data.peer_ready;
+    if(localStream)send('ready');
+    if(peerPresent)status('상대방 입장 확인 · 카메라 준비 상태 확인 중');
+    await maybeOffer();
+   }else if(data.type==='peer-joined'){
+    peerPresent=true;remoteReady=false;
+    if(localStream)send('ready');
+    status('상대방 입장 · 양쪽 카메라 준비 후 연결됩니다.');
+   }else if(data.type==='peer-ready'){
+    peerPresent=true;remoteReady=true;
+    await maybeOffer();
+   }else if(data.type==='signal'){
+    await processSignal(data.data);
+   }else if(data.type==='peer-left'){
+    peerPresent=false;remoteReady=false;closePeer();
+    status('상대방이 퇴장했습니다. 다시 입장하면 재연결할 수 있습니다.');
+   }else if(data.type==='closed'){
+    status('상담방이 종료되어 연결이 해제되었습니다.');closePeer();
+    ws.close();
+   }
+  }catch(error){status('신호 처리 오류: '+error.message);}
+ };
+ ws.onerror=()=>status('신호 서버 연결 오류');
+ ws.onclose=e=>{
+  if(!closing&&e.code===1008)status('방이 종료되었거나 같은 역할의 접속자가 이미 있습니다.');
+  else if(!closing)status('신호 서버와 연결이 종료되었습니다.');
+ };
+}
+$('prepare').onclick=async()=>{
+ if(localStream)return;
+ $('prepare').disabled=true;
+ try{
+  localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  $('local').srcObject=localStream;
+  $('mic').disabled=false;$('camera').disabled=false;
+  $('prepare').textContent='카메라·마이크 준비 완료';
+  send('ready');
+  status('내 카메라·마이크 준비 완료 · 상대방 준비를 기다립니다.');
+  await maybeOffer();
+ }catch(e){
+  $('prepare').disabled=false;
+  status('카메라·마이크 접근 실패: '+e.message);
+ }
+};
+$('mic').onclick=()=>{
+ const tracks=localStream?.getAudioTracks()||[];
+ for(const track of tracks)track.enabled=!track.enabled;
+ $('mic').textContent=tracks[0]?.enabled?'마이크 끄기':'마이크 켜기';
+};
+$('camera').onclick=()=>{
+ const tracks=localStream?.getVideoTracks()||[];
+ for(const track of tracks)track.enabled=!track.enabled;
+ $('camera').textContent=tracks[0]?.enabled?'카메라 끄기':'카메라 켜기';
+};
+$('reconnect').onclick=()=>{
+ if(ws){closing=true;ws.close();}connect();
+};
+$('leave').onclick=()=>{
+ closing=true;if(ws)ws.close();closePeer();
+ localStream?.getTracks().forEach(track=>track.stop());
+ localStream=null;$('local').srcObject=null;
+ $('prepare').disabled=false;$('prepare').textContent='카메라·마이크 준비';
+ $('mic').disabled=true;$('camera').disabled=true;
+ status('퇴장 완료 · 카메라 및 마이크 종료');
+};
+window.addEventListener('beforeunload',()=>{
+ closing=true;if(ws)ws.close();closePeer();
+ localStream?.getTracks().forEach(t=>t.stop());
+});
+connect();
+</script></main></body></html>
