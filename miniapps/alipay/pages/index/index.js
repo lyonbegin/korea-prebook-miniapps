@@ -7,28 +7,29 @@ Page({
  onCategoryTap(e){const category=e.currentTarget.dataset.id||'all';if(category===this.data.activeCategory)return;
    this.setData({activeCategory:category,query:'',products:[],visibleProducts:[]});this.loadListings()},
  onSearchInput(e){this.setData({query:e.detail.value||''});this.applySearch()},
- onSearchConfirm(){this.loadListings()},
+ onSearchConfirm(){this.applySearch()},
  applySearch(){const q=(this.data.query||'').trim().toLocaleLowerCase();const visible=(this.data.products||[]).filter(p=>!q||(p.name+' '+(p.subtitle||'')).toLocaleLowerCase().includes(q));this.setData({visibleProducts:visible})},
  loadListings(){
    const category=this.data.activeCategory,includeOffers=category!=='cosmetics',includeCosmetics=category==='cosmetics'||category==='all';
+   const requestId=this._listingRequestId=(this._listingRequestId||0)+1;
    this.setData({products:[],visibleProducts:[],loading:true,networkError:false,ready:false});
    let count=(includeOffers?1:0)+(includeCosmetics?1:0),failed=0;
-   const finish=()=>{count--;if(count<=0){this.setData({loading:false,ready:true,networkError:failed>0});this.applySearch()}};
-   const add=(items)=>{const old=this.data.products||[];this.setData({products:old.concat(items)});this.applySearch()};
+   const finish=()=>{if(requestId!==this._listingRequestId)return;count--;if(count<=0){this.setData({loading:false,ready:true,networkError:failed>0});this.applySearch()}};
+   const add=(items)=>{if(requestId!==this._listingRequestId)return;const old=this.data.products||[];this.setData({products:old.concat(items)});this.applySearch()};
    if(includeOffers){
       const categoryQuery=encodeURIComponent(category);
       my.request({url:getApp().globalData.apiBase+'/v1/offers?category_id='+categoryQuery+'&size=60',method:'GET',dataType:'json',
-        success:(res)=>{if((res.statusCode||res.status)===200&&res.data&&Array.isArray(res.data.offers)){
+        success:(res)=>{if(requestId!==this._listingRequestId)return;if((res.statusCode||res.status)===200&&res.data&&Array.isArray(res.data.offers)){
            add(res.data.offers.map(p=>({id:p.id,source:'offer',name:p.title_zh||p.name,subtitle:p.provider_name||p.summary_zh||'',
             categoryId:p.category_id,image:p.image||'',priceText:p.price_krw===null||p.price_krw===undefined?'价格请咨询':'₩'+Number(p.price_krw).toLocaleString()})));
-         }else failed++;finish()},fail:()=>{failed++;finish()}});
+         }else failed++;finish()},fail:()=>{if(requestId!==this._listingRequestId)return;failed++;finish()}});
    }
    if(includeCosmetics){
       my.request({url:getApp().globalData.apiBase+'/v1/ktaxback/miniapp/products?lang=zh_cn&size=30&page=1&sort=best',method:'GET',dataType:'json',
-        success:(res)=>{if((res.statusCode||res.status)===200&&res.data&&Array.isArray(res.data.products)){
+        success:(res)=>{if(requestId!==this._listingRequestId)return;if((res.statusCode||res.status)===200&&res.data&&Array.isArray(res.data.products)){
          add(res.data.products.map(p=>({id:p.id,source:'cosmetics',name:p.name,subtitle:p.brand||'',categoryId:'cosmetics',
           image:p.image||'',priceText:'US$'+Number(p.price||0).toFixed(2)})));
-        }else failed++;finish()},fail:()=>{failed++;finish()}});
+        }else failed++;finish()},fail:()=>{if(requestId!==this._listingRequestId)return;failed++;finish()}});
    }
  },
  onProductTap(e){const id=String(e.currentTarget.dataset.id||''),source=e.currentTarget.dataset.source;
