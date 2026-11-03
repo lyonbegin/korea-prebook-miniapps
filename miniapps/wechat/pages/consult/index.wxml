@@ -14,13 +14,19 @@
   <view class="consult-camera">HITEL · 私密视频咨询</view>
   <view class="consult-info">申请登记与视频接通是不同步骤。仅在管理员分配专属会话后才显示进入按钮；进入仍需 HITEL 身份验证。</view>
  </view>
+ <view class="consult-status">
+  <view class="consult-label">平台会员身份</view>
+  <view class="consult-info">{{authenticating?'正在验证账号':identityToken?'平台会员身份已通过服务器验证':'尚未完成平台会员验证'}}</view>
+  <button bindtap="retryLogin" class="consult-refresh" loading="{{authenticating}}" disabled="{{authenticating}}">重新验证会员身份</button>
+  <view class="consult-info">不收集或公开您的平台用户编号。此前申请可在同一平台账号登录后恢复。</view>
+ </view>
  <view wx:if="{{!request}}">
   <view class="consult-label">期望咨询日期（可选）</view>
   <picker mode="date" value="{{day}}" bindchange="onDateChange"><view class="consult-field">{{day||'选择日期'}} ›</view></picker>
   <view class="consult-label">期望时间（可选）</view>
   <picker mode="time" value="{{time}}" bindchange="onTimeChange"><view class="consult-field">{{time||'选择时间'}} ›</view></picker>
   <view class="consult-info">请勿在此提交姓名、电话、病历等个人或健康信息。本阶段仅提交商品编号、平台及希望日期和时间。</view>
-  <button class="consult-save" bindtap="submitRequest" loading="{{submitting}}" disabled="{{submitting||!product}}">提交咨询申请</button>
+  <button class="consult-save" bindtap="submitRequest" loading="{{submitting}}" disabled="{{submitting||authenticating||loadingRequests||!product}}">提交咨询申请</button>
  </view>
  <view wx:if="{{request}}" class="consult-status">
   <view class="consult-label">咨询申请状态</view>
