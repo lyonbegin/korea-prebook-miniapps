@@ -19,6 +19,7 @@ from fastapi import Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import inspect, text
+from sqlalchemy.exc import IntegrityError
 
 ITEM_PATTERN = re.compile(r"^[A-Za-z0-9_-]{2,60}$")
 STATUS = {"requested", "assigned", "ready", "cancelled", "closed"}
@@ -53,9 +54,11 @@ class AssignmentIn(BaseModel):
             if not self.counselor_id or not self.hitel_session_id:
                 raise ValueError("A counselor and private HITEL session are required")
             try:
-                uuid.UUID(self.hitel_session_id)
+                canonical = str(uuid.UUID(self.hitel_session_id))
             except ValueError:
                 raise ValueError("Invalid private HITEL session ID")
+            if self.hitel_session_id != canonical:
+                raise ValueError("Private HITEL session ID must be a canonical UUID")
         elif self.hitel_session_id:
             raise ValueError("A private HITEL session is allowed only for ready status")
         return self
@@ -79,6 +82,11 @@ def mount_product_consultations(app, engine):
                 created_at VARCHAR(50) NOT NULL,
                 updated_at VARCHAR(50) NOT NULL
             )
+        """))
+        conn.execute(text("""
+            CREATE UNIQUE INDEX IF NOT EXISTS korea_prebook_unique_ready_hitel_session
+            ON korea_prebook_product_consultations(hitel_session_id)
+            WHERE hitel_session_id <> '' AND status = 'ready'
         """))
 
     def admin_only(authorization):
@@ -190,29 +198,32 @@ def mount_product_consultations(app, engine):
                authorization: str | None = Header(None)):
         admin_only(authorization)
         now = datetime.now(timezone.utc).isoformat()
-        with engine.begin() as conn:
-            found = conn.execute(text(
-                "SELECT id,counselor_id,status FROM korea_prebook_product_consultations "
-                "WHERE id=:id"
-            ), {"id": request_id}).mappings().first()
-            if not found:
-                raise HTTPException(404, "Request not found")
-            if found["status"] in ("cancelled", "closed"):
-                raise HTTPException(409, "Request is final")
-            if body.status in ("assigned", "ready") and not (
-                body.counselor_id or found["counselor_id"]
-            ):
-                raise HTTPException(422, "A real counselor must be assigned")
-            counselor = body.counselor_id or found["counselor_id"]
-            conn.execute(text(
-                "UPDATE korea_prebook_product_consultations SET "
-                "status=:status,counselor_id=:counselor_id,"
-                "hitel_session_id=:hitel_session_id,updated_at=:updated_at "
-                "WHERE id=:id"
-            ), {
-                "id": request_id, "status": body.status, "counselor_id": counselor,
-                "hitel_session_id": body.hitel_session_id, "updated_at": now,
-            })
+        try:
+            with engine.begin() as conn:
+                found = conn.execute(text(
+                    "SELECT id,counselor_id,status FROM korea_prebook_product_consultations "
+                    "WHERE id=:id"
+                ), {"id": request_id}).mappings().first()
+                if not found:
+                    raise HTTPException(404, "Request not found")
+                if found["status"] in ("cancelled", "closed"):
+                    raise HTTPException(409, "Request is final")
+                if body.status in ("assigned", "ready") and not (
+                    body.counselor_id or found["counselor_id"]
+                ):
+                    raise HTTPException(422, "A real counselor must be assigned")
+                counselor = body.counselor_id or found["counselor_id"]
+                conn.execute(text(
+                    "UPDATE korea_prebook_product_consultations SET "
+                    "status=:status,counselor_id=:counselor_id,"
+                    "hitel_session_id=:hitel_session_id,updated_at=:updated_at "
+                    "WHERE id=:id"
+                ), {
+                    "id": request_id, "status": body.status, "counselor_id": counselor,
+                    "hitel_session_id": body.hitel_session_id, "updated_at": now,
+                })
+        except IntegrityError:
+            raise HTTPException(409, "HITEL private session already belongs to another request")
         return {"request_id": request_id, "status": body.status,
                 "video_link_assigned": bool(body.hitel_session_id),
                 "video_connected": False, "booking_confirmed": False}
