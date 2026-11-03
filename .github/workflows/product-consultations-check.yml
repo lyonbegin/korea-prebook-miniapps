@@ -4,6 +4,8 @@ on:
     branches:
       - feature/unified-marketplace-stability-20261103
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 jobs:
   consultation-contracts:
