@@ -1,0 +1,2 @@
+<view wx:if="{{error}}" class="error">{{error}}</view>
+<web-view wx:if="{{url}}" src="{{url}}"></web-view>
