@@ -47,7 +47,7 @@ Page({
   A.request({
    url:getApp().globalData.apiBase+'/v1/product-consultations',
    method:'POST',dataType:'json',
-   header:{'Content-Type':'application/json'},data:body,
+   headers:{'Content-Type':'application/json'},data:body,
    success:(res)=>{
     if((res.statusCode||res.status)===201&&res.data&&res.data.access_token){
      const data=res.data;
@@ -71,7 +71,7 @@ Page({
   A.request({
    url:getApp().globalData.apiBase+'/v1/product-consultations/'+encodeURIComponent(request.request_id),
    method:'GET',dataType:'json',
-   header:{'X-Consultation-Token':request.access_token},
+   headers:{'X-Consultation-Token':request.access_token},
    success:(res)=>{
     const data=res.data;
     if((res.statusCode||res.status)!==200||!data){
