@@ -1,13 +1,22 @@
-.eyebrow{font-size:19rpx;letter-spacing:2rpx;opacity:.8;margin-bottom:14rpx}
-.intro{font-size:24rpx;line-height:1.6;color:#69808c;margin-bottom:20rpx}
-.row{display:flex;align-items:center;justify-content:space-between}
-.tag{font-size:19rpx;color:#567782;padding:6rpx 14rpx;background:#edf3f4;border-radius:40rpx}
-.consult-card{background:#fff;padding:30rpx;margin:22rpx 0;border:1rpx solid #dce6e9;border-radius:18rpx}
-.form-title{font-size:31rpx;font-weight:700}
-.form-lead{font-size:22rpx;color:#6a7f8c;margin:13rpx 0 22rpx;line-height:1.5}
-.field-label{font-size:22rpx;margin:20rpx 0 9rpx;font-weight:600}
-.picker-field,.input,.textarea{box-sizing:border-box;background:#f6f8f9;padding:19rpx 18rpx;border:1rpx solid #e0e6e9;border-radius:10rpx;font-size:26rpx;width:100%}
-.textarea{height:150rpx}
-.save-button,.shop-button{background:#163949!important;color:#fff!important;font-size:25rpx;margin-top:24rpx}
-.close-text{text-align:center;color:#58727e;padding:16rpx;font-size:23rpx}
-.shop-box{background:#fff;padding:29rpx;border-radius:18rpx;border:1rpx solid #e0e6e9;margin-top:25rpx}
+page{background:#fff;color:#171b21}
+.catalog-page{min-height:100vh;background:#fff;padding-bottom:70rpx}
+.catalog-head{padding:36rpx 28rpx 28rpx;border-bottom:1rpx solid #f0f1f4}
+.catalog-logo{font-weight:900;font-size:25rpx;letter-spacing:2rpx}
+.catalog-title{font-weight:850;font-size:38rpx;line-height:1.4;margin:25rpx 0 8rpx}
+.catalog-sub{font-size:24rpx;color:#747b87}
+.catalog-search{margin-top:28rpx;background:#f5f6f8;border-radius:14rpx;font-size:25rpx;padding:18rpx}
+.category-title,.listing-title{margin:30rpx 28rpx 20rpx;font-weight:850;font-size:28rpx}
+.category-list{display:flex;flex-wrap:wrap;padding:0 20rpx;gap:12rpx}
+.category-chip{font-size:23rpx;border:1rpx solid #e6e8ed;border-radius:32rpx;padding:11rpx 17rpx;background:#fff}
+.category-chip.chosen{background:#161b22;border-color:#161b22;color:#fff}
+.listing-grid{display:flex;flex-wrap:wrap;gap:16rpx;padding:0 22rpx}
+.listing-card{box-sizing:border-box;width:calc(50% - 8rpx);border:1rpx solid #ebedf0;border-radius:15rpx;overflow:hidden;background:white;padding-bottom:14rpx}
+.listing-image{display:block;width:100%;height:275rpx;background:#f6f6f7}
+.listing-image.fallback{display:flex;align-items:center;justify-content:center;font-size:20rpx;color:#9da4ad}
+.listing-meta{font-size:18rpx;font-weight:850;letter-spacing:1rpx;color:#b34b66;margin:18rpx 15rpx 5rpx}
+.listing-name{font-size:25rpx;font-weight:850;line-height:1.35;margin:0 15rpx;max-height:76rpx;overflow:hidden}
+.listing-subtitle{font-size:20rpx;color:#777f89;margin:10rpx 15rpx;max-height:56rpx;overflow:hidden}
+.listing-price{font-size:27rpx;font-weight:900;margin:12rpx 15rpx}
+.listing-link{font-size:20rpx;margin:8rpx 15rpx;color:#aa3659}
+.info-line{margin:24rpx 28rpx;font-size:23rpx;color:#8a929c;line-height:1.6}
+.info-line.error{color:#ba4b52}.refresh{margin:20rpx 28rpx;color:#454c56;text-decoration:underline;font-size:22rpx}

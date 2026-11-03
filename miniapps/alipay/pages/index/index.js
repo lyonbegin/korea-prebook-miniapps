@@ -1,30 +1,38 @@
-const services=[{"kind":"beauty_consultation","name_zh":"韩国美妆咨询","desc_zh":"先咨询，再安排适合的服务","name_ko":"한국 뷰티 상담","tag_zh":"咨询入口"},{"kind":"airport_goods_handoff","name_zh":"机场商品提货预约","desc_zh":"K-TAXBACK 商品 · 离境机场交付","name_ko":"공항 상품 인도 예약","tag_zh":"商品交付"},{"kind":"clinic_visit","name_zh":"医院与诊所预约","desc_zh":"希望到访的机构与日期咨询","name_ko":"병원·의원 예약","tag_zh":"到访预约"},{"kind":"beauty_salon","name_zh":"美发与美妆门店预约","desc_zh":"理发 · 化妆 · 美甲等门店","name_ko":"미용실·뷰티 매장 예약","tag_zh":"美容门店"},{"kind":"spa_wellness","name_zh":"SPA 与护理预约","desc_zh":"护理 · 按摩 · SPA 场所咨询","name_ko":"스파·케어 예약","tag_zh":"SPA"},{"kind":"restaurant_table","name_zh":"韩国餐厅座位预约","desc_zh":"人数 · 用餐时间 · 座位需求","name_ko":"음식점 좌석 예약","tag_zh":"餐厅"},{"kind":"motel_early_checkin","name_zh":"住宿预约与提前入住","desc_zh":"酒店 · 住宿 · 提前入住咨询","name_ko":"숙박·얼리체크인 예약","tag_zh":"住宿"},{"kind":"airport_luggage_delivery","name_zh":"行李配送预约","desc_zh":"酒店与机场之间的行李安排","name_ko":"캐리어 배송 예약","tag_zh":"行李"}];
-const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const CATEGORIES=[{"id":"all","name_zh":"全部","name_ko":"전체"},{"id":"lifting","name_zh":"提升紧致","name_ko":"리프팅"},{"id":"skin","name_zh":"皮肤治疗","name_ko":"피부 시술"},{"id":"botox","name_zh":"肉毒素","name_ko":"보톡스"},{"id":"filler","name_zh":"填充","name_ko":"필러"},{"id":"rhinoplasty","name_zh":"鼻部整形","name_ko":"코성형"},{"id":"eye","name_zh":"眼部整形","name_ko":"눈성형"},{"id":"face_contour","name_zh":"面部轮廓","name_ko":"안면윤곽"},{"id":"breast","name_zh":"胸部整形","name_ko":"가슴성형"},{"id":"body","name_zh":"身体塑形","name_ko":"바디"},{"id":"hair_treatment","name_zh":"植发与头皮","name_ko":"모발이식·두피"},{"id":"hair_removal","name_zh":"脱毛","name_ko":"제모"},{"id":"kmed","name_zh":"韩医","name_ko":"한방"},{"id":"dental","name_zh":"牙科","name_ko":"치과"},{"id":"others","name_zh":"其他项目","name_ko":"기타"},{"id":"cosmetics","name_zh":"韩国美妆商品","name_ko":"화장품"},{"id":"aesthetic","name_zh":"皮肤美容护理","name_ko":"에스테틱"},{"id":"nail","name_zh":"美甲","name_ko":"네일"},{"id":"hair_salon","name_zh":"美发造型","name_ko":"헤어·미용실"},{"id":"guide","name_zh":"韩国旅游向导","name_ko":"관광 가이드"}];
+
 Page({
- data:{services,title_zh:'韩国美妆与旅行预约',subtitle_zh:'先咨询，再预约',status:'预约提交尚未开放 · 可先保存咨询草稿',activeService:'',selectedName:'',preferredDate:'',preferredTime:'',minDate:today(),quantity:'1',contact:'',notes:''},
- onLoad(){this.refreshHome()},
- onShow(){this.refreshHome()},
- refreshHome(){my.request({url:getApp().globalData.apiBase+'/v1/channels/alipay/home',method:'GET',dataType:'json',success:(res)=>{if(res.status===200&&res.data){this.updateRemoteExtras(res.data)}},fail:()=>this.setData({status:'离线示例 · 草稿保存在本机'})})},
- updateRemoteExtras(data){
-  // Keep the approved consultation service taxonomy as the primary navigation.
-  // The existing manager API may still return the legacy motel/shop catalog.
-  const additions=(data.services||[]).filter(x=>typeof x.kind==='string'&&x.kind.startsWith('source_'))
-  .map(x=>({kind:x.kind,name_zh:x.name_zh||'附加咨询',desc_zh:'可咨询的附加预约项目',tag_zh:'咨询'}));
-  this.setData({services:services.concat(additions),status:'已连接管理服务器 · 实际预约提交尚未开放'});
+ data:{categories:CATEGORIES,activeCategory:'all',products:[],visibleProducts:[],query:'',loading:false,networkError:false,
+       emptyText:'请选择类别查看商品',helpText:'商品页面提供视频咨询入口；未接通的服务会明确提示',ready:false},
+ onLoad(q){const category=(q&&q.category)||'all';this.setData({activeCategory:CATEGORIES.some(x=>x.id===category)?category:'all'});this.loadListings()},
+ onCategoryTap(e){const category=e.currentTarget.dataset.id||'all';if(category===this.data.activeCategory)return;
+   this.setData({activeCategory:category,query:'',products:[],visibleProducts:[]});this.loadListings()},
+ onSearchInput(e){this.setData({query:e.detail.value||''});this.applySearch()},
+ onSearchConfirm(){this.loadListings()},
+ applySearch(){const q=(this.data.query||'').trim().toLocaleLowerCase();const visible=(this.data.products||[]).filter(p=>!q||(p.name+' '+(p.subtitle||'')).toLocaleLowerCase().includes(q));this.setData({visibleProducts:visible})},
+ loadListings(){
+   const category=this.data.activeCategory,includeOffers=category!=='cosmetics',includeCosmetics=category==='cosmetics'||category==='all';
+   this.setData({products:[],visibleProducts:[],loading:true,networkError:false,ready:false});
+   let count=(includeOffers?1:0)+(includeCosmetics?1:0),failed=0;
+   const finish=()=>{count--;if(count<=0){this.setData({loading:false,ready:true,networkError:failed>0});this.applySearch()}};
+   const add=(items)=>{const old=this.data.products||[];this.setData({products:old.concat(items)});this.applySearch()};
+   if(includeOffers){
+      const categoryQuery=encodeURIComponent(category);
+      my.request({url:getApp().globalData.apiBase+'/v1/offers?category_id='+categoryQuery+'&size=60',method:'GET',dataType:'json',
+        success:(res)=>{if((res.statusCode||res.status)===200&&res.data&&Array.isArray(res.data.offers)){
+           add(res.data.offers.map(p=>({id:p.id,source:'offer',name:p.title_zh||p.name,subtitle:p.provider_name||p.summary_zh||'',
+            categoryId:p.category_id,image:p.image||'',priceText:p.price_krw===null||p.price_krw===undefined?'价格请咨询':'₩'+Number(p.price_krw).toLocaleString()})));
+         }else failed++;finish()},fail:()=>{failed++;finish()}});
+   }
+   if(includeCosmetics){
+      my.request({url:getApp().globalData.apiBase+'/v1/ktaxback/miniapp/products?lang=zh_cn&size=30&page=1&sort=best',method:'GET',dataType:'json',
+        success:(res)=>{if((res.statusCode||res.status)===200&&res.data&&Array.isArray(res.data.products)){
+         add(res.data.products.map(p=>({id:p.id,source:'cosmetics',name:p.name,subtitle:p.brand||'',categoryId:'cosmetics',
+          image:p.image||'',priceText:'US$'+Number(p.price||0).toFixed(2)})));
+        }else failed++;finish()},fail:()=>{failed++;finish()}});
+   }
  },
- onServiceTap(e){const kind=e.currentTarget.dataset.kind;const s=this.data.services.find(x=>x.kind===kind);if(!s)return;
- this.setData({activeService:s.kind,selectedName:s.name_zh,preferredDate:'',preferredTime:'',quantity:'1',contact:'',notes:''})},
- onDateChange(e){this.setData({preferredDate:e.detail.value})},
- onTimeChange(e){this.setData({preferredTime:e.detail.value})},
- onQuantityChange(e){this.setData({quantity:e.detail.value})},
- onContactChange(e){this.setData({contact:e.detail.value})},
- onNotesChange(e){this.setData({notes:e.detail.value})},
- saveDraft(){
-  if(!this.data.activeService)return;
-  const draft={service_kind:this.data.activeService,service_name:this.data.selectedName,date:this.data.preferredDate,time:this.data.preferredTime,quantity:this.data.quantity,contact:this.data.contact,notes:this.data.notes,saved_at:new Date().toISOString(),submitted:false,booking_confirmed:false};
-  my.setStorageSync({key:'korea_prebook_consultation_draft',data:draft});
-  my.showToast({content:'草稿已保存，未提交预约',type:'none',duration:2200});
- },
- closeDraft(){this.setData({activeService:'',selectedName:''})},
- openShop(){my.navigateTo({url:'/pages/shop/index'})}
+ onProductTap(e){const id=String(e.currentTarget.dataset.id||''),source=e.currentTarget.dataset.source;
+   if(!/^[A-Za-z0-9_-]{2,60}$/.test(id))return;
+   my.navigateTo({url:'/pages/shop/detail?id='+encodeURIComponent(id)+'&source='+encodeURIComponent(source)+'&lang=zh_cn'})},
+ onRefresh(){this.loadListings()}
 });

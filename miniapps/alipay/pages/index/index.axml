@@ -1,31 +1,31 @@
-<view class="container">
- <view class="hero"><view class="eyebrow">KOREA PREBOOK · K-TAXBACK</view>
- <view class="title">韩国美妆与旅行预约</view>
- <view class="subtitle">先咨询，再预约。安排韩国美容、机场提货及旅行服务。</view>
+<view class="catalog-page">
+ <view class="catalog-head">
+  <view class="catalog-logo">KOREA PREBOOK</view>
+  <view class="catalog-title">韩国美丽与旅行服务</view>
+  <view class="catalog-sub">选择商品 · 查看详情 · 视频咨询</view>
+  <input class="catalog-search" value="{{query}}" placeholder="搜索美容项目、商品或旅游服务" onInput="onSearchInput" onConfirm="onSearchConfirm"/>
  </view>
- <view class="section">选择咨询与预约类型</view>
- <view class="intro">所有项目从咨询开始。请先选择需求，我们将整理预约信息。</view>
- <view a:for="{{services}}" a:key="kind" class="card" data-kind="{{item.kind}}" onTap="onServiceTap">
-  <view class="row"><view class="name">{{item.name_zh}}</view><view class="tag">{{item.tag_zh}}</view></view>
-  <view class="desc">{{item.desc_zh}}</view>
+ <view class="category-title">全部类别</view>
+ <view class="category-list">
+  <view a:for="{{categories}}" a:key="id" class="category-chip {{activeCategory===item.id?'chosen':''}}" data-id="{{item.id}}" onTap="onCategoryTap">{{item.name_zh}}</view>
  </view>
- <view a:if="{{activeService}}" class="consult-card">
-  <view class="form-title">{{selectedName}}</view>
-  <view class="form-lead">咨询需求预填 · 暂不发送实际预约</view>
-  <view class="field-label">期望日期</view>
-  <picker mode="date" value="{{preferredDate}}" start="{{minDate}}" onChange="onDateChange"><view class="picker-field">{{preferredDate||'选择日期'}}　›</view></picker>
-  <view class="field-label">期望时间</view>
-  <picker mode="time" value="{{preferredTime}}" onChange="onTimeChange"><view class="picker-field">{{preferredTime||'选择时间'}}　›</view></picker>
-  <view class="field-label">人数 / 商品数量</view>
-  <input class="input" type="number" value="{{quantity}}" onInput="onQuantityChange" placeholder="例如 2" />
-  <view class="field-label">联系方式（可选）</view>
-  <input class="input" value="{{contact}}" onInput="onContactChange" placeholder="邮箱 / 手机 / WeChat ID" />
-  <view class="field-label">咨询需求</view>
-  <textarea class="textarea" value="{{notes}}" onInput="onNotesChange" maxlength="500" placeholder="请输入需要预约的地点、项目或商品信息"></textarea>
-  <button class="save-button" onTap="saveDraft">保存咨询草稿</button>
-  <view class="form-lead">仅保存在本机，不会发送给商家，也不代表预约成功。</view>
-  <view class="close-text" onTap="closeDraft">返回服务列表</view>
+ <view class="listing-title">相关商品</view>
+ <view a:if="{{loading}}" class="info-line">正在加载商品...</view>
+ <view a:if="{{!loading&&visibleProducts.length===0}}" class="info-line">
+  暂无已发布商品。商品须由运营方登记后展示。
  </view>
- <view class="shop-box"><view class="name">K-TAXBACK 韩国美妆商品</view><view class="desc">查看现有商品与购物页面；商品机场提货时间可通过上方咨询预约。</view><button class="shop-button" onTap="openShop">查看商品</button></view>
- <view class="note">{{status}}</view>
+ <view class="listing-grid">
+  <view a:for="{{visibleProducts}}" a:key="id" class="listing-card" data-id="{{item.id}}" data-source="{{item.source}}" onTap="onProductTap">
+   <image a:if="{{item.image}}" class="listing-image" src="{{item.image}}" mode="aspectFit"/>
+   <view a:else class="listing-image fallback">KOREA PREBOOK</view>
+   <view class="listing-meta">{{item.source==='cosmetics'?'K-BEAUTY':'SERVICE'}}</view>
+   <view class="listing-name">{{item.name}}</view>
+   <view class="listing-subtitle">{{item.subtitle}}</view>
+   <view class="listing-price">{{item.priceText}}</view>
+   <view class="listing-link">查看详情与咨询 ›</view>
+  </view>
+ </view>
+ <view a:if="{{networkError}}" class="info-line error">部分目录暂时无法连接；请稍后刷新。</view>
+ <view class="refresh" onTap="onRefresh">重新加载</view>
+ <view class="info-line">视频咨询尚需正式平台授权和 HITEL 连接验证；页面不代表真实预约已确认。</view>
 </view>
