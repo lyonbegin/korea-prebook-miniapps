@@ -300,6 +300,16 @@ def mount_product_consultations(app, engine, identity_resolver=None):
         expected = "https://hitel-room-production-ecce.up.railway.app/private-consultation"
         return {
             "request_api_enabled": os.getenv("PRODUCT_CONSULTATIONS_ENABLED", "").lower() == "true",
+            "miniapp_identity_exchange_enabled": os.getenv("MINIAPP_IDENTITY_EXCHANGE_ENABLED", "").lower() == "true",
+            "production_requires_verified_identity": identity_required(),
+            "wechat_identity_provider_configured": bool(
+                os.getenv("WECHAT_APP_ID") and os.getenv("WECHAT_APP_SECRET")
+            ),
+            "alipay_identity_provider_configured": bool(
+                os.getenv("ALIPAY_MINIPROGRAM_ID") and os.getenv("ALIPAY_RSA_PRIVATE_KEY")
+                and os.getenv("ALIPAY_PLATFORM_PUBLIC_KEY")
+            ),
+            "identity_hash_secret_configured": len(os.getenv("MINIAPP_IDENTITY_PEPPER", "")) >= 32,
             "wechat_video_enabled": os.getenv("WECHAT_HITEL_VIDEO_ENABLED", "").lower() == "true",
             "alipay_video_enabled": os.getenv("ALIPAY_HITEL_VIDEO_ENABLED", "").lower() == "true",
             "private_video_origin_valid": base == expected,
