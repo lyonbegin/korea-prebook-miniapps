@@ -96,6 +96,11 @@ async function readReadiness(){
   if(!response.ok)throw Error(data.detail||'확인 실패');
   const labels=[
    ['상품 상담 접수 API',data.request_api_enabled],
+   ['플랫폼 회원 인증 교환 API',data.miniapp_identity_exchange_enabled],
+   ['운영 회원 인증 의무화',data.production_requires_verified_identity],
+   ['WeChat 인증 공급자 설정',data.wechat_identity_provider_configured],
+   ['Alipay 인증 공급자 설정',data.alipay_identity_provider_configured],
+   ['회원 식별값 보호용 서버 키',data.identity_hash_secret_configured],
    ['WeChat 영상 링크',data.wechat_video_enabled],
    ['Alipay 영상 링크',data.alipay_video_enabled],
    ['HITEL 영상 URL 허용',data.private_video_origin_valid],
