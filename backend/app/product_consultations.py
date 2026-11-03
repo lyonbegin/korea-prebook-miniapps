@@ -64,7 +64,7 @@ class AssignmentIn(BaseModel):
         return self
 
 
-def mount_product_consultations(app, engine):
+def mount_product_consultations(app, engine, identity_resolver=None):
     with engine.begin() as conn:
         conn.execute(text("""
             CREATE TABLE IF NOT EXISTS korea_prebook_product_consultations (
@@ -84,6 +84,17 @@ def mount_product_consultations(app, engine):
             )
         """))
         conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS korea_prebook_consultation_owners (
+                request_id VARCHAR(36) PRIMARY KEY,
+                platform VARCHAR(16) NOT NULL,
+                subject_hash VARCHAR(64) NOT NULL
+            )
+        """))
+        conn.execute(text("""
+            CREATE INDEX IF NOT EXISTS korea_prebook_consultation_owners_subject_idx
+            ON korea_prebook_consultation_owners(platform, subject_hash)
+        """))
+        conn.execute(text("""
             CREATE UNIQUE INDEX IF NOT EXISTS korea_prebook_unique_ready_hitel_session
             ON korea_prebook_product_consultations(hitel_session_id)
             WHERE hitel_session_id <> '' AND status = 'ready'
@@ -95,6 +106,19 @@ def mount_product_consultations(app, engine):
             authorization, "Bearer " + key
         ):
             raise HTTPException(401, "Administrator authentication required")
+
+    def identity_required():
+        return (os.getenv("APP_ENV", "development").lower() == "production"
+                or os.getenv("MINIAPP_CONSULTATION_AUTH_REQUIRED", "").lower() == "true")
+
+    def resolve_identity(authorization: str | None, required=False):
+        if not authorization:
+            if required or identity_required():
+                raise HTTPException(401, "Verified miniapp login required")
+            return None
+        if identity_resolver is None:
+            raise HTTPException(503, "Miniapp identity verification unavailable")
+        return identity_resolver(authorization)
 
     def resolve_item(source, item_id):
         if source == "offer":
@@ -139,9 +163,12 @@ def mount_product_consultations(app, engine):
         }
 
     @app.post("/v1/product-consultations", status_code=201)
-    def request_consultation(data: RequestIn):
+    def request_consultation(data: RequestIn, authorization: str | None = Header(None)):
         if os.getenv("PRODUCT_CONSULTATIONS_ENABLED", "").lower() != "true":
             raise HTTPException(503, "Consultation requests are not enabled")
+        identity = resolve_identity(authorization)
+        if identity and identity["platform"] != data.platform:
+            raise HTTPException(403, "Miniapp session platform mismatch")
         # The API deliberately accepts no free-text medical or identifying data.
         title, counselor = resolve_item(data.source, data.item_id)
         token = secrets.token_urlsafe(32)
@@ -160,24 +187,61 @@ def mount_product_consultations(app, engine):
                 "INSERT INTO korea_prebook_product_consultations ("
                 + ",".join(row) + ") VALUES (" + ",".join(":" + key for key in row) + ")"
             ), row)
+            if identity:
+                conn.execute(text(
+                    "INSERT INTO korea_prebook_consultation_owners "
+                    "(request_id,platform,subject_hash) VALUES (:request_id,:platform,:subject_hash)"
+                ), {"request_id": row["id"], **identity})
+        if identity:
+            return public_row(row)
         return {**public_row(row), "access_token": token}
 
+    @app.get("/v1/product-consultations/mine")
+    def my_consultations(authorization: str | None = Header(None)):
+        identity = resolve_identity(authorization, required=True)
+        with engine.connect() as conn:
+            rows = conn.execute(text(
+                "SELECT c.* FROM korea_prebook_product_consultations c "
+                "JOIN korea_prebook_consultation_owners o ON o.request_id=c.id "
+                "WHERE o.platform=:platform AND o.subject_hash=:subject_hash "
+                "ORDER BY c.created_at DESC LIMIT 50"
+            ), identity).mappings().all()
+        return {"requests": [public_row(r) for r in rows]}
+
     @app.get("/v1/product-consultations/{request_id}")
-    def consultation_status(request_id: str, x_consultation_token: str | None = Header(None)):
+    def consultation_status(
+        request_id: str,
+        x_consultation_token: str | None = Header(None),
+        authorization: str | None = Header(None),
+    ):
         if not ITEM_PATTERN.fullmatch(request_id) and not re.fullmatch(
             r"[0-9a-f-]{36}", request_id
         ):
             raise HTTPException(404, "Request not found")
-        if not x_consultation_token or len(x_consultation_token) > 128:
-            raise HTTPException(403, "Consultation access token required")
         with engine.connect() as conn:
             row = conn.execute(text(
                 "SELECT * FROM korea_prebook_product_consultations WHERE id=:id"
             ), {"id": request_id}).mappings().first()
-        if not row or not secrets.compare_digest(
-            row["access_hash"], hashlib.sha256(x_consultation_token.encode()).hexdigest()
-        ):
+            owner = conn.execute(text(
+                "SELECT platform,subject_hash FROM korea_prebook_consultation_owners "
+                "WHERE request_id=:id"
+            ), {"id": request_id}).mappings().first()
+        if not row:
             raise HTTPException(404, "Request not found")
+        if owner:
+            identity = resolve_identity(authorization, required=True)
+            if (identity["platform"] != owner["platform"]
+                    or not secrets.compare_digest(identity["subject_hash"], owner["subject_hash"])):
+                raise HTTPException(404, "Request not found")
+        else:
+            if identity_required():
+                raise HTTPException(403, "Legacy anonymous request is not supported")
+            if not x_consultation_token or len(x_consultation_token) > 128:
+                raise HTTPException(403, "Consultation access token required")
+            if not secrets.compare_digest(
+                row["access_hash"], hashlib.sha256(x_consultation_token.encode()).hexdigest()
+            ):
+                raise HTTPException(404, "Request not found")
         return public_row(row)
 
     @app.get("/manager/product-consultations", response_class=HTMLResponse, include_in_schema=False)
