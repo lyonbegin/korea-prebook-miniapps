@@ -137,3 +137,40 @@ def test_feature_gate_and_validation(monkeypatch):
     assert c.post("/v1/product-consultations", json={
         **payload(a), "desired_date": "2020-01-01"
     }).status_code == 422
+
+
+
+def test_private_room_cannot_be_assigned_to_two_active_requests(monkeypatch):
+    c, _, admin, offer, other_offer = setup(monkeypatch)
+    one = c.post("/v1/product-consultations", json=payload(offer)).json()
+    two = c.post("/v1/product-consultations", json=payload(other_offer)).json()
+    room = str(uuid.uuid4())
+    assigned = {
+        "status": "ready",
+        "counselor_id": "real-test-counselor",
+        "hitel_session_id": room,
+    }
+    url = "/manager/api/product-consultations/"
+    assert c.put(url + one["request_id"], json=assigned, headers=admin).status_code == 200
+    duplicate = c.put(url + two["request_id"], json=assigned, headers=admin)
+    assert duplicate.status_code == 409
+    assert "already belongs" in duplicate.json()["detail"]
+    assert c.put(url + one["request_id"], json={"status": "closed"}, headers=admin).status_code == 200
+    # A closed request does not reserve its session forever.
+    assert c.put(url + two["request_id"], json=assigned, headers=admin).status_code == 200
+
+
+def test_room_id_must_be_canonical_uuid(monkeypatch):
+    c, _, admin, offer, _ = setup(monkeypatch)
+    record = c.post("/v1/product-consultations", json=payload(offer)).json()
+    room = str(uuid.uuid4()).upper()
+    result = c.put(
+        "/manager/api/product-consultations/" + record["request_id"],
+        json={
+            "status": "ready",
+            "counselor_id": "real-test-counselor",
+            "hitel_session_id": room,
+        },
+        headers=admin,
+    )
+    assert result.status_code == 422
