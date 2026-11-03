@@ -1,7 +1,7 @@
 <view class="consult-page">
  <view class="consult-logo">KOREA PREBOOK</view>
- <view class="consult-title">商品视频咨询</view>
- <view class="consult-sub">您正在咨询此商品的服务与预约安排。</view>
+ <view class="consult-title">商品咨询 · 功能测试</view>
+ <view class="consult-sub">测试商品 → 申请 → 咨询员分配 → 视频，全部使用隔离的测试数据。</view>
  <view a:if="{{loading}}" class="consult-alert">正在加载商品信息…</view>
  <view a:if="{{error}}" class="consult-alert">{{error}}</view>
  <view a:if="{{product}}" class="consult-product">
@@ -11,15 +11,24 @@
   <view class="consult-id">商品编号 {{product.id}}</view>
  </view>
  <view class="consult-video">
-  <view class="consult-camera">视频咨询 · HITEL</view>
-  <view class="consult-info">正式视频连接尚未开放。需完成平台媒体权限、HITEL 私密咨询房间及咨询员身份绑定。</view>
+  <view class="consult-camera">WebRTC 视频通话 · 功能测试</view>
+  <view class="consult-info">无需登录或输入任何认证信息。咨询员分配测试房间后，客户和咨询员从各自页面进入；实际视频连接状态会在房间中显示。</view>
  </view>
- <view class="consult-label">期望咨询日期</view>
- <picker mode="date" value="{{day}}" onChange="onDateChange"><view class="consult-field">{{day||'选择日期'}} ›</view></picker>
- <view class="consult-label">期望时间</view>
- <picker mode="time" value="{{time}}" onChange="onTimeChange"><view class="consult-field">{{time||'选择时间'}} ›</view></picker>
- <view class="consult-label">咨询备注</view>
- <textarea class="consult-notes" value="{{notes}}" onInput="onNoteChange" maxlength="500" placeholder="请填写您希望了解的内容"></textarea>
- <button class="consult-save" onTap="saveDraft">保存咨询意向草稿</button>
- <view class="consult-info">草稿仅存储在本机，尚未发送给咨询员，也不代表完成预约。</view>
+ <view a:if="{{!request}}">
+  <view class="consult-label">期望咨询日期（可选）</view>
+  <picker mode="date" value="{{day}}" onChange="onDateChange"><view class="consult-field">{{day||'选择日期'}} ›</view></picker>
+  <view class="consult-label">期望时间（可选）</view>
+  <picker mode="time" value="{{time}}" onChange="onTimeChange"><view class="consult-field">{{time||'选择时间'}} ›</view></picker>
+  <view class="consult-info">测试阶段请勿输入真实姓名、电话或病历。此页面不处理真实订单或医疗预约。</view>
+  <button class="consult-save" onTap="submitRequest" loading="{{submitting}}" disabled="{{submitting||!product}}">提交咨询申请</button>
+ </view>
+ <view a:if="{{request}}" class="consult-status">
+  <view class="consult-label">咨询申请状态</view>
+  <view class="consult-id">申请编号 {{request.id}}</view>
+  <view class="consult-info">{{statusText||'已创建申请，正在等待状态更新'}}</view>
+  <button class="consult-refresh" onTap="refreshStatus" loading="{{refreshing}}" disabled="{{refreshing}}">刷新申请状态</button>
+  <button a:if="{{canOpenVideo}}" class="consult-save" onTap="openVideo">进入专属视频咨询</button>
+  <button a:if="{{request.status==='closed'}}" class="consult-refresh" onTap="startNew">重新发起测试咨询</button>
+  <view class="consult-info">这只是测试申请；分配房间不等于视频已经连接。请到测试视频房间验证音视频。</view>
+ </view>
 </view>

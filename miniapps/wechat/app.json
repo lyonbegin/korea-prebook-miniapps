@@ -3,7 +3,8 @@
     "pages/index/index",
     "pages/shop/index",
     "pages/shop/detail",
-    "pages/consult/index"
+    "pages/consult/index",
+    "pages/consult/video"
   ],
   "window": {
     "navigationBarTitleText": "KOREA PREBOOK",

@@ -21,7 +21,7 @@ The existing AI/human consultation system is **out of scope**. Integrate through
 cd backend
 python -m pip install -r requirements-dev.txt
 PYTHONPATH=. pytest -q
-DEMO_WRITE_KEY=local-test-key uvicorn app.main:app --reload
+APP_ENV=demo uvicorn app.main:app --reload
 ```
 API: `/health`, `/v1/catalog`, and demo-only inquiry endpoints.
 
@@ -32,3 +32,16 @@ Use repository root as build context and the root `Dockerfile`. In production co
 
 ## Release gates
 Merchant account, miniapp IDs, category approvals (motel, clinic, shopping, logistics), cross-border payments, registered request domains, supplier inventory, and native-device/platform reviews are **pending**. No actual checkout or confirmed reservation exists in this starter.
+
+
+## Keyless functional consultation test — isolated feature branch
+
+**Open:** https://prebook-keyless-consult-demo-production.up.railway.app/demo
+
+This preview requires **no WeChat/Alipay credentials or authentication keys**. It uses an isolated demo Railway service and synthetic products with a separate SQLite database, and it never touches the existing production `prebook-api` database.
+
+The UI includes two native-platform customer perspectives, an operator assignment queue, automatic private demo-room identifiers, and a browser-based two-peer WebRTC camera/microphone test. WeChat/Alipay native miniapp sources on `feature/consultation-functional-demo-no-keys-20261104` point to this demo API, without changing the main branch.
+
+Please test the client flow first. Real miniapp-hosted video, production HITEL SDK, platform approvals, bookings and payments are **not yet verified**.
+
+See [step-by-step demo test guide](docs/functional-keyless-demo.md).

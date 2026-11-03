@@ -1,0 +1,172 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>위챗알리 | 상담 기능 실험실</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:#171717;background:#f6f6f6}
+*{box-sizing:border-box}body{margin:0}main{max-width:1450px;margin:0 auto;padding:20px 18px 50px}
+h1{font-size:24px;margin:8px 0}h2{font-size:17px;margin:0 0 14px}p{line-height:1.55}header p{color:#555;font-size:13px}
+.mark{font-size:11px;letter-spacing:1.8px;color:#777}.layout{display:grid;grid-template-columns:290px 290px minmax(340px,1fr);gap:15px;align-items:start}
+.phone,.desk{border:1px solid #ddd;background:white;border-radius:15px;overflow:hidden}
+.phone{min-height:600px}.desk{min-height:600px}.phone-head{padding:18px;border-bottom:1px solid #e8e8e8}
+.phone-head small{display:block;color:#777;margin:4px 0}.phone-body{padding:15px}
+.product{display:block;width:100%;text-align:left;background:white;border:1px solid #ddd;border-radius:9px;padding:12px;margin:8px 0;cursor:pointer}
+.product.active{border:2px solid #1e1e1e;background:#f7f7f7}
+.product .name{display:block;font-size:14px;font-weight:700}.product .meta{display:block;font-size:11px;color:#777;margin-top:4px}
+button{font:inherit;cursor:pointer;border:1px solid #aaa;padding:10px 12px;border-radius:8px;background:#fff;color:inherit}
+button.primary{background:#171717;color:white;border-color:#171717;width:100%;margin:12px 0 8px}
+button:disabled{opacity:.4;cursor:default}
+label{font-size:12px;display:block;color:#555;margin:8px 0}
+input{font:inherit;padding:9px;border-radius:6px;border:1px solid #bbb;max-width:100%}
+.message{background:#f7f7f7;border:1px solid #e0e0e0;border-radius:7px;padding:10px;font-size:12px;line-height:1.7;margin:10px 0}
+.state{font-size:12px;color:#555}.request{border-top:1px solid #e5e5e5;padding:12px 0}
+.request strong{font-size:13px;display:block}.request small{font-size:11px;color:#666;display:block;padding:3px 0}
+.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button,.actions a{font-size:12px;padding:7px;text-decoration:none;color:#171717;border:1px solid #aaa;border-radius:6px;background:white}
+.desk-head{padding:18px 20px;border-bottom:1px solid #e8e8e8}.desk-body{padding:15px 20px}
+.notice{border-top:1px solid #ddd;margin-top:16px;padding-top:12px;color:#555;font-size:12px}
+@media(max-width:1000px){.layout{grid-template-columns:1fr 1fr}.desk{grid-column:1/-1}}
+@media(max-width:600px){.layout{grid-template-columns:1fr}.desk{grid-column:1}.phone{min-height:auto}}
+</style></head><body><main>
+<header>
+ <div class="mark">KOREA PREBOOK · FUNCTIONAL TEST</div>
+ <h1>위챗 · 알리페이 상품 상담 기능 실험실</h1>
+ <p>별도 인증키 입력 없이 <b>상품 선택 → 상담 신청 → 상담사 배정 → 양쪽 브라우저에서 실제 카메라·마이크 연결</b>을 시험합니다. 아래 상품과 상담사는 모두 테스트용입니다. 실제 예약·의료 상담·결제 기능이 아닙니다. <strong>공개 테스트이므로 다른 방문자도 접수 내역과 테스트방에 접근할 수 있습니다. 실명·개인정보·건강정보를 사용하지 마십시오.</strong></p>
+</header>
+<div class="layout">
+ <section class="phone">
+  <div class="phone-head"><strong>WeChat 微信</strong><small>고객 화면 기능 검증</small></div>
+  <div class="phone-body">
+   <h2>상품 선택</h2><div id="wechat-products"></div>
+   <label>희망 상담일 <input type="date" id="wechat-day"></label>
+   <label>희망 시간 <input type="time" id="wechat-time"></label>
+   <button class="primary" id="wechat-send">선택한 상품 상담 신청</button>
+   <div class="message" id="wechat-message">상품을 선택하십시오.</div>
+   <h2>신청 내역</h2><div id="wechat-requests"></div>
+  </div>
+ </section>
+ <section class="phone">
+  <div class="phone-head"><strong>Alipay 支付宝</strong><small>고객 화면 기능 검증</small></div>
+  <div class="phone-body">
+   <h2>상품 선택</h2><div id="alipay-products"></div>
+   <label>희망 상담일 <input type="date" id="alipay-day"></label>
+   <label>희망 시간 <input type="time" id="alipay-time"></label>
+   <button class="primary" id="alipay-send">선택한 상품 상담 신청</button>
+   <div class="message" id="alipay-message">상품을 선택하십시오.</div>
+   <h2>신청 내역</h2><div id="alipay-requests"></div>
+  </div>
+ </section>
+ <section class="desk">
+  <div class="desk-head"><h2>상담사 · 관리자 화면</h2><div class="state">서버에 기록된 접수 건을 조회합니다. 테스트 모드에서는 가상 상담사의 배정 버튼을 누르시면 됩니다.</div></div>
+  <div class="desk-body">
+   <button id="refresh">새로고침</button>
+   <span class="state" id="count"></span>
+   <div class="message" id="operator-message">상담 요청을 읽고 있습니다.</div>
+   <div id="operator-requests"></div>
+   <div class="notice">영상 테스트는 고객 버튼과 상담사 버튼으로 <b>서로 다른 두 창</b>을 열어 진행하십시오. 각각 카메라·마이크 준비 버튼을 눌러야 연결이 시작됩니다. 방 번호는 자동 발급됩니다. 실제 영상 연결 성공 여부는 영상 화면의 상태에 표시됩니다. 인터넷 환경에 따라 STUN만으로 연결되지 않을 수 있습니다.</div>
+  </div>
+ </section>
+</div></main>
+<script>
+const $=id=>document.getElementById(id);
+const selected={wechat:null,alipay:null};
+let products=[],requests=[];
+const label={requested:'상담 신청 접수',ready:'상담방 준비됨',closed:'상담 종료'};
+function el(tag,text,cls){const v=document.createElement(tag);if(text!==undefined)v.textContent=text;if(cls)v.className=cls;return v;}
+function sendError(platform,message){$(platform+'-message').textContent=message;}
+function openRoom(path){if(!path)return;window.open(path,'_blank','noopener,noreferrer');}
+async function api(path,method='GET',payload){
+ const response=await fetch(path,{
+  method,headers:payload?{'Content-Type':'application/json'}:{},
+  body:payload?JSON.stringify(payload):undefined,cache:'no-store'
+ });
+ const data=await response.json().catch(()=>({detail:'서버가 응답하지 않았습니다.'}));
+ if(!response.ok)throw Error(typeof data.detail==='string'?data.detail:'서버 요청이 실패했습니다.');
+ return data;
+}
+function renderProducts(platform){
+ const root=$(platform+'-products');root.replaceChildren();
+ for(const p of products){
+  const b=el('button',undefined,'product'+(selected[platform]===p.id?' active':''));
+  b.type='button';
+  b.append(el('span',p.name,'name'),el('span',
+   p.category+' · '+(p.price_krw==null?'상담문의':p.price_krw.toLocaleString()+'원')+' · '+p.counselor_id,'meta'));
+  b.onclick=()=>{selected[platform]=p.id;renderProducts(platform);sendError(platform,p.name+' 선택됨');};
+  root.appendChild(b);
+ }
+}
+function addButton(root,title,action){
+ const button=el('button',title);
+ button.onclick=async()=>{button.disabled=true;try{await action();}catch(e){$('operator-message').textContent=e.message;}finally{button.disabled=false;}};
+ root.appendChild(button);
+ return button;
+}
+function renderRequest(root,record,operator=false){
+ const wrap=el('div',undefined,'request');
+ wrap.appendChild(el('strong',record.title+' · '+(label[record.status]||record.status)));
+ wrap.appendChild(el('small','상품 '+record.item_id+' · 상담사 '+record.counselor_id+' · '+record.platform));
+ if(record.desired_date)wrap.appendChild(el('small','희망 '+record.desired_date+' '+record.desired_time));
+ wrap.appendChild(el('small','요청 '+record.id.substring(0,8)+' · '+record.created_at.slice(0,16)+' UTC'));
+ const buttons=el('div',undefined,'actions');
+ if(operator&&record.status==='requested'){
+  addButton(buttons,'상담사 배정 + 방 생성',async()=>{
+   await api('/demo/api/consultations/'+encodeURIComponent(record.id)+'/assign','POST');
+   await refresh();
+  });
+ }
+ if(record.status==='ready'){
+  const path=operator?record.counselor_room_url:record.customer_room_url;
+  addButton(buttons,operator?'상담사 영상 입장':'고객 영상 입장',async()=>openRoom(path));
+ }
+ if(operator&&record.status!=='closed'){
+  addButton(buttons,'종료',async()=>{
+   await api('/demo/api/consultations/'+encodeURIComponent(record.id)+'/close','POST');
+   await refresh();
+  });
+ }
+ if(buttons.childNodes.length)wrap.appendChild(buttons);
+ root.appendChild(wrap);
+}
+function renderAll(){
+ for(const platform of ['wechat','alipay']){
+  const root=$(platform+'-requests');root.replaceChildren();
+  const current=requests.filter(r=>r.platform===platform);
+  if(!current.length)root.appendChild(el('p','신청 내역 없음','state'));
+  current.forEach(r=>renderRequest(root,r));
+ }
+ const list=$('operator-requests');list.replaceChildren();
+ for(const req of requests)renderRequest(list,req,true);
+ if(!requests.length)list.appendChild(el('p','접수 건이 없습니다.','state'));
+ $('count').textContent='총 '+requests.length+'건';
+}
+async function refresh(){
+ const r=await api('/demo/api/consultations');
+ requests=r.requests;
+ renderAll();
+ $('operator-message').textContent='서버 조회 완료 · '+new Date().toLocaleTimeString();
+}
+async function send(platform){
+ const item_id=selected[platform];
+ if(!item_id){sendError(platform,'상담할 상품을 먼저 선택하십시오.');return;}
+ const b=$(platform+'-send');b.disabled=true;
+ try{
+  const data=await api('/demo/api/consultations','POST',{
+   platform,item_id,desired_date:$(platform+'-day').value,
+   desired_time:$(platform+'-time').value
+  });
+  sendError(platform,'서버에 상담 신청을 저장했습니다. 신청번호 '+data.id.substring(0,8));
+  await refresh();
+ }catch(e){sendError(platform,e.message);}
+ finally{b.disabled=false;}
+}
+async function boot(){
+ try{
+  products=(await api('/demo/api/products')).products;
+  renderProducts('wechat');renderProducts('alipay');
+  await refresh();
+ }catch(e){$('operator-message').textContent=e.message;}
+}
+$('wechat-send').onclick=()=>send('wechat');
+$('alipay-send').onclick=()=>send('alipay');
+$('refresh').onclick=()=>refresh().catch(e=>$('operator-message').textContent=e.message);
+boot();
+// A newly assigned room appears without requiring the customer to log in or reload.
+setInterval(()=>{if(!document.hidden)refresh().catch(()=>{});},8000);
+</script></body></html>
