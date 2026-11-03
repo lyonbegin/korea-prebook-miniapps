@@ -93,7 +93,7 @@ def mount_product_consultations(app, engine, identity_resolver=None):
         """))
         # Reversible, additive migration for any preexisting feature-branch table.
         from sqlalchemy import inspect
-        owner_cols = {c["name"] for c in inspect(engine).get_columns(
+        owner_cols = {c["name"] for c in inspect(conn).get_columns(
             "korea_prebook_consultation_owners"
         )}
         if "active_slot" not in owner_cols:
