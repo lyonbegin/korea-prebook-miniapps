@@ -18,7 +18,7 @@ jobs:
       - name: Install backend test dependencies
         run: pip install -r backend/requirements-dev.txt
       - name: Run backend API tests
-        run: cd backend && pytest -q
+        run: cd backend && PYTHONPATH=. pytest -q
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
