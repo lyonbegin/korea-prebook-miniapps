@@ -116,3 +116,15 @@ def test_no_production_mode_and_bad_requests():
         }).status_code == 422
         assert client.get("/demo/rooms/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee").status_code == 404
         assert client.post("/demo/api/consultations/not-a-uuid/assign").status_code == 404
+
+
+def test_closing_room_notifies_current_video_participant(client):
+    request = create(client, "wechat", "demo-skin-a")
+    room = assign(client, request["id"])["room_id"]
+    url = f"/demo/rooms/{room}/signal?role=customer"
+    with client.websocket_connect(url) as socket:
+        assert socket.receive_json()["type"] == "joined"
+        response = client.post(f"/demo/api/consultations/{request['id']}/close")
+        assert response.status_code == 200
+        assert socket.receive_json()["type"] == "closed"
+    assert client.get(f"/demo/rooms/{room}").status_code == 404
