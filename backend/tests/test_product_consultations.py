@@ -20,6 +20,8 @@ def setup(monkeypatch, enabled=True):
         "HITEL_PRIVATE_CONSULT_URL",
         "https://hitel-room-production-ecce.up.railway.app/private-consultation",
     )
+    monkeypatch.setenv("WECHAT_HITEL_VIDEO_ENABLED", "true")
+    monkeypatch.delenv("ALIPAY_HITEL_VIDEO_ENABLED", raising=False)
     engine = create_engine("sqlite:///:memory:",
                            connect_args={"check_same_thread": False},
                            poolclass=StaticPool)
@@ -174,3 +176,33 @@ def test_room_id_must_be_canonical_uuid(monkeypatch):
         headers=admin,
     )
     assert result.status_code == 422
+
+
+
+def test_video_link_is_platform_specific_and_requires_approved_origin(monkeypatch):
+    c, _, admin, offer, _ = setup(monkeypatch)
+    created = c.post("/v1/product-consultations", json=payload(offer)).json()
+    assigned_id = str(uuid.uuid4())
+    assert c.put(
+        "/manager/api/product-consultations/" + created["request_id"],
+        json={
+            "status": "ready", "counselor_id": "real-test-counselor",
+            "hitel_session_id": assigned_id,
+        }, headers=admin
+    ).status_code == 200
+    url = "/v1/product-consultations/" + created["request_id"]
+    headers = {"X-Consultation-Token": created["access_token"]}
+    assert c.get(url, headers=headers).json()["video_url"] is not None
+
+    monkeypatch.delenv("WECHAT_HITEL_VIDEO_ENABLED")
+    response = c.get(url, headers=headers).json()
+    assert response["status"] == "ready"
+    assert response["video_url"] is None
+    assert response["video_connected"] is False
+
+    monkeypatch.setenv("WECHAT_HITEL_VIDEO_ENABLED", "true")
+    monkeypatch.setenv(
+        "HITEL_PRIVATE_CONSULT_URL",
+        "https://unapproved.example/private-consultation",
+    )
+    assert c.get(url, headers=headers).json()["video_url"] is None
