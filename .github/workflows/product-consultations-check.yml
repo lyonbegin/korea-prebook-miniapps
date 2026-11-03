@@ -1,0 +1,25 @@
+name: Product consultation branch checks
+on:
+  push:
+    branches:
+      - feature/unified-marketplace-stability-20261103
+  workflow_dispatch:
+
+jobs:
+  consultation-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install backend test dependencies
+        run: pip install -r backend/requirements-dev.txt
+      - name: Run backend API tests
+        run: cd backend && pytest -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse miniapp JavaScript
+        run: |
+          find miniapps/wechat/pages miniapps/alipay/pages -name '*.js' -print0 | xargs -0 -n1 node --check
