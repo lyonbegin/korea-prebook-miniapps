@@ -1,7 +1,7 @@
 <view class="consult-page">
  <view class="consult-logo">KOREA PREBOOK</view>
- <view class="consult-title">商品咨询</view>
- <view class="consult-sub">咨询申请与您选择的商品绑定，而非任意公共聊天室。</view>
+ <view class="consult-title">商品咨询 · 功能测试</view>
+ <view class="consult-sub">测试商品 → 申请 → 咨询员分配 → 视频，全部使用隔离的测试数据。</view>
  <view wx:if="{{loading}}" class="consult-alert">正在加载商品信息…</view>
  <view wx:if="{{error}}" class="consult-alert">{{error}}</view>
  <view wx:if="{{product}}" class="consult-product">
@@ -11,23 +11,24 @@
   <view class="consult-id">商品编号 {{product.id}}</view>
  </view>
  <view class="consult-video">
-  <view class="consult-camera">HITEL · 私密视频咨询</view>
-  <view class="consult-info">申请登记与视频接通是不同步骤。仅在管理员分配专属会话后才显示进入按钮；进入仍需 HITEL 身份验证。</view>
+  <view class="consult-camera">WebRTC 视频通话 · 功能测试</view>
+  <view class="consult-info">无需登录或输入任何认证信息。咨询员分配测试房间后，客户和咨询员从各自页面进入；实际视频连接状态会在房间中显示。</view>
  </view>
  <view wx:if="{{!request}}">
   <view class="consult-label">期望咨询日期（可选）</view>
   <picker mode="date" value="{{day}}" bindchange="onDateChange"><view class="consult-field">{{day||'选择日期'}} ›</view></picker>
   <view class="consult-label">期望时间（可选）</view>
   <picker mode="time" value="{{time}}" bindchange="onTimeChange"><view class="consult-field">{{time||'选择时间'}} ›</view></picker>
-  <view class="consult-info">请勿在此提交姓名、电话、病历等个人或健康信息。本阶段仅提交商品编号、平台及希望日期和时间。</view>
+  <view class="consult-info">测试阶段请勿输入真实姓名、电话或病历。此页面不处理真实订单或医疗预约。</view>
   <button class="consult-save" bindtap="submitRequest" loading="{{submitting}}" disabled="{{submitting||!product}}">提交咨询申请</button>
  </view>
  <view wx:if="{{request}}" class="consult-status">
   <view class="consult-label">咨询申请状态</view>
-  <view class="consult-id">申请编号 {{request.request_id}}</view>
+  <view class="consult-id">申请编号 {{request.id}}</view>
   <view class="consult-info">{{statusText||'已创建申请，正在等待状态更新'}}</view>
   <button class="consult-refresh" bindtap="refreshStatus" loading="{{refreshing}}" disabled="{{refreshing}}">刷新申请状态</button>
   <button wx:if="{{canOpenVideo}}" class="consult-save" bindtap="openVideo">进入专属视频咨询</button>
-  <view class="consult-info">本申请不代表已经预约成功，也不代表视频、音频或咨询员已经接通。</view>
+  <button wx:if="{{request.status==='closed'}}" class="consult-refresh" bindtap="startNew">重新发起测试咨询</button>
+  <view class="consult-info">这只是测试申请；分配房间不等于视频已经连接。请到测试视频房间验证音视频。</view>
  </view>
 </view>
