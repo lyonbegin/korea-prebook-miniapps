@@ -186,6 +186,21 @@ def mount_product_consultations(app, engine):
             encoding="utf-8"
         )
 
+    @app.get("/manager/api/product-consultations/readiness", include_in_schema=False)
+    def readiness(authorization: str | None = Header(None)):
+        admin_only(authorization)
+        base = os.getenv("HITEL_PRIVATE_CONSULT_URL", "").strip().rstrip("/")
+        expected = "https://hitel-room-production-ecce.up.railway.app/private-consultation"
+        return {
+            "request_api_enabled": os.getenv("PRODUCT_CONSULTATIONS_ENABLED", "").lower() == "true",
+            "wechat_video_enabled": os.getenv("WECHAT_HITEL_VIDEO_ENABLED", "").lower() == "true",
+            "alipay_video_enabled": os.getenv("ALIPAY_HITEL_VIDEO_ENABLED", "").lower() == "true",
+            "private_video_origin_valid": base == expected,
+            "hitel_identity_verified": False,
+            "physical_device_video_verified": False,
+            "meaning": "Configuration only; no actual call or identity was verified",
+        }
+
     @app.get("/manager/api/product-consultations")
     def list_requests(authorization: str | None = Header(None)):
         admin_only(authorization)
