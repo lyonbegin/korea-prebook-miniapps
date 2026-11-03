@@ -2,7 +2,7 @@ name: Product consultation branch checks
 on:
   push:
     branches:
-      - feature/unified-marketplace-stability-20261103
+      - feature/consultation-functional-demo-no-keys-20261104
   workflow_dispatch:
   pull_request:
     branches: [main]
@@ -28,3 +28,6 @@ jobs:
 
       - name: Simulate consultation page request flows
         run: node tests/consultation_miniapp_flow.test.cjs
+
+      - name: Validate demo HTML JavaScript
+        run: node tests/demo_frontend_syntax.test.cjs
