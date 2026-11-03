@@ -9,7 +9,8 @@ function notify(message){APP.showToast({content:message,type:'none'});}
 Page({
  data:{
   id:'',source:'offer',product:null,loading:true,error:'',day:'',time:'',
-  request:null,statusText:'',submitting:false,refreshing:false,canOpenVideo:false
+  request:null,statusText:'',submitting:false,refreshing:false,canOpenVideo:false,
+  booking_confirmed:false,video_connected:false
  },
  onLoad(query){
   const id=String(query.id||''),source=query.source==='cosmetics'?'cosmetics':'offer';
