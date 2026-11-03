@@ -87,8 +87,24 @@ def mount_product_consultations(app, engine, identity_resolver=None):
             CREATE TABLE IF NOT EXISTS korea_prebook_consultation_owners (
                 request_id VARCHAR(36) PRIMARY KEY,
                 platform VARCHAR(16) NOT NULL,
-                subject_hash VARCHAR(64) NOT NULL
+                subject_hash VARCHAR(64) NOT NULL,
+                active_slot VARCHAR(64) NULL
             )
+        """))
+        # Reversible, additive migration for any preexisting feature-branch table.
+        from sqlalchemy import inspect
+        owner_cols = {c["name"] for c in inspect(engine).get_columns(
+            "korea_prebook_consultation_owners"
+        )}
+        if "active_slot" not in owner_cols:
+            conn.execute(text(
+                "ALTER TABLE korea_prebook_consultation_owners "
+                "ADD COLUMN active_slot VARCHAR(64) NULL"
+            ))
+        conn.execute(text("""
+            CREATE UNIQUE INDEX IF NOT EXISTS korea_prebook_consultation_owners_unique_slot
+            ON korea_prebook_consultation_owners(active_slot)
+            WHERE active_slot IS NOT NULL
         """))
         conn.execute(text("""
             CREATE INDEX IF NOT EXISTS korea_prebook_consultation_owners_subject_idx
@@ -182,16 +198,43 @@ def mount_product_consultations(app, engine, identity_resolver=None):
             "status": "requested", "hitel_session_id": "",
             "created_at": now, "updated_at": now,
         }
-        with engine.begin() as conn:
-            conn.execute(text(
-                "INSERT INTO korea_prebook_product_consultations ("
-                + ",".join(row) + ") VALUES (" + ",".join(":" + key for key in row) + ")"
-            ), row)
-            if identity:
+        slot = None
+        if identity:
+            slot = hashlib.sha256(
+                f"{identity['platform']}:{identity['subject_hash']}:{data.source}:{data.item_id}".encode()
+            ).hexdigest()
+
+        def existing_active():
+            if not slot:
+                return None
+            with engine.connect() as conn:
+                return conn.execute(text(
+                    "SELECT c.* FROM korea_prebook_product_consultations c "
+                    "JOIN korea_prebook_consultation_owners o ON o.request_id=c.id "
+                    "WHERE o.active_slot=:slot AND c.status NOT IN ('closed','cancelled')"
+                ), {"slot": slot}).mappings().first()
+
+        previous = existing_active()
+        if previous:
+            return public_row(previous)
+        try:
+            with engine.begin() as conn:
                 conn.execute(text(
-                    "INSERT INTO korea_prebook_consultation_owners "
-                    "(request_id,platform,subject_hash) VALUES (:request_id,:platform,:subject_hash)"
-                ), {"request_id": row["id"], **identity})
+                    "INSERT INTO korea_prebook_product_consultations ("
+                    + ",".join(row) + ") VALUES (" + ",".join(":" + key for key in row) + ")"
+                ), row)
+                if identity:
+                    conn.execute(text(
+                        "INSERT INTO korea_prebook_consultation_owners "
+                        "(request_id,platform,subject_hash,active_slot) "
+                        "VALUES (:request_id,:platform,:subject_hash,:active_slot)"
+                    ), {"request_id": row["id"], **identity, "active_slot": slot})
+        except IntegrityError:
+            # Concurrent requests from two authenticated devices lose the unique-slot race.
+            previous = existing_active()
+            if previous:
+                return public_row(previous)
+            raise HTTPException(409, "Consultation request already being created")
         if identity:
             return public_row(row)
         return {**public_row(row), "access_token": token}
@@ -306,6 +349,11 @@ def mount_product_consultations(app, engine, identity_resolver=None):
                     "id": request_id, "status": body.status, "counselor_id": counselor,
                     "hitel_session_id": body.hitel_session_id, "updated_at": now,
                 })
+                if body.status in ("closed", "cancelled"):
+                    conn.execute(text(
+                        "UPDATE korea_prebook_consultation_owners "
+                        "SET active_slot=NULL WHERE request_id=:id"
+                    ), {"id": request_id})
         except IntegrityError:
             raise HTTPException(409, "HITEL private session already belongs to another request")
         return {"request_id": request_id, "status": body.status,
