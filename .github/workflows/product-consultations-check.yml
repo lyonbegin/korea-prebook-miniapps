@@ -25,3 +25,6 @@ jobs:
       - name: Parse miniapp JavaScript
         run: |
           find miniapps/wechat/pages miniapps/alipay/pages -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Simulate consultation page request flows
+        run: node tests/consultation_miniapp_flow.test.cjs
