@@ -25,6 +25,12 @@ small{color:#5f656d}code{font:12px ui-monospace,monospace}
 <button class="primary" id="refresh">요청 불러오기</button></div>
 <p><small>관리자 토큰을 웹 저장소에 기록하지 않습니다. 페이지를 닫으면 다시 입력하셔야 합니다.</small></p>
 <div id="message" role="status"></div></section>
+<section class="panel">
+<h2>상담 서비스 실행 준비 상태</h2>
+<p><small>서버 설정과 실제 통화 검증은 별개입니다. 실기기 영상 연결이 확인되지 않으면 운영 준비 완료로 표시하지 않습니다.</small></p>
+<button id="readiness">설정·검증 상태 확인</button>
+<pre id="readinessState" style="white-space:pre-wrap;overflow-wrap:anywhere">관리자 인증 후 확인하실 수 있습니다.</pre>
+</section>
 <section class="panel"><h2>요청 목록</h2>
 <div class="table-scroll"><table><thead><tr><th>생성 시각(UTC)</th><th>플랫폼</th><th>상품</th><th>담당자</th><th>희망일</th><th>상태</th><th>선택</th></tr></thead>
 <tbody id="rows"><tr><td colspan="7">관리자 인증 후 조회할 수 있습니다.</td></tr></tbody></table></div></section>
@@ -83,6 +89,23 @@ async function save(){
   $('edit').hidden=true;selected=null;await refresh();
  }catch(e){message(e.message||String(e));}
 }
-$('refresh').addEventListener('click',refresh);
+async function readReadiness(){
+ try{
+  const response=await fetch('/manager/api/product-consultations/readiness',{headers:adminHeaders()});
+  const data=await response.json();
+  if(!response.ok)throw Error(data.detail||'확인 실패');
+  const labels=[
+   ['상품 상담 접수 API',data.request_api_enabled],
+   ['WeChat 영상 링크',data.wechat_video_enabled],
+   ['Alipay 영상 링크',data.alipay_video_enabled],
+   ['HITEL 영상 URL 허용',data.private_video_origin_valid],
+   ['HITEL 계정 검증 완료',data.hitel_identity_verified],
+   ['실기기 양방향 영상 검증 완료',data.physical_device_video_verified]
+  ];
+  $('readinessState').textContent=labels.map(([name,ready])=>name+': '+(ready?'설정 활성':'미설정·미검증')).join('\n');
+ }catch(e){$('readinessState').textContent=e.message||String(e);}
+}
+$('readiness').addEventListener('click',readReadiness);
+$('refresh').addEventListener('click',()=>{refresh();readReadiness();});
 $('save').addEventListener('click',save);
 </script></body></html>
