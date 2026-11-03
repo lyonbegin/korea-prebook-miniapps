@@ -180,14 +180,23 @@ def mount_functional_demo(app, engine):
         return respond(updated)
 
     @app.post("/demo/api/consultations/{request_id}/close")
-    def demo_close(request_id: str):
+    async def demo_close(request_id: str):
         current = get_record(request_id)
         with engine.begin() as con:
             con.execute(text(
                 "UPDATE korea_prebook_functional_demo SET status='closed' "
                 "WHERE id=:id"
             ), {"id": request_id})
-        # A browser that is already connected will be disconnected on its next signal.
+        room_id = current.get("room_id")
+        if room_id:
+            async with state.lock:
+                peers = state.peers.pop(room_id, {})
+                for peer in peers.values():
+                    try:
+                        await peer["ws"].send_json({"type": "closed"})
+                        await peer["ws"].close(code=1000)
+                    except Exception:
+                        pass
         return respond(get_record(request_id))
 
     @app.get("/demo/rooms/{room_id}", response_class=HTMLResponse, include_in_schema=False)
