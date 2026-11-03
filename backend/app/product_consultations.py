@@ -13,8 +13,10 @@ import secrets
 import uuid
 from datetime import date, datetime, time, timezone
 from urllib.parse import urlencode
+from pathlib import Path
 
 from fastapi import Header, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import inspect, text
 
@@ -164,6 +166,12 @@ def mount_product_consultations(app, engine):
         ):
             raise HTTPException(404, "Request not found")
         return public_row(row)
+
+    @app.get("/manager/product-consultations", response_class=HTMLResponse, include_in_schema=False)
+    def consultation_manager_ui():
+        return Path(__file__).with_name("consultations_manager.html").read_text(
+            encoding="utf-8"
+        )
 
     @app.get("/manager/api/product-consultations")
     def list_requests(authorization: str | None = Header(None)):
