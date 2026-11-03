@@ -15,7 +15,6 @@ import os
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlencode
 
 import httpx
 from cryptography.exceptions import InvalidSignature
@@ -207,6 +206,10 @@ def mount_miniapp_identity(app, engine):
         now = datetime.now(timezone.utc)
         expires_at = now + _EXPIRES
         with engine.begin() as con:
+            # Expired login credentials are deleted during subsequent sign-ins.
+            con.execute(text(
+                "DELETE FROM korea_prebook_miniapp_sessions WHERE expires_at < :now"
+            ), {"now": now.isoformat()})
             con.execute(text(
                 "INSERT INTO korea_prebook_miniapp_sessions "
                 "(token_hash,platform,subject_hash,expires_at,created_at) "
