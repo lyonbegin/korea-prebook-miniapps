@@ -51,7 +51,7 @@ Page({
    success:(res)=>{
     if((res.statusCode||res.status)===201&&res.data&&res.data.access_token){
      const data=res.data;
-     const saved={request_id:data.request_id,access_token:data.access_token};
+     const saved={request_id:data.request_id,access_token:data.access_token,booking_confirmed:false,video_connected:false};
      this.setData({request:{...saved,...data},statusText:'咨询申请已送达服务器，等待咨询员处理。'});
      try{write(keyFor(this.data.source,this.data.id),saved);}
      catch(e){this.setData({error:'申请已创建，但无法保存本机凭证。请勿卸载小程序。'});}
