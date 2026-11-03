@@ -106,10 +106,7 @@ function simulate(platform){
  assert.equal(calls.filter(x=>x.method==='POST').length,postsBefore);
  // 503 must not create a phantom request.
  httpStatus=503;
- screen=mount();
- screen.onLoad({id:'offer-456',source:'offer'});
- // Load stub only supports first offer, so replace with a fresh instance on original
- // and clear saved credentials to exercise the disabled-service response.
+ // Clear saved credentials to exercise a disabled-service response.
  storage.clear();
  screen=mount();
  screen.onLoad({id:'offer-123',source:'offer'});
