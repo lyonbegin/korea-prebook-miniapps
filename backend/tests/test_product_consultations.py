@@ -206,3 +206,17 @@ def test_video_link_is_platform_specific_and_requires_approved_origin(monkeypatc
         "https://unapproved.example/private-consultation",
     )
     assert c.get(url, headers=headers).json()["video_url"] is None
+
+
+
+def test_admin_readiness_is_explicit_not_a_video_success(monkeypatch):
+    c, _, admin, _, _ = setup(monkeypatch)
+    url = "/manager/api/product-consultations/readiness"
+    assert c.get(url).status_code == 401
+    data = c.get(url, headers=admin).json()
+    assert data["request_api_enabled"] is True
+    assert data["wechat_video_enabled"] is True
+    assert data["alipay_video_enabled"] is False
+    assert data["private_video_origin_valid"] is True
+    assert data["hitel_identity_verified"] is False
+    assert data["physical_device_video_verified"] is False
