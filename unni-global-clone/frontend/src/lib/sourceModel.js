@@ -1,3 +1,4 @@
+import {parseDetailModel} from "./detailParser";
 /**
  * Browser-side source adapter for the publicly accessible unni.app/us web UI.
  * Never fabricate a product, hospital, rating, price, option or original ID.
@@ -161,11 +162,13 @@ export function parseSource(html,route){
     if(hospitalName&&mainTitle.toLowerCase().startsWith(hospitalName.toLowerCase()))
       pageTitle=mainTitle.slice(hospitalName.length).trim()||pageTitle;
   }
+  const detail=parseDetailModel(doc,route,body);
   return {route,pageTitle,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
-    summary:shorten(fullText,2400),rating,reviewCount,clinicAddress,
+    summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:extractSections(body),
-    options:detailKind==="events"?extractOptions(body):[],selectedOptionIndex,images:imageGallery(body),
+    options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
+    selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
 }
 export function buildEventRoute({query="",category="",sort=""}={}){
