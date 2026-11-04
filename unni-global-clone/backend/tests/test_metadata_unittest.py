@@ -81,3 +81,44 @@ class AsyncMetadataTest(unittest.IsolatedAsyncioTestCase):
         writes=[(s,args) for s,args in pool.conn.statements if "unni_clone.doctors" in s]
         self.assertEqual(len(writes),1)
         self.assertEqual(writes[0][1][2],"Seungmin Yoo")
+
+
+class FirstPartyInquiryTest(unittest.IsolatedAsyncioTestCase):
+    async def test_consented_anonymous_request_records_token_hash(self):
+        from app.inquiries import CreateInquiry,create_inquiry,secret_digest
+        payload=CreateInquiry(event_id="70809",event_name="Facial injection",
+            option_index=5,option_name="Shoulder Slimming Botox",
+            clinic_id="826",clinic_name="U Line Clinic",
+            contact_method="email",contact_value="qa@example.invalid",
+            message="Please provide information",consent=True)
+        pool=FakePG()
+        req=type("Req",(),{"app":type("App",(),{"state":type("State",(),{"pg":pool})()})()})()
+        out=await create_inquiry(payload,req)
+        self.assertTrue(out["token"])
+        self.assertEqual(out["status"],"pending_assignment")
+        self.assertTrue(out["clinic_not_notified"])
+        self.assertFalse(out["appointment_confirmed"])
+        inserts=[(sql,args) for sql,args in pool.conn.statements if "unni_clone.inquiries" in sql]
+        self.assertEqual(len(inserts),1)
+        args=inserts[0][1]
+        self.assertEqual(args[1],secret_digest(out["token"]))
+        self.assertNotIn(out["token"],str(args))
+    async def test_no_consent_means_no_write(self):
+        from app.inquiries import CreateInquiry,create_inquiry
+        from fastapi import HTTPException
+        payload=CreateInquiry(event_name="Clinic inquiry",
+            contact_method="email",contact_value="qa@example.invalid",
+            message="Please advise",consent=False)
+        pool=FakePG()
+        req=type("Req",(),{"app":type("App",(),{"state":type("State",(),{"pg":pool})()})()})()
+        with self.assertRaises(HTTPException) as ctx:
+            await create_inquiry(payload,req)
+        self.assertEqual(ctx.exception.status_code,400)
+        self.assertEqual(pool.conn.statements,[])
+    def test_preferred_time_alias(self):
+        from app.inquiries import PreferredDate
+        from pydantic import ValidationError
+        valid=PreferredDate.model_validate({"date":"2099-12-01","time":"15:30"})
+        self.assertEqual(valid.preferred_time.hour,15)
+        with self.assertRaises(ValidationError):
+            PreferredDate.model_validate({"date":"2020-01-01","time":"08:00"})
