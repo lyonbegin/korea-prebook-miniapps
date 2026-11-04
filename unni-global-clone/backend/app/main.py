@@ -21,6 +21,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from starlette.background import BackgroundTask
+from .catalog_schema import CATALOG_SCHEMA
 
 log = logging.getLogger("unni.cache")
 
@@ -147,6 +148,12 @@ async def lifespan(app: FastAPI):
             pool = await asyncpg.create_pool(dsn=db_url, min_size=1, max_size=5, timeout=8)
             async with pool.acquire() as conn:
                 await conn.execute(SCHEMA)
+                # This creates only unni_clone.* objects in the existing DB.
+                # Keep raw-response proxy available if catalog migration fails.
+                try:
+                    await conn.execute(CATALOG_SCHEMA)
+                except Exception:
+                    log.exception("UNNI catalog migration failed; response cache remains available")
             app.state.pg = pool
         except Exception:
             log.exception("PostgreSQL unavailable: fail-open proxy, caching disabled")
@@ -192,6 +199,26 @@ async def cache_status(request: Request):
     return {"ok": True, "table": "unni_clone.original_response_cache",
             "rows": int(data["rows"]), "stored_bytes": int(data["bytes"])}
 
+
+
+
+@app.get("/catalog/status")
+async def catalog_status(request: Request):
+    """Read-only counts; do not report a seeded catalog as fully acquired data."""
+    pool = getattr(request.app.state, "pg", None)
+    if pool is None:
+        raise HTTPException(status_code=503, detail="PostgreSQL unavailable")
+    tables = ("categories", "hospitals", "doctors", "events", "event_options", "media_assets", "source_provenance")
+    counts = {}
+    for table in tables:
+        try:
+            counts[table] = int(await pool.fetchval("SELECT count(*) FROM unni_clone." + table))
+        except Exception as exc:
+            counts[table] = None
+    return {"ok": True, "database": "existing Railway pgvector",
+            "schema": "unni_clone", "records": counts,
+            "source": "14 public factual category IDs; original no-store responses are not persisted",
+            "full_catalog_imported": False}
 
 
 @app.get("/gateway/{service}/{rest:path}")
