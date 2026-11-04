@@ -131,3 +131,19 @@ environmentId: d95a6264-8e44-41bd-8271-4fea066b8434
 5. unni-mobile-web을 위 루트/환경변수/시작명령으로 복원한다.
 6. 최소 홈, 리프팅/보톡스, 이벤트 70809 14개 옵션, 병원 826, 의사 1502, 칼럼 목록 및 상세를 확인한다.
 7. 원본 애플리케이션의 100% UI/데이터 복제로 보고하려면 추가로 실제 앱 실행, 모바일 네트워크/화면 대조, 원본 전체 데이터 접근 및 권리 검증이 필요하다.
+
+
+## 8. 최종 운영 확인 (2026-11-04 KST)
+
+- Railway unni-mobile-web: Online / SUCCESS, 배포 ID 94e95076-ed8c-473f-94a7-50e123b55033, 소스 커밋 884c43db11525bda03751f8c7ee276adfc4357de
+- Railway unni-mobile-api: Online / SUCCESS, 배포 ID 539cfb2c-b7d4-40f8-a743-325365ecb5af
+- Railway의 두 서비스 모두 active critical/warning 0개이며 pending work 0개로 확인.
+- 원본 이벤트 70809 상세: 원본 14개 옵션이 모두 나옴.
+- 원본 optionId d195122c-ee11-4090-94c1-29a439508bdd 지정 시 5번째 옵션 Shoulder Slimming Botox, $163.68이 선택되고, 모바일 하단 상담 가격에도 $163.68이 표시됨.
+- optionId 없는 이벤트 70809 상세는 기본 첫 옵션 V Cut Injection Facial Fat Dissolving Injection, $21.58로 표시됨.
+- 보톡스 카테고리의 판매가 $163.68과 단위가격 $81.84를 구별하여 판매가를 카드에 표시.
+- 원본 카테고리 리프팅 9개 하위분류, 보톡스 6개 하위분류 등 총 88개 하위분류 링크 표시.
+- 홈 실데이터 카드, 리프팅/보톡스 목록, 시술 상세, 병원 목록/상세, 의사, 칼럼 목록/상세 렌더링을 확인.
+- 기존 pgvector DB 스키마 unni_clone에 총 102개 카테고리 저장 확인. events/hospitals/doctors/event_options 실제 DB 레코드는 모두 0건이며 이를 전체 DB 확보로 표현하지 않는다.
+
+이 기록은 독립 웹 구현과 실제 운영의 확인이며, 강남언니 Android 네이티브 앱 3.338.0에 대한 픽셀 단위 1:1 완성 검증이나 회원·상담·예약·결제 실거래 성공을 뜻하지 않는다.
