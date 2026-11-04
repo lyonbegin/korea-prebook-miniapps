@@ -67,7 +67,7 @@ def source_hospital(soup):
     hid=match.group(1)
     heading=next((x for x in soup.find_all("h2") if re.search(r"Clinic|Hospital|Plastic Surgery|U Line",text(x),re.I)
          and not re.search(r"Reviews|About|Procedure Info",text(x),re.I)),None)
-    name=text(heading)||text(link)||"Clinic "+hid
+    name=text(heading) or text(link) or ("Clinic "+hid)
     return hid,name
 def get_option_rows(soup,event_id,url):
     h3s=soup.find_all("h3")
