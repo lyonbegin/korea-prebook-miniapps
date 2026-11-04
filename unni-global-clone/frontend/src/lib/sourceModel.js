@@ -164,10 +164,21 @@ export function parseSource(html,route){
       pageTitle=mainTitle.slice(hospitalName.length).trim()||pageTitle;
   }
   const detail=parseDetailModel(doc,route,body);
+  const originalSectionList=extractSections(body);
+  // A few source pages wrap recommendation text in extra divs; the Range
+  // extractor can lose those nodes even though the older sibling parser sees them.
+  if(!detail.sections.recommended?.text){
+    const fallback=originalSectionList.find(x=>/^Recommended to\b/i.test(x.title));
+    if(fallback?.description){
+      detail.sections.recommended={title:fallback.title,text:fallback.description,blocks:[{type:"paragraph",value:fallback.description}]};
+      const normalized=fallback.description.replace(/For\s*those/gi,"For those").replace(/([a-z.,)])(?=For those)/gi,"$1 ");
+      detail.recommended=normalized.split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
+    }
+  }
   return {route,pageTitle,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
-    events,hospitals,doctors,articles,sections:extractSections(body),
+    events,hospitals,doctors,articles,sections:originalSectionList,
     options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
     selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
