@@ -65,12 +65,62 @@ async function main(){
    assert.match(page.url(),/optionId=d195122c/);
    return selection.slice(0,90);
   });
+
+  await check("Event inquiry carries exact option and clinic IDs without writing to DB",async()=>{
+   let sent=null;
+   await page.route("**/inquiries",async route=>{
+    if(route.request().method()!=="POST")return route.continue();
+    sent=route.request().postDataJSON();
+    await route.fulfill({status:201,contentType:"application/json",body:JSON.stringify({
+     id:"00000000-0000-4000-8000-000000000001",token:"qa-mock-only",status:"pending_assignment"
+    })});
+   });
+   try{
+    await page.locator(".d2-sticky button").click();
+    await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
+    await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
+    await page.locator(".iq-consent input").check();
+    await page.locator(".iq-submit").click();
+    await page.locator(".iq-panel header").getByText("Your inquiry").waitFor({timeout:8000});
+    assert.equal(sent?.event_id,"70809");
+    assert.equal(sent?.option_index,5);
+    assert.equal(sent?.source_option_id,"d195122c-ee11-4090-94c1-29a439508bdd");
+    assert.equal(sent?.clinic_id,"826");
+    await page.locator(".iq-panel header button").click();
+    return "event 70809 / option 5 UUID / clinic 826 (POST fully mocked)";
+   }finally{await page.unroute("**/inquiries")}
+  });
   await check("Case: clinic 826 highlights hours reviews",async()=>{
    await visit("/hospitals/826");
    const text=await page.locator("body").innerText();
    for(const needle of ["U Line Clinic","Clinic Highlights","Clinic Hours","9.7","10,685","Gangnam-gu"])assert.ok(text.includes(needle),needle);
    await page.screenshot({path:"qa-artifacts/02-hospital.png",fullPage:true});
    return "clinic 826 9.7/10,685 + hours/address";
+  });
+
+  await check("Clinic inquiry retains clinic ID without writing to DB",async()=>{
+   let sent=null;
+   await page.route("**/inquiries",async route=>{
+    if(route.request().method()!=="POST")return route.continue();
+    sent=route.request().postDataJSON();
+    await route.fulfill({status:201,contentType:"application/json",body:JSON.stringify({
+     id:"00000000-0000-4000-8000-000000000002",token:"qa-mock-only",status:"pending_assignment"
+    })});
+   });
+   try{
+    await page.locator(".d2-sticky button").click();
+    await page.locator(".iq-context").getByText("U Line Clinic").waitFor({timeout:8000});
+    await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
+    await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
+    await page.locator(".iq-consent input").check();
+    await page.locator(".iq-submit").click();
+    await page.locator(".iq-panel header").getByText("Your inquiry").waitFor({timeout:8000});
+    assert.equal(sent?.clinic_id,"826");
+    assert.equal(sent?.event_id,null);
+    assert.equal(sent?.clinic_name,"U Line Clinic");
+    await page.locator(".iq-panel header button").click();
+    return "clinic 826 preserved (POST fully mocked)";
+   }finally{await page.unroute("**/inquiries")}
   });
   await check("Case: doctor 1502 name and reviews",async()=>{
    await visit("/doctors/1502");
