@@ -62,7 +62,14 @@ function itemAnchor(a){
   const label=shorten(heading||a.getAttribute("aria-label")||"",120);
   const image=bestImage(closer)||bestImage(a);
   const amounts=[...raw.matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].map(m=>m[0]);
-  const lastPrice=amounts.at(-1)||"";
+  // Original listing can append a parenthesized unit price after the actual offer.
+  // Do not mistake "($81.84 per 50Unit)" for the product's $163.68 price.
+  const prices=[...raw.matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].filter(m=>{
+    const before=raw.slice(Math.max(0,m.index-2),m.index);
+    const after=raw.slice(m.index+m[0].length,m.index+m[0].length+20);
+    return !(before.endsWith("(")&&/\bper\b/i.test(after));
+  });
+  const lastPrice=(prices.length?prices.at(-1)[0]:amounts.at(-1))||"";
   const num=raw.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
   const reviews=raw.match(/\(([\d,]+)\)/)?.[1]||"";
   const brief=shorten(raw.replace(label,"").replace(/\s+/g," "),160);
@@ -112,8 +119,8 @@ function extractOptions(parent){
     const matches=[...(rest||nearby).matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].map(m=>m[0]);
     if(matches.length===0&&/^[A-Z][a-z]/.test(title)===false)continue;
     if(!matches.length&&!/botox|filler|lifting|injection|laser|surgery|treatment|ulther|onda|shurink|contour|skin|cut/i.test(title))continue;
-    const normalized=title.toLowerCase();
-    if(results.some(o=>o.title.toLowerCase()===normalized))continue;
+    // Identically named items can be distinct original options (different areas/amounts).
+    // Never collapse options by title; their position carries distinct semantics.
     results.push({index:results.length+1,title,description:shorten(rest,350),price:matches.at(-1)||"",sourceOptionId:null});
   }
   return results.slice(0,100);
@@ -136,7 +143,10 @@ export function parseSource(html,route){
   const match=route.match(/^\/(events|hospitals|doctors|contents)\/([^/?]+)/);
   const detailKind=match?.[1]||null;
   const fullText=text(body);
-  const countMatch=fullText.match(/(?:Procedures|Clinics)\s+([\d,]+)/i)||text(doc.querySelector("title")).match(/(?:Compare|Find)\s+([\d,]+)/i);
+  const titleText=text(doc.querySelector("title"));
+  const countMatch=titleText.match(/(?:Compare|Find)\s+([\d,]+)/i)||
+     titleText.match(/([\d,]+)\s+deals/i)||
+     (route.startsWith("/events")?fullText.match(/Procedures\s+([\d,]+)/i):null);
   const rating=fullText.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
   const reviewCount=fullText.match(/([\d,]+)\s+Reviews/i)?.[1]||"";
   const clinicAddress=fullText.match(/\d+\s+[A-Za-z0-9,-]+\s+(?:ro|gil|road|street)[^.\n]{0,130}(?:Republic of Korea|Seoul|Busan)/i)?.[0]||"";
