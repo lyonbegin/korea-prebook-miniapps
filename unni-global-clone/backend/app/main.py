@@ -172,6 +172,22 @@ async def health(request: Request):
             "configured_services": list(UPSTREAMS)}
 
 
+
+@app.get("/cache/status")
+async def cache_status(request: Request):
+    """Non-sensitive proof that the existing PostgreSQL table is receiving writes."""
+    pool = getattr(request.app.state, "pg", None)
+    if pool is None:
+        raise HTTPException(status_code=503, detail="PostgreSQL unavailable")
+    data = await pool.fetchrow(
+        "SELECT count(*) AS rows, coalesce(sum(size_bytes), 0) AS bytes "
+        "FROM unni_clone.original_response_cache"
+    )
+    return {"ok": True, "table": "unni_clone.original_response_cache",
+            "rows": int(data["rows"]), "stored_bytes": int(data["bytes"])}
+
+
+
 @app.get("/gateway/{service}/{rest:path}")
 async def gateway(service: str, rest: str, request: Request):
     if service not in UPSTREAMS:
