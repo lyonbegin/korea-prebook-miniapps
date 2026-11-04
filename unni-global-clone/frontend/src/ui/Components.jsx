@@ -24,7 +24,7 @@ export function ImageGallery({images=[],title}){const[index,setIndex]=useState(0
  return <div className="hero-photo"><img src={list[index]} alt={title||"Procedure"} loading="eager"/>
  {list.length>1&&<><button className="gallery-prev" onClick={()=>setIndex(v=>(v+list.length-1)%list.length)} aria-label="Previous photo"><ChevronLeft size={22}/></button><button className="gallery-next" onClick={()=>setIndex(v=>(v+1)%list.length)} aria-label="Next photo"><ChevronRight size={22}/></button><span className="gallery-position">{index+1} / {list.length}</span></>}</div>;
 }
-export function Options({options=[],onSelect}){const[selected,setSelected]=useState(0),[all,setAll]=useState(false);useEffect(()=>setSelected(0),[options[0]?.title]);const current=options[selected];
+export function Options({options=[],onSelect,defaultIndex=0}){const initial=Math.max(0,Math.min(Number(defaultIndex)||0,Math.max(0,options.length-1)));const[selected,setSelected]=useState(initial),[all,setAll]=useState(false);useEffect(()=>{setSelected(initial);onSelect?.(options[initial],initial)},[initial,options[0]?.title]);const current=options[selected];
  return <section className="detail-block"><div className="block-title"><h2>Procedure options</h2><span>{options.length} options</span></div>
  {options.length?<>
  <div className="options-list">{options.slice(0,all?options.length:8).map((o,i)=><button key={i} onClick={()=>{setSelected(i);onSelect?.(o,i)}} className={selected===i?"option active":"option"}><span className="option-radio"/><span className="option-content"><b>{o.title}</b>{o.description&&<small>{shorten(o.description,190)}</small>}{o.price&&<strong>{o.price}</strong>}</span></button>)}</div>

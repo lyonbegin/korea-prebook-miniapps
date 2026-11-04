@@ -59,8 +59,8 @@ export function ListingScreen({route,data,go,query,setQuery}){
  </div>;
 }
 export function EventScreen({route,data,go,isSaved,onSave,onConsult}){
- const [chosenPrice,setChosenPrice]=useState(data.options[0]?.price||"");
- useEffect(()=>setChosenPrice(data.options[0]?.price||""),[route,data.options[0]?.price]);
+ const [chosenPrice,setChosenPrice]=useState(data.options[data.selectedOptionIndex||0]?.price||"");
+ useEffect(()=>setChosenPrice(data.options[data.selectedOptionIndex||0]?.price||""),[route,data.selectedOptionIndex,data.options[0]?.price]);
  const blocks=data.sections.filter(x=>/about the procedure|procedure info|recommended to|procedure steps|downtime|precautions|side effects|details/i.test(x.title));
  return <div className="detail-page">
   <ImageGallery images={data.images} title={data.pageTitle}/>
@@ -68,7 +68,7 @@ export function EventScreen({route,data,go,isSaved,onSave,onConsult}){
    <div className="detail-actions"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa486e":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div>
   </div><div className="section-divider"/>
   {data.hospitals.length>0&&<section className="detail-block"><SectionHeading title="Clinic"/>{data.hospitals.map(x=><ClinicCard item={x} key={x.sourceHref} go={go}/>)}</section>}
-  <Options options={data.options} onSelect={item=>setChosenPrice(item.price||"")}/><div className="section-divider"/>
+  <Options options={data.options} defaultIndex={data.selectedOptionIndex||0} onSelect={item=>setChosenPrice(item?.price||"")}/><div className="section-divider"/>
   <section className="detail-block"><SectionHeading title="Reviews"/><div className="review-locked"><Star size={20} fill="currentColor"/><strong>Reviews from real visitors</strong><p>Detailed reviews require login on the original platform. This preview does not access private reviews.</p><SourceLink route={route}>Reviews at source</SourceLink></div></section>
   {blocks.map((s,i)=><section key={i} className="detail-block detail-copy"><h2>{s.title}</h2><p>{s.description}</p></section>)}
   {data.events.length>0&&<section className="detail-block"><SectionHeading title="Other procedures"/><div className="offer-grid">{data.events.slice(0,8).map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div></section>}
