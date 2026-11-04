@@ -15,7 +15,7 @@ export function HomeScreen({data,go}){
   <section className="home-section original-home-deals"><div className="offer-grid">{events.map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div>{!events.length&&<EmptyState title="Original deals unavailable" route="/events"/>}</section>
   <section className="home-categories"><SectionHeading title="Procedures" more="All" onMore={()=>go("/events")}/><div className="categories-grid">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="category-symbol">{GLYPHS[i]}</span><span>{name}</span></button>)}</div></section>
   {hospitals.length>0&&<section className="home-section"><SectionHeading title="Clinics" more="View all" onMore={()=>go("/hospitals")}/><div className="clinic-list">{hospitals.map(c=><ClinicCard key={c.sourceHref} item={c} go={go}/>)}</div></section>}
-  {(data?.articles||[]).length>0&&<section className="home-section"><SectionHeading title="Beauty columns" more="View all" onMore={()=>go("/contents")}/><div className="article-list">{data.articles.map(c=><ArticleCard key={c.sourceHref} item={c} go={go}/>)}</div></section>
+  {(data?.articles||[]).length>0&&<section className="home-section"><SectionHeading title="Beauty columns" more="View all" onMore={()=>go("/contents")}/><div className="article-list">{data.articles.map(c=><ArticleCard key={c.sourceHref} item={c} go={go}/>)}</div></section>}
  </>;
 }
 export function SearchScreen({go,query,setQuery}){
