@@ -164,6 +164,20 @@ export function parseSource(html,route){
     if(hospitalName&&mainTitle.toLowerCase().startsWith(hospitalName.toLowerCase()))
       pageTitle=mainTitle.slice(hospitalName.length).trim()||pageTitle;
   }
+
+  // Ground source recommendations in the actual text of the current event.
+  // Some UNNI SSR layouts expose their five recommendations as bare text nodes
+  // rather than <p> or <li>. Keep an independent path that is not tied to
+  // document Range, sibling structure or React hydration.
+  const recMatch=fullText.match(/Recommended to\s*([\s\S]*?)(?=Procedure Steps|Expected Downtime|Precautions and Side Effects|\bDetails\b|Popular Procedures|$)/i);
+  const recRaw=(recMatch?.[1]||"").trim();
+  const recommendedExplicit=recRaw
+    .replace(/(For)(\s*)(those\s+who\b)/gi,"For those who")
+    .split(/(?=For those who\b|Those who\b|People who\b)/i)
+    .map(v=>v.replace(/^\s*[•·\-]\s*/,"").trim())
+    .filter(v=>v.length>6&&v.length<400)
+    .slice(0,35);
+
   const detail=parseDetailModel(doc,route,body);
   // Some links are serialized into the original source document but not exposed
   // as <a> elements in the current viewport; recover grounded IDs only.
@@ -235,7 +249,7 @@ export function parseSource(html,route){
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:originalSectionList,
     options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
-    selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),detail,
+    selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),recommendedExplicit,detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
 }
 export function buildEventRoute({query="",category="",sort=""}={}){
