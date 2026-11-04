@@ -106,7 +106,7 @@ def get_option_rows(soup,event_id,url):
             top=next((a for a in h3s if re.match(r"Option\s+\d+",text(a),re.I)),None)
             n=re.search(r"Option\s+(\d+)",text(top),re.I) if top else None
             if n and int(n.group(1))==len(rows)+1:
-                option_id=re.search(r"optionId=([0-9a-f-]{20,})",url,re.I)
+                option_id=re.search(r"(?:[?&])optionId=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:&|$)",url,re.I)
                 option_id=option_id.group(1) if option_id else None
         rows.append(dict(key=event_id+":"+str(len(rows)+1),order=len(rows)+1,
             name=title,price=sale,original_price=old,discount_percent=decimals(discount.group(1)) if discount else None,
