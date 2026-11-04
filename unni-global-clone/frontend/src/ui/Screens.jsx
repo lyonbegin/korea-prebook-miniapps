@@ -23,6 +23,10 @@ export function HomeScreen({data,go}){
       {section.banner&&<img className="home-editorial-banner" src={section.banner} alt="" loading="lazy"/>}
       {section.events.length>0&&<div className="offer-grid">{section.events.map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div>}
     </section>)}
+  {(data?.articles||[]).length>0&&<section className="home-section">
+    <SectionHeading title="Unni’s Column" more="View all" onMore={()=>go("/contents")}/>
+    <div className="article-list">{data.articles.map(a=><ArticleCard key={a.sourceHref} item={a} go={go}/>)}</div>
+  </section>}
   {sections.length===0&&!events.length&&<EmptyState title="Original homepage offers unavailable" route="/events"/>}
  </>;
 }

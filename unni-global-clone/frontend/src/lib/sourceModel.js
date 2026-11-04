@@ -196,7 +196,20 @@ export function parseSource(html,route){
         const height=Number(params.get("originalImageHeight")||img.getAttribute("height")||0);
         return width>=700&&height>200&&height<=600&&width/height>=2.2?url:null;
       }).filter(Boolean);
-      const banner=editorial[0]||null;
+      // On source editorial blocks the 1080x396 visual can precede its H2.
+      // Accept a parent <section> only when it encloses exactly this heading;
+      // do not attach one unrelated promotional photo to every category.
+      const local=h.closest("section");
+      const localImage=local&&local.querySelectorAll("h2").length===1?
+         [...local.querySelectorAll("img")].map(img=>{
+            const u=mediaUrl(img.getAttribute("src")||img.getAttribute("data-src")||"");
+            if(!u)return null;
+            const opts=new URL(u).searchParams;
+            const w=Number(opts.get("originalImageWidth")||img.getAttribute("width")||0);
+            const h=Number(opts.get("originalImageHeight")||img.getAttribute("height")||0);
+            return w>=700&&h>200&&h<=600&&w/h>=2.2?u:null;
+         }).find(Boolean):null;
+      const banner=editorial[0]||localImage||null;
       return {title:text(h),subtitle,banner,events:items};
     });
   })():[];
