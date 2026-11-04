@@ -94,7 +94,7 @@
 
 ### 검증
 
-- 마지막 실제 서비스 코드: `7bc5fe76cca205366aa09aeb39ea28d8a875c64a`
+- 이 단계에서 검증된 서비스 코드: `7bc5fe76cca205366aa09aeb39ea28d8a875c64a` (이후 UUID 정합성 수정 추가됨)
 - GitHub Actions: https://github.com/lyonbegin/korea-prebook-miniapps/actions/runs/41818151915
 - Playwright 실제 배포 모바일 화면 테스트: **15/15 PASS**.
   - 방문자 옵션/상담 UUID 맥락, 상담사 목록/답변/종료 UI, 사용자 화면 답변 새로고침 포함
@@ -104,3 +104,16 @@
 - 운영 `GET /inquiries/health` 조회: `ok=true`, `staff_delivery_configured=true`, `original_clinic_connected=false`, `reservations_confirmed=false`.
 
 **제약:** 자체 상담 운영이 가능하도록 코드를 추가한 것이지, 실제 원본 UNNI 병원에 메시지가 전송되는 것은 아니다. 공개 원본에서 시술 70809의 14개 옵션은 확인되지만, UUID가 확인된 것은 옵션 5번 등 제한적인 범위다. 나머지 원본 UUID를 임의 생성하지 말 것. 원본 전체 카탈로그, 후기, 원본 예약/결제/실기기 픽셀 비교는 여전히 미완료다.
+
+
+## 8. 추가 무결성 수정 — 원본 옵션 UUID
+
+- 백엔드 `metadata_ingest.py`: 원본 옵션 ID 인식은 완전한 8-4-4-4-12 형식 UUID일 때에만 수행하고, 공개 상세 상단의 `Option N`과 실제 옵션 순서가 일치해야 한다.
+- 프런트 `detailParser.js`: `optionIndex` 로컬 선택과 URL의 `optionId`가 다른 옵션을 가리킬 때 UUID를 잘못 부착하지 않는다. UUID 형식 미충족도 버린다.
+- 소스 수정: `1918785bfbbc63e5645c48b520eac25470379ec2`, `115bbb9e4fbf39fa0df1497330b350657f01de09`
+- 검증 테스트: `bb9868e615ab4198d514218d8e3637f927f6089d` (잘못된 URL ID·일치하지 않는 선택 옵션에 대해 원본 UUID 저장을 거절하는 테스트).
+- Railway 백엔드 Docker 빌드: Python 단위테스트 **12/12 통과**.
+- GitHub Actions 최신 UI 코드 테스트: https://github.com/lyonbegin/korea-prebook-miniapps/actions/runs/41818534709 — 15건 모바일 테스트 통과.
+- **주의:** 형식 검증과 공개 화면의 선택 항목 일치는 완전한 원본 ID 검증과 동일하지 않다. 진짜 원본 API의 전체 옵션 ID 목록을 확보하지 않았으므로 14개 중 미확보 UUID는 여전히 빈 값으로 유지해야 한다.
+
+해당 코드 수정 최종 커밋: `bb9868e615ab4198d514218d8e3637f927f6089d`. 문서 보존 커밋은 배포 SHA와 다를 수 있으며, 운영 시 최신 커밋/배포를 다시 대조할 것.
