@@ -160,7 +160,9 @@ async def ingest_public_metadata(pool,path,query,body):
         blocked=re.compile(r"scan qr|sign up|app download|original|contact us|healing paper|company|terms|"
                            r"privacy|clinic|hospital|review|follow|about|favorite|procedure|"
                            r"patient|medical|service|rights reserved|global|experience",re.I)
-        paragraphs=[text(p) for p in main.find_all("p")]
+        # The source renders the doctor name in a plain text node (not always <p>).
+        # Prefer actual stripped strings before fallback heading matches.
+        paragraphs=[clean(v) for v in main.stripped_strings]
         candidates=[v for v in paragraphs if v and len(v)<=70 and
             not blocked.search(v) and re.fullmatch(
                 r"[A-Z][a-z'-]{2,25}(?:\s+[A-Z][a-z'-]{2,25}){1,3}(?:\s+Dr\.)?",v)]
