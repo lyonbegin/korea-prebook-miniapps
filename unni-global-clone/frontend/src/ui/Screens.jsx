@@ -3,6 +3,7 @@ import {ArrowRight,ChevronRight,ExternalLink,Heart,MapPin,MessageCircle,Search,S
 import {CATEGORIES,CATEGORY_IDS,buildEventRoute,SORTS,shorten} from "../lib/sourceModel";
 import taxonomy from "../lib/subcategories.json";
 import {OfferCard,ClinicCard,ArticleCard,EmptyState,ImageGallery,Options,SourceLink,FilterSheet} from "./Components";
+import {EventDetailV2,HospitalDetailV2,DoctorDetailV2,ArticleDetailV2} from "./DetailV2";
 
 function SectionHeading({eyebrow,title,more,onMore}){return <div className="section-heading"><div>{eyebrow&&<small>{eyebrow}</small>}<h2>{title}</h2></div>{more&&<button onClick={onMore}>{more}<ChevronRight size={17}/></button>}</div>;}
 const GLYPHS=["♧","✧","◡","◍","↗","◉","◇","♡","⌁","≋","✦","✚","☼","＋"];
@@ -58,54 +59,10 @@ export function ListingScreen({route,data,go,query,setQuery}){
   <FilterSheet open={modal} onClose={()=>setModal(false)} sort={sort} setSort={setSort} city={city} setCity={setCity} minPrice={minPrice} setMinPrice={setMinPrice} maxPrice={maxPrice} setMaxPrice={setMaxPrice} onApply={apply}/>
  </div>;
 }
-export function EventScreen({route,data,go,isSaved,onSave,onConsult}){
- const [chosenPrice,setChosenPrice]=useState(data.options[data.selectedOptionIndex||0]?.price||"");
- useEffect(()=>setChosenPrice(data.options[data.selectedOptionIndex||0]?.price||""),[route,data.selectedOptionIndex,data.options[0]?.price]);
- const blocks=data.sections.filter(x=>/about the procedure|procedure info|recommended to|procedure steps|downtime|precautions|side effects|details/i.test(x.title));
- return <div className="detail-page">
-  <ImageGallery images={data.images} title={data.pageTitle}/>
-  <div className="detail-intro"><span className="label-eyebrow">PROCEDURE DEAL</span><h1>{data.pageTitle}</h1><div className="ratings-row">{data.rating&&<><Star size={16} fill="currentColor"/><b>{data.rating}</b></>}<small>Price and information from source</small></div>
-   <div className="detail-actions"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa486e":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div>
-  </div><div className="section-divider"/>
-  {data.hospitals.length>0&&<section className="detail-block"><SectionHeading title="Clinic"/>{data.hospitals.map(x=><ClinicCard item={x} key={x.sourceHref} go={go}/>)}</section>}
-  <Options options={data.options} defaultIndex={data.selectedOptionIndex||0} onSelect={item=>setChosenPrice(item?.price||"")}/><div className="section-divider"/>
-  <section className="detail-block"><SectionHeading title="Reviews"/><div className="review-locked"><Star size={20} fill="currentColor"/><strong>Reviews from real visitors</strong><p>Detailed reviews require login on the original platform. This preview does not access private reviews.</p><SourceLink route={route}>Reviews at source</SourceLink></div></section>
-  {blocks.map((s,i)=><section key={i} className="detail-block detail-copy"><h2>{s.title}</h2><p>{s.description}</p></section>)}
-  {data.events.length>0&&<section className="detail-block"><SectionHeading title="Other procedures"/><div className="offer-grid">{data.events.slice(0,8).map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div></section>}
-  <div className="floating-cta"><div><small>Consult about this procedure</small><strong>{chosenPrice||"Check original price"}</strong></div><button onClick={onConsult}>Consultation <ArrowRight size={18}/></button></div>
- </div>;
-}
-export function HospitalScreen({route,data,go,isSaved,onSave,onConsult}){
- const sections=data.sections.filter(x=>/about|clinic highlight|specialt|hours|address|location/i.test(x.title));
- return <div className="detail-page">
-  <ImageGallery images={data.images} title={data.pageTitle}/>
-  <div className="detail-intro"><span className="label-eyebrow">KOREAN CLINIC</span><h1>{data.pageTitle}</h1>
-   <div className="ratings-row"><Star size={16} fill="currentColor"/><b>{data.rating||"—"}</b><small>{data.reviewCount?data.reviewCount+" reviews": "Clinic information"}</small></div>
-   <div className="detail-actions"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa486e":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div>
-  </div><div className="section-divider"/>
-  {sections.map((s,i)=><section className="detail-block detail-copy" key={i}><h2>{s.title}</h2><p>{s.description}</p></section>)}
-  {data.doctors.length>0&&<section className="detail-block"><SectionHeading title="Doctors"/><div className="clinic-list">{data.doctors.map(d=><ClinicCard key={d.sourceHref} item={d} go={go}/>)}</div></section>}
-  {data.events.length>0&&<section className="detail-block"><SectionHeading title="Clinic procedures"/><div className="offer-grid">{data.events.map(d=><OfferCard key={d.sourceHref} item={d} go={go}/>)}</div></section>}
-  <section className="detail-block"><h2>Reviews</h2><p className="small-muted">Detailed individual patient reviews require access authorization on the original site.</p><SourceLink route={route}>Read clinic reviews</SourceLink></section>
-  <div className="floating-cta"><div><small>Ask this clinic</small><strong>Consultation</strong></div><button onClick={onConsult}>Contact <ArrowRight size={18}/></button></div>
- </div>;
-}
-export function DoctorScreen({route,data,go}){
- return <div className="detail-page">
-  <ImageGallery images={data.images} title={data.pageTitle}/>
-  <div className="detail-intro"><span className="label-eyebrow">MEDICAL PROFESSIONAL</span><h1>{data.pageTitle}</h1><div className="ratings-row"><Star size={16} fill="currentColor"/><small>{data.reviewCount||"Public"} reviews</small></div></div>
-  {data.sections.filter(s=>/experience|background|special|work/i.test(s.title)).map((s,i)=><section className="detail-block detail-copy" key={i}><h2>{s.title}</h2><p>{s.description}</p></section>)}
-  {data.hospitals.length>0&&<section className="detail-block"><h2>Works at</h2>{data.hospitals.map(x=><ClinicCard item={x} go={go} key={x.sourceHref}/>)}</section>}
-  <div className="detail-block"><SourceLink route={route}>View doctor at original source</SourceLink></div>
- </div>;
-}
-export function ArticleScreen({route,data}){
- return <div className="detail-page"><ImageGallery images={data.images} title={data.pageTitle}/>
-  <div className="detail-intro"><span className="label-eyebrow">UNNI'S COLUMN</span><h1>{data.pageTitle}</h1></div>
-  {data.sections.filter(x=>x.description).map((s,i)=><section className="detail-block detail-copy" key={i}><h2>{s.title}</h2><p>{s.description}</p></section>)}
-  <div className="detail-block"><SourceLink route={route}>Read article at source</SourceLink></div>
- </div>;
-}
+export function EventScreen(props){return <EventDetailV2 {...props}/>;}
+export function HospitalScreen(props){return <HospitalDetailV2 {...props}/>;}
+export function DoctorScreen(props){return <DoctorDetailV2 {...props}/>;}
+export function ArticleScreen(props){return <ArticleDetailV2 {...props}/>;}
 export function SavedScreen({saved,go}){
  return <section className="listing-page saved-page"><div className="listing-heading"><div><span>YOUR FAVORITES</span><h1>Saved items</h1><small>Saved on this device, without a user account</small></div></div>
   {saved.length?<div className="saved-list">{saved.map(route=><button key={route} onClick={()=>go(route)}><Heart size={18} fill="#fb4773"/>{route}<ChevronRight size={17}/></button>)}</div>:<EmptyState route="/events" title="No saved pages" detail="Save a treatment or clinic using the heart icon."/>}
