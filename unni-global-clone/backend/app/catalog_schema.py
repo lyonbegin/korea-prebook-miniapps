@@ -71,6 +71,18 @@ CREATE TABLE IF NOT EXISTS unni_clone.event_options (
  rights_status TEXT NOT NULL DEFAULT 'metadata_only'
 );
 
+CREATE TABLE IF NOT EXISTS unni_clone.option_price_history (
+ id BIGSERIAL PRIMARY KEY,
+ source_option_key TEXT NOT NULL REFERENCES unni_clone.event_options(source_option_key) ON DELETE CASCADE,
+ observed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+ usd_sale_price NUMERIC(15,2),
+ usd_original_price NUMERIC(15,2),
+ local_krw NUMERIC(15,2),
+ discount_percent NUMERIC(7,2)
+);
+CREATE INDEX IF NOT EXISTS idx_unni_option_price_history_latest
+ ON unni_clone.option_price_history(source_option_key, observed_at DESC, id DESC);
+
 CREATE TABLE IF NOT EXISTS unni_clone.media_assets (
  asset_id BIGSERIAL PRIMARY KEY,
  entity_type TEXT NOT NULL,
