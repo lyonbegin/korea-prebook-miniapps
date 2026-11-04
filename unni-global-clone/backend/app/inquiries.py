@@ -129,6 +129,15 @@ async def create_inquiry(payload:CreateInquiry,request:Request):
           "clinic_not_notified":True,"appointment_confirmed":False,
           "message":"Received by independent UNNI mobile preview. Not sent to the original clinic."}
 
+@router.get("/health")
+async def inquiry_health(request:Request):
+  pool=pool_of(request)
+  ready=await pool.fetchval("SELECT to_regclass('unni_clone.inquiries') IS NOT NULL")
+  message_ready=await pool.fetchval("SELECT to_regclass('unni_clone.inquiry_messages') IS NOT NULL")
+  return {"ok":bool(ready and message_ready),"inquiry_table_ready":bool(ready),
+      "messages_table_ready":bool(message_ready),"staff_delivery_configured":bool(os.getenv("UNNI_STAFF_TOKEN")),
+      "original_clinic_connected":False,"reservations_confirmed":False}
+
 @router.get("/{inquiry_id}")
 async def inquiry_status(inquiry_id:uuid.UUID,request:Request,
                          x_inquiry_token:str|None=Header(default=None)):
