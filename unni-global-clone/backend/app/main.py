@@ -24,6 +24,7 @@ from starlette.background import BackgroundTask
 from .catalog_schema import CATALOG_SCHEMA
 from .subcategories import SUBCATEGORY_ROWS
 from .metadata_ingest import ingest_public_metadata
+from .inquiries import router as inquiry_router, INQUIRY_SCHEMA
 
 log = logging.getLogger("unni.cache")
 
@@ -150,6 +151,7 @@ async def lifespan(app: FastAPI):
             pool = await asyncpg.create_pool(dsn=db_url, min_size=1, max_size=5, timeout=8)
             async with pool.acquire() as conn:
                 await conn.execute(SCHEMA)
+                await conn.execute(INQUIRY_SCHEMA)
                 # This creates only unni_clone.* objects in the existing DB.
                 # Keep raw-response proxy available if catalog migration fails.
                 try:
@@ -168,8 +170,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="UNNI public-data transparent write-behind cache", lifespan=lifespan)
+app.include_router(inquiry_router)
 origins = [s.strip() for s in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",") if s.strip()]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "HEAD"],
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "HEAD", "POST", "DELETE"],
                    allow_headers=["*"], expose_headers=["x-data-source", "x-cache"])
 
 
