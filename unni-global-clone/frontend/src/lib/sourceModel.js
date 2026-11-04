@@ -144,6 +144,13 @@ export function parseSource(html,route){
   const match=route.match(/^\/(events|hospitals|doctors|contents)\/([^/?]+)/);
   const detailKind=match?.[1]||null;
   const fullText=text(body);
+  // Home is parsed from the real public /us homepage rather than a substitute category.
+  const firstPromo=route==="/"?([...body.querySelectorAll("h1,h2")].map(text)
+    .find(s=>/deals?\s+up\s+to|special\s+offers?|discounts?/i.test(s))||""):"";
+  const homePromo=route==="/"?{
+    title:firstPromo||"Treatment deals",
+    subtitle:(fullText.match(/Exclusive savings[^.]*\./i)||[])[0]||""
+  }:null;
   const titleText=text(doc.querySelector("title"));
   const countMatch=titleText.match(/(?:Compare|Find)\s+([\d,]+)/i)||
      titleText.match(/([\d,]+)\s+deals/i)||
@@ -177,17 +184,6 @@ export function parseSource(html,route){
        .replace(/\\n/g," ").replace(/<[^>]+>/g," ").replace(/&(?:nbsp|amp);/g," ");
   const serializedRec=serializedText.match(/Recommended to\s*([\s\S]*?)(?=Procedure Steps|Expected Downtime|Precautions and Side Effects|\bDetails\b|$)/i);
   const recRaw=(recMatch?.[1]||serializedRec?.[1]||"").trim();
-  // Source-verified factual display for one regression fixture: these are
-  // the five public labels actually observed in the original event 70809.
-  // They are not applied to other products.
-  const verifiedEventRecommendations=match?.[1]==="events"&&match?.[2]==="70809"?[
-    "For those who want to lose weight easily and quickly without exercising",
-    "For those who seek fast and effective contour improvement",
-    "For those who are concerned about having excess facial fat",
-    "For those whose fat does not go away even with dieting",
-    "For those who hesitate surgery due to concerns about side effects, bruising, or swelling"
-  ]:[];
-
   const recommendedExplicit=recRaw
     .replace(/(For)(\s*)(those\s+who\b)/gi,"For those who")
     .split(/(?=For those who\b|Those who\b|People who\b)/i)
@@ -261,13 +257,13 @@ export function parseSource(html,route){
       detail.recommended=normalized.split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
     }
   }
-  return {route,pageTitle,detailKind,id:match?.[2]||null,
+  return {route,pageTitle,homePromo,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:originalSectionList,
     options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
     selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),
-    recommendedExplicit:verifiedEventRecommendations.length?verifiedEventRecommendations:recommendedExplicit,detail,
+    recommendedExplicit:recommendedExplicit.length>1?recommendedExplicit:(detail.recommended?.length>1?detail.recommended:recommendedExplicit),detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
 }
 export function buildEventRoute({query="",category="",sort=""}={}){

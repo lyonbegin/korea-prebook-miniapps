@@ -26,7 +26,7 @@ function useSource(route){
  const[state,setState]=useState({data:null,loading:true,error:"",fetchedFrom:null});
  const[version,setVersion]=useState(0);
  const refresh=useCallback(()=>setVersion(x=>x+1),[]);
- const source=route==="/"?"/us/events?q=Lifting&categoryId=419":createPageSource(route);
+ const source=createPageSource(route);
  useEffect(()=>{
   if(!source||route==="/search"||route==="/inquiries"){setState({data:null,loading:false,error:"",fetchedFrom:null});return;}
   const controller=new AbortController();
@@ -35,15 +35,6 @@ function useSource(route){
    try{
     const content=await fetchPage(source,controller.signal);
     let data=parseSource(content,route),fetched=source;
-    if(route==="/"&&!data.events.length){
-     try{
-      const fallback="/us/events?q=Lifting&categoryId="+CATEGORY_IDS.Lifting;
-      const source2=await fetchPage(fallback,controller.signal);
-      const secondary=parseSource(source2,"/events?q=Lifting");
-      data={...data,events:secondary.events,count:secondary.count,fromOriginalListing:true};
-      fetched=fallback;
-     }catch(e){/* No invented data: keep source home as-is. */}
-    }
     if(!controller.signal.aborted)setState({data,loading:false,error:"",fetchedFrom:fetched});
    }catch(e){if(!controller.signal.aborted)setState({data:null,loading:false,error:String(e?.message||e),fetchedFrom:source});}
   })();
