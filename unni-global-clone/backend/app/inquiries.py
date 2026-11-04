@@ -13,7 +13,7 @@ import uuid
 from datetime import date, datetime, time, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field, field_validator
 
 router=APIRouter(prefix="/inquiries",tags=["independent_inquiries"])
@@ -92,6 +92,15 @@ def pool_of(request):
 def secret_digest(secret):
   return hashlib.sha256(secret.encode("utf-8")).hexdigest()
 
+def staff_pool_of(request, token):
+  """Authorization precedes every query, so no inquiry metadata leaks to guests."""
+  expected=os.getenv("UNNI_STAFF_TOKEN", "")
+  if not expected:
+    raise HTTPException(status_code=503, detail="Independent operator access is not configured")
+  if not token or len(token)>256 or not secrets.compare_digest(token,expected):
+    raise HTTPException(status_code=403, detail="Not authorized")
+  return pool_of(request)
+
 async def resolve(request,inquiry_id:uuid.UUID,token:str|None):
   if not token or len(token)>160:
     raise HTTPException(status_code=401,detail="Inquiry access token required")
@@ -138,6 +147,55 @@ async def inquiry_health(request:Request):
       "messages_table_ready":bool(message_ready),"staff_delivery_configured":bool(os.getenv("UNNI_STAFF_TOKEN")),
       "original_clinic_connected":False,"reservations_confirmed":False}
 
+@router.get("/staff/queue")
+async def staff_queue(request:Request,response:Response,
+                      x_staff_token:str|None=Header(default=None),
+                      status:Literal["pending_assignment","staff_replied","closed"]|None=None):
+  """Authenticated, bounded operator queue. Not UNNI's original clinic inbox."""
+  pool=staff_pool_of(request,x_staff_token)
+  if status is None:
+    rows=await pool.fetch("""SELECT id,event_id,option_index,source_option_id,
+      clinic_id,clinic_name,event_name,option_name,contact_method,contact_value,
+      language,preferred_date,preferred_time,status,created_at,updated_at
+      FROM unni_clone.inquiries ORDER BY updated_at DESC,id DESC LIMIT 50""")
+  else:
+    rows=await pool.fetch("""SELECT id,event_id,option_index,source_option_id,
+      clinic_id,clinic_name,event_name,option_name,contact_method,contact_value,
+      language,preferred_date,preferred_time,status,created_at,updated_at
+      FROM unni_clone.inquiries WHERE status=$1
+      ORDER BY updated_at DESC,id DESC LIMIT 50""",status)
+  response.headers["Cache-Control"]="no-store"
+  return {"ok":True,"items":[dict(row) for row in rows],
+          "original_clinic_connected":False,"appointment_confirmed":False,
+          "limit":50}
+
+@router.get("/staff/{inquiry_id}")
+async def staff_detail(inquiry_id:uuid.UUID,request:Request,response:Response,
+                       x_staff_token:str|None=Header(default=None)):
+  pool=staff_pool_of(request,x_staff_token)
+  row=await pool.fetchrow("""SELECT id,event_id,option_index,source_option_id,
+    clinic_id,clinic_name,event_name,option_name,contact_method,contact_value,
+    language,preferred_date,preferred_time,status,created_at,updated_at
+    FROM unni_clone.inquiries WHERE id=$1""",inquiry_id)
+  if row is None:
+    raise HTTPException(status_code=404,detail="Inquiry not found")
+  messages=await pool.fetch("""SELECT id,role,content,created_at
+    FROM unni_clone.inquiry_messages WHERE inquiry_id=$1
+    ORDER BY created_at,id""",inquiry_id)
+  response.headers["Cache-Control"]="no-store"
+  return {"inquiry":dict(row),"messages":[dict(m) for m in messages],
+          "original_clinic_connected":False,"appointment_confirmed":False}
+
+@router.post("/staff/{inquiry_id}/close")
+async def staff_close(inquiry_id:uuid.UUID,request:Request,
+                      x_staff_token:str|None=Header(default=None)):
+  pool=staff_pool_of(request,x_staff_token)
+  result=await pool.execute("""UPDATE unni_clone.inquiries
+    SET status='closed',updated_at=now() WHERE id=$1""",inquiry_id)
+  if result=="UPDATE 0":
+    raise HTTPException(status_code=404,detail="Inquiry not found")
+  return {"ok":True,"status":"closed","appointment_confirmed":False}
+
 @router.get("/{inquiry_id}")
 async def inquiry_status(inquiry_id:uuid.UUID,request:Request,
                          x_inquiry_token:str|None=Header(default=None)):
@@ -161,17 +219,23 @@ async def add_message(inquiry_id:uuid.UUID,payload:AddMessage,request:Request,
   pool,row=await resolve(request,inquiry_id,x_inquiry_token)
   if row["status"] in ("closed","cancelled"):
     raise HTTPException(status_code=409,detail="Inquiry closed")
-  await pool.execute("""INSERT INTO unni_clone.inquiry_messages
-       (inquiry_id,role,content) VALUES ($1,'visitor',$2)""",inquiry_id,payload.text)
-  return {"ok":True,"status":row["status"],"not_delivered_to_clinic":True}
+  async with pool.acquire() as conn:
+    async with conn.transaction():
+      await conn.execute("""INSERT INTO unni_clone.inquiry_messages
+        (inquiry_id,role,content) VALUES ($1,'visitor',$2)""",inquiry_id,payload.text)
+      await conn.execute("""UPDATE unni_clone.inquiries
+        SET status='pending_assignment',updated_at=now() WHERE id=$1""",inquiry_id)
+  return {"ok":True,"status":"pending_assignment","not_delivered_to_clinic":True}
 
 @router.post("/{inquiry_id}/preferred-time")
 async def preferred_time(inquiry_id:uuid.UUID,payload:PreferredDate,request:Request,
                          x_inquiry_token:str|None=Header(default=None)):
   pool,row=await resolve(request,inquiry_id,x_inquiry_token)
+  if row["status"] in ("closed","cancelled"):
+    raise HTTPException(status_code=409,detail="Inquiry closed")
   await pool.execute("""UPDATE unni_clone.inquiries
-       SET preferred_date=$2,preferred_time=$3,updated_at=now()
-       WHERE id=$1""",inquiry_id,payload.preferred_date,payload.preferred_time)
+       SET preferred_date=$2,preferred_time=$3,status='pending_assignment',
+       updated_at=now() WHERE id=$1""",inquiry_id,payload.preferred_date,payload.preferred_time)
   return {"ok":True,"status":"preference_recorded",
           "appointment_confirmed":False,"clinic_not_notified":True}
 
@@ -181,14 +245,11 @@ class StaffMessage(BaseModel):
 @router.post("/{inquiry_id}/staff-reply")
 async def staff_reply(inquiry_id:uuid.UUID,payload:StaffMessage,request:Request,
                      x_staff_token:str|None=Header(default=None)):
-  expected=os.getenv("UNNI_STAFF_TOKEN")
-  if not expected:
-    raise HTTPException(status_code=503,detail="Staff integration is not configured")
-  if not x_staff_token or not secrets.compare_digest(x_staff_token,expected):
-    raise HTTPException(status_code=403,detail="Not authorized")
-  pool=pool_of(request)
-  exists=await pool.fetchval("SELECT true FROM unni_clone.inquiries WHERE id=$1",inquiry_id)
-  if not exists:raise HTTPException(status_code=404,detail="Inquiry not found")
+  pool=staff_pool_of(request,x_staff_token)
+  status=await pool.fetchval("SELECT status FROM unni_clone.inquiries WHERE id=$1",inquiry_id)
+  if status is None:raise HTTPException(status_code=404,detail="Inquiry not found")
+  if status in ("closed","cancelled"):
+    raise HTTPException(status_code=409,detail="Inquiry closed")
   async with pool.acquire() as conn:
     async with conn.transaction():
       await conn.execute("""INSERT INTO unni_clone.inquiry_messages
