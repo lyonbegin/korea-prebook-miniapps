@@ -209,6 +209,24 @@ async def ingest_public_metadata(pool,path,query,body):
                   o["key"],identifier,o["option_id"],o["order"],o["name"],o["price"],
                   json.dumps({"discountPercent":o["discount_percent"],"originalPrice":o["original_price"],
                     "localKRW":o["local_price"],"attributes":o["attributes"]}),now)
+                # Public factual values only: retain first observation and
+                # every actual price change without saving the no-store HTML.
+                await conn.execute("""INSERT INTO unni_clone.option_price_history
+                  (source_option_key,observed_at,usd_sale_price,usd_original_price,local_krw,discount_percent)
+                  SELECT $1,$2,$3,$4,$5,$6
+                  WHERE NOT EXISTS (
+                    SELECT 1 FROM (
+                      SELECT usd_sale_price,usd_original_price,local_krw,discount_percent
+                      FROM unni_clone.option_price_history
+                      WHERE source_option_key=$1
+                      ORDER BY observed_at DESC,id DESC LIMIT 1
+                    ) latest
+                    WHERE latest.usd_sale_price IS NOT DISTINCT FROM $3
+                      AND latest.usd_original_price IS NOT DISTINCT FROM $4
+                      AND latest.local_krw IS NOT DISTINCT FROM $5
+                      AND latest.discount_percent IS NOT DISTINCT FROM $6
+                  )""",o["key"],now,o["price"],o["original_price"],
+                    o["local_price"],o["discount_percent"])
         elif kind=="hospital":
             info=hospital_info(main)
             await conn.execute("""INSERT INTO unni_clone.hospitals
