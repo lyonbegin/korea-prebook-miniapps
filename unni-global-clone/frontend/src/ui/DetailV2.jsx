@@ -31,6 +31,7 @@ function RichNode({node,go}){
  return React.createElement(tag,props,...(node.children||[]).map((child,i)=><RichNode key={i} node={child} go={go}/>));
 }
 function richHasImage(nodes=[]){return nodes.some(node=>node?.tag==="img"||richHasImage(node?.children||[]));}
+function richImageUrls(nodes=[],out=new Set()){for(const node of nodes){if(node?.tag==="img"&&node.src)out.add(node.src);richImageUrls(node?.children||[],out)}return out;}
 
 function RenderBlocks({section,go}){
   if(!section?.text&&!section?.rich?.length)return null;
@@ -188,9 +189,12 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
   <OptionList detail={d} selected={chosen} setSelected={setChosen}/>
   <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,d.options.indexOf(chosen))}/>
   {(d.sections.details?.rich?.length>0||d.media.detail.length>0)&&<Block id="d2-details"><Header>Details</Header>
-    <div className="d2-long-images">{richHasImage(d.sections.details?.rich)?
-       <RenderBlocks section={d.sections.details} go={go}/>:
-       d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
+    <div className="d2-long-images">{richHasImage(d.sections.details?.rich)?<>
+       <RenderBlocks section={d.sections.details} go={go}/>
+       {d.media.detail.filter(img=>!richImageUrls(d.sections.details.rich).has(img.url)).map((img,i)=>
+         <img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
+           onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}
+       </>:d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
        onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}</div></Block>}
   {(clinic.name||data.clinicAddress)&&<Block id="d2-clinic"><Header>Clinic</Header>
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>

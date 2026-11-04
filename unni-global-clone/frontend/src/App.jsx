@@ -16,11 +16,23 @@ function useNavigation(){
  return[route,go];
 }
 async function fetchPage(source,signal){
- const response=await fetch(gatewayUrl(UNNI_SERVICES.PUBLIC_WEB,source),{
-  method:"GET",credentials:"omit",headers:{Accept:"text/html","Accept-Language":"en"},signal
- });
- if(!response.ok)throw Error("Original web service returned "+response.status);
- return response.text();
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   const response=await fetch(gatewayUrl(UNNI_SERVICES.PUBLIC_WEB,source),{
+    method:"GET",credentials:"omit",headers:{Accept:"text/html","Accept-Language":"en"},signal
+   });
+   if(response.ok)return response.text();
+   if(response.status<500||attempt===2)throw Error("Original web service returned "+response.status);
+  }catch(error){
+   if(signal.aborted||attempt===2||(/returned \d{3}/.test(String(error.message))&&!/returned 5\d{2}/.test(String(error.message))))throw error;
+  }
+  await new Promise((resolve,reject)=>{
+   const abort=()=>{clearTimeout(timer);reject(new DOMException("Aborted","AbortError"))};
+   const timer=setTimeout(()=>{signal.removeEventListener("abort",abort);resolve()},300*(attempt+1));
+   signal.addEventListener("abort",abort,{once:true});
+  });
+ }
+ throw Error("Original web service unavailable");
 }
 function useSource(route){
  const[state,setState]=useState({data:null,loading:true,error:"",fetchedFrom:null});

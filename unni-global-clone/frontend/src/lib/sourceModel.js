@@ -184,12 +184,17 @@ export function parseSource(html,route){
        .replace(/\\n/g," ").replace(/<[^>]+>/g," ").replace(/&(?:nbsp|amp);/g," ");
   const serializedRec=serializedText.match(/Recommended to\s*([\s\S]*?)(?=Procedure Steps|Expected Downtime|Precautions and Side Effects|\bDetails\b|$)/i);
   const recRaw=(recMatch?.[1]||serializedRec?.[1]||"").trim();
-  const recommendedExplicit=recRaw
-    .replace(/(For)(\s*)(those\s+who\b)/gi,"For those who")
-    .split(/(?=For those who\b|Those who\b|People who\b)/i)
-    .map(v=>v.replace(/^\s*[•·\-]\s*/,"").trim())
-    .filter(v=>v.length>6&&v.length<400)
-    .slice(0,35);
+  // Parse *every* source recommendation. Adjacent text nodes may join
+  // "...fatFor those whose..." without whitespace; "whose" is a distinct
+  // original sentence from "who" and must not be merged.
+  const splitRecommendations=raw=>String(raw||"")
+    .replace(/([a-z.!?])(?=For\s+those\s+wh(?:o|ose)\b)/gi,"$1 ")
+    .replace(/(For)\s+(those\s+wh(?:o|ose)\b)/gi,"For $2")
+    .split(/(?=For\s+those\s+wh(?:o|ose)\b|Those\s+wh(?:o|ose)\b|People\s+who\b)/gi)
+    .map(x=>x.replace(/^\s*[•·\\-]\s*/,"").trim())
+    .filter(x=>x.length>7&&x.length<500)
+    .map(x=>/^Those\s+wh(?:o|ose)\b/i.test(x)?"For "+x:x);
+  const recommendedExplicit=splitRecommendations(recRaw);
 
   const detail=parseDetailModel(doc,route,body);
   // Some links are serialized into the original source document but not exposed
@@ -222,7 +227,7 @@ export function parseSource(html,route){
       const end=tail.search(/Procedure Steps|Expected Downtime|Precautions and Side Effects|(?:^|\s)Details(?:\s|$)/i);
       if(end>=0)tail=tail.slice(0,end);
       const lines=tail.replace(/([.!?])(?=For those who\b)/gi,"$1 ")
-        .split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
+        .split(/(?=For those who\b|For those whose\b|Those who\b|Those whose\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
       if(lines.length>=2){
         detail.recommended=lines;
         detail.sections.recommended={title:"Recommended to",text:lines.join(" "),blocks:[{type:"bullet",items:lines}]};
@@ -244,7 +249,7 @@ export function parseSource(html,route){
       const sectionText=(boundary>=0?rest.slice(0,boundary):rest.slice(0,900)).trim();
       if(sectionText){
         const pieces=sectionText.replace(/([a-z.,)])(?=For those)/gi,"$1 ")
-          .split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
+          .split(/(?=For those who\b|For those whose\b|Those who\b|Those whose\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
         detail.sections.recommended={title:"Recommended to",text:sectionText,blocks:[]};
         detail.recommended=pieces.length?pieces:[sectionText];
       }
@@ -265,7 +270,7 @@ export function parseSource(html,route){
     events,hospitals,doctors,articles,sections:originalSectionList,
     options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
     selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),
-    recommendedExplicit:recommendedExplicit.length>1?recommendedExplicit:(detail.recommended?.length>1?detail.recommended:recommendedExplicit),detail,
+    recommendedExplicit:[recommendedExplicit,splitRecommendations(detail.sections.recommended?.text||""),detail.recommended||[]].sort((a,b)=>b.length-a.length)[0],detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
 }
 export function buildEventRoute({query="",category="",sort=""}={}){

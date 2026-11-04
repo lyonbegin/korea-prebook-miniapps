@@ -6,7 +6,9 @@ const allowedHosts=["healthcheck.railway.app","unni-mobile-web-production.up.rai
 const qaProxy=process.env.UNNI_TEST_PROXY_TARGET?{
   "/gateway":{target:process.env.UNNI_TEST_PROXY_TARGET,changeOrigin:true},
   "/catalog":{target:process.env.UNNI_TEST_PROXY_TARGET,changeOrigin:true},
-  "/inquiries":{target:process.env.UNNI_TEST_PROXY_TARGET,changeOrigin:true}
+  "/inquiries":{target:process.env.UNNI_TEST_PROXY_TARGET,changeOrigin:true,
+    bypass(req){if(req.method==="GET"&&String(req.headers.accept||"").includes("text/html"))return "/index.html";}
+  }
 }:{};
 
 export default defineConfig({
