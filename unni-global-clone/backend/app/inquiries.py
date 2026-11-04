@@ -74,9 +74,9 @@ class AddMessage(BaseModel):
   text: str=Field(min_length=1,max_length=1000)
 
 class PreferredDate(BaseModel):
-  date: date
-  time: time|None=None
-  @field_validator("date")
+  preferred_date: date = Field(alias="date")
+  preferred_time: time|None = Field(default=None,alias="time")
+  @field_validator("preferred_date")
   @classmethod
   def future_only(cls,v):
     if v<datetime.now(timezone.utc).date():
@@ -162,7 +162,7 @@ async def preferred_time(inquiry_id:uuid.UUID,payload:PreferredDate,request:Requ
   pool,row=await resolve(request,inquiry_id,x_inquiry_token)
   await pool.execute("""UPDATE unni_clone.inquiries
        SET preferred_date=$2,preferred_time=$3,updated_at=now()
-       WHERE id=$1""",inquiry_id,payload.date,payload.time)
+       WHERE id=$1""",inquiry_id,payload.preferred_date,payload.preferred_time)
   return {"ok":True,"status":"preference_recorded",
           "appointment_confirmed":False,"clinic_not_notified":True}
 
