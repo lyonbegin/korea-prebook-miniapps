@@ -102,15 +102,25 @@ function countTextInTitle(el,root){
 function ratingAndReviews(root,kind){
   const heading=root.querySelector("h1");
   const full=trim(root.textContent);
-  const name=trim(heading?.textContent);
-  const start=name?Math.max(0,full.indexOf(name)+name.length):0;
-  const head=full.slice(start,start+(kind==="hospital"?350:160));
-  const score=head.match(/(?:^|[^\d.])((?:10|[0-9])\.\d)(?=[^\d]|$)/)?.[1]||"";
-  const count=head.match(/([\d,]+)\s*Reviews\b/i)?.[1]||
-    head.match(/\bReviews\s*([\d,]+)/i)?.[1]||"";
-  // A doctor page may have only plain text rather than a semantic h1.
-  const anyCount=!count&&kind==="doctor"?full.match(/\bReviews\s*([\d,]+)/i)?.[1]:null;
-  return {rating:score,reviews:count||anyCount||""};
+  const title=trim(heading?.textContent);
+  const idx=title?Math.max(0,full.indexOf(title)+title.length):0;
+  let head=full.slice(idx,idx+(kind==="hospital"?700:300));
+  // Original DOM can concatenate "9.7" and "10,668Reviews" without a delimiter.
+  const combined=head.match(/(?:^|[^\d.])((?:10|[0-9])\.\d)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i);
+  let rating=combined?.[1]||"";
+  let reviews=combined?.[2]||"";
+  if(!rating){
+    const limit=kind==="event"?(head.search(/Option\s+\d+/i)+1||160):head.search(/Clinic Highlights|About the Clinic/i);
+    const prefix=limit>0?head.slice(0,limit):head.slice(0,260);
+    rating=prefix.match(/(?:^|[^\d.])((?:10|[0-9])\.\d)/)?.[1]||"";
+  }
+  if(!reviews){
+    reviews=head.match(/([\d,]+)\s*Reviews\b/i)?.[1]||head.match(/\bReviews\s*([\d,]+)/i)?.[1]||"";
+    if(reviews&&rating&&reviews.startsWith(rating.replace(".","")))
+      reviews=reviews.slice(rating.replace(".","").length);
+  }
+  if(!reviews&&kind==="doctor")reviews=full.match(/\bReviews\s*([\d,]+)/i)?.[1]||"";
+  return {rating,reviews};
 }
 
 function titleOptionIndex(main){
@@ -175,7 +185,7 @@ function clinicEventInfo(main,doc){
   const headerText=clinicHeading?.parentElement?trim(clinicHeading.parentElement.textContent).slice(0,340):"";
   const station=headerText.match(/(?:Seoul|Busan|Daegu|Incheon|Gwangju|Daejeon)[^,.]{0,110}?(?:stn\.|station)/i)?.[0]||
     trim(main.textContent).match(/(?:Seoul|Busan|Daegu|Incheon|Gwangju|Daejeon)[^,.]{0,90}?(?:stn\.|station)/i)?.[0]||"";
-  const hasCCTV=/\bCCTV\b/.test(headerText)||/\bCCTV\b/.test(trim(main.textContent).slice(0,500));
+  const hasCCTV=/\bCCTV\b/.test(trim(main.textContent));
   return {name,id,path:id?"/hospitals/"+id:null,station,hasCCTV};
 }
 function infoRows(section){
@@ -188,9 +198,11 @@ function infoRows(section){
 function parseRecommended(section){
   const raw=trim(section?.text||"");
   if(!raw)return [];
-  const split=raw.replace(/([a-z.,])(?=For those who |Those who |People who |Anyone who )/gi,"$1 ")
-    .split(/(?=For those who |Those who |People who |Anyone who )/gi).map(trim).filter(Boolean);
-  if(split.length>1)return split;
+  // Support source markup that joins adjacent fragments as "For" + "those who...".
+  const normalized=raw.replace(/For\s*those/gi,"For those")
+    .replace(/([a-z.,)])(?=For those\b)/gi,"$1 ");
+  const pieces=normalized.split(/(?=For those who\b|Those who\b|People who\b)/gi).map(trim).filter(Boolean);
+  if(pieces.length>1)return pieces;
   const items=section?.blocks?.flatMap(b=>b.items||[])||[];
   const rebuilt=[];
   for(let i=0;i<items.length;i++){
@@ -198,7 +210,7 @@ function parseRecommended(section){
     if(item.toLowerCase()==="for"&&items[i+1]?.toLowerCase().startsWith("those"))rebuilt.push("For "+items[++i]);
     else rebuilt.push(item);
   }
-  return rebuilt.length>1?rebuilt:[raw];
+  return rebuilt.length>1?rebuilt:[normalized];
 }
 function parseSteps(section){
   const list=section?.blocks?.flatMap(b=>b.items||[])||[];
