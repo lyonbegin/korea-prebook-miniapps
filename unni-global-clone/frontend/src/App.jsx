@@ -54,12 +54,15 @@ function useSource(route){
 function IconButton({label,onClick,children}){return <button type="button" className="icon-button" aria-label={label} onClick={onClick}>{children}</button>;}
 export default function App(){
  const[route,go]=useNavigation(),{data,loading,error,refresh}=useSource(route);
+ const[selectionRoute,setSelectionRoute]=useState(fullRoute);
+ useEffect(()=>setSelectionRoute(route),[route]);
+ useEffect(()=>{const sync=()=>setSelectionRoute(fullRoute());window.addEventListener("unni:optionchange",sync);return()=>window.removeEventListener("unni:optionchange",sync)},[]);
  const[saved,setSaved]=useState(readSaved),[dialog,setDialog]=useState(false),[menu,setMenu]=useState(false),[consultSelection,setConsultSelection]=useState(null);
  const[query,setQuery]=useState(""),[menuVersion,setMenuVersion]=useState(0);
  const parsedQuery=new URLSearchParams(route.split("?")[1]||"");
  useEffect(()=>{setDialog(false);setMenu(false);setQuery(parsedQuery.get("q")||parsedQuery.get("category")||"")},[route]);
  const title=data?.pageTitle||"";
- const toggleSave=useCallback(()=>setSaved(previous=>{const next=previous.includes(route)?previous.filter(x=>x!==route):[...previous,route];localStorage.setItem(SAVED_KEY,JSON.stringify(next));return next;}),[route]);
+ const toggleSave=useCallback(()=>setSaved(previous=>{const current=fullRoute();const next=previous.includes(current)?previous.filter(x=>x!==current):[...previous,current];localStorage.setItem(SAVED_KEY,JSON.stringify(next));return next;}),[]);
  const active=route==="/"?"home":route.startsWith("/hospitals")||route.startsWith("/doctors")?"clinics":
   route.startsWith("/events")||route.startsWith("/search")?"procedures":route==="/saved"?"saved":"more";
  return <div className="app-background"><div className="app-shell">
@@ -81,8 +84,8 @@ export default function App(){
     :loading?<div className="loading-screen"><div className="loading-wheel"/><strong>Loading procedures…</strong><small>Reading the original public source</small></div>
     :error?<ErrorState error={error} refresh={refresh} route={route}/>
     :data&&route==="/"?<HomeScreen data={data} go={go}/>
-    :data?.detailKind==="events"?<EventScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
-    :data?.detailKind==="hospitals"?<HospitalScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
+    :data?.detailKind==="events"?<EventScreen route={route} data={data} go={go} isSaved={saved.includes(selectionRoute)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
+    :data?.detailKind==="hospitals"?<HospitalScreen route={route} data={data} go={go} isSaved={saved.includes(selectionRoute)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
     :data?.detailKind==="doctors"?<DoctorScreen route={route} data={data} go={go}/>
     :data?.detailKind==="contents"?<ArticleScreen route={route} data={data}/>
     :data&&(/^(\/events|\/hospitals|\/contents)/.test(route))?<ListingScreen route={route} data={data} go={go} query={query} setQuery={setQuery}/>
