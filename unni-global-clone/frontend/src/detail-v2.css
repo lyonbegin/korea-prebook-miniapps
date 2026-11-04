@@ -115,3 +115,14 @@
 .d2-history-item span{font-size:11px;color:#8a8b95}
 .d2-history-item strong{font-size:13px}
 .d2-history-item small{font-size:11px;color:#ed456d}
+
+/* Structured source content: links, headings, media and hierarchy. */
+.d2-rich{overflow-wrap:anywhere}.d2-rich a{color:var(--d2-accent);text-decoration:underline;text-underline-offset:2px}
+.d2-rich strong,.d2-rich b{font-weight:750;color:#25252b}
+.d2-rich blockquote{padding:12px 14px;margin:12px 0;border-left:3px solid #e0dfe4;background:#fafafd}
+.d2-rich img{display:block;width:100%;max-width:100%;height:auto;object-fit:contain;margin:0}
+.d2-rich h3,.d2-rich h4{font-size:15px;color:#2d2d34;margin:18px 0 9px}
+.d2-rich div,.d2-rich section{min-width:0}
+.d2-rich table{border-collapse:collapse;max-width:100%;width:100%;font-size:12px}
+.d2-rich td,.d2-rich th{border-bottom:1px solid #ececf0;padding:9px 7px;text-align:left}
+.d2-long-images .d2-rich{margin:0;padding:0}.d2-long-images .d2-rich img{width:100%;height:auto;display:block}

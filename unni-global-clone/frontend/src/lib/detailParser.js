@@ -50,6 +50,31 @@ function mediaOf(root,kind){
   const gallery=images.filter(i=>i.kind==="hospital"||i.kind==="article"||i.kind==="direct");
   return {hero:gallery[0]||null,gallery,detail:gallery.slice(1),all:images,map:images.find(i=>i.kind==="map")||null};
 }
+
+// Preserve public markup semantics as a restricted AST; no source scripts,
+// handlers, forms, styles, or embedded execution enters the independent UI.
+const RICH_TAGS=new Set(["div","section","article","p","span","br","strong","b","em","i","small","h3","h4","h5","ul","ol","li","table","tbody","thead","tr","th","td","blockquote","dl","dt","dd","a","img"]);
+function safeRichNode(node,depth=0){
+  if(depth>35)return null;
+  if(node.nodeType===3)return {text:node.textContent||""};
+  if(node.nodeType!==1)return null;
+  const name=node.tagName.toLowerCase();
+  if(["script","style","noscript","iframe","form","button","input","select","textarea","video","audio","canvas","svg"].includes(name))return null;
+  const tag=RICH_TAGS.has(name)?name:"div";
+  if(tag==="img"){
+    const media=readImage(node);
+    return media?{tag:"img",src:media.url,alt:media.alt||"",width:media.width,height:media.height}:null;
+  }
+  if(tag==="a"){
+    const href=findSourceUri(node.getAttribute("href"));
+    if(!href)return {tag:"span",children:[...node.childNodes].map(n=>safeRichNode(n,depth+1)).filter(Boolean)};
+    return {tag:"a",href,children:[...node.childNodes].map(n=>safeRichNode(n,depth+1)).filter(Boolean)};
+  }
+  const children=[...node.childNodes].map(n=>safeRichNode(n,depth+1)).filter(Boolean);
+  if(!children.length&&tag!=="br")return null;
+  return {tag,children};
+}
+
 function sourceSection(root,name){
   const headings=[...root.querySelectorAll("h2,h3")];
   let current=headings.find(h=>trim(h.textContent).toLowerCase().startsWith(name.toLowerCase()));
@@ -61,6 +86,7 @@ function sourceSection(root,name){
     if(next)range.setEndBefore(next);
     else range.setEndAfter(root.lastElementChild||current);
     const fragment=range.cloneContents();
+    const rich=[...fragment.childNodes].map(node=>safeRichNode(node)).filter(Boolean);
     const blocks=[];
     const seen=new Set();
     // List and paragraphs are preserved instead of flattening all text.
@@ -79,14 +105,14 @@ function sourceSection(root,name){
     }
     const rawText=trim(fragment.textContent);
     if(!blocks.length&&rawText)blocks.push({type:"paragraph",value:rawText});
-    return {title:trim(current.textContent),text:rawText,blocks};
+    return {title:trim(current.textContent),text:rawText,blocks,rich};
   }catch{
     let text="",element=current.nextElementSibling;
     for(let i=0;i<15&&element;i++,element=element.nextElementSibling){
       if(element.tagName==="H2")break;
       text+=" "+trim(element.textContent);
     }
-    return {title:trim(current.textContent),text:trim(text),blocks:[]};
+    return {title:trim(current.textContent),text:trim(text),blocks:[],rich:[]};
   }finally{range.detach?.()}
 }
 function countTextInTitle(el,root){
@@ -248,7 +274,7 @@ function hospitalMeta(main){
   const address=sourceSection(main,"Address");
   const all=[...main.querySelectorAll("h3")].map(h=>trim(h.textContent));
   const highlightNames=all.filter(n=>/camera-monitored|non-surgical|after-hours|name & credentials|post-procedure care/i.test(n));
-  const addressText=address?.text?.replace(/^Address\s*/i,"")||"";
+  const addressText=(address?.text||"").replace(/^Address\s*/i,"").replace(/\s*Copy(?: address)?\s*$/i,"").trim();
   const closed=hours?.text?.match(/Closed on[^.]+\./i)?.[0]||"";
   const doctorCount=trim(main.textContent).match(/All Doctors\s*(\d+)/i)?.[1]||"";
   const procedureCount=trim(main.textContent).match(/Procedures\s*(\d+)/i)?.[1]||"";

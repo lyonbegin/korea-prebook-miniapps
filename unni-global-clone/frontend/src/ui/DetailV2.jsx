@@ -17,8 +17,24 @@ function usePublicCatalog(kind,id){
 }
 function Header({children,sub}){return <div className="d2-heading"><h2>{children}</h2>{sub&&<small>{sub}</small>}</div>}
 function Block({id,children}){return <section id={id} className="d2-block">{children}</section>}
-function RenderBlocks({section}){
-  if(!section?.text)return null;
+function RichNode({node,go}){
+ if(!node)return null;
+ if(Object.prototype.hasOwnProperty.call(node,"text"))return node.text;
+ const tag=node.tag;
+ if(!["div","section","article","p","span","br","strong","b","em","i","small","h3","h4","h5","ul","ol","li","table","tbody","thead","tr","th","td","blockquote","dl","dt","dd","a","img"].includes(tag))return null;
+ const props={};
+ if(tag==="img"){props.src=node.src;props.alt=node.alt||"";props.loading="lazy";if(node.width>0&&node.height>0)props.style={aspectRatio:node.width+"/"+node.height};}
+ if(tag==="a"){
+   props.href=node.href;props.rel="noopener noreferrer";props.target="_blank";
+   if(go){props.onClick=e=>{try{const u=new URL(node.href);if(u.hostname==="unni.app"&&u.pathname.startsWith("/us/")){e.preventDefault();go(u.pathname.slice(3)+u.search);}}catch{}};}
+ }
+ return React.createElement(tag,props,...(node.children||[]).map((child,i)=><RichNode key={i} node={child} go={go}/>));
+}
+function richHasImage(nodes=[]){return nodes.some(node=>node?.tag==="img"||richHasImage(node?.children||[]));}
+
+function RenderBlocks({section,go}){
+  if(!section?.text&&!section?.rich?.length)return null;
+  if(section.rich?.length)return <div className="d2-rich">{section.rich.map((node,i)=><RichNode key={i} node={node} go={go}/>)}</div>;
   return <div className="d2-rich">{section.blocks?.length?section.blocks.map((b,i)=>
     b.type==="bullet"?<ul key={i}>{b.items.map((x,j)=><li key={j}>{x}</li>)}</ul>:
     b.type==="ordered"?<ol key={i}>{b.items.map((x,j)=><li key={j}>{x}</li>)}</ol>:
@@ -65,7 +81,7 @@ function OptionList({detail,selected,setSelected}){
    url.searchParams.delete("optionId");url.searchParams.delete("optionIndex");
    if(o.sourceOptionId)url.searchParams.set("optionId",o.sourceOptionId);
    else url.searchParams.set("optionIndex",String(i+1));
-   history.replaceState(history.state,"",url.pathname+url.search);
+   history.pushState(history.state,"",url.pathname+url.search);
    window.dispatchEvent(new Event("unni:optionchange"));
  }
  return <Block id="d2-options"><Header sub={opts.length+" options"}>Procedure options</Header>
@@ -150,7 +166,7 @@ async function share(title){const url=location.href;if(navigator.share){try{awai
 export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
  const d=data.detail,[chosen,setChosen]=useState(d.options[d.initialOptionIndex]||null);
  useEffect(()=>setChosen(d.options[d.initialOptionIndex]||null),[route.split("?")[0],d.initialOptionIndex,d.options[0]?.title]);
- const clinic=d.clinic||{},clinicPath=clinic.path||data.hospitals?.[0]?.path;
+ const clinic=d.clinic||{},clinicPath=clinic.path||null;
  return <article className="d2-detail">
   <Gallery media={d.media} label={data.pageTitle}/>
   <div className="d2-top"><span className="d2-eyebrow">PROCEDURE</span><h1>{data.pageTitle}</h1>
@@ -171,9 +187,11 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
   <MedicalInfo detail={d} recommendedExplicit={data.recommendedExplicit}/>
   <OptionList detail={d} selected={chosen} setSelected={setChosen}/>
   <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,d.options.indexOf(chosen))}/>
-  {d.media.detail.length>0&&<Block id="d2-details"><Header>Details</Header>
-    <div className="d2-long-images">{d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
-      onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}</div></Block>}
+  {(d.sections.details?.rich?.length>0||d.media.detail.length>0)&&<Block id="d2-details"><Header>Details</Header>
+    <div className="d2-long-images">{richHasImage(d.sections.details?.rich)?
+       <RenderBlocks section={d.sections.details} go={go}/>:
+       d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
+       onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}</div></Block>}
   {(clinic.name||data.clinicAddress)&&<Block id="d2-clinic"><Header>Clinic</Header>
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>
     <MapBlock image={d.media.map} address={data.clinicAddress} clinicName={clinic.name}/></Block>}
@@ -215,7 +233,8 @@ export function DoctorDetailV2({route,data,go}){
  return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
   <div className="d2-top"><span className="d2-eyebrow">MEDICAL PROFESSIONAL</span><h1>{data.pageTitle}</h1>
     <div className="d2-ratings"><Star size={17} fill="currentColor"/><b>{d.stats.rating||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div></div>
-  {data.sections.filter(x=>/experience|background|special|work/i.test(x.title)).map((s,i)=><Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
+  {data.doctorSpecialties?.length>0&&<Block id="d2-doctor-specialties"><Header>Specialties</Header><div className="d2-specialties">{data.doctorSpecialties.map(x=><span key={x}>{x}</span>)}</div></Block>}
+  {data.sections.filter(x=>/experience|background|special/i.test(x.title)).map((s,i)=><Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
   {data.hospitals?.length>0&&<Block><Header>Works at</Header>{data.hospitals.map(x=><ClinicCard item={x} go={go} key={x.sourceHref}/>)}</Block>}
   <Block><SourceLink route={route}>Doctor at source</SourceLink></Block>
  </article>;

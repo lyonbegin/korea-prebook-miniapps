@@ -95,13 +95,13 @@ function extractSections(parent){
     const heading=text(h);
     if(!heading||heading.length>170||/^\d+\.?$/.test(heading))continue;
     let cur=h.nextElementSibling,raw="";
-    for(let n=0;cur&&n<4;n++,cur=cur.nextElementSibling){
+    for(let n=0;cur&&n<400;n++,cur=cur.nextElementSibling){
       if(/^H[1-4]$/.test(cur.tagName))break;
       raw+=" "+text(cur);
-      if(raw.length>1900)break;
+      if(raw.length>150000)break;
     }
     raw=raw.trim();
-    if(raw.length>0)result.push({id:result.length,title:heading,description:shorten(raw,1800)});
+    if(raw.length>0)result.push({id:result.length,title:heading,description:raw});
   }
   return result.slice(0,90);
 }
@@ -257,7 +257,9 @@ export function parseSource(html,route){
       detail.recommended=normalized.split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
     }
   }
-  return {route,pageTitle,homePromo,detailKind,id:match?.[2]||null,
+  const doctorSpecialties=detailKind==="doctors"?["Filler","Lifting","Body","Skin","Botox"].filter(x=>
+    fullText.slice(0,Math.min(600,Math.max(0,fullText.indexOf("Reviews"))+170)).includes(x)):null;
+  return {route,pageTitle,homePromo,doctorSpecialties,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:originalSectionList,
