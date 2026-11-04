@@ -20,6 +20,7 @@ export function HomeScreen({data,go}){
     <section className="home-section original-home-deals" key={i}>
       <SectionHeading title={section.title} more={section.events.length?"View all":null} onMore={()=>go("/events")}/>
       {section.subtitle&&<p className="d2-medical-disclaimer">{section.subtitle}</p>}
+      {section.banner&&<img className="home-editorial-banner" src={section.banner} alt="" loading="lazy"/>}
       {section.events.length>0&&<div className="offer-grid">{section.events.map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div>}
     </section>)}
   {sections.length===0&&!events.length&&<EmptyState title="Original homepage offers unavailable" route="/events"/>}

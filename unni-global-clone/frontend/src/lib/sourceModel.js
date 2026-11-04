@@ -181,7 +181,23 @@ export function parseSource(html,route){
         seen.add(item.sourceHref);items.push(item);
       }
       const next=h.nextElementSibling,subtitle=next&&next.tagName==="P"?text(next).slice(0,300):"";
-      return {title:text(h),subtitle,events:items};
+      // Restore only source-observed wide editorial images actually inside
+      // this source section; don't reinterpret thumbnails as campaign banners.
+      const region=doc.createRange();
+      region.setStartAfter(h);
+      if(after)region.setEndBefore(after);
+      else region.setEndAfter(body.lastElementChild||h);
+      const fragment=region.cloneContents();
+      const editorial=[...fragment.querySelectorAll("img")].map(img=>{
+        const url=mediaUrl(img.getAttribute("src")||img.getAttribute("data-src")||"");
+        if(!url)return null;
+        const params=new URL(url).searchParams;
+        const width=Number(params.get("originalImageWidth")||img.getAttribute("width")||0);
+        const height=Number(params.get("originalImageHeight")||img.getAttribute("height")||0);
+        return width>=700&&height>200&&height<=600&&width/height>=2.2?url:null;
+      }).filter(Boolean);
+      const banner=editorial[0]||null;
+      return {title:text(h),subtitle,banner,events:items};
     });
   })():[];
   const homePromo=route==="/"?{
