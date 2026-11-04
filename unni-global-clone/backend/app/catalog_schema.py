@@ -80,6 +80,26 @@ CREATE TABLE IF NOT EXISTS unni_clone.option_price_history (
  local_krw NUMERIC(15,2),
  discount_percent NUMERIC(7,2)
 );
+-- Remove previously duplicated identical factual observations before
+-- installing the uniqueness index. Only this independent UNNI schema is touched.
+DELETE FROM unni_clone.option_price_history newer
+USING unni_clone.option_price_history older
+WHERE newer.id > older.id
+ AND newer.source_option_key = older.source_option_key
+ AND newer.usd_sale_price IS NOT DISTINCT FROM older.usd_sale_price
+ AND newer.usd_original_price IS NOT DISTINCT FROM older.usd_original_price
+ AND newer.local_krw IS NOT DISTINCT FROM older.local_krw
+ AND newer.discount_percent IS NOT DISTINCT FROM older.discount_percent;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unni_option_unique_observed_price
+ ON unni_clone.option_price_history (
+   source_option_key,
+   COALESCE(usd_sale_price,-1),
+   COALESCE(usd_original_price,-1),
+   COALESCE(local_krw,-1),
+   COALESCE(discount_percent,-1)
+ );
+
 CREATE INDEX IF NOT EXISTS idx_unni_option_price_history_latest
  ON unni_clone.option_price_history(source_option_key, observed_at DESC, id DESC);
 
