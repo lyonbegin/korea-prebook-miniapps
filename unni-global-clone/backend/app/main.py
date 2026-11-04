@@ -221,7 +221,7 @@ async def catalog_status(request: Request):
     counts["subcategories"] = await pool.fetchval("SELECT count(*) FROM unni_clone.categories WHERE parent_category_id IS NOT NULL")
     return {"ok": True, "database": "existing Railway pgvector",
             "schema": "unni_clone", "records": counts,
-            "source": "14 public factual category IDs; original no-store responses are not persisted",
+            "source": "14 verified primary categories plus 88 public subcategories; original no-store HTML is not cached",
             "full_catalog_imported": False}
 
 

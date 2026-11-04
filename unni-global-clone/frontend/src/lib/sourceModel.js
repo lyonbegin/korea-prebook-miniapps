@@ -137,7 +137,7 @@ function imageGallery(main){
 export function parseSource(html,route){
   const doc=new DOMParser().parseFromString(html,"text/html");
   const body=doc.querySelector("main")||doc.body;
-  const pageTitle=text(body.querySelector("h1"))||text(doc.querySelector("title"))||"UNNI";
+  let pageTitle=text(body.querySelector("h1"))||text(doc.querySelector("title"))||"UNNI";
   const events=collectItems(doc,"event"),hospitals=collectItems(doc,"hospital"),
         doctors=collectItems(doc,"doctor"),articles=collectItems(doc,"article");
   const match=route.match(/^\/(events|hospitals|doctors|contents)\/([^/?]+)/);
@@ -149,10 +149,16 @@ export function parseSource(html,route){
      (route.startsWith("/events")?fullText.match(/Procedures\s+([\d,]+)/i):null);
   // The source sometimes runs the public score and review count together
   // without whitespace, e.g. "9.710,668Reviews": rating=9.7, reviews=10,668.
-  const fused=fullText.match(/(?:^|\D)(9\.\d|8\.\d|10\.0)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i);
+  const fused=fullText.match(/(?:^|[^\d.])(9\.\d|8\.\d|10\.0)\s*(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i);
   const rating=fused?.[1]||fullText.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
   const reviewCount=fused?.[2]||fullText.match(/(?:^|\D)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i)?.[1]||"";
   const clinicAddress=fullText.match(/\d+\s+[A-Za-z0-9,-]+\s+(?:ro|gil|road|street)[^.\n]{0,130}(?:Republic of Korea|Seoul|Busan)/i)?.[0]||"";
+  if(detailKind==="doctors"&&hospitals.length) {
+    const mainTitle=pageTitle.split("|")[0].trim();
+    const hospitalName=hospitals[0].title.replace(/(?:9|8)\.\d.*$/,"").trim();
+    if(hospitalName&&mainTitle.toLowerCase().startsWith(hospitalName.toLowerCase()))
+      pageTitle=mainTitle.slice(hospitalName.length).trim()||pageTitle;
+  }
   return {route,pageTitle,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating,reviewCount,clinicAddress,
