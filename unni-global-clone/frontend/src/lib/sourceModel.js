@@ -164,6 +164,22 @@ export function parseSource(html,route){
       pageTitle=mainTitle.slice(hospitalName.length).trim()||pageTitle;
   }
   const detail=parseDetailModel(doc,route,body);
+  // Some links are serialized into the original source document but not exposed
+  // as <a> elements in the current viewport; recover grounded IDs only.
+  const serialized=doc.documentElement.outerHTML.replace(/\\u002F/gi,"/").replace(/\\\//g,"/");
+  if(detail.kind==="event"&&detail.clinic&&!detail.clinic.path){
+    const hid=serialized.match(/\/us\/hospitals\/(\d+)/)?.[1]||null;
+    if(hid){detail.clinic.id=hid;detail.clinic.path="/hospitals/"+hid}
+  }
+  if(detail.kind==="hospital"&&!doctors.length){
+    const physicianId=serialized.match(/\/us\/doctors\/(\d+)/)?.[1]||null;
+    const physicianName=fullText.match(/All Doctors\s*\d+\s*([A-Z][A-Za-z .'-]{3,75}Dr\.)/i)?.[1]?.trim()||"";
+    if(physicianId&&physicianName){
+      doctors.push({id:physicianId,type:"doctor",path:"/doctors/"+physicianId,
+        sourceHref:"/us/doctors/"+physicianId,title:physicianName,image:null,price:"",
+        summary:"Public clinic physician",rating:"",reviewCount:""});
+    }
+  }
   const originalSectionList=extractSections(body);
   // A few source pages wrap recommendation text in extra divs; the Range
   // extractor can lose those nodes even though the older sibling parser sees them.
