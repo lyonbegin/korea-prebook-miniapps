@@ -106,3 +106,12 @@
 @media(min-width:700px){.d2-hero-photo{max-height:515px}}
 @media(max-width:380px){.d2-sticky{padding:9px 11px}.d2-sticky button{padding:12px 10px}.d2-attributes{grid-template-columns:1fr 1fr}}
 @supports(padding-bottom:env(safe-area-inset-bottom)){.d2-sticky{bottom:calc(70px + env(safe-area-inset-bottom)/2)}}
+
+/* Observed historical prices are source facts, not a reservation quote. */
+.d2-history-toggle{display:flex;align-items:center;gap:4px;border:0;background:transparent;color:#fa4774;font-size:12px;padding:6px}
+.d2-history-rows{border:1px solid #eeeef1;border-radius:9px;overflow:hidden;margin-top:13px}
+.d2-history-item{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:12px;border-bottom:1px solid #f0f0f3}
+.d2-history-item:last-child{border-bottom:0}
+.d2-history-item span{font-size:11px;color:#8a8b95}
+.d2-history-item strong{font-size:13px}
+.d2-history-item small{font-size:11px;color:#ed456d}
