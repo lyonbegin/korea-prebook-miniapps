@@ -112,10 +112,13 @@ async function main(){
      await page.waitForTimeout(400);
      await page.locator("#d2-options .d2-option").nth(0).click();
      assert.match(page.url(),new RegExp("optionId="+cachedId));
-     await page.locator("#d2-options .d2-option").nth(4).click();
-     assert.match(page.url(),/optionId=d195122c/);
      return "Previously observed UUID reused without inventing an ID";
-   }finally{await page.unroute("**/catalog/events/70809")}
+   }finally{
+     await page.unroute("**/catalog/events/70809");
+     // The synthetic cache fixture only knows option 1. Restore the original
+     // option 5 source deep link rather than inventing a UUID for its selection.
+     await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
+   }
   });
   await check("Event inquiry carries exact option and clinic IDs without writing to DB",async()=>{
    let sent=null;
