@@ -29,6 +29,29 @@ async function main(){
    assert.match(sourceHome,/deals up to|exclusive savings|treatment deals/i);
    assert.ok(!sourceHome.includes("Discover the beauty in you."),"fabricated home hero returned");
    assert.ok(await page.locator(".offer-card").count()>0,"original home should expose real offers");
+   // Inspect source DOM structure to diagnose homepage image/card association.
+   // GET-only. Synthetic substitutions are prohibited.
+   const sourceDiagnostic=await page.evaluate(async()=>{
+      const html=await (await fetch("/gateway/public-web/us",{headers:{Accept:"text/html"}})).text();
+      const doc=new DOMParser().parseFromString(html,"text/html");
+      const all=[...doc.querySelectorAll('a[href*="/us/events/"]')];
+      return all.slice(0,8).map(a=>{
+        const result={href:a.getAttribute("href"),text:(a.textContent||"").trim().slice(0,90),ancestors:[]};
+        let el=a;
+        for(let depth=0;el&&depth<6;depth++,el=el.parentElement){
+          const imgs=[...el.querySelectorAll("img")];
+          const events=[...el.querySelectorAll('a[href*="/us/events/"]')];
+          const backgrounds=[...el.querySelectorAll('[style*="background"]')].slice(0,2);
+          result.ancestors.push({tag:el.tagName,cls:String(el.className).slice(0,90),imgCount:imgs.length,eventLinks:events.length,
+            images:imgs.slice(0,2).map(img=>({src:img.getAttribute("src")?.slice(0,170),srcset:img.getAttribute("srcset")?.slice(0,100)})),
+            styles:backgrounds.map(b=>b.getAttribute("style")?.slice(0,110))});
+        }
+        return result;
+      });
+   });
+   fs.writeFileSync("qa-artifacts/home-source-dom-audit.json",JSON.stringify(sourceDiagnostic,null,2));
+   console.log("HOME_SOURCE_DOM_AUDIT",JSON.stringify(sourceDiagnostic).slice(0,9000));
+
    assert.match(sourceHome,/Your eye treatment cheatsheet/i);
    assert.match(sourceHome,/Your nose lift cheat sheet/i);
    assert.match(sourceHome,/Your fat dissolve cheat sheet/i);
