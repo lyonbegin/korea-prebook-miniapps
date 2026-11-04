@@ -15,7 +15,7 @@ EVENT="""<html><main><h1>Fat Dissolving Injection</h1><p>9.9</p>
 <h2>U Line Clinic</h2><a href="/us/hospitals/826">U Line Clinic</a>
 </main></html>"""
 DOCTOR="""<html><main><p>Scan QR for details in the app</p><main><p>Sign up now and enjoy exclusive benefits</p>
-<p>Seungmin Yoo</p><p>U Line Clinic</p><p>Reviews 9,133</p>
+<div><span>App Download</span></div><div><span>Seungmin Yoo</span></div><p>U Line Clinic</p><p>Reviews 9,133</p>
 <h2>Works at</h2><p>U Line Clinic</p></main></main></html>"""
 HOSPITAL="""<html><main><h1>U Line Clinic</h1><p>9.7</p><p>10,668 Reviews</p>
 <h2>Clinic Hours</h2><table><tr><td>Mon</td><td>Tue</td></tr>
