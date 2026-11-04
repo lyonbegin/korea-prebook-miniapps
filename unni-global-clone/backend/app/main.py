@@ -23,6 +23,7 @@ from fastapi.responses import Response, StreamingResponse
 from starlette.background import BackgroundTask
 from .catalog_schema import CATALOG_SCHEMA
 from .subcategories import SUBCATEGORY_ROWS
+from .metadata_ingest import ingest_public_metadata
 
 log = logging.getLogger("unni.cache")
 
@@ -277,6 +278,14 @@ async def gateway(service: str, rest: str, request: Request):
         await client.aclose()
         raise HTTPException(status_code=502, detail="Origin unavailable")
     should_store = bool(can_cache and pool is not None and public_response(upstream, variant))
+    # Only public, anonymous event/clinic/doctor pages. No-store HTML is never
+    # written to the response cache; factual metadata may be parsed transiently.
+    should_ingest = bool(
+        can_cache and pool is not None and service == "public-web"
+        and re.match(r"^us/(events|hospitals|doctors)/\d+$", suffix)
+        and upstream.status_code == 200
+        and upstream.headers.get("content-type", "").lower().startswith("text/html")
+    )
     if can_cache and pool is not None and not should_store:
         log.warning("Public response cache bypass: service=%s status=%d set_cookie=%s cache_control=%s content_type=%s vary=%s",
                     service, upstream.status_code, "set-cookie" in upstream.headers,
@@ -288,7 +297,7 @@ async def gateway(service: str, rest: str, request: Request):
     async def bytes_to_client():
         try:
             async for chunk in upstream.aiter_raw():
-                if should_store:
+                if should_store or should_ingest:
                     captured.append(chunk)
                 yield chunk
             captured.completed = True
@@ -296,24 +305,30 @@ async def gateway(service: str, rest: str, request: Request):
             await upstream.aclose()
             await client.aclose()
 
+
     async def save_after_response():
-        # Starlette invokes this only AFTER response body streaming finishes.
-        # No DB INSERT is awaited on the client's response path.
-        if not should_store or not captured.completed or captured.overflow or pool is None:
+        # Called AFTER final streaming chunk; never blocks the first paint.
+        if pool is None or not captured.completed or captured.overflow:
             return
-        try:
-            await pool.execute(
-                """INSERT INTO unni_clone.original_response_cache
-                   (cache_key, upstream_service, upstream_url, request_variant,
-                    status_code, response_headers, raw_body, size_bytes)
-                   VALUES ($1,$2,$3,$4::jsonb,$5,$6::jsonb,$7,$8)
-                   ON CONFLICT(cache_key) DO NOTHING""",
-                cache_key, service, source_url, json.dumps(variant), upstream.status_code,
-                json.dumps(filtered_response_headers(upstream.headers)),
-                b"".join(captured.chunks), captured.size,
-            )
-        except Exception:
-            log.exception("Background cache insert failed; original response was already sent")
+        body = b"".join(captured.chunks)
+        if should_ingest:
+            try:
+                await ingest_public_metadata(pool, "/" + suffix, query, body)
+            except Exception:
+                log.exception("Public factual metadata ingestion failed; response was already sent")
+        if should_store:
+            try:
+                await pool.execute(
+                    """INSERT INTO unni_clone.original_response_cache
+                       (cache_key, upstream_service, upstream_url, request_variant,
+                        status_code, response_headers, raw_body, size_bytes)
+                       VALUES ($1,$2,$3,$4::jsonb,$5,$6::jsonb,$7,$8)
+                       ON CONFLICT(cache_key) DO NOTHING""",
+                    cache_key, service, source_url, json.dumps(variant), upstream.status_code,
+                    json.dumps(filtered_response_headers(upstream.headers)), body, captured.size,
+                )
+            except Exception:
+                log.exception("Background response cache insert failed; response was already sent")
 
     headers = filtered_response_headers(upstream.headers)
     headers.update({"x-cache": "MISS" if should_store else "BYPASS", "x-data-source": "origin"})
