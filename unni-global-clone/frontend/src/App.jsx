@@ -4,7 +4,6 @@ import {gatewayUrl,UNNI_SERVICES} from "./lib/originalGateway";
 import {CATEGORY_IDS,createPageSource,parseSource} from "./lib/sourceModel";
 import {SourceFooter,ErrorState,EmptyState} from "./ui/Components";
 import {InquiryPanel,InquiriesScreen} from "./ui/InquiryPanel";
-import StaffConsole from "./ui/StaffConsole";
 import {HomeScreen,SearchScreen,ListingScreen,EventScreen,HospitalScreen,DoctorScreen,ArticleScreen,SavedScreen,AccessLimitedScreen} from "./ui/Screens";
 
 const SAVED_KEY="unni_clone_saved_pages_v2";
@@ -29,7 +28,7 @@ function useSource(route){
  const refresh=useCallback(()=>setVersion(x=>x+1),[]);
  const source=route==="/"?"/us/events?q=Lifting&categoryId=419":createPageSource(route);
  useEffect(()=>{
-  if(!source||route==="/search"||route==="/inquiries"||route==="/staff"){setState({data:null,loading:false,error:"",fetchedFrom:null});return;}
+  if(!source||route==="/search"||route==="/inquiries"){setState({data:null,loading:false,error:"",fetchedFrom:null});return;}
   const controller=new AbortController();
   setState({data:null,loading:true,error:"",fetchedFrom:null});
   (async()=>{
@@ -71,7 +70,7 @@ export default function App(){
    {route==="/"
     ?<button className="logo" onClick={()=>go("/")}>unni<span>.</span></button>
     :<IconButton label="Back" onClick={()=>history.length>1?history.back():go("/")}><ArrowLeft size={23}/></IconButton>}
-   {route!=="/"&&<button className="header-title" onClick={()=>go("/")}>{route.startsWith("/events")?"Procedures":route.startsWith("/hospitals")?"Clinics":route.startsWith("/doctors")?"Doctors":route.startsWith("/contents")?"Columns":route==="/saved"?"Saved":route==="/staff"?"Operator inbox":"UNNI"}</button>}
+   {route!=="/"&&<button className="header-title" onClick={()=>go("/")}>{route.startsWith("/events")?"Procedures":route.startsWith("/hospitals")?"Clinics":route.startsWith("/doctors")?"Doctors":route.startsWith("/contents")?"Columns":route==="/saved"?"Saved":"UNNI"}</button>}
    <div className="header-spacer"/>
    <IconButton label="Search" onClick={()=>go("/search")}><Search size={22}/></IconButton>
    <IconButton label="Saved" onClick={()=>go("/saved")}><Heart size={21}/></IconButton>
@@ -82,7 +81,6 @@ export default function App(){
    {route==="/search"?<SearchScreen go={go} query={query} setQuery={setQuery}/>
     :route==="/saved"?<SavedScreen go={go} saved={saved}/>
     :route==="/inquiries"?<InquiriesScreen/>
-    :route==="/staff"?<StaffConsole/>
     :loading?<div className="loading-screen"><div className="loading-wheel"/><strong>Loading procedures…</strong><small>Reading the original public source</small></div>
     :error?<ErrorState error={error} refresh={refresh} route={route}/>
     :data&&route==="/"?<HomeScreen data={data} go={go}/>
