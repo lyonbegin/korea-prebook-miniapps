@@ -119,7 +119,15 @@ function ratingAndReviews(root,kind){
     if(reviews&&rating&&reviews.startsWith(rating.replace(".","")))
       reviews=reviews.slice(rating.replace(".","").length);
   }
-  if(!reviews&&kind==="doctor")reviews=full.match(/\bReviews\s*([\d,]+)/i)?.[1]||"";
+  if(kind==="doctor"){
+    // The doctor profile publishes an independent "Reviews 9,137" value.
+    // Do not copy the linked clinic's 9.7 score onto the physician.
+    const profile=full.slice(idx,Math.min(full.length,idx+1200)).split(/Works at|Experience & Background/i)[0];
+    reviews=profile.match(/\bReviews\s*([\d,]+)/i)?.[1]||
+      full.match(/\bReviews\s*([\d,]+)/i)?.[1]||reviews||"";
+    const explicit=profile.match(/(?:^|\s)((?:10|[0-9])\.\d)\s*[·・]\s*Reviews/i)?.[1];
+    rating=explicit||"";
+  }
   return {rating,reviews};
 }
 
