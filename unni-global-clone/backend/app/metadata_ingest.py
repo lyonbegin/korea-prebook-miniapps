@@ -52,13 +52,18 @@ def get_nearby(h,limit=12):
             if t:out.append(t)
     return " ".join(out)[:3000]
 def public_stats(soup,heading):
-    # Restrict to short text near heading; avoid prices and unrelated ratings lower in page.
-    sibling=get_nearby(heading,limit=6)[:380] if heading else ""
-    sample=sibling or text(soup)[:350]
-    rating=RATING_RE.search(sample)
-    reviews=REVIEWS_RE.search(sample) or re.search(r"\bReviews\s*([\d,]+)",sample,re.I)
-    return (decimals(rating.group(1)) if rating else None,
+    all_text=text(soup)
+    title=text(heading)
+    start=all_text.find(title)+len(title) if title else 0
+    excerpt=all_text[start:start+550]
+    fused=re.search(r"((?:10|[0-9])\.\d)\s*(\d{1,3}(?:,\d{3})+)\s*Reviews\b",excerpt,re.I)
+    if fused:
+        return decimals(fused.group(1)),int(fused.group(2).replace(",",""))
+    score=re.search(r"(?<![\d.])((?:10|[0-9])\.\d)",excerpt)
+    reviews=re.search(r"([\d,]+)\s*Reviews\b",excerpt,re.I) or re.search(r"\bReviews\s*([\d,]+)",excerpt,re.I)
+    return (decimals(score.group(1)) if score else None,
             int(reviews.group(1).replace(",","")) if reviews else None)
+
 def source_hospital(soup):
     link=soup.find("a",href=re.compile(r"/us/hospitals/\d+"))
     if not link:return None
@@ -115,6 +120,9 @@ def hospital_info(soup):
     s=soup.find(lambda x:x.name=="h2" and text(x)=="Specialties")
     if s:
         raw=get_nearby(s,limit=7)
+        if not raw:
+            match=re.search(r"Specialties\s*(.+?)(?:All Doctors|Clinic Hours)",text(soup),re.I)
+            raw=match.group(1) if match else ""
         allowed=["Body","Skin","Lifting","Botox","Filler","Eye","Hair","Dental"]
         out["specialties"]=[name for name in allowed if name.lower() in raw.lower()]
     highlights=soup.find(lambda x:x.name=="h2" and "Clinic Highlights" in text(x))
@@ -127,7 +135,12 @@ def hospital_info(soup):
         m=re.search(r"Closed on[^.]+\.",main,re.I)
         if m:out["closed_notice"]=m.group(0)
     address=soup.find(lambda x:x.name=="h2" and text(x)=="Address")
-    if address:out["address"]=get_nearby(address,limit=4)[:350]
+    if address:
+        raw=get_nearby(address,limit=4)[:350]
+        if not raw:
+            match=re.search(r"\b\d{1,4}\s+[A-Za-z][A-Za-z\d\s-]{2,80}-?(?:ro|gil|road|street)[^.;]{0,150}Republic of Korea[^.;]{0,100}",text(soup),re.I)
+            raw=match.group(0) if match else ""
+        out["address"]=raw
     return out
 async def ingest_public_metadata(pool,path,query,body):
     if pool is None or not body or len(body)>5_000_000:return None
