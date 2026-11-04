@@ -147,8 +147,11 @@ export function parseSource(html,route){
   const countMatch=titleText.match(/(?:Compare|Find)\s+([\d,]+)/i)||
      titleText.match(/([\d,]+)\s+deals/i)||
      (route.startsWith("/events")?fullText.match(/Procedures\s+([\d,]+)/i):null);
-  const rating=fullText.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
-  const reviewCount=fullText.match(/([\d,]+)\s+Reviews/i)?.[1]||"";
+  // The source sometimes runs the public score and review count together
+  // without whitespace, e.g. "9.710,668Reviews": rating=9.7, reviews=10,668.
+  const fused=fullText.match(/(?:^|\D)(9\.\d|8\.\d|10\.0)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i);
+  const rating=fused?.[1]||fullText.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
+  const reviewCount=fused?.[2]||fullText.match(/(?:^|\D)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i)?.[1]||"";
   const clinicAddress=fullText.match(/\d+\s+[A-Za-z0-9,-]+\s+(?:ro|gil|road|street)[^.\n]{0,130}(?:Republic of Korea|Seoul|Busan)/i)?.[0]||"";
   return {route,pageTitle,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
