@@ -2,6 +2,19 @@ import React,{useEffect,useRef,useState} from "react";
 import {ArrowRight,Check,ChevronDown,ChevronLeft,ChevronRight,Clock3,ExternalLink,Heart,MapPin,Maximize2,MessageCircle,Navigation,Share2,ShieldAlert,Star,X} from "lucide-react";
 import {SourceLink,OfferCard,ClinicCard} from "./Components";
 import "../detail-v2.css";
+function usePublicCatalog(kind,id){
+ const [facts,setFacts]=useState(null);
+ useEffect(()=>{
+  setFacts(null);
+  if(!id)return;
+  const controller=new AbortController();
+  const base=(import.meta.env.VITE_GATEWAY_BASE||"").replace(/\/$/,"");
+  fetch(base+"/catalog/"+kind+"/"+id,{credentials:"omit",signal:controller.signal})
+   .then(r=>r.ok?r.json():null).then(v=>{if(!controller.signal.aborted)setFacts(v)}).catch(()=>{});
+  return ()=>controller.abort();
+ },[kind,id]);
+ return facts;
+}
 function Header({children,sub}){return <div className="d2-heading"><h2>{children}</h2>{sub&&<small>{sub}</small>}</div>}
 function Block({id,children}){return <section id={id} className="d2-block">{children}</section>}
 function RenderBlocks({section}){
@@ -140,9 +153,12 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
 }
 export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
  const d=data.detail,h=d.hospital||{};
+ const facts=usePublicCatalog("hospitals",data.id);
+ const reviews=d.stats.reviews||facts?.public_review_count||facts?.attributes?.review_count||"";
+ const score=d.stats.rating||facts?.public_rating||"";
  return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
    <div className="d2-top"><span className="d2-eyebrow">CLINIC</span><h1>{data.pageTitle}</h1><div className="d2-ratings"><Star size={17} fill="currentColor"/>
-   <b>{d.stats.rating||"—"}</b>{d.stats.reviews&&<small>{d.stats.reviews} Reviews</small>}</div>
+   <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>
    <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div></div>
    {h.highlightNames?.length>0&&<Block id="d2-highlights"><Header sub={h.highlightNames.length+" highlights"}>Clinic Highlights</Header>
      <div className="d2-highlights">{h.highlightNames.map((x,i)=><div key={i}><span>{i+1}</span>{x}</div>)}</div>
@@ -164,9 +180,11 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
 }
 export function DoctorDetailV2({route,data,go}){
  const d=data.detail;
+ const facts=usePublicCatalog("doctors",data.id);
+ const reviews=d.stats.reviews||facts?.public_attributes?.reviews||"";
  return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
   <div className="d2-top"><span className="d2-eyebrow">MEDICAL PROFESSIONAL</span><h1>{data.pageTitle}</h1>
-    <div className="d2-ratings"><Star size={17} fill="currentColor"/><b>{d.stats.rating||"—"}</b>{d.stats.reviews&&<small>{d.stats.reviews} Reviews</small>}</div></div>
+    <div className="d2-ratings"><Star size={17} fill="currentColor"/><b>{d.stats.rating||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div></div>
   {data.sections.filter(x=>/experience|background|special|work/i.test(x.title)).map((s,i)=><Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
   {data.hospitals?.length>0&&<Block><Header>Works at</Header>{data.hospitals.map(x=><ClinicCard item={x} go={go} key={x.sourceHref}/>)}</Block>}
   <Block><SourceLink route={route}>Doctor at source</SourceLink></Block>
