@@ -70,3 +70,37 @@
 3. 원본과 기능 동등성 검증이 가능한 공개 카탈로그를 권한 범위 내에서 타입별로 확대. 원본 HTML에 대한 no-store 준수 유지.
 4. 권한 없이 실제 원본 병원 상담·예약·결제를 연결했다고 보고하지 말 것.
 5. 위챗·알리페이 Railway Function과 기존 pgvector의 타 스키마를 수정하지 말 것.
+
+
+## 7. 같은 날 추가 개발 — 자체 상담사 운영센터
+
+이번 단계는 **독립 운영 서비스의 상담 업무**이며 원본 UNNI 로그인/상담 API를 연결한 것이 아닙니다.
+
+- 운영자 페이지: https://unni-mobile-web-production.up.railway.app/staff
+- 구현 파일: `unni-global-clone/frontend/src/ui/StaffConsole.jsx`, `src/staff-console.css`
+- 일반 사용자 메시지 UI: `unni-global-clone/frontend/src/ui/InquiryPanel.jsx`
+- 기존 백엔드: `unni-global-clone/backend/app/inquiries.py`
+- 운영 API:
+  - `GET /inquiries/staff/queue`: 최근 50건까지 목록, 선택적 상태 필터 (접근 토큰 필수)
+  - `GET /inquiries/staff/{uuid}`: 문의·연락처·메시지 상세 (접근 토큰 필수)
+  - `POST /inquiries/{uuid}/staff-reply`: 상담사 답변 (접근 토큰 필수)
+  - `POST /inquiries/staff/{uuid}/close`: 상담 종료 (접근 토큰 필수)
+  - `GET /inquiries/{uuid}`: 사용자별 기존 발급 토큰으로 자신의 문의와 답변 조회
+- **인증:** Railway API 서비스 `unni-mobile-api`의 `UNNI_STAFF_TOKEN` 환경변수가 설정된 것을 `GET /inquiries/health`로 2026-11-04 확인 (`staff_delivery_configured=true`). 실제 토큰 값은 GitHub 소스·이 문서·프런트엔드 빌드에 절대로 기재하지 말 것. 운영자는 별도로 전달받은 토큰을 `/staff`의 암호 필드에 입력한다.
+- 운영자 조회는 토큰 검사를 SQL보다 먼저 수행하고 `Cache-Control: no-store`를 설정한다. 프런트는 토큰을 메모리에만 보관하며 localStorage나 URL에 넣지 않는다.
+- 독립 채팅창은 사용자가 연 상태로 있을 때 15초 간격으로 새 답변을 조회하고, 직접 새로고침도 지원한다.
+- 운영자 답변이나 사용자의 추가 메시지에 따라 자체 문의 상태·갱신시각을 변경한다. 종료된 상담은 추가 메시지를 거부한다.
+- **개인정보 처리:** 연락처/메시지는 기존 `unni_clone`에만 있고, 관리자 인증 없이는 조회할 수 없다. 데이터 보존 정책, 운영자 권한 감사기록, 접속기록·접근통제 강화는 실제 서비스 상용 전 별도 필요.
+
+### 검증
+
+- 마지막 실제 서비스 코드: `7bc5fe76cca205366aa09aeb39ea28d8a875c64a`
+- GitHub Actions: https://github.com/lyonbegin/korea-prebook-miniapps/actions/runs/41818151915
+- Playwright 실제 배포 모바일 화면 테스트: **15/15 PASS**.
+  - 방문자 옵션/상담 UUID 맥락, 상담사 목록/답변/종료 UI, 사용자 화면 답변 새로고침 포함
+  - 상담 API 쓰기는 전부 **모의 응답**이므로 실제 상담 DB에 새 데이터를 쓰지 않았다.
+- Python 백엔드 Dockerfile: `python -m unittest discover -s tests -p 'test_metadata_unittest.py' -v` 실행, 운영자 설정 누락 503·잘못된 토큰 403·정상 토큰 접근 시 no-store 조건 등을 포함.
+- Railway `unni-mobile-web`, `unni-mobile-api`가 해당 커밋에 대해 배포 SUCCESS.
+- 운영 `GET /inquiries/health` 조회: `ok=true`, `staff_delivery_configured=true`, `original_clinic_connected=false`, `reservations_confirmed=false`.
+
+**제약:** 자체 상담 운영이 가능하도록 코드를 추가한 것이지, 실제 원본 UNNI 병원에 메시지가 전송되는 것은 아니다. 공개 원본에서 시술 70809의 14개 옵션은 확인되지만, UUID가 확인된 것은 옵션 5번 등 제한적인 범위다. 나머지 원본 UUID를 임의 생성하지 말 것. 원본 전체 카탈로그, 후기, 원본 예약/결제/실기기 픽셀 비교는 여전히 미완료다.
