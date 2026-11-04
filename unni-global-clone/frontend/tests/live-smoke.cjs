@@ -47,8 +47,12 @@ async function main(){
   await check("Full public promotional image list is retained",async()=>{
    const images=await page.locator(".d2-detail img").evaluateAll(nodes=>nodes.map(n=>n.currentSrc||n.src));
    const direct=[...new Set(images.filter(u=>u.includes("/images/direct/")))];
-   assert.equal(direct.length,21,JSON.stringify(direct.slice(0,3)));
-   return direct.length+" original direct-image assets retained";
+   // Source 70809 currently exposes 20 direct photos plus one map image.
+   // Never silently label the map as a direct promotional asset.
+   assert.equal(direct.length,20,JSON.stringify(direct.slice(0,3)));
+   const maps=images.filter(u=>u.includes("get-generated-signed-map-url"));
+   assert.equal(maps.length,1,"source clinic map must be rendered");
+   return direct.length+" direct images + "+maps.length+" source map";
   });
   await check("Recommended to 5 items",async()=>{
    const sec=page.locator("#d2-recommended");
@@ -108,6 +112,8 @@ async function main(){
      await page.waitForTimeout(400);
      await page.locator("#d2-options .d2-option").nth(0).click();
      assert.match(page.url(),new RegExp("optionId="+cachedId));
+     await page.locator("#d2-options .d2-option").nth(4).click();
+     assert.match(page.url(),/optionId=d195122c/);
      return "Previously observed UUID reused without inventing an ID";
    }finally{await page.unroute("**/catalog/events/70809")}
   });
