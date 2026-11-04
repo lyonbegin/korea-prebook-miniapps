@@ -2,7 +2,8 @@ import React,{useCallback,useEffect,useState} from "react";
 import {ArrowLeft,Heart,Home,MapPin,Menu,Search,Stethoscope,UserRound,X,ChevronRight} from "lucide-react";
 import {gatewayUrl,UNNI_SERVICES} from "./lib/originalGateway";
 import {CATEGORY_IDS,createPageSource,parseSource} from "./lib/sourceModel";
-import {SourceFooter,ErrorState,EmptyState,ConsultDialog} from "./ui/Components";
+import {SourceFooter,ErrorState,EmptyState} from "./ui/Components";
+import {InquiryPanel,InquiriesScreen} from "./ui/InquiryPanel";
 import {HomeScreen,SearchScreen,ListingScreen,EventScreen,HospitalScreen,DoctorScreen,ArticleScreen,SavedScreen,AccessLimitedScreen} from "./ui/Screens";
 
 const SAVED_KEY="unni_clone_saved_pages_v2";
@@ -27,7 +28,7 @@ function useSource(route){
  const refresh=useCallback(()=>setVersion(x=>x+1),[]);
  const source=route==="/"?"/us/events?q=Lifting&categoryId=419":createPageSource(route);
  useEffect(()=>{
-  if(!source||route==="/search"){setState({data:null,loading:false,error:"",fetchedFrom:null});return;}
+  if(!source||route==="/search"||route==="/inquiries"){setState({data:null,loading:false,error:"",fetchedFrom:null});return;}
   const controller=new AbortController();
   setState({data:null,loading:true,error:"",fetchedFrom:null});
   (async()=>{
@@ -53,7 +54,7 @@ function useSource(route){
 function IconButton({label,onClick,children}){return <button type="button" className="icon-button" aria-label={label} onClick={onClick}>{children}</button>;}
 export default function App(){
  const[route,go]=useNavigation(),{data,loading,error,refresh}=useSource(route);
- const[saved,setSaved]=useState(readSaved),[dialog,setDialog]=useState(false),[menu,setMenu]=useState(false);
+ const[saved,setSaved]=useState(readSaved),[dialog,setDialog]=useState(false),[menu,setMenu]=useState(false),[consultSelection,setConsultSelection]=useState(null);
  const[query,setQuery]=useState(""),[menuVersion,setMenuVersion]=useState(0);
  const parsedQuery=new URLSearchParams(route.split("?")[1]||"");
  useEffect(()=>{setDialog(false);setMenu(false);setQuery(parsedQuery.get("q")||parsedQuery.get("category")||"")},[route]);
@@ -72,14 +73,15 @@ export default function App(){
    <IconButton label="Saved" onClick={()=>go("/saved")}><Heart size={21}/></IconButton>
    <IconButton label="Menu" onClick={()=>setMenu(v=>!v)}>{menu?<X size={21}/>:<Menu size={21}/>}</IconButton>
   </div></header>
-  {menu&&<aside className="dropdown-menu">{[["Home","/"],["Procedures","/events"],["Clinics","/hospitals"],["Doctors","/hospitals"],["Beauty columns","/contents"],["Community","/community"],["Saved","/saved"]].map(([label,path])=><button key={label} onClick={()=>go(path)}>{label}<ChevronRight size={16}/></button>)}</aside>}
+  {menu&&<aside className="dropdown-menu">{[["Home","/"],["Procedures","/events"],["Clinics","/hospitals"],["Doctors","/hospitals"],["Beauty columns","/contents"],["Community","/community"],["My inquiries","/inquiries"],["Saved","/saved"]].map(([label,path])=><button key={label} onClick={()=>go(path)}>{label}<ChevronRight size={16}/></button>)}</aside>}
   <main className="app-content">
    {route==="/search"?<SearchScreen go={go} query={query} setQuery={setQuery}/>
     :route==="/saved"?<SavedScreen go={go} saved={saved}/>
+    :route==="/inquiries"?<InquiriesScreen/>
     :loading?<div className="loading-screen"><div className="loading-wheel"/><strong>Loading procedures…</strong><small>Reading the original public source</small></div>
     :error?<ErrorState error={error} refresh={refresh} route={route}/>
     :data&&route==="/"?<HomeScreen data={data} go={go}/>
-    :data?.detailKind==="events"?<EventScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={()=>setDialog(true)}/>
+    :data?.detailKind==="events"?<EventScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
     :data?.detailKind==="hospitals"?<HospitalScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={()=>setDialog(true)}/>
     :data?.detailKind==="doctors"?<DoctorScreen route={route} data={data} go={go}/>
     :data?.detailKind==="contents"?<ArticleScreen route={route} data={data}/>
@@ -91,6 +93,6 @@ export default function App(){
    {[["home","Home",Home,"/"],["procedures","Procedures",Stethoscope,"/events"],["clinics","Clinics",MapPin,"/hospitals"],["saved","Saved",Heart,"/saved"],["more","More",UserRound,"/contents"]].map(([key,label,Icon,dest])=><button type="button" className={active===key?"selected":""} key={key} onClick={()=>go(dest)}><Icon size={21} strokeWidth={active===key?2.3:1.8}/><small>{label}</small></button>)}
   </nav>
   <SourceFooter/>
-  <ConsultDialog open={dialog} onClose={()=>setDialog(false)} title={title} route={route}/>
+  <InquiryPanel open={dialog} onClose={()=>setDialog(false)} selection={consultSelection} title={title} route={route}/>
  </div></div>;
 }
