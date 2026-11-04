@@ -23,7 +23,7 @@ CREATE SCHEMA IF NOT EXISTS unni_clone;
 CREATE TABLE IF NOT EXISTS unni_clone.inquiries (
  id UUID PRIMARY KEY,
  secret_hash TEXT UNIQUE NOT NULL,
- event_id TEXT NOT NULL,
+ event_id TEXT,
  option_index INTEGER,
  source_option_id TEXT,
  clinic_id TEXT,
@@ -51,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_unni_inquiry_messages
   ON unni_clone.inquiry_messages(inquiry_id, created_at);
 """
 class CreateInquiry(BaseModel):
-  event_id: str = Field(min_length=1,max_length=30,pattern=r"^[0-9]+$")
+  event_id: str|None = Field(default=None,min_length=1,max_length=30,pattern=r"^[0-9]+$")
   event_name: str = Field(min_length=1,max_length=250)
   option_index: int|None = Field(default=None,ge=1,le=200)
   option_name: str|None = Field(default=None,max_length=250)
@@ -138,6 +138,13 @@ async def inquiry_status(inquiry_id:uuid.UUID,request:Request,
   return {"inquiry":dict(row),"messages":[dict(m) for m in messages],
           "clinic_not_notified":row["status"]=="pending_assignment",
           "appointment_confirmed":False}
+
+@router.delete("/{inquiry_id}")
+async def delete_inquiry(inquiry_id:uuid.UUID,request:Request,
+                         x_inquiry_token:str|None=Header(default=None)):
+  pool,row=await resolve(request,inquiry_id,x_inquiry_token)
+  await pool.execute("DELETE FROM unni_clone.inquiries WHERE id=$1",inquiry_id)
+  return {"ok":True,"deleted":True}
 
 @router.post("/{inquiry_id}/messages",status_code=201)
 async def add_message(inquiry_id:uuid.UUID,payload:AddMessage,request:Request,
