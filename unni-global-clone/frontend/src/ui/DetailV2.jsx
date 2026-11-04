@@ -85,10 +85,11 @@ function MedicalInfo({detail}){
  </>;
 }
 function MapBlock({image,address,clinicName}){
- if(!image&&!address)return null;
+ if(!image&&!address&&!clinicName)return null;
  return <div className="d2-map">{image?.url&&<img src={image.url} alt={"Map of "+(clinicName||address)} loading="lazy"/>}
    {address&&<p><MapPin size={17}/>{address}</p>}
    <a target="_blank" rel="noopener noreferrer" href={"https://www.openstreetmap.org/search?query="+encodeURIComponent(address||clinicName||"")}><Navigation size={17}/> Map & directions <ExternalLink size={14}/></a>
+   {address&&<button type="button" className="d2-copy-address" onClick={()=>navigator.clipboard?.writeText(address)}>Copy address</button>}
  </div>;
 }
 function ReviewBox({detail,route}){

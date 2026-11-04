@@ -155,7 +155,8 @@ export function parseSource(html,route){
   const reviewCount=fused?.[2]||fullText.match(/(?:^|\D)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i)?.[1]||"";
   const selectedOptionHeading=[...body.querySelectorAll("h3,h4")].map(x=>text(x)).find(x=>/^Option\s+\d{1,3}$/i.test(x));
   const selectedOptionIndex=Math.max(0,(Number((selectedOptionHeading||"").match(/Option\s+(\d{1,3})/i)?.[1]||fullText.match(/Option\s+(\d{1,3})\b/i)?.[1]||"1")-1));
-  const clinicAddress=fullText.match(/\d+\s+[A-Za-z0-9,-]+\s+(?:ro|gil|road|street)[^.\n]{0,130}(?:Republic of Korea|Seoul|Busan)/i)?.[0]||"";
+  const clinicAddress=fullText.match(/\b\d{1,4}\s+[A-Za-z][A-Za-z\d\s-]{2,85}(?:-ro|-gil|road|street)[^.;\n]{0,180}Republic of Korea(?:[^.;\n]{0,110})?/i)?.[0]||
+    fullText.match(/\b\d{1,4}\s+[A-Za-z\d-]+-ro[^.;\n]{0,190}Republic of Korea/i)?.[0]||"";
   if(detailKind==="doctors"&&hospitals.length) {
     const mainTitle=pageTitle.split("|")[0].trim();
     const hospitalName=hospitals[0].title.replace(/(?:9|8)\.\d.*$/,"").trim();
