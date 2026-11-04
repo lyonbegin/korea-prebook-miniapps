@@ -51,6 +51,21 @@ class PublicMetadataTest(unittest.TestCase):
         self.assertEqual(options[0]["local_price"],220000.0)
         self.assertEqual(options[0]["attributes"]["brand"],"LIZTOX")
         self.assertEqual(options[1]["price"],286.44)
+    def test_source_uuid_requires_complete_shape_and_selected_option(self):
+        source=EVENT.replace("<h2>Procedure Info</h2>",
+                             "<h2>Procedure Info</h2><h3>Option 2</h3>")
+        soup=BeautifulSoup(source,"html.parser")
+        verified="d195122c-ee11-4090-94c1-29a439508bdd"
+        valid=get_option_rows(soup,"70809",
+             "https://unni.app/us/events/70809?optionId="+verified)
+        self.assertIsNone(valid[0]["option_id"])
+        self.assertEqual(valid[1]["option_id"],verified)
+        malformed=get_option_rows(soup,"70809",
+             "https://unni.app/us/events/70809?optionId=fake-option-id-1234567890")
+        self.assertTrue(all(item["option_id"] is None for item in malformed))
+        incorrect_selection=get_option_rows(BeautifulSoup(EVENT,"html.parser"),"70809",
+             "https://unni.app/us/events/70809?optionId="+verified)
+        self.assertTrue(all(item["option_id"] is None for item in incorrect_selection))
     def test_clinic_link_and_hours(self):
         doc=BeautifulSoup(EVENT,"html.parser")
         self.assertEqual(source_hospital(doc),("826","U Line Clinic"))
