@@ -184,5 +184,13 @@ export function createPageSource(route){
   if(route==="/")return"/us";
   if(route==="/saved"||route==="/settings")return null;
   if(!/^\/(?:events|hospitals|doctors|contents|community|search|reviews)(?:\/|\?|$)/.test(route))return"/us";
+  // optionIndex is local-only until the origin publishes an optionId UUID.
+  // Do not send an invented optionIndex parameter to the original server.
+  if(route.includes("optionIndex=")){
+    const [pathname,query=""]=route.split("?");
+    const args=new URLSearchParams(query);
+    args.delete("optionIndex");
+    return "/us"+pathname+(args.toString()?"?"+args.toString():"");
+  }
   return"/us"+route;
 }
