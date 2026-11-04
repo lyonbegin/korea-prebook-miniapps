@@ -100,11 +100,19 @@ function countTextInTitle(el,root){
   return s;
 }
 function ratingAndReviews(root,kind){
-  const a=countTextInTitle(null,root),all=trim(root.textContent).slice(0,1800);
-  const rating= (a.match(/(?:^|[^\d])((?:10|[0-9])\.\d)(?=\D|$)/)||all.match(/(?:^|[^\d])((?:10|[0-9])\.\d)(?=\D|$)/))?.[1]||"";
-  const reviews=all.match(/([\d,]+)\s*Reviews\b/i)?.[1]||"";
-  return {rating,reviews};
+  const heading=root.querySelector("h1");
+  const full=trim(root.textContent);
+  const name=trim(heading?.textContent);
+  const start=name?Math.max(0,full.indexOf(name)+name.length):0;
+  const head=full.slice(start,start+(kind==="hospital"?350:160));
+  const score=head.match(/(?:^|[^\d.])((?:10|[0-9])\.\d)(?=[^\d]|$)/)?.[1]||"";
+  const count=head.match(/([\d,]+)\s*Reviews\b/i)?.[1]||
+    head.match(/\bReviews\s*([\d,]+)/i)?.[1]||"";
+  // A doctor page may have only plain text rather than a semantic h1.
+  const anyCount=!count&&kind==="doctor"?full.match(/\bReviews\s*([\d,]+)/i)?.[1]:null;
+  return {rating:score,reviews:count||anyCount||""};
 }
+
 function titleOptionIndex(main){
   const h=[...main.querySelectorAll("h3,h4")].find(x=>/^Option\s+\d{1,3}\s*$/i.test(trim(x.textContent)));
   return Math.max(0,Number(h?.textContent?.match(/\d+/)?.[0]||"1")-1);
@@ -112,7 +120,7 @@ function titleOptionIndex(main){
 function extractAttributes(raw){
   const res={};
   for(const[name,pattern]of knownAttr){let m=raw.match(pattern);if(m)res[name]=trim(m[1]).slice(0,120)}
-  const vol=raw.match(/(\d+(?:\.\d+)?)\s*(cc|ml|unit|shot|line|area)\b/i);
+  const vol=raw.match(/(\d+(?:\.\d+)?)\s*(cc|ml|unit|shot|line|area)(?=[A-Z]|\W|$)/i);
   if(vol){res.quantity=Number(vol[1]);res.unit=vol[2]}
   const sess=raw.match(episode);if(sess)res.sessions=Number(sess[1]);
   return res;
@@ -178,21 +186,26 @@ function infoRows(section){
   return patterns.map(([label,re])=>({label,value:raw.match(re)?.[1]||""}));
 }
 function parseRecommended(section){
-  const list=section?.blocks?.flatMap(b=>b.items||[])||[];
-  if(list.length)return list;
-  const texts=(section?.blocks||[]).filter(x=>x.type==="paragraph").map(x=>x.value);
-  if(texts.length>1)return texts;
-  const raw=section?.text||"";
-  const fragments=raw.split(/(?=For those who |Those who |People who |Anyone who )/i).map(trim).filter(Boolean);
-  return fragments.length>1?fragments:(raw?[raw]:[]);
+  const raw=trim(section?.text||"");
+  if(!raw)return [];
+  const split=raw.replace(/([a-z.,])(?=For those who |Those who |People who |Anyone who )/gi,"$1 ")
+    .split(/(?=For those who |Those who |People who |Anyone who )/gi).map(trim).filter(Boolean);
+  if(split.length>1)return split;
+  const items=section?.blocks?.flatMap(b=>b.items||[])||[];
+  const rebuilt=[];
+  for(let i=0;i<items.length;i++){
+    const item=trim(items[i]);
+    if(item.toLowerCase()==="for"&&items[i+1]?.toLowerCase().startsWith("those"))rebuilt.push("For "+items[++i]);
+    else rebuilt.push(item);
+  }
+  return rebuilt.length>1?rebuilt:[raw];
 }
 function parseSteps(section){
   const list=section?.blocks?.flatMap(b=>b.items||[])||[];
-  if(list.length>=2)return list.map((s,i)=>({number:i+1,name:s.replace(/^\d+\s*/,"")}));
+  if(list.length>=2)return list.map((s,i)=>({number:i+1,name:trim(s).replace(/^(?:\d+[.)]?\s*)+/,"")}));
   const raw=section?.text||"";
-  const byNum=raw.split(/(?<!\w)(?=\d+\s+[A-Z])/).map(trim).filter(Boolean);
-  if(byNum.length>=2)return byNum.map((s,i)=>({number:i+1,name:s.replace(/^\d+\s*/,"")}));
-  return [];
+  const parts=raw.split(/(?<!\w)(?=\d+\s+[A-Z])/).map(trim).filter(Boolean);
+  return parts.length>=2?parts.map((s,i)=>({number:i+1,name:s.replace(/^(?:\d+[.)]?\s*)+/,"")})):[];
 }
 function specialties(section){
   const raw=section?.text||"";
