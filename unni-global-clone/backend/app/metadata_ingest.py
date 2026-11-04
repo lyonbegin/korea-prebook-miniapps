@@ -225,7 +225,8 @@ async def ingest_public_metadata(pool,path,query,body):
                       AND latest.usd_original_price IS NOT DISTINCT FROM $4
                       AND latest.local_krw IS NOT DISTINCT FROM $5
                       AND latest.discount_percent IS NOT DISTINCT FROM $6
-                  )""",o["key"],now,o["price"],o["original_price"],
+                  )
+                  ON CONFLICT DO NOTHING""",o["key"],now,o["price"],o["original_price"],
                     o["local_price"],o["discount_percent"])
         elif kind=="hospital":
             info=hospital_info(main)
