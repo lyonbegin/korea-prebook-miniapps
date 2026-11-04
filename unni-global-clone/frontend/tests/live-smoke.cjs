@@ -66,6 +66,19 @@ async function main(){
    return selection.slice(0,90);
   });
 
+  await check("Saving after option change stores the chosen deep link",async()=>{
+   const options=page.locator("#d2-options .d2-option");
+   const save=page.locator(".d2-actionbar button").first();
+   await options.nth(0).click();
+   await save.click();
+   const rows=await page.evaluate(()=>JSON.parse(localStorage.getItem("unni_clone_saved_pages_v2")||"[]"));
+   assert.ok(rows.some(x=>x.includes("/events/70809?optionIndex=1")),JSON.stringify(rows));
+   assert.equal(await save.innerText(),"Saved");
+   await options.nth(4).click();
+   assert.equal(await save.innerText(),"Save");
+   assert.match(page.url(),/optionId=d195122c/);
+   return "option 1 saved by selected URL; option 5 remains unsaved";
+  });
   await check("Event inquiry carries exact option and clinic IDs without writing to DB",async()=>{
    let sent=null;
    await page.route("**/inquiries",async route=>{
