@@ -226,6 +226,62 @@ async def catalog_status(request: Request):
             "full_catalog_imported": False}
 
 
+
+@app.get("/catalog/events/{event_id}")
+async def catalog_event(event_id: int, request: Request):
+    """Read verified public factual metadata, not protected marketing HTML."""
+    pool=getattr(request.app.state,"pg",None)
+    if pool is None:raise HTTPException(status_code=503,detail="PostgreSQL unavailable")
+    row=await pool.fetchrow("""SELECT original_event_id,original_hospital_id,public_title,
+           source_url,public_rating,public_review_count,min_price,currency,fetched_at
+           FROM unni_clone.events WHERE original_event_id=$1""",str(event_id))
+    if row is None:raise HTTPException(status_code=404,detail="Event not ingested")
+    options=await pool.fetch("""SELECT source_option_key,original_option_id,display_order,
+       public_name,local_price,currency,public_attributes
+       FROM unni_clone.event_options WHERE original_event_id=$1 ORDER BY display_order""",str(event_id))
+    result=dict(row)
+    result["options"]=[dict(o) for o in options]
+    for o in result["options"]:
+        if isinstance(o["public_attributes"],str):
+            o["public_attributes"]=json.loads(o["public_attributes"])
+    result["note"]="Unlicensed/unknown full product text and private data are not retained"
+    return result
+
+
+@app.get("/catalog/hospitals/{hospital_id}")
+async def catalog_hospital(hospital_id: int, request: Request):
+    pool=getattr(request.app.state,"pg",None)
+    if pool is None:raise HTTPException(status_code=503,detail="PostgreSQL unavailable")
+    row=await pool.fetchrow("""SELECT original_hospital_id,name,source_url,city,address,
+       public_rating,public_review_count,attributes,fetched_at
+       FROM unni_clone.hospitals WHERE original_hospital_id=$1""",str(hospital_id))
+    if row is None:raise HTTPException(status_code=404,detail="Clinic not ingested")
+    events=await pool.fetch("""SELECT original_event_id,public_title,min_price,currency
+       FROM unni_clone.events WHERE original_hospital_id=$1 ORDER BY original_event_id""",str(hospital_id))
+    doctors=await pool.fetch("""SELECT original_doctor_id,display_name
+       FROM unni_clone.doctors WHERE original_hospital_id=$1""",str(hospital_id))
+    result=dict(row)
+    if isinstance(result.get("attributes"),str):
+        result["attributes"]=json.loads(result["attributes"])
+    result["events"]=[dict(x) for x in events]
+    result["doctors"]=[dict(x) for x in doctors]
+    return result
+
+
+@app.get("/catalog/doctors/{doctor_id}")
+async def catalog_doctor(doctor_id: int, request: Request):
+    pool=getattr(request.app.state,"pg",None)
+    if pool is None:raise HTTPException(status_code=503,detail="PostgreSQL unavailable")
+    row=await pool.fetchrow("""SELECT original_doctor_id,original_hospital_id,
+       display_name,source_url,public_attributes,fetched_at
+       FROM unni_clone.doctors WHERE original_doctor_id=$1""",str(doctor_id))
+    if row is None:raise HTTPException(status_code=404,detail="Doctor not ingested")
+    result=dict(row)
+    if isinstance(result.get("public_attributes"),str):
+        result["public_attributes"]=json.loads(result["public_attributes"])
+    return result
+
+
 @app.get("/gateway/{service}/{rest:path}")
 async def gateway(service: str, rest: str, request: Request):
     if service not in UPSTREAMS:
