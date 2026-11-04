@@ -66,6 +66,7 @@ function OptionList({detail,selected,setSelected}){
    if(o.sourceOptionId)url.searchParams.set("optionId",o.sourceOptionId);
    else url.searchParams.set("optionIndex",String(i+1));
    history.replaceState(history.state,"",url.pathname+url.search);
+   window.dispatchEvent(new Event("unni:optionchange"));
  }
  return <Block id="d2-options"><Header sub={opts.length+" options"}>Procedure options</Header>
   {opts.length?<><div className="d2-options">{opts.slice(0,all?opts.length:Math.max(8,idx+1)).map((o,i)=><button key={i+"-"+o.title}
