@@ -1,0 +1,38 @@
+name: UNNI mobile detail end-to-end QA
+on:
+  push:
+    branches:
+      - feature/unni-global-full-clone-20261104
+    paths:
+      - unni-global-clone/frontend/**
+      - .github/workflows/unni-mobile-detail-qa.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright browser
+        working-directory: unni-global-clone/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Smoke test live Railway deployment
+        working-directory: unni-global-clone/frontend
+        env:
+          UNNI_URL: https://unni-mobile-web-production.up.railway.app
+        run: node tests/live-smoke.cjs
+      - name: Keep screenshots, outputs and errors even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unni-live-mobile-qa
+          path: unni-global-clone/frontend/qa-artifacts/
+          if-no-files-found: ignore
