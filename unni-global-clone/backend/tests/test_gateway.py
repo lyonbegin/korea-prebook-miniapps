@@ -6,11 +6,7 @@ from pathlib import Path
 import httpx
 from fastapi.testclient import TestClient
 
-spec = importlib.util.spec_from_file_location('unni_gateway', Path(__file__).resolve().parents[1]/'app'/'main.py')
-module = importlib.util.module_from_spec(spec)
-import sys
-sys.modules[spec.name] = module
-spec.loader.exec_module(module)
+from app import main as module
 
 class AsyncChunks(httpx.AsyncByteStream):
     async def __aiter__(self):
