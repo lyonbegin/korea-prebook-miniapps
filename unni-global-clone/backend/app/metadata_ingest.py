@@ -140,6 +140,7 @@ def hospital_info(soup):
         if not raw:
             match=re.search(r"\b\d{1,4}\s+[A-Za-z][A-Za-z\d\s-]{2,80}-?(?:ro|gil|road|street)[^.;]{0,150}Republic of Korea[^.;]{0,100}",text(soup),re.I)
             raw=match.group(0) if match else ""
+        raw=re.split(r"Clinic Info|Clinic Highlights|Procedures|Reviews|Copy|[{}]",raw,maxsplit=1)[0].strip().rstrip(",")
         out["address"]=raw
     return out
 async def ingest_public_metadata(pool,path,query,body):
@@ -153,14 +154,19 @@ async def ingest_public_metadata(pool,path,query,body):
     main=soup.find_all("main")[-1] if soup.find_all("main") else soup
     heading=main.find("h1")
     title=text(heading)
-    if not title and kind == "doctor":
-        # Global doctor pages expose the name as a paragraph, not an h1.
-        candidates=[text(p) for p in main.find_all("p")]
-        title=next((v for v in candidates if 3<=len(v)<=100
-            and len(v.split())<=6 and not re.search(
-               r"sign up|scan qr|log in|reviews|clinic|hospital|location|stn\.|specialties|filler|lifting",v,re.I)), "")
+    if kind == "doctor":
+        # Public global doctor profiles render names as unheaded plain paragraphs.
+        # Restrict name matching; footer company/legal text must never enter DB.
+        all_candidates=[text(x) for x in soup.find_all(["p","h1","h2","h3","strong","span"])]
+        doctor_name=next((v for v in all_candidates if
+             re.fullmatch(r"[A-Z][a-z'-]{2,25}(?:\s+[A-Z][a-z'-]{2,25}){1,3}(?:\s+Dr\.)?",v)
+             and not re.search(r"clinic|hospital|paper|company|consultation|privacy|sign",v,re.I)),None)
+        if doctor_name:title=doctor_name
+        if not title or re.search(r"company|healing paper|terms|privacy|scan qr",title,re.I):
+            return None
     if not title:return None
     rating,reviews=public_stats(main,heading)
+    if kind=="doctor":rating=None  # Clinic rating lower on this page is not a doctor rating.
     now=datetime.now(timezone.utc)
     async with pool.acquire() as conn:
       async with conn.transaction():
