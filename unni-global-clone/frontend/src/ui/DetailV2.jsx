@@ -17,10 +17,11 @@ function usePublicCatalog(kind,id){
 }
 function Header({children,sub}){return <div className="d2-heading"><h2>{children}</h2>{sub&&<small>{sub}</small>}</div>}
 function Block({id,children}){return <section id={id} className="d2-block">{children}</section>}
-function RichNode({node,go}){
+function RichNode({node,go,omitImages=false}){
  if(!node)return null;
  if(Object.prototype.hasOwnProperty.call(node,"text"))return node.text;
  const tag=node.tag;
+ if(tag==="img"&&omitImages)return null;
  if(!["div","section","article","p","span","br","strong","b","em","i","small","h3","h4","h5","ul","ol","li","table","tbody","thead","tr","th","td","blockquote","dl","dt","dd","a","img"].includes(tag))return null;
  const props={};
  if(tag==="img"){props.src=node.src;props.alt=node.alt||"";props.loading="lazy";if(node.width>0&&node.height>0)props.style={aspectRatio:node.width+"/"+node.height};}
@@ -28,14 +29,14 @@ function RichNode({node,go}){
    props.href=node.href;props.rel="noopener noreferrer";props.target="_blank";
    if(go){props.onClick=e=>{try{const u=new URL(node.href);if(u.hostname==="unni.app"&&u.pathname.startsWith("/us/")){e.preventDefault();go(u.pathname.slice(3)+u.search);}}catch{}};}
  }
- return React.createElement(tag,props,...(node.children||[]).map((child,i)=><RichNode key={i} node={child} go={go}/>));
+ return React.createElement(tag,props,...(node.children||[]).map((child,i)=><RichNode key={i} node={child} go={go} omitImages={omitImages}/>));
 }
 function richHasImage(nodes=[]){return nodes.some(node=>node?.tag==="img"||richHasImage(node?.children||[]));}
 function richImageUrls(nodes=[],out=new Set()){for(const node of nodes){if(node?.tag==="img"&&node.src)out.add(node.src);richImageUrls(node?.children||[],out)}return out;}
 
-function RenderBlocks({section,go}){
+function RenderBlocks({section,go,omitImages=false}){
   if(!section?.text&&!section?.rich?.length)return null;
-  if(section.rich?.length)return <div className="d2-rich">{section.rich.map((node,i)=><RichNode key={i} node={node} go={go}/>)}</div>;
+  if(section.rich?.length)return <div className="d2-rich">{section.rich.map((node,i)=><RichNode key={i} node={node} go={go} omitImages={omitImages}/>)}</div>;
   return <div className="d2-rich">{section.blocks?.length?section.blocks.map((b,i)=>
     b.type==="bullet"?<ul key={i}>{b.items.map((x,j)=><li key={j}>{x}</li>)}</ul>:
     b.type==="ordered"?<ol key={i}>{b.items.map((x,j)=><li key={j}>{x}</li>)}</ol>:
@@ -189,13 +190,11 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
   <OptionList detail={d} selected={chosen} setSelected={setChosen}/>
   <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,d.options.indexOf(chosen))}/>
   {(d.sections.details?.rich?.length>0||d.media.detail.length>0)&&<Block id="d2-details"><Header>Details</Header>
-    <div className="d2-long-images">{richHasImage(d.sections.details?.rich)?<>
-       <RenderBlocks section={d.sections.details} go={go}/>
-       {d.media.detail.filter(img=>!richImageUrls(d.sections.details.rich).has(img.url)).map((img,i)=>
-         <img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
-           onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}
-       </>:d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
-       onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}</div></Block>}
+    <div className="d2-long-images">
+      {d.sections.details?.rich?.length>0&&<RenderBlocks section={d.sections.details} go={go} omitImages/>}
+      {d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
+       onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}
+    </div></Block>}
   {(clinic.name||data.clinicAddress)&&<Block id="d2-clinic"><Header>Clinic</Header>
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>
     <MapBlock image={d.media.map} address={data.clinicAddress} clinicName={clinic.name}/></Block>}

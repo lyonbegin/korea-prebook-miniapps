@@ -187,13 +187,15 @@ export function parseSource(html,route){
   // Parse *every* source recommendation. Adjacent text nodes may join
   // "...fatFor those whose..." without whitespace; "whose" is a distinct
   // original sentence from "who" and must not be merged.
-  const splitRecommendations=raw=>String(raw||"")
-    .replace(/([a-z.!?])(?=For\s+those\s+wh(?:o|ose)\b)/gi,"$1 ")
-    .replace(/(For)\s+(those\s+wh(?:o|ose)\b)/gi,"For $2")
-    .split(/(?=For\s+those\s+wh(?:o|ose)\b|Those\s+wh(?:o|ose)\b|People\s+who\b)/gi)
-    .map(x=>x.replace(/^\s*[•·\\-]\s*/,"").trim())
-    .filter(x=>x.length>7&&x.length<500)
-    .map(x=>/^Those\s+wh(?:o|ose)\b/i.test(x)?"For "+x:x);
+  const splitRecommendations=raw=>{
+    const normalized=String(raw||"")
+      .replace(/([a-z.!?])(?=For\s+those\s+wh(?:o|ose)\b)/gi,"$1 ")
+      .replace(/(For)\s+(those\s+wh(?:o|ose)\b)/gi,"For $2");
+    return normalized.split(/(?=For\s+those\s+wh(?:o|ose)\b)/gi)
+      .map(x=>x.replace(/^\s*[•·-]\s*/,"").trim())
+      .filter(x=>x.length>7&&x.length<500)
+      .map(x=>/^Those\s+wh(?:o|ose)\b/i.test(x)?"For "+x:x);
+  };
   const recommendedExplicit=splitRecommendations(recRaw);
 
   const detail=parseDetailModel(doc,route,body);
@@ -270,7 +272,7 @@ export function parseSource(html,route){
     events,hospitals,doctors,articles,sections:originalSectionList,
     options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
     selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),
-    recommendedExplicit:[recommendedExplicit,splitRecommendations(detail.sections.recommended?.text||""),detail.recommended||[]].sort((a,b)=>b.length-a.length)[0],detail,
+    recommendedExplicit:recommendedExplicit.length>=2?recommendedExplicit:splitRecommendations(detail.sections.recommended?.text||""),detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
 }
 export function buildEventRoute({query="",category="",sort=""}={}){
