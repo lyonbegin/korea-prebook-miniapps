@@ -29,6 +29,9 @@ async function main(){
    assert.match(sourceHome,/deals up to|exclusive savings|treatment deals/i);
    assert.ok(!sourceHome.includes("Discover the beauty in you."),"fabricated home hero returned");
    assert.ok(await page.locator(".offer-card").count()>0,"original home should expose real offers");
+   assert.match(sourceHome,/Your eye treatment cheatsheet/i);
+   assert.match(sourceHome,/Your nose lift cheat sheet/i);
+   assert.match(sourceHome,/Your fat dissolve cheat sheet/i);
    await page.screenshot({path:"qa-artifacts/00-home.png",fullPage:true});
    return await page.locator(".offer-card").count()+" visible offer cards";
   });

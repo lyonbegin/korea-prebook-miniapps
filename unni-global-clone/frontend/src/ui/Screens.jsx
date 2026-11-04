@@ -8,14 +8,21 @@ import {EventDetailV2,HospitalDetailV2,DoctorDetailV2,ArticleDetailV2} from "./D
 function SectionHeading({eyebrow,title,more,onMore}){return <div className="section-heading"><div>{eyebrow&&<small>{eyebrow}</small>}<h2>{title}</h2></div>{more&&<button onClick={onMore}>{more}<ChevronRight size={17}/></button>}</div>;}
 const GLYPHS=["♧","✧","◡","◍","↗","◉","◇","♡","⌁","≋","✦","✚","☼","＋"];
 export function HomeScreen({data,go}){
- const events=data?.events||[],hospitals=data?.hospitals||[];
+ const sections=data?.homeSections||[];
+ const events=data?.events||[];
+ const body=sections.length?sections:[{title:data?.homePromo?.title||"Treatment deals",subtitle:data?.homePromo?.subtitle||"",events}];
  return <>
   <div className="hero-search"><button onClick={()=>go("/search")}><Search size={19}/>Search procedures or clinics <span>⌕</span></button></div>
-  <section className="original-home-intro"><h1>{data?.homePromo?.title||"Treatment deals"}</h1>{data?.homePromo?.subtitle&&<p>{data.homePromo.subtitle}</p>}</section>
-  <section className="home-section original-home-deals"><div className="offer-grid">{events.map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div>{!events.length&&<EmptyState title="Original deals unavailable" route="/events"/>}</section>
-  <section className="home-categories"><SectionHeading title="Procedures" more="All" onMore={()=>go("/events")}/><div className="categories-grid">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="category-symbol">{GLYPHS[i]}</span><span>{name}</span></button>)}</div></section>
-  {hospitals.length>0&&<section className="home-section"><SectionHeading title="Clinics" more="View all" onMore={()=>go("/hospitals")}/><div className="clinic-list">{hospitals.map(c=><ClinicCard key={c.sourceHref} item={c} go={go}/>)}</div></section>}
-  {(data?.articles||[]).length>0&&<section className="home-section"><SectionHeading title="Beauty columns" more="View all" onMore={()=>go("/contents")}/><div className="article-list">{data.articles.map(c=><ArticleCard key={c.sourceHref} item={c} go={go}/>)}</div></section>}
+  {body.map((section,i)=>/Popular Procedures/i.test(section.title)?
+    <section className="home-categories" key={i}><SectionHeading title={section.title} more="All" onMore={()=>go("/events")}/>
+      <div className="categories-grid">{CATEGORIES.map((name,k)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="category-symbol">{GLYPHS[k]}</span><span>{name}</span></button>)}</div>
+    </section>:
+    <section className="home-section original-home-deals" key={i}>
+      <SectionHeading title={section.title} more={section.events.length?"View all":null} onMore={()=>go("/events")}/>
+      {section.subtitle&&<p className="d2-medical-disclaimer">{section.subtitle}</p>}
+      {section.events.length>0&&<div className="offer-grid">{section.events.map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div>}
+    </section>)}
+  {sections.length===0&&!events.length&&<EmptyState title="Original homepage offers unavailable" route="/events"/>}
  </>;
 }
 export function SearchScreen({go,query,setQuery}){

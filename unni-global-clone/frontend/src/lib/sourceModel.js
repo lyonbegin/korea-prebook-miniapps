@@ -147,6 +147,26 @@ export function parseSource(html,route){
   // Home is parsed from the real public /us homepage rather than a substitute category.
   const firstPromo=route==="/"?([...body.querySelectorAll("h1,h2")].map(text)
     .find(s=>/deals?\s+up\s+to|special\s+offers?|discounts?/i.test(s))||""):"";
+  const homeSections=route==="/"?(()=>{
+    const heads=[...body.querySelectorAll("h2")].filter(h=>{
+      const value=text(h);
+      return value.length>3&&value.length<150;
+    });
+    const links=[...body.querySelectorAll("a[href]")];
+    return heads.map((h,i)=>{
+      const after=heads[i+1]||null;
+      const seen=new Set(),items=[];
+      for(const a of links){
+        if(!(h.compareDocumentPosition(a)&Node.DOCUMENT_POSITION_FOLLOWING))continue;
+        if(after&&!(a.compareDocumentPosition(after)&Node.DOCUMENT_POSITION_FOLLOWING))continue;
+        const item=itemAnchor(a);
+        if(item?.type!=="event"||seen.has(item.sourceHref))continue;
+        seen.add(item.sourceHref);items.push(item);
+      }
+      const next=h.nextElementSibling,subtitle=next&&next.tagName==="P"?text(next).slice(0,300):"";
+      return {title:text(h),subtitle,events:items};
+    });
+  })():[];
   const homePromo=route==="/"?{
     title:firstPromo||"Treatment deals",
     subtitle:(fullText.match(/Exclusive savings[^.]*\./i)||[])[0]||""
@@ -266,7 +286,7 @@ export function parseSource(html,route){
   }
   const doctorSpecialties=detailKind==="doctors"?["Filler","Lifting","Body","Skin","Botox"].filter(x=>
     fullText.slice(0,Math.min(600,Math.max(0,fullText.indexOf("Reviews"))+170)).includes(x)):null;
-  return {route,pageTitle,homePromo,doctorSpecialties,detailKind,id:match?.[2]||null,
+  return {route,pageTitle,homePromo,homeSections,doctorSpecialties,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:originalSectionList,
