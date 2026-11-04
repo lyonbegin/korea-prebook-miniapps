@@ -99,8 +99,10 @@ def safe_public_request(request: Request, decoded_path: str) -> bool:
         return False
     if any(PRIVATE_QUERY_KEY.search(key) for key, _ in parse_qsl(request.url.query, keep_blank_values=True)):
         return False
-    # Unknown X-* request headers might personalize the result; forward but do not cache it.
-    if any(k.startswith("x-") and k not in SAFE_REQUEST_HEADERS and k not in ("x-request-id", "x-trace-id")
+    # Railway injects X-Forwarded-* / trace headers. None of those is forwarded upstream.
+    # Only explicit user-identity/auth headers bypass the shared public-data cache.
+    if any(k in {"x-user-id", "x-session-id", "x-api-key", "x-auth-token",
+                 "x-personalization", "x-device-id", "x-patient-id"}
            for k in request.headers):
         return False
     return True
