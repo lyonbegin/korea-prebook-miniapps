@@ -29,6 +29,10 @@ async function main(){
    assert.match(sourceHome,/deals up to|exclusive savings|treatment deals/i);
    assert.ok(!sourceHome.includes("Discover the beauty in you."),"fabricated home hero returned");
    assert.ok(await page.locator(".offer-card").count()>0,"original home should expose real offers");
+   const totalCards=await page.locator(".offer-card").count();
+   const actualImages=await page.locator(".offer-card .offer-media img").count();
+   assert.ok(actualImages>=Math.ceil(totalCards*0.6),`Expected source-linked card photos: ${actualImages} of ${totalCards}`);
+   console.log("HOME_MEDIA_COVERAGE",actualImages+"/"+totalCards);
    // Inspect source DOM structure to diagnose homepage image/card association.
    // GET-only. Synthetic substitutions are prohibited.
    const sourceDiagnostic=await page.evaluate(async()=>{

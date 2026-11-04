@@ -46,6 +46,23 @@ function bestImage(el){
   }
   return null;
 }
+// On the original homepage, product images often sit next to the text
+// <a>, inside the same card container, rather than *inside* the anchor.
+// Associate media with an item only if its containing ancestor references
+// that same event and no unrelated event. Do not invent a placeholder URL.
+function imageForSourceItem(anchor,card,href){
+  let element=card||anchor;
+  for(let depth=0;depth<7&&element;depth++,element=element.parentElement){
+    const links=[...element.querySelectorAll('a[href]')].map(a=>originPath(a.getAttribute("href")||""))
+      .filter(x=>x&&/^\/us\/(?:events|hospitals|doctors|contents)\//.test(x));
+    const unique=new Set(links.map(x=>x.split("?")[0]));
+    if(unique.size>1)break;
+    if(unique.size===1&&!unique.has(href.split("?")[0]))break;
+    const image=bestImage(element);
+    if(image)return image;
+  }
+  return null;
+}
 function typeOfPath(url){
   if(E.test(url))return "event";
   if(H.test(url))return "hospital";
@@ -61,7 +78,7 @@ function itemAnchor(a){
   const raw=text(closer);
   const heading=text(closer.querySelector("h3,h2,h4"))||text(a.querySelector("h3,h2,h4"))||text(a);
   const label=shorten(heading||a.getAttribute("aria-label")||"",120);
-  const image=bestImage(closer)||bestImage(a);
+  const image=bestImage(closer)||bestImage(a)||imageForSourceItem(a,closer,href);
   const amounts=[...raw.matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].map(m=>m[0]);
   // Original listing can append a parenthesized unit price after the actual offer.
   // Do not mistake "($81.84 per 50Unit)" for the product's $163.68 price.
