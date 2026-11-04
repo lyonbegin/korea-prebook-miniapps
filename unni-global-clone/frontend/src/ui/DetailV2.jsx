@@ -78,7 +78,7 @@ function OptionList({detail,selected,setSelected}){
   <p className="d2-unavailable">Complete source options could not be verified. No synthetic option has been added.</p>}
  </Block>;
 }
-function MedicalInfo({detail}){
+function MedicalInfo({detail,recommendedExplicit=[]}){
  const s=detail.sections,fees=detail.infoRows.filter(r=>r.value);
  return <>
  {s.about?.text&&<Block id="d2-about"><Header>About the Procedure</Header><RenderBlocks section={s.about}/>
@@ -86,8 +86,8 @@ function MedicalInfo({detail}){
  {s.info?.text&&<Block id="d2-info"><Header>Procedure Info</Header>
     {fees.length?<div className="d2-fees">{fees.map(r=><div key={r.label}><span>{r.label}</span><b>{r.value}</b></div>)}</div>:<RenderBlocks section={s.info}/>}
     <p className="d2-medical-disclaimer">Information here is for reference only. Details may vary based on your individual condition.</p></Block>}
- {(data.recommendedExplicit?.length>0||s.recommended?.text)&&<Block id="d2-recommended"><Header>Recommended to</Header>
-    <ul className="d2-recommend-list">{(data.recommendedExplicit?.length?data.recommendedExplicit:(detail.recommended||[])).map((x,i)=><li key={i}>{x}</li>)}</ul></Block>}
+ {(recommendedExplicit?.length>0||s.recommended?.text)&&<Block id="d2-recommended"><Header>Recommended to</Header>
+    <ul className="d2-recommend-list">{(recommendedExplicit?.length?recommendedExplicit:(detail.recommended||[])).map((x,i)=><li key={i}>{x}</li>)}</ul></Block>}
  {s.steps?.text&&<Block id="d2-steps"><Header sub={detail.duration?detail.duration+" minute(s)":null}>Procedure Steps</Header>
     {detail.steps.length>1?<ol className="d2-steps">{detail.steps.map((x,i)=><li key={i}><span>{i+1}</span><p>{x.name}</p></li>)}</ol>:<RenderBlocks section={s.steps}/>}</Block>}
  {s.downtime?.text&&<Block id="d2-downtime"><Header>Expected Downtime</Header>
@@ -139,7 +139,7 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
    {id:"d2-info",name:"Info",active:!!d.sections.info?.text},{id:"d2-options",name:"Options",active:true},
    {id:"d2-details",name:"Details",active:d.media.detail.length>0},{id:"d2-clinic",name:"Clinic",active:!!clinic.name}]}/>
   <ReviewBox detail={d} route={route}/>
-  <MedicalInfo detail={d}/>
+  <MedicalInfo detail={d} recommendedExplicit={data.recommendedExplicit}/>
   <OptionList detail={d} selected={chosen} setSelected={setChosen}/>
   {d.media.detail.length>0&&<Block id="d2-details"><Header>Details</Header>
     <div className="d2-long-images">{d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
