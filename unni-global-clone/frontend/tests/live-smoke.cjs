@@ -144,6 +144,25 @@ async function main(){
     return "event 70809 / option 5 UUID / clinic 826 (POST fully mocked)";
    }finally{await page.unroute("**/inquiries")}
   });
+  await check("Independent visitor thread refreshes incoming messages",async()=>{
+   const id="00000000-0000-4000-8000-000000000001";
+   let reads=0;
+   await page.route("**/inquiries/"+id,async route=>{
+     if(route.request().method()!=="GET")return route.continue();
+     reads++;
+     await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
+       inquiry:{status:"pending_assignment",event_name:"Fat Dissolving Injection",option_name:"Shoulder Slimming Botox"},
+       messages:reads>=2?[{id:"message-1",role:"staff",content:"Synthetic test reply, not an actual clinic message."}]:[]
+     })});
+   });
+   try{
+     await visit("/inquiries");
+     await page.locator(".iq-list-item").first().click();
+     await page.locator(".iq-refresh").click();
+     await page.getByText("Synthetic test reply, not an actual clinic message.").waitFor({timeout:5000});
+     return "Incoming message becomes visible after refresh; mocked, no production DB writes";
+   }finally{await page.unroute("**/inquiries/"+id)}
+  });
   await check("Case: clinic 826 highlights hours reviews",async()=>{
    await visit("/hospitals/826");
    const text=await page.locator("body").innerText();
