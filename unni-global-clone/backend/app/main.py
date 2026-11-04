@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from starlette.background import BackgroundTask
 from .catalog_schema import CATALOG_SCHEMA
+from .subcategories import SUBCATEGORY_ROWS
 
 log = logging.getLogger("unni.cache")
 
@@ -152,6 +153,7 @@ async def lifespan(app: FastAPI):
                 # Keep raw-response proxy available if catalog migration fails.
                 try:
                     await conn.execute(CATALOG_SCHEMA)
+                    await conn.executemany("INSERT INTO unni_clone.categories(category_id,parent_category_id,name_en,source_path) VALUES ($1,$2,$3,$4) ON CONFLICT(category_id) DO NOTHING", SUBCATEGORY_ROWS)
                 except Exception:
                     log.exception("UNNI catalog migration failed; response cache remains available")
             app.state.pg = pool
@@ -215,6 +217,8 @@ async def catalog_status(request: Request):
             counts[table] = int(await pool.fetchval("SELECT count(*) FROM unni_clone." + table))
         except Exception as exc:
             counts[table] = None
+    counts["top_level_categories"] = await pool.fetchval("SELECT count(*) FROM unni_clone.categories WHERE parent_category_id IS NULL")
+    counts["subcategories"] = await pool.fetchval("SELECT count(*) FROM unni_clone.categories WHERE parent_category_id IS NOT NULL")
     return {"ok": True, "database": "existing Railway pgvector",
             "schema": "unni_clone", "records": counts,
             "source": "14 public factual category IDs; original no-store responses are not persisted",
