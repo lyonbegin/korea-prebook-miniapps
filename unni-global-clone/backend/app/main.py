@@ -49,11 +49,12 @@ PRIVATE_QUERY_KEY = re.compile(
     r"(?:token|session|secret|password|auth|cookie|key|email|phone|user|member|patient|"
     r"consultation|reservation|order|payment|identity)", re.I
 )
-CACHE_TYPES = ("application/json", "application/problem+json", "image/webp", "image/png", "image/jpeg")
+CACHE_TYPES = ("text/html", "application/json", "application/problem+json", "image/webp", "image/png", "image/jpeg")
 MAX_CACHE_BYTES = int(os.getenv("MAX_CACHE_BYTES", str(4 * 1024 * 1024)))
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS original_response_cache (
+CREATE SCHEMA IF NOT EXISTS unni_clone;
+CREATE TABLE IF NOT EXISTS unni_clone.original_response_cache (
   cache_key TEXT PRIMARY KEY,
   upstream_service TEXT NOT NULL,
   upstream_url TEXT NOT NULL,
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS original_response_cache (
   size_bytes BIGINT NOT NULL,
   stored_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_original_cache_service ON original_response_cache(upstream_service);
+CREATE INDEX IF NOT EXISTS idx_original_cache_service ON unni_clone.original_response_cache(upstream_service);
 """
 
 
@@ -159,7 +160,14 @@ app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", 
 @app.get("/health")
 async def health(request: Request):
     pg = getattr(request.app.state, "pg", None)
+    table_ok = False
+    if pg is not None:
+        try:
+            table_ok = await pg.fetchval("SELECT to_regclass('unni_clone.original_response_cache') IS NOT NULL")
+        except Exception:
+            log.exception("DB table readiness check failed")
     return {"ok": True, "cache": "postgresql" if pg else "not_connected",
+            "db_table_ready": bool(table_ok), "db_table": "unni_clone.original_response_cache",
             "policy": "MISS=stream origin first; database save after transfer; HIT=return raw bytes from PostgreSQL",
             "configured_services": list(UPSTREAMS)}
 
@@ -195,7 +203,7 @@ async def gateway(service: str, rest: str, request: Request):
     if can_cache and pool is not None:
         try:
             record = await pool.fetchrow(
-                "SELECT status_code, response_headers, raw_body, stored_at FROM original_response_cache WHERE cache_key=$1",
+                "SELECT status_code, response_headers, raw_body, stored_at FROM unni_clone.original_response_cache WHERE cache_key=$1",
                 cache_key,
             )
             if record:
@@ -236,7 +244,7 @@ async def gateway(service: str, rest: str, request: Request):
             return
         try:
             await pool.execute(
-                """INSERT INTO original_response_cache
+                """INSERT INTO unni_clone.original_response_cache
                    (cache_key, upstream_service, upstream_url, request_variant,
                     status_code, response_headers, raw_body, size_bytes)
                    VALUES ($1,$2,$3,$4::jsonb,$5,$6::jsonb,$7,$8)
