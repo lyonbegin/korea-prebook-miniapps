@@ -203,6 +203,34 @@ async function main(){
     return "credentialed queue, detail, staff reply and closure mocked; no database changes";
    }finally{await page.unroute("**/inquiries/**")}
   });
+
+  await check("Visitor refresh sees operator response (read-only mocked)",async()=>{
+   await visit("/inquiries");
+   const id="00000000-0000-4000-8000-000000000013";
+   await page.evaluate(fake=>{
+    localStorage.setItem("unni_independent_inquiries_v1",
+      JSON.stringify([{id:fake,token:"visitor-qa-fake-token",title:"Synthetic visit",createdAt:"2026-11-04"}]));
+   },id);
+   await page.route("**/inquiries/"+id,async route=>{
+    assert.equal(route.request().method(),"GET");
+    assert.equal(route.request().headers()["x-inquiry-token"],"visitor-qa-fake-token");
+    await route.fulfill({status:200,contentType:"application/json",
+     body:JSON.stringify({inquiry:{id,event_name:"Synthetic visit",option_name:"Synthetic option",status:"staff_replied"},
+       messages:[{id:1,role:"visitor",content:"Synthetic message"},
+       {id:2,role:"staff",content:"Verified staff response"}]})});
+   });
+   try{
+    await visit("/inquiries");
+    await page.locator(".iq-list-item").first().click();
+    await page.locator(".iq-message.staff").getByText("Verified staff response").waitFor({timeout:8000});
+    await page.locator(".iq-messages-head button").click();
+    assert.equal(await page.locator(".iq-message.staff").count(),1);
+    return "operator reply visible to visitor, authenticated GET mocked; no DB writes";
+   }finally{
+    await page.unroute("**/inquiries/"+id);
+    await page.evaluate(()=>localStorage.removeItem("unni_independent_inquiries_v1"));
+   }
+  });
   await check("No unhandled app errors",async()=>{
    const important=errors.filter(s=>/ReferenceError|TypeError|Uncaught|SyntaxError|not defined/.test(s));
    assert.deepEqual(important,[]);
