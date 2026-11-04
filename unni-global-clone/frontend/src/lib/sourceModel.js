@@ -155,8 +155,9 @@ export function parseSource(html,route){
   const reviewCount=fused?.[2]||fullText.match(/(?:^|\D)(\d{1,3}(?:,\d{3})+)\s*Reviews\b/i)?.[1]||"";
   const selectedOptionHeading=[...body.querySelectorAll("h3,h4")].map(x=>text(x)).find(x=>/^Option\s+\d{1,3}$/i.test(x));
   const selectedOptionIndex=Math.max(0,(Number((selectedOptionHeading||"").match(/Option\s+(\d{1,3})/i)?.[1]||fullText.match(/Option\s+(\d{1,3})\b/i)?.[1]||"1")-1));
-  const clinicAddress=fullText.match(/\b\d{1,4}\s+[A-Za-z][A-Za-z\d\s-]{2,85}(?:-ro|-gil|road|street)[^.;\n]{0,180}Republic of Korea(?:[^.;\n]{0,110})?/i)?.[0]||
-    fullText.match(/\b\d{1,4}\s+[A-Za-z\d-]+-ro[^.;\n]{0,190}Republic of Korea/i)?.[0]||"";
+  const rawAddress=fullText.match(/\b\d{1,4}\s+[A-Za-z][A-Za-z\d\s-]{2,85}(?:-ro|-gil|road|street)[^\n]{0,210}Republic of Korea(?:[^\n]{0,110})?/i)?.[0]||
+     fullText.match(/\b\d{1,4}\s+[A-Za-z\d-]+-ro[^\n]{0,190}Republic of Korea/i)?.[0]||"";
+  const clinicAddress=rawAddress.split(/(?:["{}]|priceSpecification|@type|Sign up now|Location|Popular Procedures)/)[0].trim();
   if(detailKind==="doctors"&&hospitals.length) {
     const mainTitle=pageTitle.split("|")[0].trim();
     const hospitalName=hospitals[0].title.replace(/(?:9|8)\.\d.*$/,"").trim();
@@ -180,6 +181,28 @@ export function parseSource(html,route){
         summary:"Public clinic physician",rating:"",reviewCount:""});
     }
   }
+
+  // Preserve recommendation bullets even when the original page nests the
+  // heading and the five separate paragraphs across different React wrappers.
+  // The former Range/sibling parsers can silently miss these visible paragraphs.
+  const recommendedHeading=[...body.querySelectorAll("h2,h3")].find(h=>/^Recommended to\b/i.test(text(h)));
+  if(recommendedHeading){
+    const raw=body.textContent||"";
+    const key=text(recommendedHeading);
+    const begin=raw.indexOf(key);
+    if(begin>=0){
+      let tail=raw.slice(begin+key.length);
+      const end=tail.search(/Procedure Steps|Expected Downtime|Precautions and Side Effects|(?:^|\s)Details(?:\s|$)/i);
+      if(end>=0)tail=tail.slice(0,end);
+      const lines=tail.replace(/([.!?])(?=For those who\b)/gi,"$1 ")
+        .split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
+      if(lines.length>=2){
+        detail.recommended=lines;
+        detail.sections.recommended={title:"Recommended to",text:lines.join(" "),blocks:[{type:"bullet",items:lines}]};
+      }
+    }
+  }
+
   const originalSectionList=extractSections(body);
   // A few source pages wrap recommendation text in extra divs; the Range
   // extractor can lose those nodes even though the older sibling parser sees them.
