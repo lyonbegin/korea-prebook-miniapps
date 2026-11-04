@@ -109,12 +109,16 @@ def safe_public_request(request: Request, decoded_path: str) -> bool:
 
 
 def public_response(upstream: httpx.Response, variant: dict[str, str]) -> bool:
-    if upstream.status_code != 200 or "set-cookie" in upstream.headers:
+    if upstream.status_code != 200:
         return False
     cc = upstream.headers.get("cache-control", "").lower()
+    mime = upstream.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    # Public static images may set tracking cookies; cookie headers are not stored
+    # or forwarded to browsers. Personalized JSON/HTML remain uncached.
+    if "set-cookie" in upstream.headers and not (mime.startswith("image/") and "public" in cc):
+        return False
     if "private" in cc or "no-store" in cc:
         return False
-    mime = upstream.headers.get("content-type", "").split(";", 1)[0].strip().lower()
     if mime not in CACHE_TYPES and not mime.endswith("+json"):
         return False
     vary = upstream.headers.get("vary", "")
