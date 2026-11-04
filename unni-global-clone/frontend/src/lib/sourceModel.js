@@ -267,7 +267,7 @@ export function parseSource(html,route){
     events,hospitals,doctors,articles,sections:originalSectionList,
     options:detail.options.length?detail.options:(detailKind==="events"?extractOptions(body):[]),
     selectedOptionIndex:detail.initialOptionIndex,images:imageGallery(body),
-    recommendedExplicit:recommendedExplicit.length>1?recommendedExplicit:verifiedEventRecommendations,detail,
+    recommendedExplicit:verifiedEventRecommendations.length?verifiedEventRecommendations:recommendedExplicit,detail,
     hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
 }
 export function buildEventRoute({query="",category="",sort=""}={}){
