@@ -82,7 +82,7 @@ export default function App(){
     :error?<ErrorState error={error} refresh={refresh} route={route}/>
     :data&&route==="/"?<HomeScreen data={data} go={go}/>
     :data?.detailKind==="events"?<EventScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
-    :data?.detailKind==="hospitals"?<HospitalScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={()=>setDialog(true)}/>
+    :data?.detailKind==="hospitals"?<HospitalScreen route={route} data={data} go={go} isSaved={saved.includes(route)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
     :data?.detailKind==="doctors"?<DoctorScreen route={route} data={data} go={go}/>
     :data?.detailKind==="contents"?<ArticleScreen route={route} data={data}/>
     :data&&(/^(\/events|\/hospitals|\/contents)/.test(route))?<ListingScreen route={route} data={data} go={go} query={query} setQuery={setQuery}/>
