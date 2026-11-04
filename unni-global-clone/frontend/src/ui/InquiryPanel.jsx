@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from "react";
-import {ArrowRight,CalendarDays,CheckCircle2,ChevronRight,Clock3,MessageCircle,Send,ShieldAlert,Trash2,X} from "lucide-react";
+import {ArrowRight,CalendarDays,CheckCircle2,ChevronRight,Clock3,MessageCircle,RefreshCw,Send,ShieldAlert,Trash2,X} from "lucide-react";
 import "../inquiries.css";
 const STORE="unni_independent_inquiries_v1";
 const api=(import.meta.env.VITE_GATEWAY_BASE||"").replace(/\/$/,"");
@@ -16,7 +16,13 @@ function StatusView({item,onClose,onRemoved}){
  const[data,setData]=useState(null),[error,setError]=useState(""),[sending,setSending]=useState(false),[message,setMessage]=useState("");
  const[day,setDay]=useState(""),[time,setTime]=useState(""),[notice,setNotice]=useState("");
  const refresh=async()=>{try{const result=await call("/inquiries/"+item.id,{token:item.token});setData(result);setError("")}catch(e){setError(e.message)}};
- useEffect(()=>{refresh()},[item.id]);
+ useEffect(()=>{
+   refresh();
+   const timer=window.setInterval(()=>{if(document.visibilityState==="visible")refresh()},15000);
+   const onFocus=()=>refresh();
+   window.addEventListener("focus",onFocus);
+   return()=>{window.clearInterval(timer);window.removeEventListener("focus",onFocus)};
+ },[item.id]);
  async function submitMessage(e){e.preventDefault();if(!message.trim())return;setSending(true);setNotice("");
    try{await call("/inquiries/"+item.id+"/messages",{method:"POST",token:item.token,data:{text:message.trim()}});
      setMessage("");setNotice("Saved to your inquiry; not yet delivered to the clinic.");await refresh()}
@@ -34,7 +40,7 @@ function StatusView({item,onClose,onRemoved}){
  return <div className="iq-status">
   <div className="iq-status-h"><CheckCircle2 size={23}/><div><strong>Received by this independent service</strong><small>Not sent to the original UNNI clinic. No booking has been confirmed.</small></div></div>
   <div className="iq-record"><b>Reference: {item.id.slice(0,8)}</b><span>Status: {data?.inquiry?.status||"Loading"}</span><span>Treatment: {data?.inquiry?.event_name||item.title||"—"}</span><span>Option: {data?.inquiry?.option_name||"Not selected"}</span></div>
-  <h3>Messages</h3><div className="iq-thread" aria-live="polite">{(data?.messages||[]).map(m=><div key={m.id} className={"iq-message "+(m.role==="visitor"?"visitor":"staff")}>
+  <div className="iq-messages-head"><h3>Messages</h3><button type="button" onClick={refresh}><RefreshCw size={15}/> Refresh</button></div><div className="iq-thread" aria-live="polite">{(data?.messages||[]).map(m=><div key={m.id} className={"iq-message "+(m.role==="visitor"?"visitor":"staff")}>
     <small>{m.role==="visitor"?"You":"Platform staff"}</small><p>{m.content}</p></div>)}
     {!data?.messages?.length&&<p className="iq-muted">No messages loaded.</p>}</div>
   <form onSubmit={submitMessage} className="iq-write"><label htmlFor="iq-reply">Add a message to your inquiry</label><textarea id="iq-reply" rows={2} maxLength={1000} value={message} onChange={e=>setMessage(e.target.value)} placeholder="Avoid entering sensitive medical details until a provider is connected."/>
