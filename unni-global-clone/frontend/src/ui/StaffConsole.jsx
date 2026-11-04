@@ -120,3 +120,4 @@ export default function StaffConsole(){
   {notice&&<p role="status" className="stf-notice"><CheckCircle2 size={16}/>{notice}</p>}
   {error&&<p role="alert" className="stf-error">{error}</p>}
  </section>;
+}
