@@ -78,6 +78,34 @@ function OptionList({detail,selected,setSelected}){
   <p className="d2-unavailable">Complete source options could not be verified. No synthetic option has been added.</p>}
  </Block>;
 }
+
+function PriceObservationPanel({eventId,selectedIndex}){
+ const [rows,setRows]=useState([]);
+ const [show,setShow]=useState(false);
+ useEffect(()=>{
+  if(!eventId)return;
+  const controller=new AbortController();
+  const base=(import.meta.env.VITE_GATEWAY_BASE||"").replace(/\/$/,"");
+  fetch(base+"/catalog/events/"+eventId+"/price-history",{signal:controller.signal,credentials:"omit"})
+   .then(x=>x.ok?x.json():null)
+   .then(data=>{if(!controller.signal.aborted)setRows(data?.price_changes||[])})
+   .catch(()=>{});
+  return()=>controller.abort();
+ },[eventId]);
+ const key=eventId+":"+String(selectedIndex+1);
+ const sourceRows=rows.filter(x=>x.source_option_key===key);
+ if(!sourceRows.length)return null;
+ return <Block id="d2-price-history">
+  <div className="d2-heading"><h2>Observed price history</h2><button className="d2-history-toggle" onClick={()=>setShow(v=>!v)} aria-expanded={show}>{show?"Hide":"View"} <ChevronDown size={17}/></button></div>
+  <p className="d2-medical-disclaimer">Only prices seen when this public event was visited are recorded. This is not the original clinic's complete price history.</p>
+  {show&&<div className="d2-history-rows">{sourceRows.map((row,i)=><div className="d2-history-item" key={i}>
+   <span>{row.observed_at?new Date(row.observed_at).toLocaleString("en-US"):"Observed"}</span>
+   <strong>{row.usd_sale_price==null?"—":"$"+Number(row.usd_sale_price).toFixed(2)}</strong>
+   {row.discount_percent!=null&&<small>{Number(row.discount_percent)}% off</small>}
+  </div>)}</div>}
+ </Block>;
+}
+
 function MedicalInfo({detail,recommendedExplicit=[]}){
  const s=detail.sections,fees=detail.infoRows.filter(r=>r.value);
  return <>
@@ -141,6 +169,7 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
   <ReviewBox detail={d} route={route}/>
   <MedicalInfo detail={d} recommendedExplicit={data.recommendedExplicit}/>
   <OptionList detail={d} selected={chosen} setSelected={setChosen}/>
+  <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,d.options.indexOf(chosen))}/>
   {d.media.detail.length>0&&<Block id="d2-details"><Header>Details</Header>
     <div className="d2-long-images">{d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
       onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}</div></Block>}
