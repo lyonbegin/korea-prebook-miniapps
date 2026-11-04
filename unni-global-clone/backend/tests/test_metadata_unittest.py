@@ -72,6 +72,7 @@ class AsyncMetadataTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(output["type"],"event")
         names=[sql for sql,args in pool.conn.statements]
         self.assertEqual(sum("unni_clone.event_options" in s for s in names),2)
+        self.assertEqual(sum("INSERT INTO unni_clone.option_price_history" in s for s in names),2)
         self.assertTrue(any("unni_clone.events" in s for s in names))
         self.assertTrue(any("unni_clone.source_provenance" in s for s in names))
     async def test_doctor_plain_text_profile(self):
