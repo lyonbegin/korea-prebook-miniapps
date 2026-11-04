@@ -56,7 +56,7 @@ def public_stats(soup,heading):
     sibling=get_nearby(heading,limit=6)[:380] if heading else ""
     sample=sibling or text(soup)[:350]
     rating=RATING_RE.search(sample)
-    reviews=REVIEWS_RE.search(sample)
+    reviews=REVIEWS_RE.search(sample) or re.search(r"\bReviews\s*([\d,]+)",sample,re.I)
     return (decimals(rating.group(1)) if rating else None,
             int(reviews.group(1).replace(",","")) if reviews else None)
 def source_hospital(soup):
@@ -137,9 +137,15 @@ async def ingest_public_metadata(pool,path,query,body):
     identifier=match.group(1)
     url="https://unni.app"+path+("?"+query if query else "")
     soup=BeautifulSoup(body.decode("utf-8","replace"),"html.parser")
-    main=soup.find("main") or soup
+    main=soup.find_all("main")[-1] if soup.find_all("main") else soup
     heading=main.find("h1")
     title=text(heading)
+    if not title and kind == "doctor":
+        # Global doctor pages expose the name as a paragraph, not an h1.
+        candidates=[text(p) for p in main.find_all("p")]
+        title=next((v for v in candidates if 3<=len(v)<=100
+            and len(v.split())<=6 and not re.search(
+               r"sign up|scan qr|log in|reviews|clinic|hospital|location|stn\.|specialties|filler|lifting",v,re.I)), "")
     if not title:return None
     rating,reviews=public_stats(main,heading)
     now=datetime.now(timezone.utc)
