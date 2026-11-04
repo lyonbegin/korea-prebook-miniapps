@@ -25,7 +25,7 @@ function useSource(route){
  const[state,setState]=useState({data:null,loading:true,error:"",fetchedFrom:null});
  const[version,setVersion]=useState(0);
  const refresh=useCallback(()=>setVersion(x=>x+1),[]);
- const source=createPageSource(route);
+ const source=route==="/"?"/us/events?q=Lifting&categoryId=419":createPageSource(route);
  useEffect(()=>{
   if(!source||route==="/search"){setState({data:null,loading:false,error:"",fetchedFrom:null});return;}
   const controller=new AbortController();
