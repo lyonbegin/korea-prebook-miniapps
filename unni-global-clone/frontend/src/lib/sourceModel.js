@@ -1,0 +1,164 @@
+/**
+ * Browser-side source adapter for the publicly accessible unni.app/us web UI.
+ * Never fabricate a product, hospital, rating, price, option or original ID.
+ * HTML is fetched in real time through FastAPI, which respects no-store.
+ */
+export const ORIGIN = "https://unni.app";
+export const CATEGORY_IDS = Object.freeze({
+  Lifting:419,Skin:411,Botox:415,Filler:416,Rhinoplasty:412,Eye:413,
+  "Face Contour":414,Breast:421,Body:422,Hair:418,"Hair Removal":537,
+  "K-Med":417,Dental:420,Others:423
+});
+export const CATEGORIES = Object.keys(CATEGORY_IDS);
+export const SORTS = Object.freeze([
+  {label:"Recommended",value:""},
+  {label:"Newest",value:"LATEST_STARTS_AT"},
+  {label:"Lowest Price",value:"LOWEST_DISCOUNTED_COST"},
+  {label:"Highest Discount",value:"HIGHEST_DISCOUNT_RATE"},
+  {label:"Highest Price",value:"HIGHEST_DISCOUNTED_COST"},
+  {label:"Most reviewed",value:"HIGHEST_RATING_COUNT"},
+  {label:"Ending Soon",value:"EARLIEST_ENDS_AT"},
+  {label:"Most Popular",value:"HIGHEST_POPULARITY"},
+  {label:"Highest Rating",value:"HIGHEST_RATING_AMOUNT"}
+]);
+export const text = e => (e?.textContent||"").replace(/\s+/g," ").trim();
+export const shorten=(s,n=150)=>!s?"":s.length>n?s.slice(0,n).trimEnd()+"…":s;
+export function originPath(href) {
+  try {const url=new URL(href,ORIGIN);if(url.hostname!=="unni.app"||!url.pathname.startsWith("/us"))return null;
+    return url.pathname+url.search;
+  }catch{return null;}
+}
+export function mediaUrl(src) {
+  try {if(!src)return null;const url=new URL(src,ORIGIN);
+    if(url.protocol!=="https:")return null;
+    if(!["unni.app","image2.gnsister.com"].includes(url.hostname))return null;
+    return url.href;
+  }catch{return null;}
+}
+const max=150, E=/^\/us\/events\/(\d+)(?:\?|$)/, H=/^\/us\/hospitals\/(\d+)(?:\?|$)/,
+      D=/^\/us\/doctors\/(\d+)(?:\?|$)/, C=/^\/us\/contents\/([a-f0-9-]{24,})(?:\?|$)/;
+function bestImage(el){
+  const imgs=[...el.querySelectorAll("img")];
+  for (const img of imgs) {
+    const variants=[img.getAttribute("src"),img.getAttribute("data-src"),img.getAttribute("data-original"),img.getAttribute("srcset")?.split(",")[0]?.trim().split(" ")[0]];
+    for(const source of variants){const uri=mediaUrl(source);if(uri&&!/\/images\/(?:icon|splash|review-login)\//.test(uri))return uri;}
+  }
+  return null;
+}
+function typeOfPath(url){
+  if(E.test(url))return "event";
+  if(H.test(url))return "hospital";
+  if(D.test(url))return "doctor";
+  if(C.test(url))return "article";
+  return null;
+}
+function itemAnchor(a){
+  const href=originPath(a.getAttribute("href")||"");
+  const type=href&&typeOfPath(href);
+  if(!type)return null;
+  const closer=a.closest("article,li,[class*=card],[class*=Card]")||a;
+  const raw=text(closer);
+  const heading=text(closer.querySelector("h3,h2,h4"))||text(a.querySelector("h3,h2,h4"))||text(a);
+  const label=shorten(heading||a.getAttribute("aria-label")||"",120);
+  const image=bestImage(closer)||bestImage(a);
+  const amounts=[...raw.matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].map(m=>m[0]);
+  const lastPrice=amounts.at(-1)||"";
+  const num=raw.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
+  const reviews=raw.match(/\(([\d,]+)\)/)?.[1]||"";
+  const brief=shorten(raw.replace(label,"").replace(/\s+/g," "),160);
+  const id=href.match(E)?.[1]||href.match(H)?.[1]||href.match(D)?.[1]||href.match(C)?.[1]||"";
+  return {id,sourceHref:href,path:href.replace(/^\/us/,""),type,
+    title:label||"Open original item",image,price:lastPrice,originalPrices:amounts,
+    rating:num,reviewCount:reviews,summary:brief};
+}
+export function collectItems(document,kind,limit=180){
+  const seen=new Set(),found=[];
+  for(const a of document.querySelectorAll("a[href]")){
+    const obj=itemAnchor(a);
+    if(!obj||obj.type!==kind||seen.has(obj.sourceHref))continue;
+    seen.add(obj.sourceHref);found.push(obj);
+    if(found.length>=limit)break;
+  }
+  return found;
+}
+function extractSections(parent){
+  const heads=[...parent.querySelectorAll("h2,h3,h4")],result=[];
+  for(const h of heads){
+    const heading=text(h);
+    if(!heading||heading.length>170||/^\d+\.?$/.test(heading))continue;
+    let cur=h.nextElementSibling,raw="";
+    for(let n=0;cur&&n<4;n++,cur=cur.nextElementSibling){
+      if(/^H[1-4]$/.test(cur.tagName))break;
+      raw+=" "+text(cur);
+      if(raw.length>1900)break;
+    }
+    raw=raw.trim();
+    if(raw.length>0)result.push({id:result.length,title:heading,description:shorten(raw,1800)});
+  }
+  return result.slice(0,90);
+}
+function extractOptions(parent){
+  const headers=[...parent.querySelectorAll("h3")],results=[],blockWords=/^(option\s*\d+|reviews|details|hospital|doctor|procedure info|procedure steps|about|recommended|sign up|login|rating|consultation)/i;
+  for(const h of headers){
+    const title=text(h);
+    if(!title||title.length>155||blockWords.test(title))continue;
+    const candidates=[];
+    let cur=h.nextElementSibling;
+    for(let i=0;cur&&i<4;i++,cur=cur.nextElementSibling){
+      if(/^H[1-4]$/.test(cur.tagName))break;
+      candidates.push(text(cur));
+    }
+    const rest=candidates.join(" "),nearby=text(h.parentElement);
+    const matches=[...(rest||nearby).matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].map(m=>m[0]);
+    if(matches.length===0&&/^[A-Z][a-z]/.test(title)===false)continue;
+    if(!matches.length&&!/botox|filler|lifting|injection|laser|surgery|treatment|ulther|onda|shurink|contour|skin|cut/i.test(title))continue;
+    const normalized=title.toLowerCase();
+    if(results.some(o=>o.title.toLowerCase()===normalized))continue;
+    results.push({index:results.length+1,title,description:shorten(rest,350),price:matches.at(-1)||"",sourceOptionId:null});
+  }
+  return results.slice(0,100);
+}
+function imageGallery(main){
+  const imgs=[];
+  for(const img of main.querySelectorAll("img")){
+    const src=mediaUrl(img.getAttribute("src")||img.getAttribute("data-src")||"");
+    if(!src||/\/images\/(?:icon|splash|review-login)\//.test(src))continue;
+    if(!imgs.includes(src))imgs.push(src);
+  }
+  return imgs.slice(0,50);
+}
+export function parseSource(html,route){
+  const doc=new DOMParser().parseFromString(html,"text/html");
+  const body=doc.querySelector("main")||doc.body;
+  const pageTitle=text(body.querySelector("h1"))||text(doc.querySelector("title"))||"UNNI";
+  const events=collectItems(doc,"event"),hospitals=collectItems(doc,"hospital"),
+        doctors=collectItems(doc,"doctor"),articles=collectItems(doc,"article");
+  const match=route.match(/^\/(events|hospitals|doctors|contents)\/([^/?]+)/);
+  const detailKind=match?.[1]||null;
+  const fullText=text(body);
+  const countMatch=fullText.match(/(?:Procedures|Clinics)\s+([\d,]+)/i)||text(doc.querySelector("title")).match(/(?:Compare|Find)\s+([\d,]+)/i);
+  const rating=fullText.match(/(?:^|\s)(9(?:\.\d)?|8(?:\.\d)?|10(?:\.0)?)(?=\s|$|\()/)?.[1]||"";
+  const reviewCount=fullText.match(/([\d,]+)\s+Reviews/i)?.[1]||"";
+  const clinicAddress=fullText.match(/\d+\s+[A-Za-z0-9,-]+\s+(?:ro|gil|road|street)[^.\n]{0,130}(?:Republic of Korea|Seoul|Busan)/i)?.[0]||"";
+  return {route,pageTitle,detailKind,id:match?.[2]||null,
+    count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
+    summary:shorten(fullText,2400),rating,reviewCount,clinicAddress,
+    events,hospitals,doctors,articles,sections:extractSections(body),
+    options:detailKind==="events"?extractOptions(body):[],images:imageGallery(body),
+    hasSourceData:events.length+hospitals.length+doctors.length+articles.length>0||!!match};
+}
+export function buildEventRoute({query="",category="",sort=""}={}){
+  const args=new URLSearchParams();
+  if(query)args.set("q",query);
+  const catId=CATEGORY_IDS[category];
+  if(catId)args.set("categoryId",String(catId));
+  if(sort)args.set("s",sort);
+  const str=args.toString();
+  return "/events"+(str?"?"+str:"");
+}
+export function createPageSource(route){
+  if(route==="/")return"/us";
+  if(route==="/saved"||route==="/settings")return null;
+  if(!/^\/(?:events|hospitals|doctors|contents|community|search|reviews)(?:\/|\?|$)/.test(route))return"/us";
+  return"/us"+route;
+}
