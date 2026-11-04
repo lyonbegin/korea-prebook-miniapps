@@ -214,7 +214,7 @@ async def catalog_status(request: Request):
     pool = getattr(request.app.state, "pg", None)
     if pool is None:
         raise HTTPException(status_code=503, detail="PostgreSQL unavailable")
-    tables = ("categories", "hospitals", "doctors", "events", "event_options", "media_assets", "source_provenance")
+    tables = ("categories", "hospitals", "doctors", "events", "event_options", "option_price_history", "media_assets", "source_provenance")
     counts = {}
     for table in tables:
         try:
@@ -228,6 +228,24 @@ async def catalog_status(request: Request):
             "source": "14 verified primary categories plus 88 public subcategories; original no-store HTML is not cached",
             "full_catalog_imported": False}
 
+
+
+@app.get("/catalog/events/{event_id}/price-history")
+async def event_price_history(event_id: int, request: Request):
+    """Chronological price changes from actually visited public event options.
+    Do not imply these observations form a complete history of the source.
+    """
+    pool=getattr(request.app.state,"pg",None)
+    if pool is None:
+        raise HTTPException(status_code=503,detail="PostgreSQL unavailable")
+    rows=await pool.fetch("""SELECT h.source_option_key,o.original_option_id,o.display_order,
+            h.observed_at,h.usd_sale_price,h.usd_original_price,h.local_krw,h.discount_percent
+            FROM unni_clone.option_price_history h
+            JOIN unni_clone.event_options o ON o.source_option_key=h.source_option_key
+            WHERE o.original_event_id=$1
+            ORDER BY h.observed_at DESC,h.id DESC LIMIT 250""",str(event_id))
+    return {"event_id":str(event_id),"source":"public factual observations",
+      "complete_source_history":False,"price_changes":[dict(row) for row in rows]}
 
 
 @app.get("/catalog/events/{event_id}")
