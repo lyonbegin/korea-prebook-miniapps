@@ -74,14 +74,15 @@ function Attributes({value}){
  const attrs=Object.entries(value||{});if(!attrs.length)return null;
  return <dl className="d2-attributes">{attrs.map(([key,val])=><div key={key}><dt>{attrLabels[key]||key}</dt><dd>{val}</dd></div>)}</dl>;
 }
-function OptionList({detail,selected,setSelected}){
- const opts=detail.options||[],[all,setAll]=useState(false),idx=Math.max(0,opts.indexOf(selected));
+function OptionList({detail,selected,setSelected,resolveOption}){
+ const opts=detail.options||[],[all,setAll]=useState(false),idx=Math.max(0,Number(selected?.index||1)-1);
  useEffect(()=>setAll(detail.initialOptionIndex>7),[detail.initialOptionIndex,opts[0]?.title]);
  function choose(o,i){
-   setSelected(o);
+   const verified=resolveOption?resolveOption(o):o;
+   setSelected(verified);
    const url=new URL(location.href);
    url.searchParams.delete("optionId");url.searchParams.delete("optionIndex");
-   if(o.sourceOptionId)url.searchParams.set("optionId",o.sourceOptionId);
+   if(verified.sourceOptionId)url.searchParams.set("optionId",verified.sourceOptionId);
    else url.searchParams.set("optionIndex",String(i+1));
    history.pushState(history.state,"",url.pathname+url.search);
    window.dispatchEvent(new Event("unni:optionchange"));
@@ -167,7 +168,18 @@ function JumpBar({items}){return <nav className="d2-jumps">{items.filter(x=>x.ac
 async function share(title){const url=location.href;if(navigator.share){try{await navigator.share({title,url});return}catch{}}try{await navigator.clipboard.writeText(url)}catch{}}
 export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
  const d=data.detail,[chosen,setChosen]=useState(d.options[d.initialOptionIndex]||null);
+ const facts=usePublicCatalog("events",data.id);
  useEffect(()=>setChosen(d.options[d.initialOptionIndex]||null),[route.split("?")[0],d.initialOptionIndex,d.options[0]?.title]);
+ // Reuse only source-observed UUIDs saved by the visit middleware. Never
+ // manufacture an option UUID from a position or a display name alone.
+ const verifiedUuid=/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+ const resolveOption=o=>{
+   if(!o)return null;
+   if(o.sourceOptionId)return o;
+   const rec=facts?.options?.find(x=>x.display_order===o.index&&x.public_name===o.title&&verifiedUuid.test(x.original_option_id||""));
+   return rec?{...o,sourceOptionId:rec.original_option_id}:o;
+ };
+ const selected=resolveOption(chosen);
  const clinic=d.clinic||{},clinicPath=clinic.path||null;
  return <article className="d2-detail">
   <Gallery media={d.media} label={data.pageTitle}/>
@@ -177,8 +189,8 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
       <div>{clinic.name&&<strong>{clinic.name}</strong>}{clinic.station&&<small><MapPin size={14}/>{clinic.station}</small>}{clinic.hasCCTV&&<span className="d2-tag">CCTV</span>}</div>
       {clinicPath&&<button onClick={()=>go(clinicPath)}><ChevronRight size={21}/></button>}
    </div>}
-   {chosen&&<div className="d2-featured"><span>Option {(d.options.indexOf(chosen)+1)||1}</span><b>{chosen.title}</b>
-      <Attributes value={chosen.attributes}/><Price value={chosen.prices}/></div>}
+   {selected&&<div className="d2-featured"><span>Option {selected.index||1}</span><b>{selected.title}</b>
+      <Attributes value={selected.attributes}/><Price value={selected.prices}/></div>}
    <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button>
      <button onClick={()=>share(data.pageTitle)}><Share2 size={18}/> Share</button><SourceLink route={route}>Original</SourceLink></div>
   </div>
@@ -187,8 +199,8 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
    {id:"d2-details",name:"Details",active:d.media.detail.length>0},{id:"d2-clinic",name:"Clinic",active:!!clinic.name}]}/>
   <ReviewBox detail={d} route={route}/>
   <MedicalInfo detail={d} recommendedExplicit={data.recommendedExplicit}/>
-  <OptionList detail={d} selected={chosen} setSelected={setChosen}/>
-  <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,d.options.indexOf(chosen))}/>
+  <OptionList detail={d} selected={selected} setSelected={setChosen} resolveOption={resolveOption}/>
+  <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,Number(selected?.index||1)-1)}/>
   {(d.sections.details?.rich?.length>0||d.media.detail.length>0)&&<Block id="d2-details"><Header>Details</Header>
     <div className="d2-long-images">
       {d.sections.details?.rich?.length>0&&<RenderBlocks section={d.sections.details} go={go} omitImages/>}
@@ -199,7 +211,7 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>
     <MapBlock image={d.media.map} address={data.clinicAddress} clinicName={clinic.name}/></Block>}
   {(data.events||[]).length>0&&<Block id="d2-popular"><Header>Popular Procedures</Header><div className="d2-grid">{data.events.slice(0,12).map(x=><OfferCard key={x.sourceHref} item={x} go={go}/>)}</div></Block>}
-  <StuckBar price={chosen?.prices?.salePrice} onClick={()=>onConsult?.({eventId:data.id,option:chosen,clinic})}/>
+  <StuckBar price={selected?.prices?.salePrice} onClick={()=>onConsult?.({eventId:data.id,option:selected,clinic})}/>
  </article>;
 }
 export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
@@ -207,6 +219,11 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
  const facts=usePublicCatalog("hospitals",data.id);
  const reviews=d.stats.reviews||facts?.public_review_count||facts?.attributes?.review_count||"";
  const score=d.stats.rating||facts?.public_rating||"";
+ const sourceDoctors=data.doctors?.length?data.doctors:(facts?.doctors||[]).map(x=>({
+   id:x.original_doctor_id,type:"doctor",path:"/doctors/"+x.original_doctor_id,
+   sourceHref:"/us/doctors/"+x.original_doctor_id,title:x.display_name||"Doctor",image:null,
+   price:"",summary:"Public clinician profile",rating:"",reviewCount:""
+ }));
  return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
    <div className="d2-top"><span className="d2-eyebrow">CLINIC</span><h1>{data.pageTitle}</h1><div className="d2-ratings"><Star size={17} fill="currentColor"/>
    <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>
@@ -216,8 +233,8 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
      <p className="d2-medical-disclaimer">Highlights are clinic-provided and do not independently certify compliance.</p></Block>}
    {h.about?.text&&<Block id="d2-about"><Header>About the Clinic</Header><RenderBlocks section={h.about}/></Block>}
    {h.specialties?.length>0&&<Block id="d2-specialties"><Header>Specialties</Header><div className="d2-specialties">{h.specialties.map(x=><span key={x}>{x}</span>)}</div></Block>}
-   {data.doctors?.length>0&&<Block id="d2-doctors"><Header sub={h.doctorCount?h.doctorCount+" doctors":null}>All Doctors</Header>
-     {data.doctors.map(x=><ClinicCard key={x.sourceHref} item={x} go={go}/>)}</Block>}
+   {sourceDoctors.length>0&&<Block id="d2-doctors"><Header sub={h.doctorCount?h.doctorCount+" doctors":null}>All Doctors</Header>
+     {sourceDoctors.map(x=><ClinicCard key={x.sourceHref} item={x} go={go}/>)}</Block>}
    {(h.hours?.length>0||h.closed)&&<Block id="d2-hours"><Header>Clinic Hours</Header>
      {h.hours?.length>0&&<div className="d2-scroll-table"><table><tbody>{h.hours.map((row,i)=><tr key={i}>{row.map((v,j)=><td key={j}>{v}</td>)}</tr>)}</tbody></table></div>}
      {h.closed&&<p className="d2-medical-disclaimer">{h.closed}</p>}</Block>}

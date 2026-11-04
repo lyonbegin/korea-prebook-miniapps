@@ -96,6 +96,21 @@ async function main(){
    assert.match(page.url(),/optionId=d195122c/);
    return "option 1 saved by selected URL; option 5 remains unsaved";
   });
+  await check("Visited option UUID stored in catalog is reused on next selection",async()=>{
+   const cachedId="11111111-2222-4333-8444-555555555555";
+   await page.route("**/catalog/events/70809",async route=>{
+     await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
+       original_event_id:"70809",options:[{display_order:1,public_name:"V Cut Injection Facial Fat Dissolving Injection",original_option_id:cachedId}]
+     })});
+   });
+   try{
+     await visit("/events/70809?optionIndex=1");
+     await page.waitForTimeout(400);
+     await page.locator("#d2-options .d2-option").nth(0).click();
+     assert.match(page.url(),new RegExp("optionId="+cachedId));
+     return "Previously observed UUID reused without inventing an ID";
+   }finally{await page.unroute("**/catalog/events/70809")}
+  });
   await check("Event inquiry carries exact option and clinic IDs without writing to DB",async()=>{
    let sent=null;
    await page.route("**/inquiries",async route=>{

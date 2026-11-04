@@ -67,7 +67,7 @@ export default function App(){
  const title=data?.pageTitle||"";
  const toggleSave=useCallback(()=>setSaved(previous=>{const current=fullRoute();const next=previous.includes(current)?previous.filter(x=>x!==current):[...previous,current];localStorage.setItem(SAVED_KEY,JSON.stringify(next));return next;}),[]);
  const active=route==="/"?"home":route.startsWith("/hospitals")||route.startsWith("/doctors")?"clinics":
-  route.startsWith("/events")||route.startsWith("/search")?"procedures":route==="/saved"?"saved":"more";
+  route.startsWith("/events")||route.startsWith("/search")?"procedures":route==="/saved"?"saved":route.startsWith("/contents")?"columns":"more";
  return <div className="app-background"><div className="app-shell">
   <header className="app-header"><div className="header-row">
    {route==="/"
@@ -79,7 +79,7 @@ export default function App(){
    <IconButton label="Saved" onClick={()=>go("/saved")}><Heart size={21}/></IconButton>
    <IconButton label="Menu" onClick={()=>setMenu(v=>!v)}>{menu?<X size={21}/>:<Menu size={21}/>}</IconButton>
   </div></header>
-  {menu&&<aside className="dropdown-menu">{[["Home","/"],["Procedures","/events"],["Clinics","/hospitals"],["Doctors","/hospitals"],["Beauty columns","/contents"],["Community","/community"],["My inquiries","/inquiries"],["Saved","/saved"]].map(([label,path])=><button key={label} onClick={()=>go(path)}>{label}<ChevronRight size={16}/></button>)}</aside>}
+  {menu&&<aside className="dropdown-menu">{[["Home","/"],["Procedures","/events"],["Clinics","/hospitals"],["Beauty columns","/contents"],["Community","/community"],["My inquiries","/inquiries"],["Saved","/saved"]].map(([label,path])=><button key={label} onClick={()=>go(path)}>{label}<ChevronRight size={16}/></button>)}</aside>}
   <main className="app-content">
    {route==="/search"?<SearchScreen go={go} query={query} setQuery={setQuery}/>
     :route==="/saved"?<SavedScreen go={go} saved={saved}/>
@@ -96,7 +96,7 @@ export default function App(){
     :<EmptyState route={route}/>}
   </main>
   <nav className="bottom-navigation" aria-label="Main navigation">
-   {[["home","Home",Home,"/"],["procedures","Procedures",Stethoscope,"/events"],["clinics","Clinics",MapPin,"/hospitals"],["saved","Saved",Heart,"/saved"],["more","More",UserRound,"/contents"]].map(([key,label,Icon,dest])=><button type="button" className={active===key?"selected":""} key={key} onClick={()=>go(dest)}><Icon size={21} strokeWidth={active===key?2.3:1.8}/><small>{label}</small></button>)}
+   {[["home","Home",Home,"/"],["procedures","Procedures",Stethoscope,"/events"],["clinics","Clinics",MapPin,"/hospitals"],["saved","Saved",Heart,"/saved"],["columns","Columns",UserRound,"/contents"]].map(([key,label,Icon,dest])=><button type="button" className={active===key?"selected":""} key={key} onClick={()=>go(dest)}><Icon size={21} strokeWidth={active===key?2.3:1.8}/><small>{label}</small></button>)}
   </nav>
   <SourceFooter/>
   <InquiryPanel open={dialog} onClose={()=>setDialog(false)} selection={consultSelection} title={title} route={route}/>
