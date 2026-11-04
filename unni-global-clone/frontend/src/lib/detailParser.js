@@ -265,7 +265,12 @@ export function parseDetailModel(doc,route,main){
   const parsed=new URLSearchParams(route.split("?")[1]||"");
   const initial=Math.max(0,Math.min(pageOptions.length-1,
     parsed.has("optionIndex")?Math.max(0,Number(parsed.get("optionIndex"))-1):selectedOptionIndex));
-  const visibleUuid=parsed.get("optionId");
+  const requestedUuid=parsed.get("optionId");
+  const uuidShape=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // Never label a local optionIndex override with an unrelated source UUID.
+  // URL-derived IDs are observed selected-option links, not the complete original catalog.
+  const visibleUuid=requestedUuid&&uuidShape.test(requestedUuid)&&initial===selectedOptionIndex
+    ?requestedUuid:null;
   if(pageOptions[initial]&&visibleUuid&&!pageOptions[initial].sourceOptionId)pageOptions[initial].sourceOptionId=visibleUuid;
   const sections={
     about:sourceSection(main,"About the Procedure"),
