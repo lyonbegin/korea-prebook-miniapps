@@ -240,6 +240,12 @@ async def gateway(service: str, rest: str, request: Request):
         await client.aclose()
         raise HTTPException(status_code=502, detail="Origin unavailable")
     should_store = bool(can_cache and pool is not None and public_response(upstream, variant))
+    if can_cache and pool is not None and not should_store:
+        log.warning("Public response cache bypass: service=%s status=%d set_cookie=%s cache_control=%s content_type=%s vary=%s",
+                    service, upstream.status_code, "set-cookie" in upstream.headers,
+                    upstream.headers.get("cache-control", "")[:80],
+                    upstream.headers.get("content-type", "")[:80],
+                    upstream.headers.get("vary", "")[:80])
     captured = Captured()
 
     async def bytes_to_client():
