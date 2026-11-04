@@ -24,10 +24,25 @@ jobs:
           npm install --no-audit --no-fund
           npm install --no-save --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Smoke test live Railway deployment
+      - name: Compile actual checked-out frontend
+        working-directory: unni-global-clone/frontend
+        run: npm run build
+      - name: Start checked-out frontend with read-only source gateway
         working-directory: unni-global-clone/frontend
         env:
-          UNNI_URL: https://unni-mobile-web-production.up.railway.app
+          UNNI_TEST_PROXY_TARGET: https://unni-mobile-api-production.up.railway.app
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5173 > /tmp/unni-vite-ci.log 2>&1 &
+          for attempt in $(seq 1 50); do
+            if curl --fail --silent http://127.0.0.1:5173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/unni-vite-ci.log
+          exit 1
+      - name: Smoke test actual checked-out frontend, not stale Railway build
+        working-directory: unni-global-clone/frontend
+        env:
+          UNNI_URL: http://127.0.0.1:5173
         run: node tests/live-smoke.cjs
       - name: Keep screenshots, outputs and errors even on failure
         if: always()

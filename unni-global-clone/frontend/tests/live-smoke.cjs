@@ -25,7 +25,10 @@ async function main(){
  try{
   await check("Home renders",async()=>{
    await visit("/");
-   assert.match((await page.locator("body").innerText()),/Discover the beauty|Find your treatment/i);
+   const sourceHome=await page.locator("body").innerText();
+   assert.match(sourceHome,/deals up to|exclusive savings|treatment deals/i);
+   assert.ok(!sourceHome.includes("Discover the beauty in you."),"fabricated home hero returned");
+   assert.ok(await page.locator(".offer-card").count()>0,"original home should expose real offers");
    await page.screenshot({path:"qa-artifacts/00-home.png",fullPage:true});
    return await page.locator(".offer-card").count()+" visible offer cards";
   });
@@ -41,12 +44,26 @@ async function main(){
    await page.screenshot({path:"qa-artifacts/01-event.png",fullPage:true});
    return "source event 70809 and 14 options, $163.68";
   });
+  await check("Full public promotional image list is retained",async()=>{
+   const images=await page.locator(".d2-detail img").evaluateAll(nodes=>nodes.map(n=>n.currentSrc||n.src));
+   const direct=[...new Set(images.filter(u=>u.includes("/images/direct/")))];
+   assert.equal(direct.length,21,JSON.stringify(direct.slice(0,3)));
+   return direct.length+" original direct-image assets retained";
+  });
   await check("Recommended to 5 items",async()=>{
    const sec=page.locator("#d2-recommended");
    await sec.waitFor({state:"visible",timeout:10000});
    assert.equal(await sec.locator("li").count(),5);
    assert.match(await sec.innerText(),/exercising/);
    return "5 original public recommendations";
+  });
+  await check("All 14 source options have distinct list positions",async()=>{
+   await page.locator(".d2-show-more").click();
+   const cards=page.locator("#d2-options .d2-option");
+   assert.equal(await cards.count(),14);
+   const labels=await cards.locator("small").allTextContents();
+   assert.ok(labels.some(x=>x.includes("Option 14")));
+   return "14 original options, no samples substituted";
   });
   await check("Option 1 updates price and deep link",async()=>{
    const list=page.locator("#d2-options .d2-option");
@@ -111,6 +128,24 @@ async function main(){
    return "clinic 826 9.7/10,685 + hours/address";
   });
 
+  await check("Clinic gallery cycles all ten photos",async()=>{
+   const count=page.locator(".d2-photo-count");
+   assert.match(await count.innerText(),/1\s*\/\s*10/);
+   const photos=new Set();
+   for(let i=0;i<10;i++){
+     photos.add(await page.locator(".d2-hero-photo img").getAttribute("src"));
+     await page.locator(".d2-right").click();
+   }
+   assert.equal(photos.size,10,"unique clinic gallery images");
+   assert.match(await count.innerText(),/1\s*\/\s*10/);
+   return "10 unique clinic photos and wrap-around";
+  });
+  await check("Clinic address excludes source copy-control text",async()=>{
+   const address=await page.locator("#d2-address p").first().innerText();
+   assert.ok(address.includes("Gangnam-gu"));
+   assert.ok(!/BuildingCopy/.test(address),address);
+   return address.slice(0,110);
+  });
   await check("Clinic inquiry retains clinic ID without writing to DB",async()=>{
    let sent=null;
    await page.route("**/inquiries",async route=>{
@@ -143,6 +178,12 @@ async function main(){
    assert.ok(!text.includes("App Download"));
    await page.screenshot({path:"qa-artifacts/03-doctor.png",fullPage:true});
    return "doctor Seungmin Yoo / 9,137";
+  });
+  await check("Doctor public specialties and experience",async()=>{
+   const body=await page.locator("body").innerText();
+   assert.match(body,/Specialties/);
+   assert.match(body,/Society conferences and papers|Korean Obesity Research/i);
+   return "Public physician specialties and experience";
   });
   await check("Case: alternate event discounts",async()=>{
    await visit("/events/140615?optionId=4dcff287-79f2-45b3-b4e3-42ffc59eaddf");
