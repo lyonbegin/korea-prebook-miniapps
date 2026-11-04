@@ -184,7 +184,23 @@ export function parseSource(html,route){
   // A few source pages wrap recommendation text in extra divs; the Range
   // extractor can lose those nodes even though the older sibling parser sees them.
   if(!detail.sections.recommended?.text){
-    const fallback=originalSectionList.find(x=>/^Recommended to\b/i.test(x.title));
+    // Some original pages embed list paragraphs in a nested container that
+    // section/extractSections skip. The source's actual rendered text is used.
+    const pageText=body.textContent||"";
+    const begin=pageText.search(/Recommended to/i);
+    if(begin>=0){
+      const rest=pageText.slice(begin).replace(/^Recommended to\s*/i,"");
+      const boundary=rest.search(/Procedure Steps|Expected Downtime|Precautions and Side Effects|\bDetails\b/i);
+      const sectionText=(boundary>=0?rest.slice(0,boundary):rest.slice(0,900)).trim();
+      if(sectionText){
+        const pieces=sectionText.replace(/([a-z.,)])(?=For those)/gi,"$1 ")
+          .split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
+        detail.sections.recommended={title:"Recommended to",text:sectionText,blocks:[]};
+        detail.recommended=pieces.length?pieces:[sectionText];
+      }
+    }
+  }
+  if(!detail.sections.recommended?.text){    const fallback=originalSectionList.find(x=>/^Recommended to\b/i.test(x.title));
     if(fallback?.description){
       detail.sections.recommended={title:fallback.title,text:fallback.description,blocks:[{type:"paragraph",value:fallback.description}]};
       const normalized=fallback.description.replace(/For\s*those/gi,"For those").replace(/([a-z.,)])(?=For those)/gi,"$1 ");

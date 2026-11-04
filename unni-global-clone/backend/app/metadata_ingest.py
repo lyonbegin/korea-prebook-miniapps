@@ -155,15 +155,21 @@ async def ingest_public_metadata(pool,path,query,body):
     heading=main.find("h1")
     title=text(heading)
     if kind == "doctor":
-        # Public global doctor profiles render names as unheaded plain paragraphs.
-        # Restrict name matching; footer company/legal text must never enter DB.
-        all_candidates=[text(x) for x in soup.find_all(["p","h1","h2","h3","strong","span"])]
-        doctor_name=next((v for v in all_candidates if
-             re.fullmatch(r"[A-Z][a-z'-]{2,25}(?:\s+[A-Z][a-z'-]{2,25}){1,3}(?:\s+Dr\.)?",v)
-             and not re.search(r"clinic|hospital|paper|company|consultation|privacy|sign",v,re.I)),None)
-        if doctor_name:title=doctor_name
-        if not title or re.search(r"company|healing paper|terms|privacy|scan qr",title,re.I):
-            return None
+        # Global doctor pages often have no h1. Prefer a short proper name
+        # in the main paragraphs, never navigation, legal or marketing labels.
+        blocked=re.compile(r"scan qr|sign up|app download|original|contact us|healing paper|company|terms|"
+                           r"privacy|clinic|hospital|review|follow|about|favorite|procedure|"
+                           r"patient|medical|service|rights reserved|global|experience",re.I)
+        paragraphs=[text(p) for p in main.find_all("p")]
+        candidates=[v for v in paragraphs if v and len(v)<=70 and
+            not blocked.search(v) and re.fullmatch(
+                r"[A-Z][a-z'-]{2,25}(?:\s+[A-Z][a-z'-]{2,25}){1,3}(?:\s+Dr\.)?",v)]
+        if not candidates:
+            # h1 or h2 is a backup only when no paragraph provides a verified name.
+            candidates=[text(el) for el in main.find_all(["h1","h2"])
+                if text(el) and not blocked.search(text(el)) and
+                re.fullmatch(r"[A-Z][a-z'-]{2,25}(?:\s+[A-Z][a-z'-]{2,25}){1,3}",text(el))]
+        title=candidates[0] if candidates else ""
     if not title:return None
     rating,reviews=public_stats(main,heading)
     if kind=="doctor":rating=None  # Clinic rating lower on this page is not a doctor rating.
