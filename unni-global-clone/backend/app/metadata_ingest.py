@@ -145,11 +145,11 @@ def public_doctors_in_hospital(soup):
     """Public physician cards on the original clinic page; never patient data."""
     found,seen=[],set()
     for anchor in soup.select('a[data-testid="doctor-profile"][href*="/us/doctors/"]'):
-        match=re.search(r"/us/doctors/(\\d+)(?:[/?#]|$)",anchor.get("href",""))
+        match=re.search(r"/us/doctors/(\d+)(?:[/?#]|$)",anchor.get("href",""))
         if not match or match.group(1) in seen:
             continue
         name=text(anchor.select_one(".doctorName")) or text(anchor.find("h3"))
-        name=re.sub(r"\\s+Dr\\.?\\s*$","",name).strip()
+        name=re.sub(r"\s+Dr\.?\s*$","",name).strip()
         if not name or len(name)>90 or re.search(r"clinic|hospital|review|download",name,re.I):
             continue
         seen.add(match.group(1))
