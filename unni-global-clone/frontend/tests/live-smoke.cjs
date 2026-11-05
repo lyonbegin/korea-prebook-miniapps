@@ -370,7 +370,8 @@ async function main(){
     await visit("/doctors/1502");
     const img=page.locator("#d2-doctor-reviews img.d2-source-review-illustration");
     await img.waitFor({timeout:12000});
-    assert.equal(await img.getAttribute("src"),"https://unni.app/images/review-login/us.webp");
+    assert.match(await img.getAttribute("src"),/\/gateway\/public-web\/images\/review-login\/us\.webp$/);
+    await page.waitForFunction(()=>{const el=document.querySelector(".d2-source-review-illustration");return el?.complete&&el.naturalWidth>200},null,{timeout:12000});
     assert.equal(await page.locator(".d2-source-review-login").getAttribute("href"),"https://unni.app/us/doctors/1502");
     assert.match(await page.locator("#d2-doctor-reviews").innerText(),/Sign in in 3 seconds/);
     return "public review-login illustration and official sign-in location, no copied private reviews";

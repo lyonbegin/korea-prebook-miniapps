@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from "react";
 import {ArrowRight,Check,ChevronDown,ChevronLeft,ChevronRight,Clock3,ExternalLink,Heart,MapPin,Maximize2,MessageCircle,Navigation,Share2,ShieldAlert,Star,X} from "lucide-react";
 import {SourceLink,OfferCard,ClinicCard} from "./Components";
+import {gatewayUrl,UNNI_SERVICES} from "../lib/originalGateway";
 import "../detail-v2.css";
 function usePublicCatalog(kind,id){
  const [facts,setFacts]=useState(null);
@@ -317,7 +318,7 @@ export function DoctorDetailV2({route,data,go}){
    <Header>Reviews {reviewsText}</Header>
    <div className="d2-doctor-review-notice">
      <img className="d2-source-review-illustration"
-       src="https://unni.app/images/review-login/us.webp"
+       src={gatewayUrl(UNNI_SERVICES.PUBLIC_WEB,"/images/review-login/us.webp")}
        alt="Original UNNI review access illustration" loading="lazy"/>
      <p>Log in to view all detailed reviews<br/>from real visitors</p>
      <a className="d2-source-review-login" href={"https://unni.app/us/doctors/"+encodeURIComponent(data.id)}
