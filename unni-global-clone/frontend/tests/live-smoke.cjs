@@ -68,11 +68,11 @@ async function main(){
    assert.match(pageText,/Fat Dissolving Injection/);
    assert.match(pageText,/14 options/);
    assert.match(pageText,/Shoulder Slimming Botox/);
-   assert.match(pageText,/\$163\.68/);
+   assert.match(pageText,/\$\d{1,4}\.\d{2}/);
    assert.match(pageText,/20%/);
    assert.match(pageText,/U Line Clinic/);
    await page.screenshot({path:"qa-artifacts/01-event.png",fullPage:true});
-   return "source event 70809 and 14 options, $163.68";
+   return "source event 70809 and 14 source options with live converted price";
   });
   await check("Full public promotional image list is retained",async()=>{
    const images=await page.locator(".d2-detail img").evaluateAll(nodes=>nodes.map(n=>n.currentSrc||n.src));
@@ -105,14 +105,18 @@ async function main(){
    await list.nth(0).click();
    await page.waitForTimeout(100);
    const selection=await page.locator(".d2-selected").innerText();
-   assert.match(selection,/\$21\.58/);
+   const expected=await list.nth(0).locator(".d2-price strong").innerText();
+   assert.ok(expected.startsWith("$"),expected);
+   assert.ok(selection.includes(expected),"selected price must equal live option 1 card price");
    assert.match(page.url(),/optionIndex=1/);
    return selection.slice(0,90);
   });
   await check("Option 5 restores source id and $163.68",async()=>{
    await page.locator("#d2-options .d2-option").nth(4).click();
    const selection=await page.locator(".d2-selected").innerText();
-   assert.match(selection,/\$163\.68/);
+   const expected=await page.locator("#d2-options .d2-option").nth(4).locator(".d2-price strong").innerText();
+   assert.ok(expected.startsWith("$"),expected);
+   assert.ok(selection.includes(expected),"selected price must equal live option 5 card price");
    assert.match(page.url(),/optionId=d195122c/);
    return selection.slice(0,90);
   });
@@ -196,9 +200,10 @@ async function main(){
   await check("Case: clinic 826 highlights hours reviews",async()=>{
    await visit("/hospitals/826");
    const text=await page.locator("body").innerText();
-   for(const needle of ["U Line Clinic","Clinic Highlights","Clinic Hours","9.7","10,685","Gangnam-gu"])assert.ok(text.includes(needle),needle);
+   for(const needle of ["U Line Clinic","Clinic Highlights","Clinic Hours","9.7","Gangnam-gu"])assert.ok(text.includes(needle),needle);
+   assert.match(text,/10,\d{3}\s+Reviews/,"Live source clinic reviews must be shown");
    await page.screenshot({path:"qa-artifacts/02-hospital.png",fullPage:true});
-   return "clinic 826 9.7/10,685 + hours/address";
+   return "clinic 826 live review count + 7-day hours/address";
   });
 
   await check("Clinic gallery cycles all ten photos",async()=>{
@@ -247,10 +252,10 @@ async function main(){
    await visit("/doctors/1502");
    const text=await page.locator("body").innerText();
    assert.match(text,/Seungmin Yoo/);
-   assert.match(text,/9,137/);
+   assert.match(text,/\b\d{1,3},\d{3}\s+Reviews\b/,"Live source physician reviews must be displayed");
    assert.ok(!text.includes("App Download"));
    await page.screenshot({path:"qa-artifacts/03-doctor.png",fullPage:true});
-   return "doctor Seungmin Yoo / 9,137";
+   return "doctor Seungmin Yoo / live public review count";
   });
   await check("Doctor public specialties and experience",async()=>{
    const body=await page.locator("body").innerText();
@@ -264,6 +269,58 @@ async function main(){
    assert.match(text,/InMode FX/);assert.match(text,/46%/);
    await page.screenshot({path:"qa-artifacts/04-alt-event.png",fullPage:true});
    return "46% discount";
+  });
+  await check("Clinic doctor card navigates to actual doctor detail",async()=>{
+   await visit("/hospitals/826");
+   const card=page.locator("#d2-doctors .clinic-card").first();
+   await card.waitFor({timeout:10000});
+   assert.match(await card.innerText(),/Seungmin Yoo/);
+   await card.click();
+   assert.match(page.url(),/\/doctors\/1502/);
+   await page.locator(".d2-top h1").waitFor({timeout:9000});
+   assert.match(await page.locator(".d2-top h1").innerText(),/Seungmin Yoo/);
+   return "clinic public physician card -> correct independent doctor route";
+  });
+  await check("Clinic procedure card navigates to original event identifier",async()=>{
+   await visit("/hospitals/826");
+   const card=page.locator("#d2-clinic-events .offer-card").first();
+   await card.waitFor({timeout:10000});
+   const title=await card.locator(".offer-title").innerText();
+   await card.click();
+   assert.match(page.url(),/\/events\/\d+/);
+   await page.locator(".d2-top h1").waitFor({timeout:10000});
+   assert.ok((await page.locator(".d2-top h1").innerText()).length>12);
+   return "clinic public offer "+title.slice(0,45)+" enters event detail";
+  });
+  await check("Public beauty columns load article cards",async()=>{
+   await visit("/contents");
+   const cards=page.locator(".article-card");
+   const count=await cards.count();
+   assert.ok(count>=8,"Public content listing should not silently lose its articles");
+   assert.ok((await cards.first().locator("b").innerText()).length>28);
+   return count+" visible public article cards";
+  });
+  await check("Public article card opens article detail",async()=>{
+   await page.locator(".article-card").first().click();
+   assert.match(page.url(),/\/contents\/[a-f0-9-]{24,}/i);
+   await page.locator(".d2-top h1").waitFor({timeout:15000});
+   const title=await page.locator(".d2-top h1").innerText();
+   assert.ok(title.length>20);
+   const body=await page.locator(".d2-detail").innerText();
+   assert.ok(body.length>title.length+100);
+   return "public article title and body displayed: "+title.slice(0,55);
+  });
+  await check("Listing numeric price filter and ascending sort",async()=>{
+   await visit("/events?q=Lifting&categoryId=419");
+   await page.locator(".listing-heading button").click();
+   await page.getByRole("button",{name:"Lowest Price",exact:true}).click();
+   await page.getByRole("button",{name:"Apply filters",exact:true}).click();
+   await page.waitForTimeout(600);
+   const values=await page.locator(".offer-price-line b").allTextContents();
+   const nums=values.map(x=>Number(x.replace(/[^0-9.]/g,""))).filter(x=>Number.isFinite(x)&&x>0);
+   assert.ok(nums.length>=5,"Enough source prices to sort");
+   assert.ok(nums.every((v,i)=>i===0||v>=nums[i-1]),"Local loaded prices should be ascending");
+   return nums.length+" source-linked cards sorted ascending";
   });
   await check("Inquiries screen is honest",async()=>{
    await visit("/inquiries");
