@@ -45,18 +45,20 @@ jobs:
 
   verify-mobile:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install Playwright browser
+      - name: Install frontend and matching Playwright JS package
         working-directory: unni-global-clone/frontend
         run: |
           npm install --no-audit --no-fund
           npm install --no-save --no-audit --no-fund playwright@1.56.1 pngjs@7.0.0
-          npx playwright install --with-deps chromium
+          # Chromium and Linux dependencies are preinstalled in the pinned official image.
       - name: Compile actual checked-out frontend
         working-directory: unni-global-clone/frontend
         run: npm run build
