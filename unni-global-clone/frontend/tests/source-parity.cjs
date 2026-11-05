@@ -68,6 +68,9 @@ function compare(a,b){
        const gatewayMetrics=await sourceThroughPublicGateway(source);
        const response=await source.goto(pair.original,{waitUntil:"domcontentloaded",timeout:30000});
        if(!response?.ok())throw Error("Original HTTP "+response?.status());
+       // Capture the actual page rather than a cookie dialog obscuring it.
+       const reject=source.getByRole("button",{name:/^Reject all$/i});
+       if(await reject.count())await reject.first().click({timeout:1500}).catch(()=>{});
        await clone.goto(base+pair.clone,{waitUntil:"domcontentloaded",timeout:25000});
        await clone.locator(".loading-screen").waitFor({state:"hidden",timeout:20000}).catch(()=>{});
        await Promise.all([source.evaluate(()=>document.fonts?.ready).catch(()=>{}),clone.evaluate(()=>document.fonts?.ready).catch(()=>{})]);
