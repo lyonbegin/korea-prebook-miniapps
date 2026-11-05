@@ -248,6 +248,18 @@ async function main(){
     await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
     const button=page.locator(".d2-source-review-sticky button");
     assert.equal(await button.innerText(),"View reviews");
+    const hit=await page.evaluate(()=>{
+      const element=document.querySelector(".d2-source-review-sticky");
+      const target=element?.querySelector("button");
+      if(!element||!target)return {missing:true};
+      const r=target.getBoundingClientRect(),css=getComputedStyle(element);
+      const x=(r.left+r.right)/2,y=(r.top+r.bottom)/2;
+      const top=document.elementFromPoint(x,y);
+      return {rect:{x,y,top:r.top,bottom:r.bottom,width:r.width},viewport:{w:innerWidth,h:innerHeight,scroll:scrollY},
+        computed:{position:css.position,zIndex:css.zIndex,display:css.display,visibility:css.visibility,pointerEvents:css.pointerEvents},
+        parent:element.parentElement?.tagName,hitClass:top?.className,hitTag:top?.tagName,hitText:top?.textContent?.slice(0,80)};
+    });
+    console.log("REVIEW_FOOTER_HIT_DIAGNOSTIC",JSON.stringify(hit));
     await button.click();
     await page.locator("#d2-reviews").waitFor({state:"visible"});
     assert.match(await page.locator("#d2-reviews").innerText(),/Log in to view all detailed reviews/);
