@@ -1,4 +1,4 @@
-import {parseDetailModel} from "./detailParser";
+import {parseDetailModel,extractArticleRich} from "./detailParser";
 /**
  * Browser-side source adapter for the publicly accessible unni.app/us web UI.
  * Never fabricate a product, hospital, rating, price, option or original ID.
@@ -283,6 +283,7 @@ export function parseSource(html,route){
   const recommendedExplicit=splitRecommendations(recRaw);
 
   const detail=parseDetailModel(doc,route,body);
+  if(detailKind==="contents")detail.articleRich=extractArticleRich(body);
   // Some links are serialized into the original source document but not exposed
   // as <a> elements in the current viewport; recover grounded IDs only.
   const serialized=doc.documentElement.outerHTML.replace(/\\u002F/gi,"/").replace(/\\\//g,"/");

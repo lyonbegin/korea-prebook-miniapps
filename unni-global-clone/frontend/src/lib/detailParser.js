@@ -281,6 +281,16 @@ function hospitalMeta(main){
   return {about,highlights,highlightNames,specialties:specialties(specialtiesSec),hours:clinicHours(hours,main),
     closed,address:addressText,doctorCount:Number(doctorCount)||null,procedureCount:Number(procedureCount)||null};
 }
+export function extractArticleRich(main){
+ const head=main.querySelector("h1");
+ if(!head)return [];
+ const range=main.ownerDocument.createRange();
+ try{
+   range.setStartAfter(head);
+   range.setEndAfter(main.lastElementChild||head);
+   return [...range.cloneContents().childNodes].map(x=>safeRichNode(x)).filter(Boolean);
+ }catch{return []}finally{range.detach?.()}
+}
 export function parseDetailModel(doc,route,main){
   const kind=/^\/events\/\d+/.test(route)?"event":/^\/hospitals\/\d+/.test(route)?"hospital":
     /^\/doctors\/\d+/.test(route)?"doctor":/^\/contents\//.test(route)?"article":"other";

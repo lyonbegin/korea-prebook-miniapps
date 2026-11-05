@@ -126,3 +126,7 @@
 .d2-rich table{border-collapse:collapse;max-width:100%;width:100%;font-size:12px}
 .d2-rich td,.d2-rich th{border-bottom:1px solid #ececf0;padding:9px 7px;text-align:left}
 .d2-long-images .d2-rich{margin:0;padding:0}.d2-long-images .d2-rich img{width:100%;height:auto;display:block}
+
+.d2-highlight-badge{width:28px;height:28px;object-fit:contain;flex-shrink:0}
+#d2-article-body .d2-rich{font-size:14px;line-height:1.8}
+#d2-article-body .d2-rich img{max-width:100%;height:auto}

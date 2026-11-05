@@ -203,9 +203,10 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
   <PriceObservationPanel eventId={data.id} selectedIndex={Math.max(0,Number(selected?.index||1)-1)}/>
   {(d.sections.details?.rich?.length>0||d.media.detail.length>0)&&<Block id="d2-details"><Header>Details</Header>
     <div className="d2-long-images">
-      {d.sections.details?.rich?.length>0&&<RenderBlocks section={d.sections.details} go={go} omitImages/>}
-      {d.media.detail.map((img,i)=><img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
-       onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}
+      {d.sections.details?.rich?.length>0&&<RenderBlocks section={d.sections.details} go={go}/>}
+      {d.media.detail.filter(img=>!richImageUrls(d.sections.details?.rich||[]).has(img.url)).map((img,i)=>
+        <img key={img.url} src={img.url} loading="lazy" alt={img.alt||"Detailed procedure image "+(i+1)}
+          onError={e=>e.currentTarget.classList.add("d2-error-img")}/>)}
     </div></Block>}
   {(clinic.name||data.clinicAddress)&&<Block id="d2-clinic"><Header>Clinic</Header>
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>
@@ -229,7 +230,9 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
    <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>
    <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div></div>
    {h.highlightNames?.length>0&&<Block id="d2-highlights"><Header sub={h.highlightNames.length+" highlights"}>Clinic Highlights</Header>
-     <div className="d2-highlights">{h.highlightNames.map((x,i)=><div key={i}><span>{i+1}</span>{x}</div>)}</div>
+     <div className="d2-highlights">{h.highlightNames.map((x,i)=><div key={i}>
+        {d.media.badges?.[i]?.url?<img className="d2-highlight-badge" src={d.media.badges[i].url} alt="" loading="lazy"/>:<span>{i+1}</span>}{x}
+      </div>)}</div>
      <p className="d2-medical-disclaimer">Highlights are clinic-provided and do not independently certify compliance.</p></Block>}
    {h.about?.text&&<Block id="d2-about"><Header>About the Clinic</Header><RenderBlocks section={h.about}/></Block>}
    {h.specialties?.length>0&&<Block id="d2-specialties"><Header>Specialties</Header><div className="d2-specialties">{h.specialties.map(x=><span key={x}>{x}</span>)}</div></Block>}
@@ -259,11 +262,12 @@ export function DoctorDetailV2({route,data,go}){
   <Block><SourceLink route={route}>Doctor at source</SourceLink></Block>
  </article>;
 }
-export function ArticleDetailV2({route,data}){
- const d=data.detail;
- return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
-  <div className="d2-top"><span className="d2-eyebrow">BEAUTY COLUMN</span><h1>{data.pageTitle}</h1></div>
-  {data.sections.filter(x=>x.description).map((s,i)=><Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
-  <Block><SourceLink route={route}>Complete original article</SourceLink></Block>
+export function ArticleDetailV2({route,data,go}){
+ const d=data.detail,rich=d.articleRich||[];
+ return <article className="d2-detail">
+   <div className="d2-top"><span className="d2-eyebrow">BEAUTY COLUMN</span><h1>{data.pageTitle}</h1></div>
+   {rich.length?<Block id="d2-article-body"><RenderBlocks section={{text:data.summary,rich}} go={go}/></Block>:
+     data.sections.filter(x=>x.description).map((s,i)=><Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
+   <Block><SourceLink route={route}>Complete original article</SourceLink></Block>
  </article>;
 }
