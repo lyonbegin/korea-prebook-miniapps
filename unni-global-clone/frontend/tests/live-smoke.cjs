@@ -96,6 +96,7 @@ async function main(){
    assert.match(pageText,/\$\d{1,4}\.\d{2}/);
    assert.match(pageText,/20%/);
    assert.match(pageText,/U Line Clinic/);
+   assert.match(await page.locator(".d2-top .d2-ratings").innerText(),/4,\d{3}/,"Public source event review count must appear next to its 9.9 rating");
    await page.screenshot({path:"qa-artifacts/01-event.png",fullPage:true});
    return "source event 70809 and 14 source options with live converted price";
   });

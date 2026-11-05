@@ -177,3 +177,6 @@
 .d2-sticky{bottom:0;width:100%;max-width:none;padding-bottom:max(11px,env(safe-area-inset-bottom))}
 .d2-sticky button{background:#ff633a;border-radius:7px}
 @supports(padding-bottom:env(safe-area-inset-bottom)){.d2-sticky{bottom:0}}
+
+/* Original UNNI score stars are gold, not the independent prototype pink. */
+.d2-ratings svg{color:#f5bf43;fill:#f5bf43}

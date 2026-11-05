@@ -152,6 +152,15 @@ function ratingAndReviews(root,kind){
     if(reviews&&rating&&reviews.startsWith(rating.replace(".","")))
       reviews=reviews.slice(rating.replace(".","").length);
   }
+  if(kind==="event"&&!reviews){
+    const observed=[...root.querySelectorAll("button")].find(button=>{
+       const value=trim(button.textContent);
+       return /^\([\d,]+\)$/.test(value)&&!!button.querySelector("span.underline");
+    });
+    // The original event header emits e.g. (4,537) as a separate review
+    // button, not "... Reviews"; never substitute the clinic's review total.
+    if(observed)reviews=trim(observed.textContent).match(/\(([\d,]+)\)/)?.[1]||"";
+  }
   if(kind==="doctor"){
     // The doctor profile publishes an independent "Reviews 9,137" value.
     // Do not copy the linked clinic's 9.7 score onto the physician.
