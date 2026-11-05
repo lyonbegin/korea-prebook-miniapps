@@ -13,7 +13,7 @@ async function check(label,fn){
  // Playwright locator.click() auto-scrolls fixed elements, which can scroll
  // the underlying page *under* a body-level fixed footer. We assert hit
  // testing before clicking; no force/DOM synthetic events.
-async function clickVisiblePointer(page,selector,{scroll=false}={}){
+async function clickVisiblePointer(page,selector,{scroll=false,touch=false}={}){
  const hit=await page.evaluate(({selector,scroll})=>{
    const el=document.querySelector(selector);
    if(!el)throw Error("Missing pointer target: "+selector);
@@ -25,7 +25,8 @@ async function clickVisiblePointer(page,selector,{scroll=false}={}){
      hit:top?.className||top?.tagName,rect:{top:rect.top,bottom:rect.bottom},viewport:innerHeight};
  },{selector,scroll});
  assert.ok(hit.onTarget,"Button obscured: "+selector+" "+JSON.stringify(hit));
- await page.mouse.click(hit.x,hit.y);
+ if(touch)await page.touchscreen.tap(hit.x,hit.y);
+ else await page.mouse.click(hit.x,hit.y);
  return hit;
 }
 async function main(){
@@ -299,7 +300,7 @@ async function main(){
     await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
     await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
     await page.locator(".iq-consent input").check();
-    const clickHit=await clickVisiblePointer(page,".iq-submit",{scroll:true});
+    const clickHit=await clickVisiblePointer(page,".iq-submit",{scroll:true,touch:true});
     await page.waitForTimeout(800);
     const submitted=await page.evaluate(()=>{
       const form=document.querySelector(".iq-form");
