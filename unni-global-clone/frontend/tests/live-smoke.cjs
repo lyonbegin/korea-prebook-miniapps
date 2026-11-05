@@ -432,6 +432,19 @@ async function main(){
    assert.match(await page.locator(".district-complete").innerText(),/\(1\)/);
    await page.getByRole("button",{name:"Reset",exact:true}).click();
    assert.doesNotMatch(await page.locator(".district-complete").innerText(),/\(1\)/);
+   const ssr=await page.evaluate(async()=>{
+      const response=await fetch("/gateway/public-web/us/district-filter?returnToHome=true",{credentials:"omit",headers:{Accept:"text/html"}});
+      const html=await response.text();
+      const search=["Cheongdam","Seomyeon","N1102","Gangnam Sta","districtId"];
+      const contexts=Object.fromEntries(search.map(term=>{
+        const idx=html.indexOf(term);
+        return [term,idx<0?null:html.slice(Math.max(0,idx-200),idx+420)];
+      }));
+      const shortCodes=[...new Set((html.match(/["']N\d{3,5}["']/g)||[]))].slice(0,30);
+      return {status:response.status,length:html.length,contexts,shortCodes};
+    });
+   fs.writeFileSync("qa-artifacts/district-public-source-diagnostic.json",JSON.stringify(ssr,null,2));
+   console.log("PUBLIC_DISTRICT_DIAG",JSON.stringify(ssr).slice(0,7200));
    return "16 original regions and live source district checkboxes with functional Reset";
   });
   await check("Inquiries screen is honest",async()=>{
