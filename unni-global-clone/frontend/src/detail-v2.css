@@ -206,3 +206,8 @@
 
 /* Event footer must remain above all site tabs without obscuring inquiries. */
 .d2-source-review-sticky,.d2-source-clinic-sticky{z-index:900;isolation:isolate}
+
+// Keep body-portaled public action bars inside the physically touchable viewport.
+.d2-source-review-sticky,.d2-source-clinic-sticky,.d2-sticky{
+  bottom:var(--unni-physical-bottom,0px)!important;
+}

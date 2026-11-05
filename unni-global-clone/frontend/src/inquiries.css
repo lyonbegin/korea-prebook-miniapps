@@ -12,3 +12,7 @@
    mobile hardware viewport, so supply real in-panel scroll clearance. */
 .iq-form{padding-bottom:max(145px,calc(env(safe-area-inset-bottom) + 120px))}
 .iq-panel{max-height:min(86dvh,760px);overflow-y:auto;overscroll-behavior-y:contain}
+
+/* The dialog bottom must use the same physical viewport boundary as sticky CTAs. */
+.iq-overlay{bottom:var(--unni-physical-bottom,0px)!important}
+.iq-panel{max-height:min(calc(var(--unni-visible-height,100dvh) - 36px),760px)}

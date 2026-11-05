@@ -276,6 +276,17 @@ async function main(){
      await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
    }
   });
+  await check("Mobile visible bounds match real physical touch viewport",async()=>{
+     await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
+     const dims=await page.evaluate(()=>({
+       layout:window.innerHeight,screen:window.screen.height,visual:window.visualViewport?.height,
+       inset:getComputedStyle(document.documentElement).getPropertyValue("--unni-physical-bottom"),
+       rect:document.querySelector(".d2-source-review-sticky button")?.getBoundingClientRect().toJSON()
+     }));
+     assert.ok(dims.rect?.bottom<=page.viewportSize().height-1,
+       "Footer cannot extend below physical touchscreen: "+JSON.stringify(dims));
+     return JSON.stringify(dims).slice(0,220);
+  });
   await check("Original event footer opens public reviews rather than falsely booking",async()=>{
     await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
     const button=page.locator(".d2-source-review-sticky button");

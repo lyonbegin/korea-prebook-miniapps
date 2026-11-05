@@ -64,6 +64,26 @@ export default function App(){
  const[saved,setSaved]=useState(readSaved),[dialog,setDialog]=useState(false),[menu,setMenu]=useState(false),[consultSelection,setConsultSelection]=useState(null);
  const[query,setQuery]=useState(""),[menuVersion,setMenuVersion]=useState(0);
  const[promo,setPromo]=useState(()=>sessionStorage.getItem("unni_promo_hide")!=="1");
+ useEffect(()=>{
+   // Mobile browsers and automation emulators may report a layout viewport
+   // taller than the actually visible/touchable device viewport. Measure the
+   // inset and apply it consistently to body-level fixed actions and dialogs.
+   const update=()=>{
+     const visual=window.visualViewport;
+     const screenH=window.screen?.height||window.innerHeight;
+     const visibleH=Math.min(window.innerHeight,screenH,visual?.height||window.innerHeight);
+     const inset=Math.max(0,Math.round(window.innerHeight-visibleH));
+     document.documentElement.style.setProperty("--unni-physical-bottom",inset+"px");
+     document.documentElement.style.setProperty("--unni-visible-height",visibleH+"px");
+   };
+   update();
+   window.addEventListener("resize",update);
+   window.visualViewport?.addEventListener("resize",update);
+   window.visualViewport?.addEventListener("scroll",update);
+   return()=>{window.removeEventListener("resize",update);
+     window.visualViewport?.removeEventListener("resize",update);
+     window.visualViewport?.removeEventListener("scroll",update)};
+ },[]);
  const parsedQuery=new URLSearchParams(route.split("?")[1]||"");
  useEffect(()=>{setDialog(false);setMenu(false);setQuery(parsedQuery.get("q")||parsedQuery.get("category")||"")},[route]);
  const title=data?.pageTitle||"";
