@@ -16,7 +16,7 @@ function HomePromoCarousel({slides,go}){
  return <section className="source-home-promotions" aria-label="Original promotional banners">
   {slides.length>1&&<div className="source-promo-peek source-promo-peek-left" aria-hidden="true"><img src={slides[(index+slides.length-1)%slides.length].image} alt=""/></div>}
   <div className="source-promo-card">
-   {item.href?<button type="button" className="source-promo-action" onClick={()=>go(item.href.replace(/^\/us/,""))}>{media}</button>:media}
+   {item.href?<button type="button" className="source-promo-action" onClick={()=>{const href=item.href||"";if(/^https?:\/\//i.test(href)){try{const u=new URL(href);if(u.hostname==="unni.app"){go(u.pathname.replace(/^\/us(?=\/|$)/,"")+(u.search||""));}else window.open(u.href,"_blank","noopener,noreferrer");}catch{}}else go(href.replace(/^\/us(?=\/|$)/,""));}}>{media}</button>:media}
    <div className={"source-promo-overlay"+(item.lightText?" source-promo-light":"")}>
      <div className="source-promo-overlay-top">{item.badge&&<span className="source-promo-badge">{item.badge}</span>}</div>
      <div className="source-promo-overlay-bottom">
@@ -93,8 +93,9 @@ export function SearchResultsScreen({route,data,go}){
  const params=new URLSearchParams(route.split("?")[1]||"");
  const phrase=params.get("q")||params.get("category")||"";
  const district=params.get("districtName")||"";
- const visible=x=>!district||(x.summary||"").toLowerCase().includes(district.toLowerCase());
- const procedures=(data.events||[]).filter(visible),clinics=(data.hospitals||[]).filter(visible);
+ // The gateway already applies verified district IDs to its source request.
+ // A second free-text match against card summaries incorrectly discards valid district results.
+ const procedures=data.events||[],clinics=data.hospitals||[];
  const viewAll="/events?q="+encodeURIComponent(phrase);
  return <div className="search-results">
   <div className="search-results-top">
