@@ -299,7 +299,18 @@ async function main(){
     await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
     await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
     await page.locator(".iq-consent input").check();
-    await clickVisiblePointer(page,".iq-submit",{scroll:true});
+    const clickHit=await clickVisiblePointer(page,".iq-submit",{scroll:true});
+    await page.waitForTimeout(800);
+    const submitted=await page.evaluate(()=>{
+      const form=document.querySelector(".iq-form");
+      const button=document.querySelector(".iq-submit");
+      return {formPresent:!!form,formValid:form?.checkValidity(),validationMessage:form?.querySelector(":invalid")?.validationMessage||"",
+        disabled:button?.disabled,buttonText:button?.innerText,
+        title:document.querySelector(".iq-panel header")?.innerText,
+        error:document.querySelector(".iq-error")?.innerText,
+        dialogVisible:!!document.querySelector(".iq-overlay"),savedCount:JSON.parse(localStorage.getItem("unni_independent_inquiries_v1")||"[]").length};
+    });
+    console.log("INQUIRY_SUBMISSION_DIAGNOSTIC",JSON.stringify({clickHit,submitted,interceptedPost:sent}));
     await page.locator(".iq-panel header").getByText("Your inquiry").waitFor({timeout:8000});
     assert.equal(sent?.event_id,"70809");
     assert.equal(sent?.option_index,5);
