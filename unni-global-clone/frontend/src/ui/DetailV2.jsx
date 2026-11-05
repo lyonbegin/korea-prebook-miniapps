@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from "react";
+import {createPortal} from "react-dom";
 import {ArrowRight,Check,ChevronDown,ChevronLeft,ChevronRight,Clock3,ExternalLink,Heart,MapPin,Maximize2,MessageCircle,Navigation,Share2,ShieldAlert,Star,X} from "lucide-react";
 import {SourceLink,OfferCard,ClinicCard} from "./Components";
 import {gatewayUrl,UNNI_SERVICES} from "../lib/originalGateway";
@@ -169,6 +170,11 @@ function ReviewBox({detail,route}){
    <p>{detail.originalReviewGate?"Log in to view all detailed reviews from real visitors.":"Public review information only."}</p>
    <SourceLink route={route}>Reviews at source</SourceLink></div></Block>;
 }
+// A viewport footer must not participate in a long detail article's
+// stacking/scrolling contexts. Mount it at body level, below the inquiry overlay.
+function FixedDetailAction({children}){
+ return typeof document==="undefined"?children:createPortal(children,document.body);
+}
 function StuckBar({price,clinic=false,onClick}){
  return <div className="d2-sticky"><div><small>{clinic?"Clinic inquiry":"Selected option"}</small><b>{clinic?"Consultation":price||"Price at source"}</b></div>
    <button onClick={onClick}>{clinic?"Contact":"Consultation"} <ArrowRight size={18}/></button></div>;
@@ -229,7 +235,7 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>
     <MapBlock image={d.media.map} address={data.clinicAddress} clinicName={clinic.name}/></Block>}
   {(data.events||[]).length>0&&<Block id="d2-popular"><Header>Popular Procedures</Header><div className="d2-grid">{data.events.slice(0,12).map(x=><OfferCard key={x.sourceHref} item={x} go={go}/>)}</div></Block>}
-  <div className="d2-source-review-sticky"><button type="button" onClick={()=>document.getElementById("d2-reviews")?.scrollIntoView({behavior:"smooth",block:"start"})}>View reviews</button></div>
+  <FixedDetailAction><div className="d2-source-review-sticky"><button type="button" onClick={()=>document.getElementById("d2-reviews")?.scrollIntoView({behavior:"smooth",block:"start"})}>View reviews</button></div></FixedDetailAction>
  </article>;
 }
 export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
@@ -288,10 +294,10 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
    {data.events?.length>0&&<Block id="d2-clinic-events"><Header sub={h.procedureCount?h.procedureCount+" procedures":null}>Procedures</Header>
      <div className="d2-grid">{data.events.map(x=><OfferCard item={x} go={go} key={x.sourceHref}/>)}</div></Block>}
    <ReviewBox detail={d} route={route}/>
-   <div className="d2-source-clinic-sticky">
+   <FixedDetailAction><div className="d2-source-clinic-sticky">
     <a href={"https://unni.app/us/hospitals/"+encodeURIComponent(data.id)} target="_blank" rel="noopener noreferrer"
        title="The original UNNI website is required for its own login and clinic booking">Log in to apply for a free<br/>consultation</a>
-  </div>
+  </div></FixedDetailAction>
  </article>;
 }
 export function DoctorDetailV2({route,data,go}){
