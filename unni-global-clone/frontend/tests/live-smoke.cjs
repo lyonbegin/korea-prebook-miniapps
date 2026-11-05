@@ -118,6 +118,22 @@ async function main(){
    assert.ok(labels.some(x=>x.includes("Option 14")));
    return "14 original options, no samples substituted";
   });
+  await check("All 14 source option IDs map to unique actual deep links",async()=>{
+   const cards=page.locator("#d2-options .d2-option");
+   assert.equal(await cards.count(),14);
+   const ids=new Set();
+   for(let i=0;i<14;i++){
+     await cards.nth(i).click();
+     const url=new URL(page.url());
+     const id=url.searchParams.get("optionId");
+     assert.match(id||"",/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i,"Missing genuine source optionId at position "+(i+1));
+     assert.ok(!ids.has(id),"Duplicated source option UUID at position "+(i+1));
+     ids.add(id);
+   }
+   await cards.nth(4).click();
+   assert.equal(ids.size,14);
+   return "14/14 distinct source-provided UUIDs preserved in click-and-share URLs";
+  });
   await check("Option 1 updates price and deep link",async()=>{
    const list=page.locator("#d2-options .d2-option");
    assert.ok(await list.count()>=8);
@@ -127,7 +143,7 @@ async function main(){
    const expected=await list.nth(0).locator(".d2-price strong").innerText();
    assert.ok(expected.startsWith("$"),expected);
    assert.ok(selection.includes(expected),"selected price must equal live option 1 card price");
-   assert.match(page.url(),/optionIndex=1/);
+   assert.match(page.url(),/optionId=65ec0474-c599-11ee-982f-0a5164a62f36/,"Original option 1 UUID from public SSR");
    return selection.slice(0,90);
   });
   await check("Option 5 restores source id and $163.68",async()=>{
@@ -146,7 +162,7 @@ async function main(){
    await options.nth(0).click();
    await save.click();
    const rows=await page.evaluate(()=>JSON.parse(localStorage.getItem("unni_clone_saved_pages_v2")||"[]"));
-   assert.ok(rows.some(x=>x.includes("/events/70809?optionIndex=1")),JSON.stringify(rows));
+   assert.ok(rows.some(x=>x.includes("optionId=65ec0474-c599-11ee-982f-0a5164a62f36")),JSON.stringify(rows));
    assert.equal(await save.innerText(),"Saved");
    await options.nth(4).click();
    assert.equal(await save.innerText(),"Save");
@@ -164,8 +180,8 @@ async function main(){
      await visit("/events/70809?optionIndex=1");
      await page.waitForTimeout(400);
      await page.locator("#d2-options .d2-option").nth(0).click();
-     assert.match(page.url(),new RegExp("optionId="+cachedId));
-     return "Previously observed UUID reused without inventing an ID";
+     assert.match(page.url(),/optionId=65ec0474-c599-11ee-982f-0a5164a62f36/,"Source-observed UUID outranks conflicting synthetic cache");
+     return "Original SSR UUID wins over conflicting synthetic DB fixture";
    }finally{
      await page.unroute("**/catalog/events/70809");
      // The synthetic cache fixture only knows option 1. Restore the original
