@@ -172,7 +172,13 @@ async function main(){
     return info.uuidCount+" observed public HTML UUID values (not all are option IDs)";
   });
   await check("All 14 source options have distinct list positions",async()=>{
-   await page.locator(".d2-show-more").click();
+   await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
+   await page.locator(".d2-show-more").evaluate(el=>{
+     const r=el.getBoundingClientRect();
+     window.scrollBy({top:r.top-window.screen.height*0.46,behavior:"instant"});
+   });
+   await page.waitForTimeout(100);
+   await clickVisiblePointer(page,".d2-show-more");
    const cards=page.locator("#d2-options .d2-option");
    assert.equal(await cards.count(),14);
    const labels=await cards.locator("small").allTextContents();
@@ -311,6 +317,7 @@ async function main(){
     return "source View reviews and separately labeled independent consultation";
   });
   await check("Event inquiry carries exact option and clinic IDs without writing to DB",async()=>{
+   await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
    let sent=null;
    await page.route("**/inquiries",async route=>{
     if(route.request().method()!=="POST")return route.continue();
@@ -320,7 +327,12 @@ async function main(){
     })});
    });
    try{
-    await page.locator(".d2-preview-inquiry").click();
+    await page.locator(".d2-preview-inquiry").evaluate(el=>{
+      const r=el.getBoundingClientRect();
+      window.scrollBy({top:r.top-window.screen.height*0.42,behavior:"instant"});
+    });
+    await page.waitForTimeout(90);
+    await clickVisiblePointer(page,".d2-preview-inquiry");
     await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
     await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
     await page.locator(".iq-consent input").check();

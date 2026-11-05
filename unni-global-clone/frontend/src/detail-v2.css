@@ -209,3 +209,8 @@
 
 // Keep body-portaled public action bars inside the physically touchable viewport.
 .d2-sticky{bottom:var(--unni-physical-bottom,0px)}
+
+/* Keep interactive source detail controls above a physical bottom CTA. */
+html{scroll-padding-bottom:125px}
+.d2-detail{padding-bottom:max(125px,env(safe-area-inset-bottom))}
+.d2-show-more,.d2-preview-inquiry,.d2-option{scroll-margin-top:100px;scroll-margin-bottom:135px}
