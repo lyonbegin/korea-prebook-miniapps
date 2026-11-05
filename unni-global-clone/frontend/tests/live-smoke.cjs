@@ -445,7 +445,16 @@ async function main(){
     });
    fs.writeFileSync("qa-artifacts/district-public-source-diagnostic.json",JSON.stringify(ssr,null,2));
    console.log("PUBLIC_DISTRICT_DIAG",JSON.stringify(ssr).slice(0,7200));
-   return "16 original regions and live source district checkboxes with functional Reset";
+   // This ID comes from public __NEXT_DATA__ cityList, not a hardcoded invented name.
+   await page.getByRole("button",{name:"Seoul",exact:true}).click();
+   const seoul=page.locator(".district-areas button").filter({hasText:/Cheongdam\/Apgujeong\/Sinsa/}).first();
+   assert.ok(await seoul.count()===1,"Original Cheongdam district found");
+   await seoul.click();
+   await page.getByRole("button",{name:/^Complete/}).click();
+   assert.match(page.url(),/\/events\?district=N1102/,"Source-listed neighborhood code N1102 in URL");
+   await page.locator(".listing-grid .offer-card").first().waitFor({timeout:16000});
+   assert.ok(await page.locator(".listing-grid .offer-card").count()>=4);
+   return "16 cities, source district N1102 and live original filtered listing";
   });
   await check("Inquiries screen is honest",async()=>{
    await visit("/inquiries");

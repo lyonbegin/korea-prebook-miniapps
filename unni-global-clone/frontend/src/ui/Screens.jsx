@@ -151,7 +151,7 @@ export function ListingScreen({route,data,go,query,setQuery}){
    }
  }
  function submit(e){e.preventDefault();go(isClinic?"/hospitals?q="+encodeURIComponent(query):buildEventRoute({query:query}));}
- const heading=isArticles?"Beauty columns":isClinic?"Find clinics":originalQuery?"'"+originalQuery+"' Procedures":"All procedures";
+ const heading=isArticles?"Beauty columns":isClinic?"Find clinics":params.has("district")?(data.pageTitle||"Area procedures"):originalQuery?"'"+originalQuery+"' Procedures":"All procedures";
  return <div className="listing-page">
   <Tabs active={isArticles?"articles":isClinic?"clinics":"procedures"} go={go}/>
   {!isArticles&&<form className="listing-search" onSubmit={submit}><Search size={20}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search procedures or clinics"/><button>Search</button></form>}

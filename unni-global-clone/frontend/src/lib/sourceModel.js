@@ -191,20 +191,30 @@ export function parseSource(html,route){
   const firstPromo=route==="/"?([...body.querySelectorAll("h1,h2")].map(text)
     .find(s=>/deals?\s+up\s+to|special\s+offers?|discounts?/i.test(s))||""):"";
   const districtGroups=route.startsWith("/district-filter")?(()=>{
+    // This original global SSR publishes provider-owned city IDs (N11) and
+    // neighborhood-vicinity IDs (N1102). Use only exact public source IDs.
+    // No heuristic area codes, generated IDs or city-name search proxies.
+    try{
+      const tag=doc.querySelector('script#__NEXT_DATA__');
+      const json=tag?JSON.parse(tag.textContent||"{}"):{};
+      const sourceCities=json?.props?.pageProps?.data?.district?.cityList;
+      if(Array.isArray(sourceCities)&&sourceCities.length){
+        const regions=sourceCities.filter(c=>c?.code&&c?.name).map(c=>({
+           name:c.name,code:c.code,
+           items:(c.neighborhoodVicinityList||[]).filter(a=>a?.id&&a?.name)
+             .map(a=>({id:a.id,name:a.name,isPreparing:!!a.isPreparing}))
+        }));
+        return {cities:regions.map(x=>x.name),regions,originalIdsVerified:true};
+      }
+    }catch{}
     const cities=[...doc.querySelectorAll('[role="tab"]')].map(el=>text(el)).filter(Boolean).slice(0,20);
-    const districts=[],seen=new Set();
-    let current=null;
+    const districts=[];let current=null;
     for(const node of doc.querySelectorAll('[role="checkbox"][aria-label]')){
       const label=(node.getAttribute("aria-label")||"").replace(/\u200b/g,"").trim();
-      if(/^In\s+/i.test(label)){
-        const region=label.replace(/^In\s+/i,"");
-        if(cities.some(c=>c.replace(/\u200b/g,"")===region)){current={name:region,items:[]};districts.push(current)}
-        else current=null;
-      }else if(current&&!seen.has(current.name+"|"+label)){
-        current.items.push(label);seen.add(current.name+"|"+label);
-      }
+      if(/^In\s+/i.test(label)){current={name:label.replace(/^In\s+/i,""),code:null,items:[]};districts.push(current);}
+      else if(current){current.items.push({id:null,name:label,isPreparing:false})}
     }
-    return {cities,regions:districts};
+    return {cities,regions:districts,originalIdsVerified:false};
   })():null;
   const homeBanners=route==="/"?(()=>{
     const seen=new Set(),slides=[];

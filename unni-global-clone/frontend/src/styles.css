@@ -100,3 +100,5 @@
 .source-global-bottom{position:fixed;bottom:0;left:0;right:0;width:100%;margin:auto;min-height:66px;z-index:30}
 .app-shell{padding-bottom:72px}
 @media(min-width:750px){.source-global-bottom{display:none}.app-shell{padding-bottom:0}}
+
+.district-areas>button:disabled{opacity:.4;cursor:not-allowed}.district-complete:disabled{opacity:.5}
