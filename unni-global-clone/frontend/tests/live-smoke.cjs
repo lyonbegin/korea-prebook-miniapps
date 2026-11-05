@@ -173,6 +173,7 @@ async function main(){
     return "original option UUID URL and visible selection restored in history back/forward";
   });
   await check("All 14 source option IDs map to unique actual deep links",async()=>{
+   await page.locator(".d2-featured-public .d2-featured-head button").click();
    const cards=page.locator("#d2-options .d2-option");
    assert.equal(await cards.count(),14);
    const ids=new Set();
