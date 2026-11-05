@@ -141,6 +141,21 @@ def get_option_rows(soup,event_id,url,raw_html=None):
                 cursor=idx+1
                 break
     return rows[:150]
+def public_doctors_in_hospital(soup):
+    """Public physician cards on the original clinic page; never patient data."""
+    found,seen=[],set()
+    for anchor in soup.select('a[data-testid="doctor-profile"][href*="/us/doctors/"]'):
+        match=re.search(r"/us/doctors/(\\d+)(?:[/?#]|$)",anchor.get("href",""))
+        if not match or match.group(1) in seen:
+            continue
+        name=text(anchor.select_one(".doctorName")) or text(anchor.find("h3"))
+        name=re.sub(r"\\s+Dr\\.?\\s*$","",name).strip()
+        if not name or len(name)>90 or re.search(r"clinic|hospital|review|download",name,re.I):
+            continue
+        seen.add(match.group(1))
+        found.append({"id":match.group(1),"name":name})
+    return found
+
 def hospital_info(soup):
     out={}
     main=text(soup)
@@ -266,6 +281,19 @@ async def ingest_public_metadata(pool,path,query,body):
               name=EXCLUDED.name,address=EXCLUDED.address,public_rating=EXCLUDED.public_rating,
               public_review_count=EXCLUDED.public_review_count,attributes=EXCLUDED.attributes,fetched_at=EXCLUDED.fetched_at""",
               identifier,title,url,info.get("address"),rating,reviews,json.dumps(info),now)
+             for doc in public_doctors_in_hospital(main):
+                 await conn.execute("""INSERT INTO unni_clone.doctors
+                    (original_doctor_id,original_hospital_id,display_name,source_url,public_attributes,fetched_at,rights_status)
+                    VALUES ($1,$2,$3,$4,'{}'::jsonb,$5,'metadata_only')
+                    ON CONFLICT(original_doctor_id) DO UPDATE SET
+                    original_hospital_id=COALESCE(unni_clone.doctors.original_hospital_id,EXCLUDED.original_hospital_id),
+                    display_name=CASE
+                      WHEN unni_clone.doctors.display_name IS NULL
+                        OR unni_clone.doctors.display_name ~* '(clinic|hospital|^doctor$)'
+                      THEN EXCLUDED.display_name ELSE unni_clone.doctors.display_name END,
+                    fetched_at=EXCLUDED.fetched_at""",
+                    doc["id"],identifier,doc["name"],
+                    "https://unni.app/us/doctors/"+doc["id"],now)
         else:
             clinic=source_hospital(main)
             hid=None

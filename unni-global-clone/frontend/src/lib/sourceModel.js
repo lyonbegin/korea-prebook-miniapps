@@ -74,9 +74,14 @@ function itemAnchor(a){
   const href=originPath(a.getAttribute("href")||"");
   const type=href&&typeOfPath(href);
   if(!type)return null;
-  const closer=a.closest("article,li,[class*=card],[class*=Card]")||a;
+  const closer=type==="doctor"?(a.closest('[class*="doctorViewWrapper"],[class*="doctorIdentity"],[class*="doctor-card"]')||a):
+    (a.closest("article,li,[class*=card],[class*=Card]")||a);
   const raw=text(closer);
-  const heading=text(closer.querySelector("h3,h2,h4"))||text(a.querySelector("h3,h2,h4"))||text(a);
+  // A doctor link is often nested in a clinic's enclosing article. Only a
+  // doctor-profile anchor or its exact doctorViewWrapper may supply its title.
+  const heading=type==="doctor"
+    ?(text(a.querySelector('.doctorName,h3,h2,[data-testid="doctor-name"]'))||text(closer.querySelector(".doctorName,h3"))||text(a))
+    :(text(closer.querySelector("h3,h2,h4"))||text(a.querySelector("h3,h2,h4"))||text(a));
   let label=shorten(heading||a.getAttribute("aria-label")||"",180);
   let publishedDate=null,articleCategory="";
   if(type==="article"){

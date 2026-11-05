@@ -288,7 +288,8 @@ async function main(){
    const text=await page.locator("body").innerText();
    assert.match(text,/Seungmin Yoo/);
    assert.match(text,/\b\d{1,3},\d{3}\s+Reviews\b/,"Live source physician reviews must be displayed");
-   assert.ok(!text.includes("App Download"));
+   assert.ok(!text.includes("Original data unavailable"));
+   assert.match(await page.locator(".d2-doctor-detail").innerText(),/Seungmin Yoo/);
    await page.screenshot({path:"qa-artifacts/03-doctor.png",fullPage:true});
    return "doctor Seungmin Yoo / live public review count";
   });
