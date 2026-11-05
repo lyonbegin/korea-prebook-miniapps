@@ -117,3 +117,12 @@
 }
 .source-breach-summary{align-items:start;padding-top:18px}
 .source-breach-summary>a{align-self:center}
+
+.source-promo-overlay{position:absolute;inset:0;padding:19px 20px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;color:#111}
+.source-promo-overlay-top{display:flex;align-items:flex-start}
+.source-promo-badge{background:#0005;border-radius:6px;padding:6px 9px;color:#fff;font-size:12px;font-weight:720}
+.source-promo-badge:before{content:"✦";font-size:10px;display:inline-block;margin-right:5px}
+.source-promo-overlay-bottom h3{font-size:22px;line-height:1.1;max-width:247px;white-space:normal;margin:0 0 10px;font-weight:850;letter-spacing:-.55px}
+.source-promo-overlay-bottom p{font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;max-width:270px}
+.source-promo-light{color:#fff}
+.source-promo-position{z-index:1}

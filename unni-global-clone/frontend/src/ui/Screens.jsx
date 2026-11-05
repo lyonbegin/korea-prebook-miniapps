@@ -17,6 +17,13 @@ function HomePromoCarousel({slides,go}){
   {slides.length>1&&<div className="source-promo-peek source-promo-peek-left" aria-hidden="true"><img src={slides[(index+slides.length-1)%slides.length].image} alt=""/></div>}
   <div className="source-promo-card">
    {item.href?<button type="button" className="source-promo-action" onClick={()=>go(item.href.replace(/^\/us/,""))}>{media}</button>:media}
+   <div className={"source-promo-overlay"+(item.lightText?" source-promo-light":"")}>
+     <div className="source-promo-overlay-top">{item.badge&&<span className="source-promo-badge">{item.badge}</span>}</div>
+     <div className="source-promo-overlay-bottom">
+       <h3>{item.title}</h3>
+       {item.tagline&&<p>{item.tagline}</p>}
+     </div>
+   </div>
    <span className="source-promo-position">{index+1} / {slides.length}</span>
   </div>
   {slides.length>1&&<div className="source-promo-peek source-promo-peek-right" aria-hidden="true"><img src={slides[(index+1)%slides.length].image} alt=""/></div>}

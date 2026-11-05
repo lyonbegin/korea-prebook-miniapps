@@ -227,9 +227,17 @@ export function parseSource(html,route){
       // These are source's 6 featured editorial slides, not event photos.
       if(!((w===1080&&h===396)||(w===1406&&h===516)))continue;
       seen.add(uri);
+      const card=img.closest("button");
       const anchor=img.closest("a[href]");
       const href=anchor?originPath(anchor.getAttribute("href")||""):null;
-      slides.push({image:uri,title:text({textContent:img.getAttribute("alt")||""}),href});
+      const title=text({textContent:img.getAttribute("alt")||""});
+      const paragraphs=[...(card?.querySelectorAll("p")||[])].map(x=>text(x)).filter(Boolean);
+      const tagline=paragraphs.filter(x=>x!==title&&!/^\d+\s*[|/]\s*\d+$/.test(x)).at(-1)||"";
+      const badges=[...(card?.querySelectorAll("span")||[])].map(x=>text(x));
+      const badge=badges.find(x=>["Benefits","Real Data","Tips"].includes(x))||"";
+      const titleNode=[...(card?.querySelectorAll("p")||[])].find(x=>text(x)===title);
+      const lightText=String(titleNode?.className||"").includes("inverse");
+      slides.push({image:uri,title,tagline,badge,lightText,href});
     }
     return slides.slice(0,16);
   })():[];

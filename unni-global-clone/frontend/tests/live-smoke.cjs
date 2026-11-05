@@ -69,6 +69,9 @@ async function main(){
     assert.match(await cards.first().getAttribute("src"),/originalImageWidth=1080/);
     assert.equal(await page.locator(".source-promo-peek img").count(),2,"Adjacent real promotional previews remain visible");
     assert.match(await page.locator(".source-promo-position").innerText(),/2\s*\/\s*6/);
+   assert.match(await page.locator(".source-promo-overlay-bottom h3").innerText(),/Free On-Site Interpreter Support/);
+   assert.match(await page.locator(".source-promo-overlay-bottom p").innerText(),/Unni users/);
+   assert.match(await page.locator(".source-promo-badge").innerText(),/Benefits/);
     await page.getByRole("button",{name:"Next promotion"}).click();
     assert.match(await page.locator(".source-promo-position").innerText(),/3\s*\/\s*6/);
     assert.ok(await page.locator(".source-category-strip img").count()>=10,"Original category art icons must be linked");
