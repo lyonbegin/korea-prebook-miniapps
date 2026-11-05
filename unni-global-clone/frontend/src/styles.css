@@ -102,3 +102,18 @@
 @media(min-width:750px){.source-global-bottom{display:none}.app-shell{padding-bottom:0}}
 
 .district-areas>button:disabled{opacity:.4;cursor:not-allowed}.district-complete:disabled{opacity:.5}
+
+/* Original mobile promotion window is a 245px centered crop with adjacent
+   carousel slides peeking on the left and right. */
+@media(max-width:749px){
+  .source-home-promotions{padding:0 32px;margin:7px 0 0;max-width:none}
+  .source-promo-card{height:245px;aspect-ratio:auto;border-radius:19px}
+  .source-promo-card>img,.source-promo-action img{height:245px;max-height:none;min-height:245px;object-fit:cover}
+  .source-promo-peek{position:absolute;top:0;width:20px;height:245px;overflow:hidden;border-radius:17px}
+  .source-promo-peek-left{left:0;border-radius:0 17px 17px 0}
+  .source-promo-peek-right{right:0;border-radius:17px 0 0 17px}
+  .source-promo-peek img{height:245px;width:100%;object-fit:cover}
+  .source-column-section{padding-top:0}
+}
+.source-breach-summary{align-items:start;padding-top:18px}
+.source-breach-summary>a{align-self:center}

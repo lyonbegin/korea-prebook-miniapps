@@ -64,9 +64,10 @@ async function main(){
   });
   await check("Homepage restores six genuine source promotional images and source category icons",async()=>{
     await visit("/");
-    const cards=page.locator(".source-home-promotions img");
+    const cards=page.locator(".source-promo-card img");
     assert.equal(await cards.count(),1);
     assert.match(await cards.first().getAttribute("src"),/originalImageWidth=1080/);
+    assert.equal(await page.locator(".source-promo-peek img").count(),2,"Adjacent real promotional previews remain visible");
     assert.match(await page.locator(".source-promo-position").innerText(),/2\s*\/\s*6/);
     await page.getByRole("button",{name:"Next promotion"}).click();
     assert.match(await page.locator(".source-promo-position").innerText(),/3\s*\/\s*6/);

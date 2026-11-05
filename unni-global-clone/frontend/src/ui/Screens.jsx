@@ -14,10 +14,12 @@ function HomePromoCarousel({slides,go}){
  const item=slides[Math.min(index,slides.length-1)];
  const media=<img src={item.image} alt={item.title||"Original UNNI promotion"} loading="eager"/>;
  return <section className="source-home-promotions" aria-label="Original promotional banners">
+  {slides.length>1&&<div className="source-promo-peek source-promo-peek-left" aria-hidden="true"><img src={slides[(index+slides.length-1)%slides.length].image} alt=""/></div>}
   <div className="source-promo-card">
    {item.href?<button type="button" className="source-promo-action" onClick={()=>go(item.href.replace(/^\/us/,""))}>{media}</button>:media}
    <span className="source-promo-position">{index+1} / {slides.length}</span>
   </div>
+  {slides.length>1&&<div className="source-promo-peek source-promo-peek-right" aria-hidden="true"><img src={slides[(index+1)%slides.length].image} alt=""/></div>}
   {slides.length>1&&<><button className="source-promo-prev" aria-label="Previous promotion" onClick={()=>setIndex(i=>(i+slides.length-1)%slides.length)}>‹</button>
     <button className="source-promo-next" aria-label="Next promotion" onClick={()=>setIndex(i=>(i+1)%slides.length)}>›</button></>}
  </section>;
