@@ -281,8 +281,8 @@ async def ingest_public_metadata(pool,path,query,body):
               name=EXCLUDED.name,address=EXCLUDED.address,public_rating=EXCLUDED.public_rating,
               public_review_count=EXCLUDED.public_review_count,attributes=EXCLUDED.attributes,fetched_at=EXCLUDED.fetched_at""",
               identifier,title,url,info.get("address"),rating,reviews,json.dumps(info),now)
-             for doc in public_doctors_in_hospital(main):
-                 await conn.execute("""INSERT INTO unni_clone.doctors
+            for doc in public_doctors_in_hospital(main):
+                await conn.execute("""INSERT INTO unni_clone.doctors
                     (original_doctor_id,original_hospital_id,display_name,source_url,public_attributes,fetched_at,rights_status)
                     VALUES ($1,$2,$3,$4,'{}'::jsonb,$5,'metadata_only')
                     ON CONFLICT(original_doctor_id) DO UPDATE SET
