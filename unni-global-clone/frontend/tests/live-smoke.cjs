@@ -287,7 +287,7 @@ async function main(){
    await visit("/doctors/1502");
    const text=await page.locator("body").innerText();
    assert.match(text,/Seungmin Yoo/);
-   assert.match(text,/\b\d{1,3},\d{3}\s+Reviews\b/,"Live source physician reviews must be displayed");
+   assert.match(text,/\bReviews\s+\d{1,3},\d{3}\b/,"Original physician card publishes Reviews then count");
    assert.ok(!text.includes("Original data unavailable"));
    assert.match(await page.locator(".d2-doctor-detail").innerText(),/Seungmin Yoo/);
    await page.screenshot({path:"qa-artifacts/03-doctor.png",fullPage:true});
@@ -295,7 +295,7 @@ async function main(){
   });
   await check("Doctor public specialties and experience",async()=>{
    const body=await page.locator("body").innerText();
-   assert.match(body,/Specialties/);
+   assert.match(body,/Filler, Lifting, Body, Skin, Botox/,"Original doctor profile lists specialty labels without a separate Specialties heading");
    assert.match(body,/Society conferences and papers|Korean Obesity Research/i);
    return "Public physician specialties and experience";
   });
@@ -308,18 +308,19 @@ async function main(){
   });
   await check("Clinic doctor card navigates to actual doctor detail",async()=>{
    await visit("/hospitals/826");
-   const card=page.locator("#d2-doctors .clinic-card").first();
-   await card.waitFor({timeout:10000});
-   // The persisted public doctor catalog may load after the original HTML;
-   // do not validate a transient ancestor clinic name as the doctor.
-   await page.locator("#d2-doctors .clinic-card").filter({hasText:/Seungmin Yoo/}).first().waitFor({timeout:12000});
-   assert.match(await page.locator("#d2-doctors .clinic-card").first().innerText(),/Seungmin Yoo/);
-   assert.equal(await page.locator("#d2-doctors .clinic-card").count(),1,"No extra hospital-as-doctor card");
+   await page.waitForFunction(()=>{
+     const cards=[...document.querySelectorAll("#d2-doctors .clinic-card")];
+     return cards.length===1&&cards[0].textContent.includes("Seungmin Yoo");
+   },null,{timeout:15000});
+   const cards=page.locator("#d2-doctors .clinic-card");
+   assert.equal(await cards.count(),1,"one verified public physician; no phantom clinic card");
+   const card=cards.first();
+   assert.match(await card.innerText(),/Seungmin Yoo/);
    await card.click();
    assert.match(page.url(),/\/doctors\/1502/);
-   await page.locator(".d2-top h1").waitFor({timeout:9000});
-   assert.match(await page.locator(".d2-top h1").innerText(),/Seungmin Yoo/);
-   return "clinic public physician card -> correct independent doctor route";
+   await page.locator(".d2-doctor-id-content h1").waitFor({timeout:9000});
+   assert.match(await page.locator(".d2-doctor-id-content h1").innerText(),/Seungmin Yoo/);
+   return "clinic doctor 1502, name from verified public profile, opens independent doctor detail";
   });
   await check("Clinic procedure card navigates to original event identifier",async()=>{
    await visit("/hospitals/826");
