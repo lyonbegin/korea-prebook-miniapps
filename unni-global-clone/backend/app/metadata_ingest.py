@@ -74,7 +74,24 @@ def source_hospital(soup):
          and not re.search(r"Reviews|About|Procedure Info",text(x),re.I)),None)
     name=text(heading) or text(link) or ("Clinic "+hid)
     return hid,name
-def get_option_rows(soup,event_id,url):
+def public_option_id_pairs(raw_html):
+    """Only original id+name pairs actually present in anonymous public SSR.
+    A UUID with a different name or a different order is never assigned.
+    """
+    if not raw_html:
+        return []
+    raw=raw_html.decode("utf-8","replace") if isinstance(raw_html,bytes) else str(raw_html)
+    pattern=re.compile(r'"id":"([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})","name":"((?:\\\\.|[^"\\\\])*)"',re.I)
+    rows=[]
+    for m in pattern.finditer(raw):
+        try:
+            name=json.loads('"'+m.group(2)+'"')
+        except (ValueError,TypeError):
+            name=m.group(2)
+        rows.append((m.group(1).lower(),clean(name)))
+    return rows
+
+def get_option_rows(soup,event_id,url,raw_html=None):
     h3s=soup.find_all("h3")
     rows=[]
     info=soup.find(lambda x:x.name=="h2" and text(x).lower()=="procedure info")
@@ -111,6 +128,18 @@ def get_option_rows(soup,event_id,url):
         rows.append(dict(key=event_id+":"+str(len(rows)+1),order=len(rows)+1,
             name=title,price=sale,original_price=old,discount_percent=decimals(discount.group(1)) if discount else None,
             local_price=decimals(won.group(1)) if won else None,attributes=fields,option_id=option_id))
+    # Map UUIDs from the real public option list, not just the currently
+    # selected option in the URL. Duplicate display names stay separate by
+    # their original ordering.
+    observed=public_option_id_pairs(raw_html)
+    cursor=0
+    for row in rows:
+        for idx in range(cursor,len(observed)):
+            candidate_id,candidate_name=observed[idx]
+            if candidate_name.casefold()==clean(row["name"]).casefold():
+                row["option_id"]=candidate_id
+                cursor=idx+1
+                break
     return rows[:150]
 def hospital_info(soup):
     out={}
@@ -188,7 +217,7 @@ async def ingest_public_metadata(pool,path,query,body):
                   VALUES($1,$2,$3,'metadata_only',$4)
                   ON CONFLICT (original_hospital_id) DO NOTHING""",
                   hid,clinic_name,"https://unni.app/us/hospitals/"+hid,now)
-            options=get_option_rows(main,identifier,url)
+            options=get_option_rows(main,identifier,url,body)
             minimum=min([o["price"] for o in options if o["price"] is not None],default=None)
             await conn.execute("""INSERT INTO unni_clone.events
              (original_event_id,original_hospital_id,public_title,source_url,public_rating,public_review_count,min_price,currency,public_attributes,fetched_at,rights_status)
