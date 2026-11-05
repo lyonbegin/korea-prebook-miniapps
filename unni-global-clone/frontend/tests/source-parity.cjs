@@ -12,6 +12,36 @@ const pairs=[
  {name:"clinic-826",original:"https://unni.app/us/hospitals/826",clone:"/hospitals/826"},
  {name:"doctor-1502",original:"https://unni.app/us/doctors/1502",clone:"/doctors/1502"}
 ];
+// GitHub-hosted browsers receive HTTP 403 from the public site's edge.
+// Route anonymous, GET-only unni.app resources through the already deployed
+// independent gateway to inspect the same unmodified public representation.
+// This is NOT an authenticated source session or a claim of pixel parity.
+const gateway=process.env.UNNI_ORIGIN_GATEWAY||"https://unni-mobile-api-production.up.railway.app";
+async function sourceThroughPublicGateway(page){
+ const metrics={requests:0,successful:0,failed:0,assets:0};
+ await page.route(/^https:\/\/(?:www\.)?unni\.app\//,async route=>{
+   const req=route.request();
+   if(req.method()!=="GET"){await route.abort();return}
+   const u=new URL(req.url());
+   // Only anonymous original global pages and their own public assets.
+   if(!u.pathname.startsWith("/us")&&!u.pathname.startsWith("/_next/")&&!/\.(?:css|js|woff2?|svg|png|jpg|jpeg|webp|ico)$/.test(u.pathname)){
+     await route.abort();return;
+   }
+   metrics.requests++;
+   try{
+     const resp=await fetch(gateway+"/gateway/public-web"+u.pathname+u.search,{
+       headers:{Accept:req.headers().accept||"*/*","Accept-Language":"en"},
+       signal:AbortSignal.timeout(18000)
+     });
+     if(resp.ok)metrics.successful++;else metrics.failed++;
+     if(u.pathname.includes("/_next/"))metrics.assets++;
+     const contentType=resp.headers.get("content-type")||"application/octet-stream";
+     await route.fulfill({status:resp.status,headers:{"content-type":contentType},
+       body:Buffer.from(await resp.arrayBuffer())});
+   }catch{metrics.failed++;await route.abort()}
+ });
+ return metrics;
+}
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 function compare(a,b){
  const l=PNG.sync.read(a),r=PNG.sync.read(b);
@@ -35,7 +65,8 @@ function compare(a,b){
      const source=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
      const clone=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
      try{
-       const response=await source.goto(pair.original,{waitUntil:"domcontentloaded",timeout:25000});
+       const gatewayMetrics=await sourceThroughPublicGateway(source);
+       const response=await source.goto(pair.original,{waitUntil:"domcontentloaded",timeout:30000});
        if(!response?.ok())throw Error("Original HTTP "+response?.status());
        await clone.goto(base+pair.clone,{waitUntil:"domcontentloaded",timeout:25000});
        await clone.locator(".loading-screen").waitFor({state:"hidden",timeout:20000}).catch(()=>{});
@@ -48,11 +79,12 @@ function compare(a,b){
        fs.writeFileSync(path.join("qa-artifacts",heatmapFile),x.heatmap);
        const headings=async p=>p.locator("main h1, main h2, main h3").allTextContents();
        const row={page:pair.name,source_url:pair.original,clone_url:base+pair.clone,source_headings:(await headings(source)).slice(0,100),clone_headings:(await headings(clone)).slice(0,100),
-          changed_ratio_percent:x.changed_ratio,mean_pixel_delta:x.mean_pixel_delta,compared_pixels:x.compared_pixels,heatmap:heatmapFile,visual_parity_verified:x.changed_ratio===0};
+          changed_ratio_percent:x.changed_ratio,mean_pixel_delta:x.mean_pixel_delta,compared_pixels:x.compared_pixels,heatmap:heatmapFile,visual_parity_verified:x.changed_ratio===0,
+          source_mode:"anonymous-original-via-public-gateway",gateway_metrics:gatewayMetrics};
        result.push(row);
        console.log("VISUAL AUDIT",pair.name,"mismatch",row.changed_ratio_percent+"%","(not a parity pass)");
      }catch(e){const row={page:pair.name,status:"UNVERIFIED",reason:String(e.message||e)};result.push(row);console.error("VISUAL AUDIT unavailable",pair.name,row.reason)}
      finally{await source.close();await clone.close()}
    }
- }finally{await browser.close();fs.writeFileSync("qa-artifacts/source-visual-parity.json",JSON.stringify({captured_at:new Date().toISOString(),viewport:{width:390,height:844},pages:result,meaning:"Pixel difference is for same-size initial viewport only; no claim of full-page, original-app or functional parity."},null,2))}
+ }finally{await browser.close();fs.writeFileSync("qa-artifacts/source-visual-parity.json",JSON.stringify({captured_at:new Date().toISOString(),viewport:{width:390,height:844},pages:result,meaning:"Comparison is anonymous original SSR/assets served through public read-only gateway; initial viewport 390x844 only. Not proof of full page, logged-in, Android app, or real booking parity."},null,2))}
 })();
