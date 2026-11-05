@@ -51,7 +51,7 @@ function useSource(route){
    }catch(e){if(!controller.signal.aborted)setState({data:null,loading:false,error:String(e?.message||e),fetchedFrom:source});}
   })();
   return()=>controller.abort();
- },[route,source,version]);
+ },[source,version]);
  return {...state,refresh};
 }
 function IconButton({label,onClick,children}){return <button type="button" className="icon-button" aria-label={label} onClick={onClick}>{children}</button>;}
