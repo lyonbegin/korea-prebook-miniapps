@@ -126,3 +126,8 @@
 .source-promo-overlay-bottom p{font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;max-width:270px}
 .source-promo-light{color:#fff}
 .source-promo-position{z-index:1}
+
+/* Browser-driven keyboard/pointer scrolling must not animate implicitly.
+   Source section buttons opt into smooth scroll explicitly. Global smooth
+   scroll moved click targets beneath other controls during form submission. */
+html{scroll-behavior:auto}
