@@ -349,6 +349,20 @@ export function parseSource(html,route){
       detail.recommended=normalized.split(/(?=For those who\b|Those who\b|People who\b)/gi).map(x=>x.trim()).filter(Boolean);
     }
   }
+  // A public physician anchor may be wrapped by a hospital card. Resolve
+  // the physician's visible proper name from the original All Doctors section
+  // instead of accepting the enclosing clinic title.
+  if(detailKind==="hospitals"&&doctors.length){
+    const roster=fullText.match(/All Doctors\s*\d+([\s\S]{0,1400}?)(?=Clinic Hours|Address|Procedures|Reviews|$)/i)?.[1]||"";
+    const verified=[...roster.matchAll(/([A-Z][A-Za-z'’-]+(?:\s+[A-Z][A-Za-z'’-]+){1,3})\s+Dr\./g)]
+       .map(m=>m[1]+" Dr.");
+    if(verified.length===doctors.length){
+      doctors.forEach((doctor,i)=>{
+        doctor.title=verified[i];
+        doctor.summary="Public clinician";
+      });
+    }
+  }
   const doctorSpecialties=detailKind==="doctors"?["Filler","Lifting","Body","Skin","Botox"].filter(x=>
     fullText.slice(0,Math.min(600,Math.max(0,fullText.indexOf("Reviews"))+170)).includes(x)):null;
   return {route,pageTitle,homePromo,homeSections,doctorSpecialties,detailKind,id:match?.[2]||null,
