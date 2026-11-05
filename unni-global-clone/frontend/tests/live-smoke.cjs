@@ -91,6 +91,25 @@ async function main(){
    assert.match(await sec.innerText(),/exercising/);
    return "5 original public recommendations";
   });
+  await check("Inspect public source option UUID exposure without writing data",async()=>{
+    const info=await page.evaluate(async()=>{
+      const path="/gateway/public-web/us/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd";
+      const response=await fetch(path,{credentials:"omit",headers:{Accept:"text/html"}});
+      const html=await response.text();
+      const pattern=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+      const found=[...html.matchAll(pattern)];
+      const ids=[...new Set(found.map(m=>m[0].toLowerCase()))];
+      const contexts=found.slice(0,45).map(m=>({
+         id:m[0],near:html.slice(Math.max(0,m.index-65),m.index+85)
+           .replace(/[<>]/g," ").slice(0,150)
+      }));
+      return {status:response.status,bytes:html.length,uuidCount:ids.length,uuidSamples:ids.slice(0,20),contexts};
+    });
+    fs.writeFileSync("qa-artifacts/source-option-uuid-diagnostic.json",JSON.stringify(info,null,2));
+    console.log("PUBLIC_OPTION_UUID_DIAG",JSON.stringify(info).slice(0,9000));
+    assert.equal(info.status,200);
+    return info.uuidCount+" observed public HTML UUID values (not all are option IDs)";
+  });
   await check("All 14 source options have distinct list positions",async()=>{
    await page.locator(".d2-show-more").click();
    const cards=page.locator("#d2-options .d2-option");
