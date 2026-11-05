@@ -2,7 +2,7 @@
 import asyncio
 import unittest
 from bs4 import BeautifulSoup
-from app.metadata_ingest import get_option_rows, source_hospital, hospital_info, ingest_public_metadata
+from app.metadata_ingest import get_option_rows, source_hospital, hospital_info, public_option_id_pairs, public_doctors_in_hospital, ingest_public_metadata
 from app.inquiries import INQUIRY_SCHEMA
 
 EVENT="""<html><main><h1>Fat Dissolving Injection</h1><p>9.9</p>
@@ -24,6 +24,17 @@ HOSPITAL="""<html><main><h1>U Line Clinic</h1><p>9.7</p><p>10,668 Reviews</p>
 <h2>Address</h2><p>7 Seolleung-ro 160-gil, Gangnam-gu, Seoul, Republic of Korea</p>
 </main></html>"""
 
+# Original UNNI public SSR structure: doctor ID 1502 is nested in
+# an anchor with data-testid="doctor-profile" inside the hospital card.
+HOSPITAL_DOCTORS=HOSPITAL.replace("</main></html>", """
+<a data-testid="doctor-profile" href="/us/doctors/1502">
+  <div class="doctorIdentity"><span class="doctorName"><h3>Seungmin Yoo Dr.</h3></span></div>
+</a>
+</main></html>""")
+SOURCE_OPTION_UUIDS='''<script id="__NEXT_DATA__" type="application/json">{"options":[
+{"id":"65ec0474-c599-11ee-982f-0a5164a62f36","name":"Shoulder Slimming Botox"},
+{"id":"d195122c-ee11-4090-94c1-29a439508bdd","name":"Calf Botox"}
+]}</script>'''
 class Ctx:
     def __init__(self,result):self.result=result
     async def __aenter__(self):return self.result
@@ -74,6 +85,19 @@ class PublicMetadataTest(unittest.TestCase):
         self.assertTrue(data["hours"])
         self.assertIn("Wednesdays",data["closed_notice"])
         self.assertIn("Gangnam-gu",data["address"])
+    def test_verifiable_public_option_uuids_are_name_bound(self):
+        rows=public_option_id_pairs(SOURCE_OPTION_UUIDS)
+        self.assertEqual(rows,[
+            ("65ec0474-c599-11ee-982f-0a5164a62f36","Shoulder Slimming Botox"),
+            ("d195122c-ee11-4090-94c1-29a439508bdd","Calf Botox")])
+        html=EVENT.replace("</main></html>",SOURCE_OPTION_UUIDS+"</main></html>")
+        got=get_option_rows(BeautifulSoup(html,"html.parser"),"70809","https://unni.app/us/events/70809",html)
+        self.assertEqual([row["option_id"] for row in got],
+                         [row[0] for row in rows])
+    def test_hospital_doctor_profile_link(self):
+        records=public_doctors_in_hospital(BeautifulSoup(HOSPITAL_DOCTORS,"html.parser"))
+        self.assertEqual(records,[{"id":"1502","name":"Seungmin Yoo"}])
+        self.assertEqual(public_doctors_in_hospital(BeautifulSoup(HOSPITAL,"html.parser")),[])
     def test_independent_inquiry_schema_isolated(self):
         self.assertIn("unni_clone.inquiries",INQUIRY_SCHEMA)
         self.assertIn("secret_hash TEXT UNIQUE NOT NULL",INQUIRY_SCHEMA)
@@ -90,6 +114,13 @@ class AsyncMetadataTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sum("INSERT INTO unni_clone.option_price_history" in s for s in names),2)
         self.assertTrue(any("unni_clone.events" in s for s in names))
         self.assertTrue(any("unni_clone.source_provenance" in s for s in names))
+    async def test_hospital_visit_upserts_public_physician_once(self):
+        pool=FakePG()
+        result=await ingest_public_metadata(pool,"/us/hospitals/826","",HOSPITAL_DOCTORS.encode())
+        self.assertEqual(result,{"type":"hospital","id":"826"})
+        doctor_writes=[(sql,args) for sql,args in pool.conn.statements if "INSERT INTO unni_clone.doctors" in sql]
+        self.assertEqual(len(doctor_writes),1)
+        self.assertEqual(doctor_writes[0][1][:3],("1502","826","Seungmin Yoo"))
     async def test_doctor_plain_text_profile(self):
         pool=FakePG()
         result=await ingest_public_metadata(pool,"/us/doctors/1502","",DOCTOR.encode())
