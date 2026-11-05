@@ -6,3 +6,9 @@
 .iq-form{padding-bottom:max(24px,env(safe-area-inset-bottom))}
 .iq-submit{position:relative;z-index:2;flex-shrink:0}
 .iq-consent{position:relative;z-index:1}
+
+/* Keep the consent/submit button inside mobile physical touch viewports.
+   The public source can report a visualViewport larger than the Playwright
+   mobile hardware viewport, so supply real in-panel scroll clearance. */
+.iq-form{padding-bottom:max(145px,calc(env(safe-area-inset-bottom) + 120px))}
+.iq-panel{max-height:min(86dvh,760px);overflow-y:auto;overscroll-behavior-y:contain}

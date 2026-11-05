@@ -14,21 +14,33 @@ async function check(label,fn){
  // the underlying page *under* a body-level fixed footer. We assert hit
  // testing before clicking; no force/DOM synthetic events.
 async function clickVisiblePointer(page,selector,{scroll=false,touch=false}={}){
- const hit=await page.evaluate(({selector,scroll})=>{
+ const physical=page.viewportSize();
+ const hit=await page.evaluate(({selector,scroll,maxY})=>{
    const el=document.querySelector(selector);
    if(!el)throw Error("Missing pointer target: "+selector);
-   if(scroll)el.scrollIntoView({block:"center",inline:"nearest",behavior:"instant"});
+   if(scroll){
+     el.scrollIntoView({block:"end",inline:"nearest",behavior:"instant"});
+     const panel=el.closest(".iq-panel");
+     const rect=el.getBoundingClientRect();
+     if(panel&&rect.bottom>maxY){
+       panel.scrollTop+=rect.bottom-maxY+24;
+     }
+   }
    const rect=el.getBoundingClientRect();
    const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
    const top=document.elementFromPoint(cx,cy);
    return {x:cx,y:cy,onTarget:top===el||el.contains(top),
-     hit:top?.className||top?.tagName,rect:{top:rect.top,bottom:rect.bottom},viewport:innerHeight};
- },{selector,scroll});
+     hit:top?.className||top?.tagName,rect:{top:rect.top,bottom:rect.bottom},
+     viewport:{layoutHeight:innerHeight,physicalHeight:maxY+55},
+     panelScroll:el.closest(".iq-panel")?.scrollTop||0};
+ },{selector,scroll,maxY:physical.height-55});
+ assert.ok(hit.y>0&&hit.y<physical.height-25,"Button outside physical touch viewport: "+selector+" "+JSON.stringify(hit));
  assert.ok(hit.onTarget,"Button obscured: "+selector+" "+JSON.stringify(hit));
  if(touch)await page.touchscreen.tap(hit.x,hit.y);
  else await page.mouse.click(hit.x,hit.y);
  return hit;
 }
+
 async function main(){
  fs.mkdirSync("qa-artifacts",{recursive:true});
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
