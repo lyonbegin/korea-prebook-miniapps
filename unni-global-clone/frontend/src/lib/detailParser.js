@@ -178,6 +178,25 @@ function parseMoney(raw){
   return {originalPrice,salePrice,discountPercent:dis?Number(dis[1]):null,
     localPrice:local,currency:"USD",localCurrency:local?"KRW":null,vatIncluded:/VAT included/i.test(raw)};
 }
+// The public page already includes the full option array in its SSR JSON.
+// Never infer UUIDs from option order; bind only matching name + source ID.
+function publicOptionIds(doc,options){
+ const uuid=/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+ const source=[...doc.querySelectorAll("script")].map(s=>s.textContent||"").join("\n");
+ const candidates=[...source.matchAll(/"id":"([0-9a-f-]{36})","name":"((?:\\.|[^"\\])*)"/gi)]
+   .map(m=>({id:m[1],name:m[2].replace(/\\\"/g,'"')}))
+   .filter(x=>uuid.test(x.id));
+ const ordered=[];
+ let offset=0;
+ for(const o of options){
+   const normalized=trim(o.title).toLowerCase();
+   const matchIndex=candidates.findIndex((v,i)=>i>=offset&&trim(v.name).toLowerCase()===normalized);
+   if(matchIndex<0){ordered.push(null);continue}
+   ordered.push(candidates[matchIndex].id);
+   offset=matchIndex+1;
+ }
+ return ordered;
+}
 function optionNodes(main){
   const all=[...main.querySelectorAll("h3")];
   const first=all.findIndex(h=>/^Option\s+\d{1,3}\s*$/i.test(trim(h.textContent)));
@@ -298,6 +317,10 @@ export function parseDetailModel(doc,route,main){
   const stats=ratingAndReviews(main,kind);
   const selectedOptionIndex=titleOptionIndex(main);
   const pageOptions=kind==="event"?optionNodes(main):[];
+  if(kind==="event"){
+    const observed=publicOptionIds(doc,pageOptions);
+    pageOptions.forEach((o,i)=>{if(observed[i])o.sourceOptionId=observed[i]});
+  }
   const parsed=new URLSearchParams(route.split("?")[1]||"");
   const initial=Math.max(0,Math.min(pageOptions.length-1,
     parsed.has("optionIndex")?Math.max(0,Number(parsed.get("optionIndex"))-1):selectedOptionIndex));
