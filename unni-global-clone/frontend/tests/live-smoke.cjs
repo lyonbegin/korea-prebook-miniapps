@@ -341,6 +341,15 @@ async function main(){
    await page.screenshot({path:"qa-artifacts/03-doctor.png",fullPage:true});
    return "doctor Seungmin Yoo / live public review count";
   });
+  await check("Doctor original public review illustration and official login link",async()=>{
+    await visit("/doctors/1502");
+    const img=page.locator("#d2-doctor-reviews img.d2-source-review-illustration");
+    await img.waitFor({timeout:12000});
+    assert.equal(await img.getAttribute("src"),"https://unni.app/images/review-login/us.webp");
+    assert.equal(await page.locator(".d2-source-review-login").getAttribute("href"),"https://unni.app/us/doctors/1502");
+    assert.match(await page.locator("#d2-doctor-reviews").innerText(),/Sign in in 3 seconds/);
+    return "public review-login illustration and official sign-in location, no copied private reviews";
+  });
   await check("Doctor public specialties and experience",async()=>{
    const body=await page.locator("body").innerText();
    assert.match(body,/Filler, Lifting, Body, Skin, Botox/,"Original doctor profile lists specialty labels without a separate Specialties heading");

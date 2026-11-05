@@ -310,8 +310,14 @@ export function DoctorDetailV2({route,data,go}){
   <Block id="d2-doctor-reviews">
    <Header>Reviews {reviewsText}</Header>
    <div className="d2-doctor-review-notice">
-     <p>Log in to view all detailed reviews from real visitors.</p>
-     <SourceLink route={route}>Reviews at source</SourceLink>
+     <img className="d2-source-review-illustration"
+       src="https://unni.app/images/review-login/us.webp"
+       alt="Original UNNI review access illustration" loading="lazy"/>
+     <p>Log in to view all detailed reviews<br/>from real visitors</p>
+     <a className="d2-source-review-login" href={"https://unni.app/us/doctors/"+encodeURIComponent(data.id)}
+       target="_blank" rel="noopener noreferrer" title="Sign in on the official UNNI website">
+       Sign in in 3 seconds
+     </a>
    </div>
   </Block>
   {data.sections.filter(x=>/experience|background|special/i.test(x.title)).map((s,i)=>
