@@ -309,7 +309,10 @@ async function main(){
    await visit("/hospitals/826");
    const card=page.locator("#d2-doctors .clinic-card").first();
    await card.waitFor({timeout:10000});
-   assert.match(await card.innerText(),/Seungmin Yoo/);
+   // The persisted public doctor catalog may load after the original HTML;
+   // do not validate a transient ancestor clinic name as the doctor.
+   await page.locator("#d2-doctors .clinic-card").filter({hasText:/Seungmin Yoo/}).first().waitFor({timeout:12000});
+   assert.match(await page.locator("#d2-doctors .clinic-card").first().innerText(),/Seungmin Yoo/);
    await card.click();
    assert.match(page.url(),/\/doctors\/1502/);
    await page.locator(".d2-top h1").waitFor({timeout:9000});
@@ -350,7 +353,8 @@ async function main(){
    await page.locator(".listing-heading button").click();
    await page.getByRole("button",{name:"Lowest Price",exact:true}).click();
    await page.getByRole("button",{name:"Apply filters",exact:true}).click();
-   await page.waitForTimeout(600);
+   await page.locator(".loading-screen").waitFor({state:"hidden",timeout:30000}).catch(()=>{});
+   await page.locator(".offer-card").first().waitFor({state:"visible",timeout:15000});
    const values=await page.locator(".offer-price-line b").allTextContents();
    const nums=values.map(x=>Number(x.replace(/[^0-9.]/g,""))).filter(x=>Number.isFinite(x)&&x>0);
    assert.ok(nums.length>=5,"Enough source prices to sort");

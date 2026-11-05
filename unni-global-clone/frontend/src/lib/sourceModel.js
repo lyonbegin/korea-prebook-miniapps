@@ -353,6 +353,13 @@ export function parseSource(html,route){
   // the physician's visible proper name from the original All Doctors section
   // instead of accepting the enclosing clinic title.
   if(detailKind==="hospitals"&&doctors.length){
+    // Duplicate source anchor variants must not create phantom physicians.
+    const ids=new Set();
+    for(let i=doctors.length-1;i>=0;i--){
+      const id=doctors[i].id||doctors[i].path;
+      if(ids.has(id))doctors.splice(i,1);
+      else ids.add(id);
+    }
     const roster=fullText.match(/All Doctors\s*\d+([\s\S]{0,1400}?)(?=Clinic Hours|Address|Procedures|Reviews|$)/i)?.[1]||"";
     const verified=[...roster.matchAll(/([A-Z][A-Za-z'’-]+(?:\s+[A-Z][A-Za-z'’-]+){1,3})\s+Dr\./g)]
        .map(m=>m[1]+" Dr.");
