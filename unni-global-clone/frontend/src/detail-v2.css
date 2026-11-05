@@ -159,3 +159,21 @@
 .d2-clinic-detail #d2-highlights .d2-highlights>div{border:0;background:#fff;display:flex;align-items:center;gap:8px;padding:2px;font-size:13px;line-height:1.4;color:#161a1f}
 .d2-clinic-detail #d2-highlights .d2-highlights img{width:31px;height:31px;object-fit:contain;flex:0 0 31px}
 .d2-clinic-detail #d2-highlights .d2-medical-disclaimer{background:#eef0f3;color:#67717d;padding:14px 12px;margin:12px 6px 20px;border-radius:6px;line-height:1.55}
+
+/* Source event hierarchy: selection and discounted price precede clinic. */
+.d2-top>.d2-eyebrow{display:none}
+.d2-featured-public{margin:20px 0 0;padding:15px 0 19px;border:0;border-top:1px solid #e3e6e9;border-bottom:1px solid #e3e6e9;border-radius:0;background:#fff;gap:7px}
+.d2-featured-public .d2-featured-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.d2-featured-public .d2-featured-head span{color:#677e94;font-size:13px}
+.d2-featured-public .d2-featured-head button{background:#fff;border:1px solid #bac4d0;border-radius:6px;font-size:13px;font-weight:700;padding:11px 15px;color:#111}
+.d2-featured-public>b{font-size:16px;line-height:1.4}
+.d2-option-summary{color:#667d93;font-size:12px;line-height:1.45;max-width:85%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+.d2-featured-public .d2-price{border-top:1px solid #e5e8eb;padding-top:14px;margin-top:12px}
+.d2-featured-public .d2-price strong{font-size:19px;color:#17191c}
+.d2-featured-public .d2-price .d2-percent{color:#fc6339;font-size:18px}
+.d2-featured-public .d2-price small{font-size:12px;color:#6b7e92}
+.d2-featured-public .d2-price del{font-size:13px;color:#91a0af}
+.d2-clinic-summary{margin-top:0;border-top:0;border-bottom:1px solid #e7eaed;padding:19px 0}
+.d2-sticky{bottom:0;width:100%;max-width:none;padding-bottom:max(11px,env(safe-area-inset-bottom))}
+.d2-sticky button{background:#ff633a;border-radius:7px}
+@supports(padding-bottom:env(safe-area-inset-bottom)){.d2-sticky{bottom:0}}

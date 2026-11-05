@@ -77,6 +77,8 @@ function Attributes({value}){
 function OptionList({detail,selected,setSelected,resolveOption}){
  const opts=detail.options||[],[all,setAll]=useState(false),idx=Math.max(0,Number(selected?.index||1)-1);
  useEffect(()=>setAll(detail.initialOptionIndex>7),[detail.initialOptionIndex,opts[0]?.title]);
+ useEffect(()=>{const expand=()=>setAll(true);window.addEventListener("unni:options:expand",expand);
+   return()=>window.removeEventListener("unni:options:expand",expand)},[]);
  function choose(o,i){
    const verified=resolveOption?resolveOption(o):o;
    setSelected(verified);
@@ -185,12 +187,18 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
   <Gallery media={d.media} label={data.pageTitle}/>
   <div className="d2-top"><span className="d2-eyebrow">PROCEDURE</span><h1>{data.pageTitle}</h1>
    {d.stats.rating&&<div className="d2-ratings"><Star size={17} fill="currentColor"/><b>{d.stats.rating}</b>{d.stats.reviews&&<small>{d.stats.reviews} reviews</small>}</div>}
+   {selected&&<div className="d2-featured d2-featured-public">
+      <div className="d2-featured-head"><span>Option {selected.index||1}</span>
+       <button type="button" onClick={()=>{window.dispatchEvent(new Event("unni:options:expand"));document.getElementById("d2-options")?.scrollIntoView({behavior:"smooth",block:"start"})}}>View all</button>
+      </div>
+      <b>{selected.title}</b>
+      {selected.summary&&<small className="d2-option-summary">{selected.summary}</small>}
+      <Price value={selected.prices}/>
+   </div>}
    {(clinic.name||clinic.station)&&<div className="d2-clinic-summary">
       <div>{clinic.name&&<strong>{clinic.name}</strong>}{clinic.station&&<small><MapPin size={14}/>{clinic.station}</small>}{clinic.hasCCTV&&<span className="d2-tag">CCTV</span>}</div>
       {clinicPath&&<button onClick={()=>go(clinicPath)}><ChevronRight size={21}/></button>}
    </div>}
-   {selected&&<div className="d2-featured"><span>Option {selected.index||1}</span><b>{selected.title}</b>
-      <Attributes value={selected.attributes}/><Price value={selected.prices}/></div>}
    <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button>
      <button onClick={()=>share(data.pageTitle)}><Share2 size={18}/> Share</button><SourceLink route={route}>Original</SourceLink></div>
   </div>

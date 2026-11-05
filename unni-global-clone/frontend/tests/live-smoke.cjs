@@ -130,6 +130,14 @@ async function main(){
    assert.ok(labels.some(x=>x.includes("Option 14")));
    return "14 original options, no samples substituted";
   });
+  await check("Original top View all opens full source option list",async()=>{
+   const collapse=page.locator(".d2-show-more");
+   if(await collapse.count()&&/Show fewer/.test(await collapse.innerText()))await collapse.click();
+   const top=page.locator(".d2-featured-public .d2-featured-head button");
+   await top.click();
+   assert.equal(await page.locator("#d2-options .d2-option").count(),14);
+   return "top source-style View all reveals all 14 real priced options";
+  });
   await check("All 14 source option IDs map to unique actual deep links",async()=>{
    const cards=page.locator("#d2-options .d2-option");
    assert.equal(await cards.count(),14);
