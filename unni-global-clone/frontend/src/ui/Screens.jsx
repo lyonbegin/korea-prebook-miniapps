@@ -7,14 +7,35 @@ import {EventDetailV2,HospitalDetailV2,DoctorDetailV2,ArticleDetailV2} from "./D
 
 function SectionHeading({eyebrow,title,more,onMore}){return <div className="section-heading"><div>{eyebrow&&<small>{eyebrow}</small>}<h2>{title}</h2></div>{more&&<button onClick={onMore}>{more}<ChevronRight size={17}/></button>}</div>;}
 const GLYPHS=["♧","✧","◡","◍","↗","◉","◇","♡","⌁","≋","✦","✚","☼","＋"];
+function HomePromoCarousel({slides,go}){
+ const[index,setIndex]=useState(0);
+ useEffect(()=>setIndex(0),[slides?.[0]?.image]);
+ if(!slides?.length)return null;
+ const item=slides[Math.min(index,slides.length-1)];
+ const media=<img src={item.image} alt={item.title||"Original UNNI promotion"} loading="eager"/>;
+ return <section className="source-home-promotions" aria-label="Original promotional banners">
+  <div className="source-promo-card">
+   {item.href?<button type="button" className="source-promo-action" onClick={()=>go(item.href.replace(/^\/us/,""))}>{media}</button>:media}
+   <span className="source-promo-position">{index+1} / {slides.length}</span>
+  </div>
+  {slides.length>1&&<><button className="source-promo-prev" aria-label="Previous promotion" onClick={()=>setIndex(i=>(i+slides.length-1)%slides.length)}>‹</button>
+    <button className="source-promo-next" aria-label="Next promotion" onClick={()=>setIndex(i=>(i+1)%slides.length)}>›</button></>}
+ </section>;
+}
 export function HomeScreen({data,go}){
  const sections=data?.homeSections||[];
  const events=data?.events||[];
  const body=sections.length?sections:[{title:data?.homePromo?.title||"Treatment deals",subtitle:data?.homePromo?.subtitle||"",events}];
  return <>
   <div className="hero-search source-search"><button onClick={()=>go("/search")}><Search size={20}/>Search by procedure, clinic, or concern</button></div>
-  <div className="source-category-strip" aria-label="Browse source categories">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go("/search?category="+encodeURIComponent(name))}><span className="source-category-icon">{GLYPHS[i]}</span>{name}</button>)}</div>
-  {body.map((section,i)=>/Popular Procedures/i.test(section.title)?
+  <div className="source-category-strip" aria-label="Browse source categories">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go("/search?category="+encodeURIComponent(name))}><span className="source-category-icon">{data?.homeCategoryIcons?.[name]?<img src={data.homeCategoryIcons[name]} alt="" loading="lazy"/>:GLYPHS[i]}</span>{name}</button>)}</div>
+  <HomePromoCarousel slides={data?.homeBanners||[]} go={go}/>
+  {body.map((section,i)=>/Unni.s Column/i.test(section.title)?
+    <section className="home-section source-column-section" key={i}>
+      <SectionHeading title={section.title} more="View more" onMore={()=>go("/contents")}/>
+      <div className="source-column-grid">{(data?.articles||[]).slice(0,4).map(a=><ArticleCard key={a.path} item={a} go={go}/>)}</div>
+    </section>:
+    /Popular Procedures/i.test(section.title)?
     <section className="home-categories" key={i}><SectionHeading title={section.title} more="All" onMore={()=>go("/events")}/>
       <div className="categories-grid">{CATEGORIES.map((name,k)=><button key={name} onClick={()=>go("/search?category="+encodeURIComponent(name))}><span className="category-symbol">{GLYPHS[k]}</span><span>{name}</span></button>)}</div>
     </section>:
@@ -24,7 +45,7 @@ export function HomeScreen({data,go}){
       {section.banner&&<img className="home-editorial-banner" src={section.banner} alt="" loading="lazy"/>}
       {section.events.length>0&&<div className="offer-grid">{section.events.map(e=><OfferCard key={e.sourceHref} item={e} go={go}/>)}</div>}
     </section>)}
-  {(data?.articles||[]).length>0&&<section className="home-section">
+  {!sections.some(section=>/Unni.s Column/i.test(section.title))&&(data?.articles||[]).length>0&&<section className="home-section">
     <SectionHeading title="Unni’s Column" more="View all" onMore={()=>go("/contents")}/>
     <div className="article-list">{data.articles.map(a=><ArticleCard key={a.sourceHref} item={a} go={go}/>)}</div>
   </section>}

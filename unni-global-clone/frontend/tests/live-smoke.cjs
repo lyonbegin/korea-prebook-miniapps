@@ -62,6 +62,18 @@ async function main(){
    await page.screenshot({path:"qa-artifacts/00-home.png",fullPage:true});
    return await page.locator(".offer-card").count()+" visible offer cards";
   });
+  await check("Homepage restores six genuine source promotional images and source category icons",async()=>{
+    await visit("/");
+    const cards=page.locator(".source-home-promotions img");
+    assert.equal(await cards.count(),1);
+    assert.match(await cards.first().getAttribute("src"),/originalImageWidth=1080/);
+    assert.match(await page.locator(".source-promo-position").innerText(),/1\s*\/\s*6/);
+    await page.getByRole("button",{name:"Next promotion"}).click();
+    assert.match(await page.locator(".source-promo-position").innerText(),/2\s*\/\s*6/);
+    assert.ok(await page.locator(".source-category-strip img").count()>=10,"Original category art icons must be linked");
+    assert.ok(await page.locator(".source-column-section .article-card").count()>=3,"Column cards must appear at original first-section position");
+    return "six original promo assets, source category icons, first-position column cards";
+  });
   await check("Event 70809 options and original option 5 price",async()=>{
    await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
    const pageText=await page.locator("body").innerText();

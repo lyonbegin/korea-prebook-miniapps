@@ -190,6 +190,33 @@ export function parseSource(html,route){
   // Home is parsed from the real public /us homepage rather than a substitute category.
   const firstPromo=route==="/"?([...body.querySelectorAll("h1,h2")].map(text)
     .find(s=>/deals?\s+up\s+to|special\s+offers?|discounts?/i.test(s))||""):"";
+  const homeBanners=route==="/"?(()=>{
+    const seen=new Set(),slides=[];
+    for(const img of body.querySelectorAll("img[alt]")){
+      const uri=mediaUrl(img.getAttribute("src")||img.getAttribute("data-src")||"");
+      if(!uri||seen.has(uri))continue;
+      const params=new URL(uri).searchParams;
+      const w=Number(params.get("originalImageWidth")||0);
+      const h=Number(params.get("originalImageHeight")||0);
+      // These are source's 6 featured editorial slides, not event photos.
+      if(!((w===1080&&h===396)||(w===1406&&h===516)))continue;
+      seen.add(uri);
+      const anchor=img.closest("a[href]");
+      const href=anchor?originPath(anchor.getAttribute("href")||""):null;
+      slides.push({image:uri,title:text({textContent:img.getAttribute("alt")||""}),href});
+    }
+    return slides.slice(0,16);
+  })():[];
+  const homeCategoryIcons=route==="/"?Object.fromEntries(
+    [...doc.querySelectorAll('a[href*="/us/search?category="]')].map(a=>{
+      try{
+        const u=new URL(a.getAttribute("href"),ORIGIN),name=u.searchParams.get("category");
+        const icon=a.querySelector("img");
+        const src=mediaUrl(icon?.getAttribute("src")||"");
+        return name&&src?[name,src]:null;
+      }catch{return null}
+    }).filter(Boolean)
+  ):{};
   const homeSections=route==="/"?(()=>{
     const heads=[...body.querySelectorAll("h2")].filter(h=>{
       const value=text(h);
@@ -380,7 +407,7 @@ export function parseSource(html,route){
   }
   const doctorSpecialties=detailKind==="doctors"?["Filler","Lifting","Body","Skin","Botox"].filter(x=>
     fullText.slice(0,Math.min(600,Math.max(0,fullText.indexOf("Reviews"))+170)).includes(x)):null;
-  return {route,pageTitle,homePromo,homeSections,doctorSpecialties,detailKind,id:match?.[2]||null,
+  return {route,pageTitle,homePromo,homeSections,homeBanners,homeCategoryIcons,doctorSpecialties,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:originalSectionList,
