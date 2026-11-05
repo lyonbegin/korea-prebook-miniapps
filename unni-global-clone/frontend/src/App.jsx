@@ -76,14 +76,20 @@ export default function App(){
      document.documentElement.style.setProperty("--unni-physical-bottom",inset+"px");
      document.documentElement.style.setProperty("--unni-visible-height",visibleH+"px");
    };
+   // On iOS and headless mobile Chromium, layout viewport height can change
+   // after mount without a window resize. Recompute on route transitions and
+   // after the browser has settled its visual viewport.
    update();
+   const frame=window.requestAnimationFrame(update);
+   const delayed=[120,550,1450].map(ms=>window.setTimeout(update,ms));
    window.addEventListener("resize",update);
    window.visualViewport?.addEventListener("resize",update);
    window.visualViewport?.addEventListener("scroll",update);
-   return()=>{window.removeEventListener("resize",update);
+   return()=>{window.cancelAnimationFrame(frame);delayed.forEach(clearTimeout);
+     window.removeEventListener("resize",update);
      window.visualViewport?.removeEventListener("resize",update);
      window.visualViewport?.removeEventListener("scroll",update)};
- },[]);
+ },[route]);
  const parsedQuery=new URLSearchParams(route.split("?")[1]||"");
  useEffect(()=>{setDialog(false);setMenu(false);setQuery(parsedQuery.get("q")||parsedQuery.get("category")||"")},[route]);
  const title=data?.pageTitle||"";
