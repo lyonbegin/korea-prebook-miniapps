@@ -119,7 +119,10 @@ function itemAnchor(a){
 }
 export function collectItems(document,kind,limit=180){
   const seen=new Set(),found=[];
-  for(const a of document.querySelectorAll("a[href]")){
+  const anchors=kind==="doctor"&&document.querySelector('a[data-testid="doctor-profile"][href*="/doctors/"]')
+    ?document.querySelectorAll('a[data-testid="doctor-profile"][href*="/doctors/"]')
+    :document.querySelectorAll("a[href]");
+  for(const a of anchors){
     const obj=itemAnchor(a);
     if(!obj||obj.type!==kind)continue;
     const key=kind==="article"?obj.path.split("?")[0]:obj.sourceHref;

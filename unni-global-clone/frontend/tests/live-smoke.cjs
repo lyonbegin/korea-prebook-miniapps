@@ -314,6 +314,7 @@ async function main(){
    // do not validate a transient ancestor clinic name as the doctor.
    await page.locator("#d2-doctors .clinic-card").filter({hasText:/Seungmin Yoo/}).first().waitFor({timeout:12000});
    assert.match(await page.locator("#d2-doctors .clinic-card").first().innerText(),/Seungmin Yoo/);
+   assert.equal(await page.locator("#d2-doctors .clinic-card").count(),1,"No extra hospital-as-doctor card");
    await card.click();
    assert.match(page.url(),/\/doctors\/1502/);
    await page.locator(".d2-top h1").waitFor({timeout:9000});

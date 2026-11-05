@@ -274,11 +274,36 @@ export function DoctorDetailV2({route,data,go}){
  const d=data.detail;
  const facts=usePublicCatalog("doctors",data.id);
  const reviews=d.stats.reviews||facts?.public_attributes?.reviews||"";
- return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
-  <div className="d2-top"><span className="d2-eyebrow">MEDICAL PROFESSIONAL</span><h1>{data.pageTitle}</h1>
-    <div className="d2-ratings"><Star size={17} fill="currentColor"/><b>{d.stats.rating||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div></div>
-  {data.doctorSpecialties?.length>0&&<Block id="d2-doctor-specialties"><Header>Specialties</Header><div className="d2-specialties">{data.doctorSpecialties.map(x=><span key={x}>{x}</span>)}</div></Block>}
-  {data.sections.filter(x=>/experience|background|special/i.test(x.title)).map((s,i)=><Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
+ const reviewsText=reviews?Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US"):"";
+ const clinicId=facts?.original_hospital_id||data.hospitals?.[0]?.id||null;
+ const clinicPath=clinicId?"/hospitals/"+clinicId:(data.hospitals?.[0]?.path||"/hospitals");
+ const clinicName=data.hospitals?.find(x=>String(x.id)===String(clinicId))?.title||
+   data.hospitals?.[0]?.title||"Clinic";
+ const portrait=d.media.all?.find(x=>String(x.alt||"").toLowerCase().includes(data.pageTitle.split(" ")[0].toLowerCase()))||
+   d.media.hero;
+ return <article className="d2-detail d2-doctor-detail">
+  <nav className="d2-doctor-breadcrumb" aria-label="Doctor breadcrumb">
+   <button onClick={()=>go("/hospitals")}>Clinic</button><ChevronRight size={14}/>
+   <button onClick={()=>go(clinicPath)}>{clinicName}</button><ChevronRight size={14}/>
+   <span>About this Doctor</span>
+  </nav>
+  <section className="d2-doctor-identity">
+   <div className="d2-doctor-portrait">{portrait?.url?<img src={portrait.url} alt={data.pageTitle} loading="eager"/>:null}</div>
+   <div className="d2-doctor-id-content"><h1>{data.pageTitle}</h1>
+    <button onClick={()=>go(clinicPath)}>{clinicName}</button>
+    {reviewsText&&<div className="d2-doctor-count">Reviews <strong>{reviewsText}</strong></div>}
+    {data.doctorSpecialties?.length>0&&<div className="d2-doctor-categories">{data.doctorSpecialties.join(", ")}</div>}
+   </div>
+  </section>
+  <Block id="d2-doctor-reviews">
+   <Header>Reviews {reviewsText}</Header>
+   <div className="d2-doctor-review-notice">
+     <p>Log in to view all detailed reviews from real visitors.</p>
+     <SourceLink route={route}>Reviews at source</SourceLink>
+   </div>
+  </Block>
+  {data.sections.filter(x=>/experience|background|special/i.test(x.title)).map((s,i)=>
+   <Block key={i}><Header>{s.title}</Header><p className="d2-para">{s.description}</p></Block>)}
   {data.hospitals?.length>0&&<Block><Header>Works at</Header>{data.hospitals.map(x=><ClinicCard item={x} go={go} key={x.sourceHref}/>)}</Block>}
   <Block><SourceLink route={route}>Doctor at source</SourceLink></Block>
  </article>;
