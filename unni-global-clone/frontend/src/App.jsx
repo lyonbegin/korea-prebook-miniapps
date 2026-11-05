@@ -62,6 +62,7 @@ export default function App(){
  useEffect(()=>{const sync=()=>setSelectionRoute(fullRoute());window.addEventListener("unni:optionchange",sync);return()=>window.removeEventListener("unni:optionchange",sync)},[]);
  const[saved,setSaved]=useState(readSaved),[dialog,setDialog]=useState(false),[menu,setMenu]=useState(false),[consultSelection,setConsultSelection]=useState(null);
  const[query,setQuery]=useState(""),[menuVersion,setMenuVersion]=useState(0);
+ const[promo,setPromo]=useState(()=>sessionStorage.getItem("unni_promo_hide")!=="1");
  const parsedQuery=new URLSearchParams(route.split("?")[1]||"");
  useEffect(()=>{setDialog(false);setMenu(false);setQuery(parsedQuery.get("q")||parsedQuery.get("category")||"")},[route]);
  const title=data?.pageTitle||"";
@@ -69,15 +70,20 @@ export default function App(){
  const active=route==="/"?"home":route.startsWith("/hospitals")||route.startsWith("/doctors")?"clinics":
   route.startsWith("/events")||route.startsWith("/search")?"procedures":route==="/saved"?"saved":route.startsWith("/contents")?"columns":"more";
  return <div className="app-background"><div className="app-shell">
+  {promo&&<div className="source-app-banner">
+    <button type="button" className="source-app-dismiss" aria-label="Dismiss app banner" onClick={()=>{sessionStorage.setItem("unni_promo_hide","1");setPromo(false)}}><X size={16}/></button>
+    <strong>Sign up now and enjoy exclusive benefits right away!</strong>
+    <a href="https://unni.app/us/download" target="_blank" rel="noopener noreferrer">App Download</a>
+  </div>}
   <header className="app-header"><div className="header-row">
-   {route==="/"
-    ?<button className="logo" onClick={()=>go("/")}>unni<span>.</span></button>
-    :<IconButton label="Back" onClick={()=>history.length>1?history.back():go("/")}><ArrowLeft size={23}/></IconButton>}
-   {route!=="/"&&<button className="header-title" onClick={()=>go("/")}>{route.startsWith("/events")?"Procedures":route.startsWith("/hospitals")?"Clinics":route.startsWith("/doctors")?"Doctors":route.startsWith("/contents")?"Columns":route==="/saved"?"Saved":"UNNI"}</button>}
-   <div className="header-spacer"/>
-   <IconButton label="Search" onClick={()=>go("/search")}><Search size={22}/></IconButton>
-   <IconButton label="Saved" onClick={()=>go("/saved")}><Heart size={21}/></IconButton>
-   <IconButton label="Menu" onClick={()=>setMenu(v=>!v)}>{menu?<X size={21}/>:<Menu size={21}/>}</IconButton>
+    {route==="/"
+      ?<button type="button" className="source-region" onClick={()=>setMenu(v=>!v)}><span className="source-logo-mark">◢</span>Select Region<ChevronRight size={15}/></button>
+      :<><IconButton label="Back" onClick={()=>history.length>1?history.back():go("/")}><ArrowLeft size={23}/></IconButton>
+       <button type="button" className="source-uni-logo" onClick={()=>go("/")}><span className="source-logo-mark">◢</span><b>unni</b></button></>}
+    <div className="header-spacer"/>
+    {route!=="/"&&<IconButton label="Search" onClick={()=>go("/search")}><Search size={23}/></IconButton>}
+    <a className="source-original-login" href="https://unni.app/us" target="_blank" rel="noopener noreferrer" title="Opens official UNNI website for sign-in">Log in/Sign-up</a>
+    <IconButton label="Menu" onClick={()=>setMenu(v=>!v)}>{menu?<X size={19}/>:<Menu size={19}/>}</IconButton>
   </div></header>
   {menu&&<aside className="dropdown-menu">{[["Home","/"],["Procedures","/events"],["Clinics","/hospitals"],["Beauty columns","/contents"],["Community","/community"],["My inquiries","/inquiries"],["Saved","/saved"]].map(([label,path])=><button key={label} onClick={()=>go(path)}>{label}<ChevronRight size={16}/></button>)}</aside>}
   <main className="app-content">
@@ -95,9 +101,6 @@ export default function App(){
     :data?<AccessLimitedScreen data={data} route={route}/>
     :<EmptyState route={route}/>}
   </main>
-  <nav className="bottom-navigation" aria-label="Main navigation">
-   {[["home","Home",Home,"/"],["procedures","Procedures",Stethoscope,"/events"],["clinics","Clinics",MapPin,"/hospitals"],["saved","Saved",Heart,"/saved"],["columns","Columns",UserRound,"/contents"]].map(([key,label,Icon,dest])=><button type="button" className={active===key?"selected":""} key={key} onClick={()=>go(dest)}><Icon size={21} strokeWidth={active===key?2.3:1.8}/><small>{label}</small></button>)}
-  </nav>
   <SourceFooter/>
   <InquiryPanel open={dialog} onClose={()=>setDialog(false)} selection={consultSelection} title={title} route={route}/>
  </div></div>;

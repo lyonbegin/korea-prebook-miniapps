@@ -12,7 +12,8 @@ export function HomeScreen({data,go}){
  const events=data?.events||[];
  const body=sections.length?sections:[{title:data?.homePromo?.title||"Treatment deals",subtitle:data?.homePromo?.subtitle||"",events}];
  return <>
-  <div className="hero-search"><button onClick={()=>go("/search")}><Search size={19}/>Search procedures or clinics <span>⌕</span></button></div>
+  <div className="hero-search source-search"><button onClick={()=>go("/search")}><Search size={20}/>Search by procedure, clinic, or concern</button></div>
+  <div className="source-category-strip" aria-label="Browse source categories">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="source-category-icon">{GLYPHS[i]}</span>{name}</button>)}</div>
   {body.map((section,i)=>/Popular Procedures/i.test(section.title)?
     <section className="home-categories" key={i}><SectionHeading title={section.title} more="All" onMore={()=>go("/events")}/>
       <div className="categories-grid">{CATEGORIES.map((name,k)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="category-symbol">{GLYPHS[k]}</span><span>{name}</span></button>)}</div>
