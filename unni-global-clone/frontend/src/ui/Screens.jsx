@@ -13,10 +13,10 @@ export function HomeScreen({data,go}){
  const body=sections.length?sections:[{title:data?.homePromo?.title||"Treatment deals",subtitle:data?.homePromo?.subtitle||"",events}];
  return <>
   <div className="hero-search source-search"><button onClick={()=>go("/search")}><Search size={20}/>Search by procedure, clinic, or concern</button></div>
-  <div className="source-category-strip" aria-label="Browse source categories">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="source-category-icon">{GLYPHS[i]}</span>{name}</button>)}</div>
+  <div className="source-category-strip" aria-label="Browse source categories">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go("/search?category="+encodeURIComponent(name))}><span className="source-category-icon">{GLYPHS[i]}</span>{name}</button>)}</div>
   {body.map((section,i)=>/Popular Procedures/i.test(section.title)?
     <section className="home-categories" key={i}><SectionHeading title={section.title} more="All" onMore={()=>go("/events")}/>
-      <div className="categories-grid">{CATEGORIES.map((name,k)=><button key={name} onClick={()=>go(buildEventRoute({query:name,category:name}))}><span className="category-symbol">{GLYPHS[k]}</span><span>{name}</span></button>)}</div>
+      <div className="categories-grid">{CATEGORIES.map((name,k)=><button key={name} onClick={()=>go("/search?category="+encodeURIComponent(name))}><span className="category-symbol">{GLYPHS[k]}</span><span>{name}</span></button>)}</div>
     </section>:
     <section className="home-section original-home-deals" key={i}>
       <SectionHeading title={section.title} more={section.events.length?"View all":null} onMore={()=>go("/events")}/>
@@ -32,12 +32,44 @@ export function HomeScreen({data,go}){
  </>;
 }
 export function SearchScreen({go,query,setQuery}){
- function submit(e){e.preventDefault();if(query.trim())go(buildEventRoute({query:query.trim()}))}
+ function submit(e){e.preventDefault();if(query.trim())go("/search?q="+encodeURIComponent(query.trim()))}
  return <section className="search-screen">
    <form className="search-box" onSubmit={submit}><Search size={20}/><input aria-label="Search" autoFocus placeholder="Search treatments or clinics" value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button type="button" onClick={()=>setQuery("")}><X size={18}/></button>}<button className="search-submit">Search</button></form>
-   <SectionHeading title="Browse treatments"/><div className="search-category-grid">{CATEGORIES.map(c=><button key={c} onClick={()=>go(buildEventRoute({query:c,category:c}))}>{c}<ChevronRight size={17}/></button>)}</div>
+   <SectionHeading title="Browse treatments"/><div className="search-category-grid">{CATEGORIES.map(c=><button key={c} onClick={()=>go("/search?category="+encodeURIComponent(c))}>{c}<ChevronRight size={17}/></button>)}</div>
    <div className="text-note">Search results are loaded from the public unni.app/us website through the independent FastAPI service.</div>
  </section>;
+}
+export function SearchResultsScreen({route,data,go}){
+ const params=new URLSearchParams(route.split("?")[1]||"");
+ const phrase=params.get("q")||params.get("category")||"";
+ const procedures=data.events||[],clinics=data.hospitals||[];
+ const viewAll="/events?q="+encodeURIComponent(phrase);
+ return <div className="search-results">
+  <div className="search-results-top">
+   <button className="source-search-again" onClick={()=>go("/search")}><Search size={20}/>{phrase||"Search procedures or clinics"}</button>
+   <button className="search-results-location" onClick={()=>go("/district-filter?target=search&q="+encodeURIComponent(phrase))}><MapPin size={18}/>Location</button>
+  </div>
+  <h1>Results for '{phrase}'</h1>
+  <section className="search-result-group">
+   <SectionHeading title="Procedures" more="View all" onMore={()=>go(viewAll)}/>
+   {procedures.length?<div className="offer-grid">{procedures.slice(0,8).map(o=><OfferCard key={o.sourceHref} item={o} go={go}/>)}</div>:
+    <EmptyState title="No public treatments on this result page" route={route}/>}
+  </section>
+  <section className="search-result-group">
+   <SectionHeading title="Clinics" more="View all" onMore={()=>go("/hospitals?q="+encodeURIComponent(phrase))}/>
+   {clinics.length?<div className="clinic-list">{clinics.slice(0,8).map(c=><ClinicCard key={c.sourceHref} item={c} go={go}/>)}</div>:
+    <p className="small-muted">No clinic preview was returned by this public search.</p>}
+  </section>
+  <section className="search-result-group">
+   <SectionHeading title="Reviews"/>
+   <p className="small-muted">Individual visitor reviews require an original UNNI account.</p>
+   <SourceLink route={route}>Reviews on original search</SourceLink>
+  </section>
+  <section className="search-result-group"><SectionHeading title="Community"/>
+   <p className="small-muted">Public community results are shown on the original source page. Login or private messages are not copied.</p>
+   <SourceLink route={route}>Community on original search</SourceLink>
+  </section>
+ </div>;
 }
 function Tabs({active,go}){return <div className="listing-tabs"><button className={active==="procedures"?"active":""} onClick={()=>go("/events")}>Procedures</button><button className={active==="clinics"?"active":""} onClick={()=>go("/hospitals")}>Clinics</button><button className={active==="articles"?"active":""} onClick={()=>go("/contents")}>Columns</button></div>;}
 export function ListingScreen({route,data,go,query,setQuery}){

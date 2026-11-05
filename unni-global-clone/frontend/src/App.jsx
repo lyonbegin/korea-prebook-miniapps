@@ -4,7 +4,7 @@ import {gatewayUrl,UNNI_SERVICES} from "./lib/originalGateway";
 import {CATEGORY_IDS,createPageSource,parseSource} from "./lib/sourceModel";
 import {SourceFooter,ErrorState,EmptyState} from "./ui/Components";
 import {InquiryPanel,InquiriesScreen} from "./ui/InquiryPanel";
-import {HomeScreen,SearchScreen,ListingScreen,EventScreen,HospitalScreen,DoctorScreen,ArticleScreen,SavedScreen,AccessLimitedScreen} from "./ui/Screens";
+import {HomeScreen,SearchScreen,SearchResultsScreen,ListingScreen,EventScreen,HospitalScreen,DoctorScreen,ArticleScreen,SavedScreen,AccessLimitedScreen} from "./ui/Screens";
 
 const SAVED_KEY="unni_clone_saved_pages_v2";
 function readSaved(){try{const r=JSON.parse(localStorage.getItem(SAVED_KEY)||"[]");return Array.isArray(r)?r:[]}catch{return[]}}
@@ -93,6 +93,7 @@ export default function App(){
     :loading?<div className="loading-screen"><div className="loading-wheel"/><strong>Loading procedures…</strong><small>Reading the original public source</small></div>
     :error?<ErrorState error={error} refresh={refresh} route={route}/>
     :data&&route==="/"?<HomeScreen data={data} go={go}/>
+    :data&&route.startsWith("/search?")?<SearchResultsScreen route={route} data={data} go={go}/>
     :data?.detailKind==="events"?<EventScreen route={route} data={data} go={go} isSaved={saved.includes(selectionRoute)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
     :data?.detailKind==="hospitals"?<HospitalScreen route={route} data={data} go={go} isSaved={saved.includes(selectionRoute)} onSave={toggleSave} onConsult={payload=>{setConsultSelection(payload||{});setDialog(true)}}/>
     :data?.detailKind==="doctors"?<DoctorScreen route={route} data={data} go={go}/>

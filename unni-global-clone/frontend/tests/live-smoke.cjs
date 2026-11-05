@@ -365,6 +365,18 @@ async function main(){
    assert.ok(nums.every((v,i)=>i===0||v>=nums[i-1]),"Local loaded prices should be ascending");
    return nums.length+" source-linked cards sorted ascending";
   });
+  await check("Original category search route renders its live public results",async()=>{
+   await visit("/search?category=Lifting");
+   const title=await page.locator(".search-results h1").innerText();
+   assert.match(title,/Results for 'Lifting'/);
+   const cards=page.locator(".search-results .offer-card");
+   assert.ok(await cards.count()>=4,"Original category search must expose public treatment results");
+   const title0=await cards.first().locator(".offer-title").innerText();
+   assert.match(title0,/Lifting/i);
+   await cards.first().click();
+   assert.match(page.url(),/\/events\/\d+/);
+   return "original search category route with live public event links";
+  });
   await check("Inquiries screen is honest",async()=>{
    await visit("/inquiries");
    assert.match(await page.locator("body").innerText(),/inquiries/i);
