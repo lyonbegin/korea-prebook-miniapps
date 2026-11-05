@@ -203,3 +203,6 @@
 
 /* Source detail footer renders at document.body, above normal page and below inquiry overlay. */
 .d2-source-review-sticky,.d2-source-clinic-sticky{z-index:100;pointer-events:auto}
+
+/* Event footer must remain above all site tabs without obscuring inquiries. */
+.d2-source-review-sticky,.d2-source-clinic-sticky{z-index:900;isolation:isolate}

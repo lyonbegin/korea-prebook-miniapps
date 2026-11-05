@@ -131,3 +131,6 @@
    Source section buttons opt into smooth scroll explicitly. Global smooth
    scroll moved click targets beneath other controls during form submission. */
 html{scroll-behavior:auto}
+
+/* Avoid animated global scroll competing with fixed actions during navigation. */
+html{scroll-behavior:auto}
