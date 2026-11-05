@@ -307,6 +307,13 @@ async function main(){
    assert.ok(!/BuildingCopy/.test(address),address);
    return address.slice(0,110);
   });
+  await check("Clinic maps preserve source provider and exact marker coordinates",async()=>{
+   await visit("/hospitals/826");
+   const href=await page.locator("#d2-address .d2-map a").first().getAttribute("href");
+   assert.match(href,/^https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=/);
+   assert.match(decodeURIComponent(href),/37\.5263383311071,127\.040916968767/);
+   return "published original Google map coordinates preserved";
+  });
   await check("Clinic inquiry retains clinic ID without writing to DB",async()=>{
    let sent=null;
    await page.route("**/inquiries",async route=>{
