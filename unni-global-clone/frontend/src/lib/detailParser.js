@@ -44,8 +44,15 @@ function mediaOf(root,kind){
     return {hero,gallery:hero?[hero]:[],detail,all:direct,map:images.find(i=>i.kind==="map")||null};
   }
   if(kind==="hospital"){
-    const gallery=hosp.slice(0,10);
-    return {hero:gallery[0]||null,gallery,detail:[],all:images,map:images.find(i=>i.kind==="map")||null,badges:images.filter(i=>i.kind==="badge")};
+    // The original carousel begins with an offscreen clone of the last slide:
+    // HTML order is 9,0,1,...,8,9. Restore logical 0..9 slide order from
+    // the source's own alt="Clinic_0_image" markers; never invent photos.
+    const indexed=hosp.map(item=>({item,index:Number(item.alt?.match(/_(\d+)_image$/i)?.[1])}))
+      .filter(x=>Number.isInteger(x.index)&&x.index>=0&&x.index<100);
+    indexed.sort((a,b)=>a.index-b.index);
+    const gallery=uniqMedia(indexed.map(x=>x.item)).slice(0,10);
+    const fallback=gallery.length?gallery:hosp.slice(0,10);
+    return {hero:fallback[0]||null,gallery:fallback,detail:[],all:images,map:images.find(i=>i.kind==="map")||null,badges:images.filter(i=>i.kind==="badge")};
   }
   const gallery=images.filter(i=>i.kind==="hospital"||i.kind==="article"||i.kind==="direct");
   return {hero:gallery[0]||null,gallery,detail:gallery.slice(1),all:images,map:images.find(i=>i.kind==="map")||null};

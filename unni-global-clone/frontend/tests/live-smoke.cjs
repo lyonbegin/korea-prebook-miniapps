@@ -244,6 +244,7 @@ async function main(){
   await check("Clinic gallery cycles all ten photos",async()=>{
    const count=page.locator(".d2-photo-count");
    assert.match(await count.innerText(),/1\s*\/\s*10/);
+   assert.match(await page.locator(".d2-hero-photo img").getAttribute("alt"),/_0_image$/,"First image must use original slide index 0, not preloaded last-slide duplicate");
    const photos=new Set();
    for(let i=0;i<10;i++){
      photos.add(await page.locator(".d2-hero-photo img").getAttribute("src"));
