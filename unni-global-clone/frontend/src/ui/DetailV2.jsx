@@ -207,7 +207,9 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
       {clinicPath&&<button onClick={()=>go(clinicPath)}><ChevronRight size={21}/></button>}
    </div>}
    <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button>
-     <button onClick={()=>share(data.pageTitle)}><Share2 size={18}/> Share</button><SourceLink route={route}>Original</SourceLink></div>
+     <button onClick={()=>share(data.pageTitle)}><Share2 size={18}/> Share</button>
+     <button className="d2-preview-inquiry" onClick={()=>onConsult?.({eventId:data.id,option:selected,clinic})}><MessageCircle size={17}/> Consultation</button>
+     <SourceLink route={route}>Original</SourceLink></div>
   </div>
   <JumpBar items={[{id:"d2-reviews",name:"Reviews",active:d.originalReviewGate},{id:"d2-about",name:"About",active:!!d.sections.about?.text},
    {id:"d2-info",name:"Info",active:!!d.sections.info?.text},{id:"d2-options",name:"Options",active:true},
@@ -227,7 +229,7 @@ export function EventDetailV2({route,data,go,isSaved,onSave,onConsult}){
     <div className="d2-clinic-name"><b>{clinic.name}</b>{clinicPath&&<button onClick={()=>go(clinicPath)}>Clinic details <ChevronRight size={18}/></button>}</div>
     <MapBlock image={d.media.map} address={data.clinicAddress} clinicName={clinic.name}/></Block>}
   {(data.events||[]).length>0&&<Block id="d2-popular"><Header>Popular Procedures</Header><div className="d2-grid">{data.events.slice(0,12).map(x=><OfferCard key={x.sourceHref} item={x} go={go}/>)}</div></Block>}
-  <StuckBar price={selected?.prices?.salePrice} onClick={()=>onConsult?.({eventId:data.id,option:selected,clinic})}/>
+  <div className="d2-source-review-sticky"><button type="button" onClick={()=>document.getElementById("d2-reviews")?.scrollIntoView({behavior:"smooth",block:"start"})}>View reviews</button></div>
  </article>;
 }
 export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){

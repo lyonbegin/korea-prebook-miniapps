@@ -187,3 +187,10 @@
 .d2-doctor-review-notice>p{margin:6px 0 16px;font-size:14px;font-weight:700;line-height:1.42}
 .d2-source-review-login{display:inline-flex;align-items:center;justify-content:center;border:1px solid #b5c2cf;color:#141b22;border-radius:7px;background:#fff;padding:12px 14px;font-size:13px;font-weight:700;text-decoration:none}
 @media(min-width:800px){.d2-doctor-review-notice{max-width:550px;margin-left:auto;margin-right:auto}}
+
+/* Original mobile event CTA opens its public reviews section. Independent
+   consultation remains available as a separately named in-page action. */
+.d2-source-review-sticky{position:fixed;z-index:24;bottom:0;left:0;right:0;width:100%;background:#fff;padding:12px 16px max(11px,env(safe-area-inset-bottom));border-top:1px solid #eceef1}
+.d2-source-review-sticky button{display:block;width:100%;background:linear-gradient(90deg,#ff572e,#ff8b42);color:#fff;border:0;border-radius:8px;padding:14px 10px;font-size:16px;line-height:1.1;font-weight:750;cursor:pointer}
+.d2-preview-inquiry{border:1px solid #d9dfe6;border-radius:7px;background:#fff;display:flex;align-items:center;gap:4px;padding:8px;color:#1c2633;font-size:12px}
+#d2-reviews{scroll-margin-top:54px}

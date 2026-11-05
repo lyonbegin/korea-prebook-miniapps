@@ -244,6 +244,16 @@ async function main(){
      await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
    }
   });
+  await check("Original event footer opens public reviews rather than falsely booking",async()=>{
+    await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
+    const button=page.locator(".d2-source-review-sticky button");
+    assert.equal(await button.innerText(),"View reviews");
+    await button.click();
+    await page.locator("#d2-reviews").waitFor({state:"visible"});
+    assert.match(await page.locator("#d2-reviews").innerText(),/Log in to view all detailed reviews/);
+    assert.ok(await page.locator(".d2-preview-inquiry").count()===1,"Independent consultation remains accessible separately");
+    return "source View reviews and separately labeled independent consultation";
+  });
   await check("Event inquiry carries exact option and clinic IDs without writing to DB",async()=>{
    let sent=null;
    await page.route("**/inquiries",async route=>{
@@ -254,7 +264,7 @@ async function main(){
     })});
    });
    try{
-    await page.locator(".d2-sticky button").click();
+    await page.locator(".d2-preview-inquiry").click();
     await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
     await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
     await page.locator(".iq-consent input").check();
