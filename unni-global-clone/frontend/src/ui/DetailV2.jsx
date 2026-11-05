@@ -220,11 +220,21 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
  const facts=usePublicCatalog("hospitals",data.id);
  const reviews=d.stats.reviews||facts?.public_review_count||facts?.attributes?.review_count||"";
  const score=d.stats.rating||facts?.public_rating||"";
- const sourceDoctors=data.doctors?.length?data.doctors:(facts?.doctors||[]).map(x=>({
+ // Reconcile physician cards using actual IDs and publicly observed names
+ // already stored by the visit middleware; never use an outer clinic title.
+ const doctorFacts=new Map((facts?.doctors||[]).map(x=>[String(x.original_doctor_id),x]));
+ const fromPage=(data.doctors||[]).map(x=>{
+   const id=String(x.id||x.path?.match(/\/doctors\/(\d+)/)?.[1]||"");
+   const fact=doctorFacts.get(id);
+   return fact?{...x,id,type:"doctor",path:"/doctors/"+id,sourceHref:"/us/doctors/"+id,
+      title:fact.display_name||x.title,summary:"Public clinician profile"}:x;
+ });
+ const found=new Set(fromPage.map(x=>String(x.id)));
+ const sourceDoctors=[...fromPage,...(facts?.doctors||[]).filter(x=>!found.has(String(x.original_doctor_id))).map(x=>({
    id:x.original_doctor_id,type:"doctor",path:"/doctors/"+x.original_doctor_id,
    sourceHref:"/us/doctors/"+x.original_doctor_id,title:x.display_name||"Doctor",image:null,
    price:"",summary:"Public clinician profile",rating:"",reviewCount:""
- }));
+ }))];
  return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
    <div className="d2-top"><span className="d2-eyebrow">CLINIC</span><h1>{data.pageTitle}</h1><div className="d2-ratings"><Star size={17} fill="currentColor"/>
    <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>

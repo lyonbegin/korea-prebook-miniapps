@@ -41,7 +41,7 @@ export function SearchScreen({go,query,setQuery}){
 function Tabs({active,go}){return <div className="listing-tabs"><button className={active==="procedures"?"active":""} onClick={()=>go("/events")}>Procedures</button><button className={active==="clinics"?"active":""} onClick={()=>go("/hospitals")}>Clinics</button><button className={active==="articles"?"active":""} onClick={()=>go("/contents")}>Columns</button></div>;}
 export function ListingScreen({route,data,go,query,setQuery}){
  const isClinic=route.startsWith("/hospitals"),isArticles=route.startsWith("/contents");
- const params=new URLSearchParams(route.split("?")[1]||""),originalSort=params.get("s")||"",originalQuery=params.get("q")||"";
+ const params=new URLSearchParams(route.split("?")[1]||""),originalSort=params.get("viewSort")||params.get("s")||"",originalQuery=params.get("q")||"";
  const [modal,setModal]=useState(false),[sort,setSort]=useState(originalSort),[city,setCity]=useState("All"),[minPrice,setMinPrice]=useState(""),[maxPrice,setMaxPrice]=useState("");
  useEffect(()=>setSort(originalSort),[originalSort]);
  const items=isClinic?data.hospitals:isArticles?data.articles:data.events;
@@ -66,9 +66,10 @@ export function ListingScreen({route,data,go,query,setQuery}){
  });
  function apply(){
    setModal(false);
-   if(!isClinic&&!isArticles&&sort!==originalSort){
+   if(sort!==originalSort){
      const next=new URLSearchParams(params);
-     if(sort)next.set("s",sort);else next.delete("s");
+     next.delete("s");
+     if(sort)next.set("viewSort",sort);else next.delete("viewSort");
      const path=route.split("?")[0];
      go(path+(next.toString()?"?"+next.toString():""));
    }
