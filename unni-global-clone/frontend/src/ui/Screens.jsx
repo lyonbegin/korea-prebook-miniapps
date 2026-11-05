@@ -8,8 +8,8 @@ import {EventDetailV2,HospitalDetailV2,DoctorDetailV2,ArticleDetailV2} from "./D
 function SectionHeading({eyebrow,title,more,onMore}){return <div className="section-heading"><div>{eyebrow&&<small>{eyebrow}</small>}<h2>{title}</h2></div>{more&&<button onClick={onMore}>{more}<ChevronRight size={17}/></button>}</div>;}
 const GLYPHS=["♧","✧","◡","◍","↗","◉","◇","♡","⌁","≋","✦","✚","☼","＋"];
 function HomePromoCarousel({slides,go}){
- const[index,setIndex]=useState(0);
- useEffect(()=>setIndex(0),[slides?.[0]?.image]);
+ const[index,setIndex]=useState(slides?.length>1?1:0);
+ useEffect(()=>setIndex(slides?.length>1?1:0),[slides?.[0]?.image]);
  if(!slides?.length)return null;
  const item=slides[Math.min(index,slides.length-1)];
  const media=<img src={item.image} alt={item.title||"Original UNNI promotion"} loading="eager"/>;
@@ -22,12 +22,32 @@ function HomePromoCarousel({slides,go}){
     <button className="source-promo-next" aria-label="Next promotion" onClick={()=>setIndex(i=>(i+1)%slides.length)}>›</button></>}
  </section>;
 }
+function PublicBreachNotice(){
+ const[expanded,setExpanded]=useState(false);
+ const[dismissed,setDismissed]=useState(false);
+ if(dismissed)return null;
+ return <section className="source-breach-notice" aria-label="Official UNNI personal data notice">
+   <div className="source-breach-summary">
+    <div><strong>Notice of Partial Personal Data Breach</strong>
+      <button type="button" aria-expanded={expanded} onClick={()=>setExpanded(v=>!v)} className="source-breach-more">{expanded?"Hide details":"View more details"} <ChevronRight size={16}/></button>
+    </div>
+    <a href="https://unni.app/us" title="Opens original UNNI website. Any identity or data exposure check occurs only on the official site." target="_blank" rel="noopener noreferrer">Check on official site</a>
+    <button className="source-breach-close" type="button" onClick={()=>setDismissed(true)} aria-label="Dismiss notice"><X size={15}/></button>
+   </div>
+   {expanded&&<div className="source-breach-detail">
+      <p>Healingpaper reported unauthorized access to certain Gangnam Unni web APIs on September 4, 2026, potentially exposing some customers' personal information. The operator stated that it had blocked the access route, strengthened its security, and contacted the authorities.</p>
+      <p>This independent preview does not verify identities or personal-data exposure. Please use the original UNNI website for official information or verification.</p>
+      <a href="https://unni.app/us" target="_blank" rel="noopener noreferrer">Open original UNNI notice</a>
+    </div>}
+ </section>;
+}
 export function HomeScreen({data,go}){
  const sections=data?.homeSections||[];
  const events=data?.events||[];
  const body=sections.length?sections:[{title:data?.homePromo?.title||"Treatment deals",subtitle:data?.homePromo?.subtitle||"",events}];
  return <>
   <div className="hero-search source-search"><button onClick={()=>go("/search")}><Search size={20}/>Search by procedure, clinic, or concern</button></div>
+  <PublicBreachNotice/>
   <div className="source-category-strip" aria-label="Browse source categories">{CATEGORIES.map((name,i)=><button key={name} onClick={()=>go("/search?category="+encodeURIComponent(name))}><span className="source-category-icon">{data?.homeCategoryIcons?.[name]?<img src={data.homeCategoryIcons[name]} alt="" loading="lazy"/>:GLYPHS[i]}</span>{name}</button>)}</div>
   <HomePromoCarousel slides={data?.homeBanners||[]} go={go}/>
   {body.map((section,i)=>/Unni.s Column/i.test(section.title)?

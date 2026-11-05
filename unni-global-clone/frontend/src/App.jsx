@@ -104,6 +104,12 @@ export default function App(){
     :data?<AccessLimitedScreen data={data} route={route}/>
     :<EmptyState route={route}/>}
   </main>
+  <nav className="source-global-bottom" aria-label="Original site navigation">
+    {[["Home",Home,"/"],["Clinics",MapPin,"/hospitals"],["Procedures",Stethoscope,"/events"],["Community",UserRound,"/community"],["Columns",Menu,"/contents"]].map(([label,Icon,destination])=>
+      <button key={label} className={(destination==="/"&&route==="/")||(destination!=="/"&&route.startsWith(destination))?"active":""} onClick={()=>go(destination)}>
+        <Icon size={21}/><small>{label}</small>
+      </button>)}
+   </nav>
   <SourceFooter/>
   <InquiryPanel open={dialog} onClose={()=>setDialog(false)} selection={consultSelection} title={title} route={route}/>
  </div></div>;

@@ -75,3 +75,22 @@
 .district-bottom .district-complete{background:#ff643a;color:#fff;border-color:#ff643a}
 .district-preview-note{display:flex;align-items:center;gap:4px;color:#7c8590;font-size:11px;line-height:1.5;margin:9px 16px 18px}
 .source-search-selected-location{font-size:13px;color:#88909b;font-weight:500}
+
+.source-global-bottom{position:sticky;bottom:0;z-index:28;display:grid;grid-template-columns:repeat(5,1fr);width:100%;background:#fff;border-top:1px solid #e5e9ed;min-height:66px;padding-bottom:env(safe-area-inset-bottom)}
+.source-global-bottom>button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:0;background:none;color:#75889d;font-size:11px;min-width:0;cursor:pointer}
+.source-global-bottom small{font-size:10px;white-space:nowrap}
+.source-global-bottom>button.active{color:#101418;font-weight:750}
+.source-global-bottom>button.active svg{fill:currentColor}
+.source-footer{margin-bottom:0}
+.source-breach-notice{position:relative;background:#e3e6e9;padding:0;color:#171b20;margin:0 0 14px}
+.source-breach-summary{min-height:151px;display:grid;grid-template-columns:minmax(0,1fr) minmax(145px,1fr);align-items:center;gap:12px;padding:16px}
+.source-breach-summary>div{display:flex;flex-direction:column;align-items:flex-start;gap:11px}
+.source-breach-summary strong{font-size:16px;font-weight:750;line-height:1.5;max-width:155px}
+.source-breach-more{border:0;background:none;padding:0;color:#6b8094;text-decoration:underline;font-size:13px;display:flex;align-items:center;gap:3px}
+.source-breach-summary>a{background:#13181e;color:#fff;text-align:center;padding:13px 8px;border-radius:5px;font-size:12px;font-weight:750;line-height:1.1}
+.source-breach-close{position:absolute;top:8px;right:8px;background:transparent;border:0;display:none}
+.source-breach-detail{padding:13px 16px 18px;border-top:1px solid #cdd2d8;font-size:12px;line-height:1.55;max-width:800px}
+.source-breach-detail p{margin:0 0 10px}.source-breach-detail a{color:#1c4e76;text-decoration:underline}
+.source-promo-card{height:auto;aspect-ratio:1080/396;min-height:0}
+.source-promo-card>img,.source-promo-action img{width:100%;height:100%;min-height:0;max-height:none;object-fit:cover}
+@media(min-width:750px){.source-global-bottom{max-width:1100px;margin:auto}.source-breach-notice{max-width:1100px;margin:0 auto 14px}}
