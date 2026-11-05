@@ -9,6 +9,25 @@ async function check(label,fn){
  try{const result=await fn();checks.push({label,status:"PASS",detail:result||""});console.log("PASS",label,result||"");}
  catch(e){failures.push({label,error:e?.message||String(e)});checks.push({label,status:"FAIL",detail:e?.message||String(e)});console.error("FAIL",label,e?.message||e)}
 }
+// Exercise a user-like pointer click at the actual on-screen button.
+ // Playwright locator.click() auto-scrolls fixed elements, which can scroll
+ // the underlying page *under* a body-level fixed footer. We assert hit
+ // testing before clicking; no force/DOM synthetic events.
+async function clickVisiblePointer(page,selector,{scroll=false}={}){
+ const hit=await page.evaluate(({selector,scroll})=>{
+   const el=document.querySelector(selector);
+   if(!el)throw Error("Missing pointer target: "+selector);
+   if(scroll)el.scrollIntoView({block:"center",inline:"nearest",behavior:"instant"});
+   const rect=el.getBoundingClientRect();
+   const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+   const top=document.elementFromPoint(cx,cy);
+   return {x:cx,y:cy,onTarget:top===el||el.contains(top),
+     hit:top?.className||top?.tagName,rect:{top:rect.top,bottom:rect.bottom},viewport:innerHeight};
+ },{selector,scroll});
+ assert.ok(hit.onTarget,"Button obscured: "+selector+" "+JSON.stringify(hit));
+ await page.mouse.click(hit.x,hit.y);
+ return hit;
+}
 async function main(){
  fs.mkdirSync("qa-artifacts",{recursive:true});
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
@@ -260,7 +279,7 @@ async function main(){
         parent:element.parentElement?.tagName,hitClass:top?.className,hitTag:top?.tagName,hitText:top?.textContent?.slice(0,80)};
     });
     console.log("REVIEW_FOOTER_HIT_DIAGNOSTIC",JSON.stringify(hit));
-    await button.click();
+    await clickVisiblePointer(page,".d2-source-review-sticky button");
     await page.locator("#d2-reviews").waitFor({state:"visible"});
     assert.match(await page.locator("#d2-reviews").innerText(),/Log in to view all detailed reviews/);
     assert.ok(await page.locator(".d2-preview-inquiry").count()===1,"Independent consultation remains accessible separately");
@@ -280,7 +299,7 @@ async function main(){
     await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
     await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");
     await page.locator(".iq-consent input").check();
-    await page.locator(".iq-submit").click();
+    await clickVisiblePointer(page,".iq-submit",{scroll:true});
     await page.locator(".iq-panel header").getByText("Your inquiry").waitFor({timeout:8000});
     assert.equal(sent?.event_id,"70809");
     assert.equal(sent?.option_index,5);
