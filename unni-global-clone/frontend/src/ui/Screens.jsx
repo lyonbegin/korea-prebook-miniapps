@@ -63,14 +63,16 @@ export function SearchScreen({go,query,setQuery}){
 export function SearchResultsScreen({route,data,go}){
  const params=new URLSearchParams(route.split("?")[1]||"");
  const phrase=params.get("q")||params.get("category")||"";
- const procedures=data.events||[],clinics=data.hospitals||[];
+ const district=params.get("districtName")||"";
+ const visible=x=>!district||(x.summary||"").toLowerCase().includes(district.toLowerCase());
+ const procedures=(data.events||[]).filter(visible),clinics=(data.hospitals||[]).filter(visible);
  const viewAll="/events?q="+encodeURIComponent(phrase);
  return <div className="search-results">
   <div className="search-results-top">
    <button className="source-search-again" onClick={()=>go("/search")}><Search size={20}/>{phrase||"Search procedures or clinics"}</button>
    <button className="search-results-location" onClick={()=>go("/district-filter?target=search&q="+encodeURIComponent(phrase))}><MapPin size={18}/>Location</button>
   </div>
-  <h1>Results for '{phrase}'</h1>
+  <h1>Results for '{phrase}'{district&&<small className="source-search-selected-location"> · {district} (loaded results)</small>}</h1>
   <section className="search-result-group">
    <SectionHeading title="Procedures" more="View all" onMore={()=>go(viewAll)}/>
    {procedures.length?<div className="offer-grid">{procedures.slice(0,8).map(o=><OfferCard key={o.sourceHref} item={o} go={go}/>)}</div>:

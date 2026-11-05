@@ -409,6 +409,19 @@ async function main(){
    assert.match(page.url(),/\/events\/\d+/);
    return "original search category route with live public event links";
   });
+  await check("Original location selector loads source-backed city and area labels",async()=>{
+   await visit("/district-filter?returnToHome=true");
+   const cities=page.locator(".district-region-list button");
+   assert.equal(await cities.count(),16,"Public source lists 16 regions");
+   await page.getByRole("button",{name:"Busan",exact:true}).click();
+   assert.match(await page.locator(".district-areas").innerText(),/Haeundae|Seomyeon/);
+   const first=page.locator(".district-areas button").first();
+   await first.click();
+   assert.match(await page.locator(".district-complete").innerText(),/\(1\)/);
+   await page.getByRole("button",{name:"Reset",exact:true}).click();
+   assert.doesNotMatch(await page.locator(".district-complete").innerText(),/\(1\)/);
+   return "16 original regions and live source district checkboxes with functional Reset";
+  });
   await check("Inquiries screen is honest",async()=>{
    await visit("/inquiries");
    assert.match(await page.locator("body").innerText(),/inquiries/i);

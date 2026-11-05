@@ -190,6 +190,22 @@ export function parseSource(html,route){
   // Home is parsed from the real public /us homepage rather than a substitute category.
   const firstPromo=route==="/"?([...body.querySelectorAll("h1,h2")].map(text)
     .find(s=>/deals?\s+up\s+to|special\s+offers?|discounts?/i.test(s))||""):"";
+  const districtGroups=route.startsWith("/district-filter")?(()=>{
+    const cities=[...doc.querySelectorAll('[role="tab"]')].map(el=>text(el)).filter(Boolean).slice(0,20);
+    const districts=[],seen=new Set();
+    let current=null;
+    for(const node of doc.querySelectorAll('[role="checkbox"][aria-label]')){
+      const label=(node.getAttribute("aria-label")||"").replace(/\u200b/g,"").trim();
+      if(/^In\s+/i.test(label)){
+        const region=label.replace(/^In\s+/i,"");
+        if(cities.some(c=>c.replace(/\u200b/g,"")===region)){current={name:region,items:[]};districts.push(current)}
+        else current=null;
+      }else if(current&&!seen.has(current.name+"|"+label)){
+        current.items.push(label);seen.add(current.name+"|"+label);
+      }
+    }
+    return {cities,regions:districts};
+  })():null;
   const homeBanners=route==="/"?(()=>{
     const seen=new Set(),slides=[];
     for(const img of body.querySelectorAll("img[alt]")){
@@ -407,7 +423,7 @@ export function parseSource(html,route){
   }
   const doctorSpecialties=detailKind==="doctors"?["Filler","Lifting","Body","Skin","Botox"].filter(x=>
     fullText.slice(0,Math.min(600,Math.max(0,fullText.indexOf("Reviews"))+170)).includes(x)):null;
-  return {route,pageTitle,homePromo,homeSections,homeBanners,homeCategoryIcons,doctorSpecialties,detailKind,id:match?.[2]||null,
+  return {route,pageTitle,districtGroups,homePromo,homeSections,homeBanners,homeCategoryIcons,doctorSpecialties,detailKind,id:match?.[2]||null,
     count:countMatch?Number(countMatch[1].replace(/,/g,"")):null,
     summary:shorten(fullText,2400),rating:detail.stats.rating||rating,reviewCount:detail.stats.reviews||reviewCount,clinicAddress,
     events,hospitals,doctors,articles,sections:originalSectionList,
@@ -428,10 +444,10 @@ export function buildEventRoute({query="",category="",sort=""}={}){
 export function createPageSource(route){
  if(route==="/")return"/us";
  if(route==="/saved"||route==="/settings")return null;
- if(!/^\/(?:events|hospitals|doctors|contents|community|search|reviews)(?:\/|\?|$)/.test(route))return"/us";
+ if(!/^\/(?:events|hospitals|doctors|contents|community|search|reviews|district-filter)(?:\/|\?|$)/.test(route))return"/us";
  const [pathname,query=""]=route.split("?");
  const args=new URLSearchParams(query);
  // Local controls must never be forwarded to the original provider.
- args.delete("optionIndex");args.delete("viewSort");
+ args.delete("optionIndex");args.delete("viewSort");args.delete("districtName");
  return "/us"+pathname+(args.toString()?"?"+args.toString():"");
 }
