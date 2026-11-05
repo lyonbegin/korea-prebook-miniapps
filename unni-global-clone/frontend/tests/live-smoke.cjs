@@ -155,6 +155,23 @@ async function main(){
    assert.equal(await page.locator("#d2-options .d2-option").count(),14);
    return "top source-style View all reveals all 14 real priced options";
   });
+  await check("Option selection survives browser back and forward navigation",async()=>{
+    await visit("/events/70809?optionId=d195122c-ee11-4090-94c1-29a439508bdd");
+    const cards=page.locator("#d2-options .d2-option");
+    await cards.nth(0).click();
+    const first=page.url();
+    assert.match(first,/optionId=65ec0474-c599-11ee-982f-0a5164a62f36/);
+    await cards.nth(4).click();
+    const fifth=page.url();
+    assert.match(fifth,/optionId=d195122c-ee11-4090-94c1-29a439508bdd/);
+    await page.goBack({waitUntil:"domcontentloaded"});
+    await page.waitForFunction(()=>document.querySelector(".d2-featured-public")?.textContent?.includes("Option 1"),null,{timeout:14000});
+    assert.equal(page.url(),first);
+    await page.goForward({waitUntil:"domcontentloaded"});
+    await page.waitForFunction(()=>document.querySelector(".d2-featured-public")?.textContent?.includes("Option 5"),null,{timeout:14000});
+    assert.equal(page.url(),fifth);
+    return "original option UUID URL and visible selection restored in history back/forward";
+  });
   await check("All 14 source option IDs map to unique actual deep links",async()=>{
    const cards=page.locator("#d2-options .d2-option");
    assert.equal(await cards.count(),14);
