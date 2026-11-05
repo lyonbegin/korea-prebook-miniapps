@@ -94,3 +94,9 @@
 .source-promo-card{height:auto;aspect-ratio:1080/396;min-height:0}
 .source-promo-card>img,.source-promo-action img{width:100%;height:100%;min-height:0;max-height:none;object-fit:cover}
 @media(min-width:750px){.source-global-bottom{max-width:1100px;margin:auto}.source-breach-notice{max-width:1100px;margin:0 auto 14px}}
+
+/* Public site navigation is pinned to the mobile viewport, but detail pages
+   have their own distinct consultation/action footer. */
+.source-global-bottom{position:fixed;bottom:0;left:0;right:0;width:100%;margin:auto;min-height:66px;z-index:30}
+.app-shell{padding-bottom:72px}
+@media(min-width:750px){.source-global-bottom{display:none}.app-shell{padding-bottom:0}}
