@@ -357,6 +357,8 @@ async function main(){
    await page.locator(".offer-card").first().waitFor({state:"visible",timeout:15000});
    const values=await page.locator(".offer-price-line b").allTextContents();
    const nums=values.map(x=>Number(x.replace(/[^0-9.]/g,""))).filter(x=>Number.isFinite(x)&&x>0);
+   console.log("SORT_DEBUG",JSON.stringify({url:page.url(),cards:await page.locator(".listing-grid .offer-card").count(),
+     values:values.slice(0,10),text:(await page.locator(".listing-page").innerText()).slice(0,250)}));
    assert.ok(nums.length>=5,"Enough source prices to sort");
    assert.ok(nums.every((v,i)=>i===0||v>=nums[i-1]),"Local loaded prices should be ascending");
    return nums.length+" source-linked cards sorted ascending";

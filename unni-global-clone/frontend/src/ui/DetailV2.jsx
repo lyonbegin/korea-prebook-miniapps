@@ -232,7 +232,7 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
  const found=new Set(fromPage.map(x=>String(x.id)));
  // Once the public catalog resolves, the persisted source doctor ID/name is
  // authoritative. Drop hospital-wrapper cards that only masquerade as doctors.
- const sourceDoctors=facts?.doctors?.length
+ const candidates=facts?.doctors?.length
    ? facts.doctors.map(x=>{
        const id=String(x.original_doctor_id);
        const original=fromPage.find(a=>String(a.id)===id);
@@ -241,6 +241,11 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
          summary:"Public clinician profile",rating:original?.rating||"",reviewCount:original?.reviewCount||""};
      })
    : fromPage;
+ // The public HTML may expose a wrapper clinic link and the actual doctor
+ // link separately. Show only source-identified clinicians, never a clinic
+ // masquerading as the doctor.
+ const proper=candidates.filter(x=>/\bDr\.|\bDoctor\b/i.test(x.title)||!/(?:Clinic|Hospital)\b/i.test(x.title));
+ const sourceDoctors=(proper.length?proper:candidates).slice(0,h.doctorCount||undefined);
  return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
    <div className="d2-top"><span className="d2-eyebrow">CLINIC</span><h1>{data.pageTitle}</h1><div className="d2-ratings"><Star size={17} fill="currentColor"/>
    <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>
