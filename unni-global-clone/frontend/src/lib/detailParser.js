@@ -282,7 +282,10 @@ function parseSteps(section){
 function specialties(section){
   const raw=section?.text||"";
   const names=["Face Contour","Hair Removal","Rhinoplasty","Lifting","Filler","Botox","Skin","Body","Breast","Hair","Dental","Eye","K-Med"];
-  return names.filter(n=>raw.toLowerCase().includes(n.toLowerCase()));
+  // Preserve the order publicly displayed by the clinic (e.g. Body, Skin,
+  // Lifting, Botox), not the arbitrary order of this parser's vocabulary.
+  return names.filter(n=>raw.toLowerCase().includes(n.toLowerCase()))
+    .sort((a,b)=>raw.toLowerCase().indexOf(a.toLowerCase())-raw.toLowerCase().indexOf(b.toLowerCase()));
 }
 function clinicHours(section,root){
   const rows=section?.blocks?.filter(b=>b.type==="table").flatMap(b=>b.rows)||[];

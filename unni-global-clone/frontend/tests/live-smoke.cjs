@@ -241,6 +241,16 @@ async function main(){
    return "clinic 826 live review count + 7-day hours/address";
   });
 
+  await check("Source clinic tabs and public highlight disclaimer",async()=>{
+    await visit("/hospitals/826");
+    const names=await page.locator(".d2-clinic-tabs button").allTextContents();
+    assert.deepEqual(names,["Clinic Info","Procedures","Reviews"]);
+    await page.getByRole("button",{name:"Procedures",exact:true}).last().click();
+    assert.ok(await page.locator("#d2-clinic-events .offer-card").count()>=4);
+    const content=await page.locator("#d2-highlights").innerText();
+    assert.ok(content.indexOf("clinic-provided")<content.indexOf("Camera-monitored operating rooms"));
+    return "3 public clinic sections, source badge caveat before badges";
+  });
   await check("Clinic gallery cycles all ten photos",async()=>{
    const count=page.locator(".d2-photo-count");
    assert.match(await count.innerText(),/1\s*\/\s*10/);

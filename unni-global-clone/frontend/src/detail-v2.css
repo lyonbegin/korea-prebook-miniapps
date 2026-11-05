@@ -149,3 +149,13 @@
 .d2-doctor-review-notice{margin:0 16px 18px;padding:33px 22px;background:#f6f7f9;border-radius:18px;text-align:center;font-size:13px;line-height:1.6;color:#636b77}
 .d2-doctor-review-notice p{margin:0 0 10px}
 @media(min-width:650px){.d2-doctor-breadcrumb,.d2-doctor-identity,.d2-doctor-detail .d2-block{max-width:1040px;margin-left:auto;margin-right:auto}}
+
+.d2-clinic-detail .d2-eyebrow{display:none}
+.d2-clinic-tabs{position:sticky;top:0;z-index:17;display:grid;grid-template-columns:repeat(3,1fr);background:#fff;height:49px;border-top:1px solid #f1f1f2;border-bottom:1px solid #e6e8ed}
+.d2-clinic-tabs button{background:#fff;border:0;border-bottom:2px solid transparent;color:#7e8792;font-size:14px;font-weight:650}
+.d2-clinic-tabs button:first-child{color:#151617;border-bottom-color:#1c1c1c}
+#d2-highlights,#d2-clinic-events,#d2-reviews{scroll-margin-top:54px}
+.d2-clinic-detail #d2-highlights .d2-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:12px 6px}
+.d2-clinic-detail #d2-highlights .d2-highlights>div{border:0;background:#fff;display:flex;align-items:center;gap:8px;padding:2px;font-size:13px;line-height:1.4;color:#161a1f}
+.d2-clinic-detail #d2-highlights .d2-highlights img{width:31px;height:31px;object-fit:contain;flex:0 0 31px}
+.d2-clinic-detail #d2-highlights .d2-medical-disclaimer{background:#eef0f3;color:#67717d;padding:14px 12px;margin:12px 6px 20px;border-radius:6px;line-height:1.55}

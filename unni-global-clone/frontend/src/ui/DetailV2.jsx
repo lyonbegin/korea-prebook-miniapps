@@ -246,15 +246,20 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
  // masquerading as the doctor.
  const proper=candidates.filter(x=>/\bDr\.|\bDoctor\b/i.test(x.title)||!/(?:Clinic|Hospital)\b/i.test(x.title));
  const sourceDoctors=proper.slice(0,h.doctorCount||undefined);
- return <article className="d2-detail"><Gallery media={d.media} label={data.pageTitle}/>
+ return <article className="d2-detail d2-clinic-detail"><Gallery media={d.media} label={data.pageTitle}/>
    <div className="d2-top"><span className="d2-eyebrow">CLINIC</span><h1>{data.pageTitle}</h1><div className="d2-ratings"><Star size={17} fill="currentColor"/>
    <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>
    <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div></div>
+   <nav className="d2-clinic-tabs" aria-label="Clinic sections">
+    {[["Clinic Info","d2-highlights"],["Procedures","d2-clinic-events"],["Reviews","d2-reviews"]].map(([label,id])=>
+      <button key={id} onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}>{label}</button>)}
+   </nav>
    {h.highlightNames?.length>0&&<Block id="d2-highlights"><Header sub={h.highlightNames.length+" highlights"}>Clinic Highlights</Header>
+     <p className="d2-medical-disclaimer">The presence of camera-monitored operating rooms is based on clinic-provided information. The badge does not independently confirm installation or compliance.</p>
      <div className="d2-highlights">{h.highlightNames.map((x,i)=><div key={i}>
         {d.media.badges?.[i]?.url?<img className="d2-highlight-badge" src={d.media.badges[i].url} alt="" loading="lazy"/>:<span>{i+1}</span>}{x}
       </div>)}</div>
-     <p className="d2-medical-disclaimer">Highlights are clinic-provided and do not independently certify compliance.</p></Block>}
+     }
    {h.about?.text&&<Block id="d2-about"><Header>About the Clinic</Header><RenderBlocks section={h.about}/></Block>}
    {h.specialties?.length>0&&<Block id="d2-specialties"><Header>Specialties</Header><div className="d2-specialties">{h.specialties.map(x=><span key={x}>{x}</span>)}</div></Block>}
    {sourceDoctors.length>0&&<Block id="d2-doctors"><Header sub={h.doctorCount?h.doctorCount+" doctors":null}>All Doctors</Header>
