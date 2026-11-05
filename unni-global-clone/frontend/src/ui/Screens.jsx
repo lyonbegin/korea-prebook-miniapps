@@ -45,17 +45,33 @@ export function ListingScreen({route,data,go,query,setQuery}){
  const [modal,setModal]=useState(false),[sort,setSort]=useState(originalSort),[city,setCity]=useState("All"),[minPrice,setMinPrice]=useState(""),[maxPrice,setMaxPrice]=useState("");
  useEffect(()=>setSort(originalSort),[originalSort]);
  const items=isClinic?data.hospitals:isArticles?data.articles:data.events;
+ const numericPrice=item=>Number(String(item.price||"").replace(/[^0-9.]/g,""))||0;
+ const numericReviews=item=>Number(String(item.reviewCount||"").replace(/,/g,""))||0;
  const filtered=items.filter(item=>{
    const search=(item.title+" "+item.summary).toLowerCase();
    if(city!=="All"&&!search.includes(city.toLowerCase()))return false;
-   const price=Number((item.price||"").replace(/[^0-9.]/g,""));
+   const price=numericPrice(item);
    if(minPrice!==""&&(!price||price<Number(minPrice)))return false;
    if(maxPrice!==""&&(!price||price>Number(maxPrice)))return false;
    return true;
+ }).sort((a,b)=>{
+   switch(sort){
+     case "LOWEST_DISCOUNTED_COST":return (numericPrice(a)||Infinity)-(numericPrice(b)||Infinity);
+     case "HIGHEST_DISCOUNTED_COST":return numericPrice(b)-numericPrice(a);
+     case "HIGHEST_DISCOUNT_RATE":return (b.discountPercent||0)-(a.discountPercent||0);
+     case "HIGHEST_RATING_COUNT":return numericReviews(b)-numericReviews(a);
+     case "HIGHEST_RATING_AMOUNT":return (Number(b.rating)||0)-(Number(a.rating)||0);
+     default:return 0;
+   }
  });
- function apply(){setModal(false);if(isClinic||isArticles)return;
-   const cat=CATEGORIES.find(x=>x.toLowerCase()===originalQuery.toLowerCase())||"";
-   go(buildEventRoute({query:originalQuery,category:cat,sort}));
+ function apply(){
+   setModal(false);
+   if(!isClinic&&!isArticles&&sort!==originalSort){
+     const next=new URLSearchParams(params);
+     if(sort)next.set("s",sort);else next.delete("s");
+     const path=route.split("?")[0];
+     go(path+(next.toString()?"?"+next.toString():""));
+   }
  }
  function submit(e){e.preventDefault();go(isClinic?"/hospitals?q="+encodeURIComponent(query):buildEventRoute({query:query}));}
  const heading=isArticles?"Beauty columns":isClinic?"Find clinics":originalQuery?"'"+originalQuery+"' Procedures":"All procedures";

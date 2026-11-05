@@ -77,7 +77,22 @@ function itemAnchor(a){
   const closer=a.closest("article,li,[class*=card],[class*=Card]")||a;
   const raw=text(closer);
   const heading=text(closer.querySelector("h3,h2,h4"))||text(a.querySelector("h3,h2,h4"))||text(a);
-  const label=shorten(heading||a.getAttribute("aria-label")||"",120);
+  let label=shorten(heading||a.getAttribute("aria-label")||"",180);
+  let publishedDate=null,articleCategory="";
+  if(type==="article"){
+    const leaves=[...a.querySelectorAll("*")].filter(el=>el.children.length===0)
+      .map(el=>text(el)).filter(Boolean);
+    publishedDate=raw.match(/\b20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}\b/)?.[0]||null;
+    const candidates=leaves.filter(v=>v.length>28&&!/^20\d{2}[.\/-]/.test(v))
+      .map(v=>v.replace(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}\s*$/,"").trim());
+    const strong=candidates.find(v=>v===text(a.querySelector("h3,h2,h4")))||
+       candidates.sort((a,b)=>b.length-a.length)[0]||"";
+    if(strong&&raw.includes(strong)){
+      const prefix=raw.slice(0,raw.indexOf(strong)).trim();
+      if(prefix&&prefix.length<=45)articleCategory=prefix;
+      label=shorten(strong,220);
+    }else label=shorten(label.replace(/20\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}\s*$/,"").trim(),220);
+  }
   const image=bestImage(closer)||bestImage(a)||imageForSourceItem(a,closer,href);
   const amounts=[...raw.matchAll(/(?:US)?\$\s?[\d,]+(?:\.\d{1,2})?/g)].map(m=>m[0]);
   // Original listing can append a parenthesized unit price after the actual offer.
@@ -94,14 +109,17 @@ function itemAnchor(a){
   const id=href.match(E)?.[1]||href.match(H)?.[1]||href.match(D)?.[1]||href.match(C)?.[1]||"";
   return {id,sourceHref:href,path:href.replace(/^\/us/,""),type,
     title:label||"Open original item",image,price:lastPrice,originalPrices:amounts,
-    rating:num,reviewCount:reviews,summary:brief};
+    rating:num,reviewCount:reviews,discountPercent:Number(raw.match(/(?:^|\s)(\d{1,3})\s*%/)?.[1])||null,
+    publishedDate,articleCategory,summary:type==="article"?(publishedDate||articleCategory||""):brief};
 }
 export function collectItems(document,kind,limit=180){
   const seen=new Set(),found=[];
   for(const a of document.querySelectorAll("a[href]")){
     const obj=itemAnchor(a);
-    if(!obj||obj.type!==kind||seen.has(obj.sourceHref))continue;
-    seen.add(obj.sourceHref);found.push(obj);
+    if(!obj||obj.type!==kind)continue;
+    const key=kind==="article"?obj.path.split("?")[0]:obj.sourceHref;
+    if(seen.has(key))continue;
+    seen.add(key);found.push(obj);
     if(found.length>=limit)break;
   }
   return found;
