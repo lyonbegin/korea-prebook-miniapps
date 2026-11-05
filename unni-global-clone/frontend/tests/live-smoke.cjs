@@ -281,6 +281,7 @@ async function main(){
      const dims=await page.evaluate(()=>({
        layout:window.innerHeight,screen:window.screen.height,visual:window.visualViewport?.height,
        inset:getComputedStyle(document.documentElement).getPropertyValue("--unni-physical-bottom"),
+       computedBottom:getComputedStyle(document.querySelector(".d2-source-review-sticky")).bottom,
        rect:document.querySelector(".d2-source-review-sticky button")?.getBoundingClientRect().toJSON()
      }));
      assert.ok(dims.rect?.bottom<=page.viewportSize().height-1,

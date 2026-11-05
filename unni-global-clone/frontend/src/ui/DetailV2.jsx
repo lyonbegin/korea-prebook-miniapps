@@ -173,7 +173,23 @@ function ReviewBox({detail,route}){
 // A viewport footer must not participate in a long detail article's
 // stacking/scrolling contexts. Mount it at body level, below the inquiry overlay.
 function FixedDetailAction({children}){
- return typeof document==="undefined"?children:createPortal(children,document.body);
+ const measure=()=>typeof window==="undefined"?0:Math.max(0,Math.ceil(
+   window.innerHeight-Math.min(window.innerHeight,window.screen?.height||Infinity,window.visualViewport?.height||Infinity)
+ ));
+ const [inset,setInset]=useState(measure);
+ useEffect(()=>{
+   const update=()=>setInset(measure());
+   update();
+   const ids=[50,200,800].map(ms=>setTimeout(update,ms));
+   window.addEventListener("resize",update);
+   window.visualViewport?.addEventListener("resize",update);
+   return()=>{ids.forEach(clearTimeout);window.removeEventListener("resize",update);
+     window.visualViewport?.removeEventListener("resize",update)};
+ },[]);
+ if(typeof document==="undefined")return children;
+ return createPortal(React.cloneElement(children,{
+   style:{...children.props.style,bottom:inset+"px"}
+ }),document.body);
 }
 function StuckBar({price,clinic=false,onClick}){
  return <div className="d2-sticky"><div><small>{clinic?"Clinic inquiry":"Selected option"}</small><b>{clinic?"Consultation":price||"Price at source"}</b></div>
