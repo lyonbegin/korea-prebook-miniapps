@@ -342,6 +342,14 @@ async function main(){
    assert.match(decodeURIComponent(href),/37\.5263383311071,127\.040916968767/);
    return "published original Google map coordinates preserved";
   });
+  await check("Original clinic official login CTA is distinct from preview inquiry",async()=>{
+    await visit("/hospitals/826");
+    const link=page.locator(".d2-source-clinic-sticky a");
+    assert.equal(await link.getAttribute("href"),"https://unni.app/us/hospitals/826");
+    assert.match(await link.innerText(),/Log in to apply for a free\s+consultation/);
+    assert.equal(await page.locator(".d2-preview-clinic-contact").count(),1);
+    return "original login CTA links to original; independent contact remains explicitly separate";
+  });
   await check("Clinic inquiry retains clinic ID without writing to DB",async()=>{
    let sent=null;
    await page.route("**/inquiries",async route=>{
@@ -352,7 +360,7 @@ async function main(){
     })});
    });
    try{
-    await page.locator(".d2-sticky button").click();
+    await page.locator(".d2-preview-clinic-contact").click();
     await page.locator(".iq-context").getByText("U Line Clinic").waitFor({timeout:8000});
     await page.locator(".iq-form input[required]").fill("synthetic-qa@example.invalid");
     await page.locator(".iq-form textarea").fill("Synthetic test only; network request intercepted.");

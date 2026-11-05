@@ -266,7 +266,7 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
  return <article className="d2-detail d2-clinic-detail"><Gallery media={d.media} label={data.pageTitle}/>
    <div className="d2-top"><span className="d2-eyebrow">CLINIC</span><h1>{data.pageTitle}</h1><div className="d2-ratings"><Star size={17} fill="currentColor"/>
    <b>{score||"—"}</b>{reviews&&<small>{Number(String(reviews).replace(/,/g,"")).toLocaleString("en-US")} Reviews</small>}</div>
-   <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button><SourceLink route={route}/></div></div>
+   <div className="d2-actionbar"><button onClick={onSave}><Heart size={18} fill={isSaved?"#fa4374":"none"}/>{isSaved?"Saved":"Save"}</button><button className="d2-preview-clinic-contact" onClick={()=>onConsult?.({clinic:{id:data.id,name:data.pageTitle}})}><MessageCircle size={17}/> Independent consultation</button><SourceLink route={route}/></div></div>
    <nav className="d2-clinic-tabs" aria-label="Clinic sections">
     {[["Clinic Info","d2-highlights"],["Procedures","d2-clinic-events"],["Reviews","d2-reviews"]].map(([label,id])=>
       <button key={id} onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}>{label}</button>)}
@@ -288,7 +288,10 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
    {data.events?.length>0&&<Block id="d2-clinic-events"><Header sub={h.procedureCount?h.procedureCount+" procedures":null}>Procedures</Header>
      <div className="d2-grid">{data.events.map(x=><OfferCard item={x} go={go} key={x.sourceHref}/>)}</div></Block>}
    <ReviewBox detail={d} route={route}/>
-   <StuckBar clinic onClick={()=>onConsult?.({clinic:{id:data.id,name:data.pageTitle}})}/>
+   <div className="d2-source-clinic-sticky">
+    <a href={"https://unni.app/us/hospitals/"+encodeURIComponent(data.id)} target="_blank" rel="noopener noreferrer"
+       title="The original UNNI website is required for its own login and clinic booking">Log in to apply for a free<br/>consultation</a>
+  </div>
  </article>;
 }
 export function DoctorDetailV2({route,data,go}){
