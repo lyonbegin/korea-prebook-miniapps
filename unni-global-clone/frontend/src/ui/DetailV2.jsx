@@ -258,8 +258,7 @@ export function HospitalDetailV2({route,data,go,isSaved,onSave,onConsult}){
      <p className="d2-medical-disclaimer">The presence of camera-monitored operating rooms is based on clinic-provided information. The badge does not independently confirm installation or compliance.</p>
      <div className="d2-highlights">{h.highlightNames.map((x,i)=><div key={i}>
         {d.media.badges?.[i]?.url?<img className="d2-highlight-badge" src={d.media.badges[i].url} alt="" loading="lazy"/>:<span>{i+1}</span>}{x}
-      </div>)}</div>
-     }
+      </div>)}</div></Block>}
    {h.about?.text&&<Block id="d2-about"><Header>About the Clinic</Header><RenderBlocks section={h.about}/></Block>}
    {h.specialties?.length>0&&<Block id="d2-specialties"><Header>Specialties</Header><div className="d2-specialties">{h.specialties.map(x=><span key={x}>{x}</span>)}</div></Block>}
    {sourceDoctors.length>0&&<Block id="d2-doctors"><Header sub={h.doctorCount?h.doctorCount+" doctors":null}>All Doctors</Header>
