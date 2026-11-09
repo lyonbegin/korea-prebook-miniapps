@@ -62,6 +62,23 @@ function diff(x,y){
        letterSpacing:s.letterSpacing,rect:{x:r.x,y:r.y,width:r.width,height:r.height}};
    });
    console.log("TYPOGRAPHY AUDIT",c.name,JSON.stringify({sourceMetrics,cloneMetrics}));
+   const probes=await Promise.all([source,clone].map(async(p)=>{
+     if(p===source&&!sourceMode.startsWith("live-"))return null;
+     return p.evaluate(()=>{
+       const selectors=["header","header img","h1","h2",".breadcrumb",".md-intro",".md-intro p",".md-tabs",".md-tabs button",
+         ".symptom-group",".md-symptoms",".md-lookup",".md-lookup label",".md-blue-button",".md-dept-list",
+         ".md-cost-intro",".md-cost-intro p",".md-cost-list",".md-cost-grid",".cost-tile",
+         ".clinic-head",".clinic-location",".clinic-actions",".md-clinic-tabs",".clinic-prices",".price-chips",
+         ".md-home h1",".md-awards",".md-stats",".md-stat-notes",".md-home-hero"];
+       return Object.fromEntries(selectors.map(sel=>{
+         const el=document.querySelector(sel);if(!el)return[sel,null];
+         const q=el.getBoundingClientRect(),c=getComputedStyle(el);
+         return [sel,{x:Math.round(q.x),y:Math.round(q.y),w:Math.round(q.width),h:Math.round(q.height),
+           font:c.fontSize,weight:c.fontWeight,line:c.lineHeight,bg:c.backgroundColor}];
+       }));
+     });
+   }));
+   console.log("LAYOUT AUDIT",c.name,JSON.stringify({source:probes[0],clone:probes[1]}));
    fs.writeFileSync(path.join("qa-artifacts","heatmap-"+c.name+".png"),PNG.sync.write(m.heatmap));
    const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:m.changed_ratio_percent===0?"PARITY":"MISMATCH",changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
    report.push(entry);console.log("VISUAL AUDIT",JSON.stringify(entry));
