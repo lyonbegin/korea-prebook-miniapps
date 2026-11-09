@@ -44,5 +44,6 @@ function diff(x,y){
   }catch(e){const entry={name:c.name,status:"UNVERIFIED",reason:String(e.message||e)};report.push(entry);console.error("VISUAL AUDIT",JSON.stringify(entry))}
   finally{await source.close();await clone.close()}
  }}finally{await browser.close();fs.writeFileSync("qa-artifacts/source-parity.json",JSON.stringify({viewport:{width:390,height:844},pages:report,meaning:"Observed initial viewport only. A successful workflow is never proof of pixel or functional parity."},null,2))}
- // Diagnostics are saved even if the original has rate limits. Strict gating is in live-smoke.
+ // Different or inaccessible originals remain failing parity checks, not success.
+ if(report.some(x=>x.status!=="PARITY"))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});

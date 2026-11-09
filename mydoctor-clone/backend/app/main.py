@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from .catalog_schema import SCHEMA
 from .source_parser import extract_page, source_key
+from .snapshots import snapshot_for
 
 try:
     import asyncpg
@@ -125,6 +126,16 @@ async def gateway(rest:str,request:Request,background_tasks:BackgroundTasks):
             raise HTTPException(502,"Original source unavailable")
     if upstream.status_code in (301,302,307,308):
         return Response(status_code=upstream.status_code,headers={"location":upstream.headers.get("location","/")})
+    # The origin may throttle hosting IPs. Fall back only to dated observed
+    # public FACTS and label the response; never misrepresent as live origin.
+    if upstream.status_code in (403,429):
+        observed=snapshot_for(path,query)
+        if observed is not None:
+            if pool:
+                background_tasks.add_task(ingest,pool,original_url,observed,200)
+            return Response(content=observed,status_code=200,media_type="text/html",
+                headers={"x-cache":"BYPASS","x-data-source":"verified-public-snapshot-20261109"},
+                background=background_tasks)
     body=upstream.content
     if len(body)>MAX_BYTES*2:raise HTTPException(502,"Origin payload too large")
     content_type=upstream.headers.get("content-type","text/html").split(";")[0].strip()
