@@ -147,6 +147,11 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/original-fact-interactions.cjs
+      - name: Compare 29 real original factual link heading and price row sets against clone
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/original-fact-29.cjs
       - name: Click actual identical original and clone paths and compare destination titles
         working-directory: mydoctor-clone/frontend
         env:
