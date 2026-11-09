@@ -194,12 +194,34 @@ function HospitalScreen({data,go}){
  </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{sourceDepts.map(d=><Anchor key={d.path} label={d.label} path={d.path} go={go}/>)}</div></section>
  <section className="md-original-links"><h2>원본 조건별 병원 찾기</h2><SourceRows links={data.links.filter(x=>!sourceDepts.some(y=>y.path===x.path)&&x.path!=="/")} go={go}/></section></>;
 }
+const ORIGINAL_PRICE_CARD_ORDER=[
+"마운자로","위고비","삭센다","에페","다이어트약","탈모약","여드름약","독감예방접종","가다실9가","대상포진예방접종",
+"수액","치과","시력교정술","MRI검사","상급병실료","초음파-검사","예방접종-백신",
+"제증명-수수료","항원-호르몬-유전자-병리-검사","정밀-검사","내시경-검사","MRA-검사",
+"주사-치료","물리치료","정신과-상담-치료","처치-및-수술","모발-이식","한방","치료재료","드림렌즈","교육-상담"
+];
+const ORIGINAL_PRICE_CARD_LABELS={
+"다이어트약":"다이어트 경구약","독감예방접종":"독감 예방접종","가다실9가":"가다실 9가",
+"대상포진예방접종":"대상포진 예방접종","치과":"치과 치료","시력교정술":"시력교정술",
+"MRI검사":"MRI 검사","예방접종-백신":"예방접종 백신","초음파-검사":"초음파 검사",
+"제증명-수수료":"제증명 수수료","정밀-검사":"정밀 검사","내시경-검사":"내시경 검사",
+"상급병실료":"상급병실료","처치-및-수술":"처치 및 수술","모발-이식":"모발 이식",
+"정신과-상담-치료":"정신과 상담·치료"
+};
 function CostScreen({data,go}){
  const[search,setSearch]=useState("");
- const categoryCards=data.categories.filter(x=>decodeURIComponent(x.path).split("?")[0].split("/").filter(Boolean).length===2);
+ const categoryCards=data.categories.filter(x=>decodeURIComponent(x.path).split("?")[0].split("/").filter(Boolean).length===2)
+  .sort((a,b)=>{
+    const key=x=>decodeURIComponent(x.path.split("?")[0]).split("/")[2];
+    const ia=ORIGINAL_PRICE_CARD_ORDER.indexOf(key(a)),ib=ORIGINAL_PRICE_CARD_ORDER.indexOf(key(b));
+    return (ia<0?999:ia)-(ib<0?999:ib);
+  });
  const choices=categoryCards.filter(x=>!search||x.title.includes(search));
  return <><section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1><p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p></section>
- <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=>{const name=decodeURIComponent(v.path.split("?")[0].split("/")[2]).replace(/-/g," ");const desc=v.title.startsWith(name)?v.title.slice(name.length).trim():v.title;return <Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{name}</strong><small>{PRICEDESC[name]||desc||"진료비 가격 비교"}</small></Anchor>})}</div></section>
+ <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=>{const id=decodeURIComponent(v.path.split("?")[0]).split("/")[2];
+ const name=ORIGINAL_PRICE_CARD_LABELS[id]||id.replace(/-/g," ");
+ const desc=v.title.startsWith(name)?v.title.slice(name.length).trim():v.title;
+ return <Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{name}</strong><small>{PRICEDESC[name]||desc||"진료비 가격 비교"}</small></Anchor>})}</div></section>
  <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search} onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
  <section className="md-original-links"><h2>주요 가격 비교</h2><SourceRows links={data.links.filter(x=>!data.categories.some(v=>v.path===x.path)&&x.path!=="/")} go={go}/></section></>;
 }

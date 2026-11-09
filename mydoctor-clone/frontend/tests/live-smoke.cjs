@@ -16,6 +16,10 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   await test("real medical cost route",async()=>{await goto("/medical-cost");const h=await page.locator("h1").first().innerText();assert.match(h,/가격|의료비|진료/);await page.screenshot({path:"qa-artifacts/medical-cost.png"});return h});
   await test("real hospital detail and prices",async()=>{await goto("/hospital/detail?hospital_id=323");await page.locator("h1").first().waitFor({timeout:15000});assert.equal(await page.locator('[role="alert"]').count(),0);assert.ok(await page.locator("table tbody tr").count()>0,"Actual published hospital price rows not rendered");await page.screenshot({path:"qa-artifacts/hospital-323.png"});return await page.locator("h1").first().innerText()});
   await test("symptom accordion opens and closes",async()=>{
+        // Cost tiles must follow the original site’s category presentation, not the importer’s link order.
+    await goto("/medical-cost");
+    const priceCards=await page.locator(".cost-tile strong").allTextContents();
+    assert.deepEqual(priceCards.slice(0,10),["마운자로","위고비","삭센다","에페","다이어트 경구약","탈모약","여드름약","독감 예방접종","가다실 9가","대상포진 예방접종"]);
     await goto("/telemedicine/all-department");
     assert.equal(await page.locator(".symptom-group").count(),13,"Original has 13 real symptom sections");
     const b=page.locator(".symptom-group").first();

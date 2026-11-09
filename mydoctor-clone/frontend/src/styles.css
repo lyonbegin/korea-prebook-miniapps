@@ -129,3 +129,7 @@
 .home-source-index{margin:0;padding:18px 20px;background:#f7f8fa}
 .home-source-index summary{font-size:13px;font-weight:650;cursor:pointer}
 .home-source-index .observed-link{font-size:12px;min-height:32px;padding:7px 0}
+
+/* 390px original mobile crumb height and symptom subtitle line wraps. */
+.breadcrumb{height:36px}
+.md-intro:not(.md-hospital-intro) p{font-size:16px;line-height:1.6}
