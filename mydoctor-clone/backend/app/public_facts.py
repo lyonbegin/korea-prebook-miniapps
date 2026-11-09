@@ -25,7 +25,7 @@ def safe_route(value:str)->str|None:
     u=urlsplit(value)
     if u.scheme or u.netloc or "\\" in value or "\x00" in value or ".." in u.path.split("/"):
         return None
-    if any(k.lower() in ("token","auth","session","patient","user","password","email","cookie")
+    if any(any(s in k.lower() for s in ("token","auth","session","patient","user","password","email","cookie","private","secret","order","payment","reservation"))
            for k,v in parse_qsl(u.query,keep_blank_values=True)):
         return None
     return value

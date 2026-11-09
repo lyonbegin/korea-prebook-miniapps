@@ -54,6 +54,18 @@ jobs:
               assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.source_records') IS NOT NULL")
               assert await conn.fetchval("SELECT to_regclass('public.foo') IS NULL")
               assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.public_page_facts') IS NOT NULL")
+              await conn.close()
+              from app.public_facts import seed_observed_facts
+              pool=await asyncpg.create_pool(os.environ["TEST_DATABASE_URL"],min_size=1,max_size=2)
+              count=await seed_observed_facts(pool)
+              assert count==29, f"Expected 29 source-observed entries, got {count}"
+              async with pool.acquire() as db:
+                  stored=await db.fetchval("SELECT COUNT(*) FROM mydoctor_clone.public_page_facts")
+                  clinic=await db.fetchval("SELECT facts->'tables'->0->'rows'->0->>1 FROM mydoctor_clone.public_page_facts WHERE route_path='/hospital/detail?hospital_id=323'")
+              assert stored==29, stored
+              assert clinic=="5,600원", clinic
+              print(f"DB-first facts persisted: {stored}; clinic price {clinic}")
+              await pool.close()
 
               await conn.close()
           asyncio.run(check())

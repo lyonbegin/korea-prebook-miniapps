@@ -3,6 +3,7 @@ WORKDIR /srv
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
+COPY data ./data
 COPY tests ./tests
 RUN python -m compileall -q app tests && python -m unittest discover -s tests -p "test_*.py" -v
 ENV PYTHONUNBUFFERED=1
