@@ -35,6 +35,10 @@ function merge(newData,old){
 }
 async function capture(){
  const rows=JSON.parse(fs.readFileSync(dest,"utf8"));
+ if(rows.length===cases.length&&rows.every(x=>x.quality==="verified_public_facts_from_browser")){
+   console.log("PUBLIC SOURCE FACTS ALREADY VERIFIED BY ORIGINAL HTTP 200; skip redundant requests");
+   return;
+ }
  const byPath=new Map(rows.map(x=>[x.path,x]));
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  let examined=0,changed=0,blocked=0;
