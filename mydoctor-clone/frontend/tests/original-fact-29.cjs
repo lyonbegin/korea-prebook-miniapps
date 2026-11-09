@@ -44,6 +44,13 @@ const unique=a=>[...new Set(a)];
     record.original_internal_links=sourceLinks.length;
     record.rendered_matching_links=matched;
     record.missing_original_links=sourceLinks.filter(x=>!visibleLinks.has(x)).slice(0,20);
+    if(record.path==="/pharmacy/야간약국"){
+      record.pagination_debug=await page.evaluate(()=>({
+        nav:document.querySelector('nav[aria-label="원본 목록 페이지"]')?.outerHTML.slice(0,1400)||null,
+        main_a:[...document.querySelectorAll('main a[href]')].filter(a=>a.href.includes("page=")).map(a=>a.getAttribute("href")),
+        page_title:document.querySelector('main h1')?.innerText
+      }));
+    }
     record.link_coverage=sourceLinks.length?+(matched/sourceLinks.length).toFixed(3):1;
     const headings=(expectedPage.headings||[]).filter(x=>!skip.has(x));
     const matchHeadings=headings.filter(h=>observed.headings.some(v=>normalize(v)===normalize(h)));
