@@ -96,7 +96,7 @@ async def insert_facts(pool,facts:dict,overwrite:bool=False)->bool:
              facts.get("title",""),facts.get("headline",""),
              json.dumps(facts,ensure_ascii=False),facts.get("quality","heading_only"),
              facts.get("source_evidence","unknown"),
-             facts.get("observed_at") or datetime.now(timezone.utc).isoformat(),overwrite)
+             datetime.fromisoformat((facts.get("observed_at") or datetime.now(timezone.utc).isoformat()).replace("Z","+00:00")),overwrite)
     return True
 
 async def seed_observed_facts(pool)->int:
