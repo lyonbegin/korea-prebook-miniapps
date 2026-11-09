@@ -187,3 +187,6 @@
 .review-summary-note{font-size:13px;line-height:1.6;color:#8490a0;background:#f9fafc;border-radius:8px;padding:22px 13px}
 .review-detail-link{padding:20px;border-top:1px solid #ecedf1}
 .review-detail-link a{display:flex;justify-content:space-between;align-items:center;padding:11px 0;font-size:14px}
+
+/* Source screenshot exact intro wrapping: 14.5px at 390px, same 21.75px line height. */
+.md-cost-intro p{font-size:14.5px;line-height:1.5}
