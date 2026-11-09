@@ -5,16 +5,16 @@ the EXISTING PostgreSQL. It never writes to unni_clone, never fetches authentica
 third-party content and never claims to confirm real medical bookings.
 """
 from __future__ import annotations
-import os, re, json, hashlib, logging
+import os, re, json, hashlib, logging, asyncio
 from contextlib import asynccontextmanager
 from urllib.parse import unquote, urlsplit, parse_qsl
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from .catalog_schema import SCHEMA
 from .source_parser import extract_page, source_key
-from .snapshots import snapshot_for
+from .sitemap_index import sync_public_index
 
 try:
     import asyncpg
@@ -23,7 +23,7 @@ except ImportError:
 LOG = logging.getLogger("mydoctor.gateway")
 BASE = "https://my-doctor.io"
 SENSITIVE = re.compile(r"(token|auth|session|password|secret|cookie|email|phone|patient|member|user|order|payment|reservation|consultation)",re.I)
-ALLOWED = ("/","/hospital","/medical-cost","/telemedicine","/healthLab","/medicine","/pharmacy","/health","/medicineInfo","/price")
+ALLOWED = ("/","/hospital","/medical-cost","/telemedicine","/healthLab","/medicine","/pharmacy","/health","/medicineInfo","/price","/dept-hub","/map","/qna")
 MAX_BYTES=4*1024*1024
 
 def is_allowed_path(path: str) -> bool:
@@ -38,9 +38,16 @@ async def lifespan(app: FastAPI):
             pool=await asyncpg.create_pool(dsn=dsn,min_size=1,max_size=3,timeout=8)
             async with pool.acquire() as c: await c.execute(SCHEMA)
             app.state.pool=pool
+            if os.getenv("SITEMAP_SYNC_ENABLED","1")=="1":
+                app.state.sitemap_task=asyncio.create_task(sync_public_index(pool))
         except Exception:
             LOG.exception("mydoctor schema startup failed")
     yield
+    task=getattr(app.state,"sitemap_task",None)
+    if task and not task.done():
+        task.cancel()
+        try: await task
+        except asyncio.CancelledError: pass
     if app.state.pool:
         await app.state.pool.close()
 
@@ -62,8 +69,50 @@ async def catalog_status(request:Request):
     counts={}
     for name in tables:
         counts[name]=int(await pool.fetchval(f"SELECT count(*) FROM mydoctor_clone.{name}"))
+    fetched=await pool.fetchval("""SELECT COUNT(*) FROM mydoctor_clone.source_records
+      WHERE source_evidence='origin_200'""")
+    indexed=await pool.fetchval("SELECT COUNT(*) FROM mydoctor_clone.original_routes")
     return {"ok":True,"schema":"mydoctor_clone","records":counts,
-            "full_catalog_imported":False}
+            "indexed_public_route_urls":int(indexed),"http_200_original_pages":int(fetched),
+            "full_catalog_imported":False,
+            "note":"Indexed URLs and unverified legacy rows are not verified source content."}
+
+@app.get("/catalog/coverage")
+async def catalog_coverage(request:Request):
+    pool=request.app.state.pool
+    if not pool:raise HTTPException(503,"Database unavailable")
+    rows=await pool.fetch("""SELECT source_section,COUNT(*) AS discovered,
+      COUNT(data_verified_at) AS data_verified,
+      COUNT(clone_verified_at) AS clone_verified
+      FROM mydoctor_clone.original_routes GROUP BY source_section ORDER BY COUNT(*) DESC""")
+    checks=await pool.fetch("""SELECT sitemap_url,http_status,url_count,error,last_attempt_at
+      FROM mydoctor_clone.sitemap_imports ORDER BY sitemap_url""")
+    return {"discovered_routes":sum(int(r["discovered"]) for r in rows),
+            "data_verified_routes":sum(int(r["data_verified"]) for r in rows),
+            "clone_verified_routes":sum(int(r["clone_verified"]) for r in rows),
+            "sections":[dict(r) for r in rows],
+            "sitemaps":[{"url":r["sitemap_url"],"status":r["http_status"],
+                         "indexed":r["url_count"],"error":r["error"],
+                         "last_checked":r["last_attempt_at"].isoformat()} for r in checks],
+            "notice":"Site URL index is not equivalent to collected original content or functional parity."}
+
+@app.get("/catalog/routes")
+async def catalog_routes(request:Request,section:str="",limit:int=40,offset:int=0):
+    pool=request.app.state.pool
+    if not pool:raise HTTPException(503,"Database unavailable")
+    if limit<1 or limit>100 or offset<0 or offset>1000000:
+        raise HTTPException(400,"Invalid pagination")
+    rows=await pool.fetch("""SELECT original_url,route_path,source_section,
+      source_verified_at,data_verified_at,clone_verified_at
+      FROM mydoctor_clone.original_routes
+      WHERE ($1='' OR source_section=$1)
+      ORDER BY original_url LIMIT $2 OFFSET $3""",section,limit,offset)
+    return {"section":section,"limit":limit,"offset":offset,
+            "routes":[{"original_url":r["original_url"],"path":r["route_path"],
+                       "section":r["source_section"],
+                       "source_verified":r["source_verified_at"] is not None,
+                       "data_verified":r["data_verified_at"] is not None,
+                       "clone_verified":r["clone_verified_at"] is not None} for r in rows]}
 
 async def ingest(pool,url:str,body:bytes,status:int):
     if pool is None or status!=200 or len(body)>MAX_BYTES:return
@@ -74,6 +123,11 @@ async def ingest(pool,url:str,body:bytes,status:int):
                  VALUES($1,$2,$3,$4,$5) ON CONFLICT(source_key) DO UPDATE
                  SET title=EXCLUDED.title,fetched_at=NOW(),response_status=EXCLUDED.response_status""",
                 source_key(url),url,data["kind"],data["title"],status)
+            await c.execute("""UPDATE mydoctor_clone.source_records
+              SET source_evidence='origin_200' WHERE source_key=$1""",source_key(url))
+            await c.execute("""UPDATE mydoctor_clone.original_routes
+              SET source_verified_at=NOW(),last_status=200
+              WHERE original_url=$1""",url)
             for row in data["departments"]:
                 await c.execute("""INSERT INTO mydoctor_clone.departments(source_key,name,original_url)
                   VALUES($1,$2,$3) ON CONFLICT(source_key) DO UPDATE SET name=EXCLUDED.name,fetched_at=NOW()""",
@@ -126,16 +180,20 @@ async def gateway(rest:str,request:Request,background_tasks:BackgroundTasks):
             raise HTTPException(502,"Original source unavailable")
     if upstream.status_code in (301,302,307,308):
         return Response(status_code=upstream.status_code,headers={"location":upstream.headers.get("location","/")})
-    # The origin may throttle hosting IPs. Fall back only to dated observed
-    # public FACTS and label the response; never misrepresent as live origin.
+    # Never treat handcrafted placeholder data as observed original content.
     if upstream.status_code in (403,429):
-        observed=snapshot_for(path,query)
-        if observed is not None:
-            if pool:
-                background_tasks.add_task(ingest,pool,original_url,observed,200)
-            return Response(content=observed,status_code=200,media_type="text/html",
-                headers={"x-cache":"BYPASS","x-data-source":"verified-public-snapshot-20261109"},
-                background=background_tasks)
+        if pool:
+            try:
+                await pool.execute("""UPDATE mydoctor_clone.original_routes
+                  SET last_status=$2 WHERE original_url=$1""",original_url,upstream.status_code)
+            except Exception:
+                LOG.exception("Failed to record public origin rate limit")
+        return JSONResponse(status_code=503,
+            content={"error":"ORIGIN_TEMPORARILY_UNAVAILABLE",
+                     "origin_http_status":upstream.status_code,
+                     "original_url":original_url,
+                     "detail":"Source data unavailable; clone parity unverified"},
+            headers={"x-data-source":"origin-unavailable","cache-control":"no-store"})
     body=upstream.content
     if len(body)>MAX_BYTES*2:raise HTTPException(502,"Origin payload too large")
     content_type=upstream.headers.get("content-type","text/html").split(";")[0].strip()
