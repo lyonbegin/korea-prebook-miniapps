@@ -1,5 +1,6 @@
 import React,{useMemo,useState}from "react";
 import{Search,ChevronRight,MapPin}from "lucide-react";
+import ReviewsSummary from "./ReviewsSummary.jsx";
 
 /** Reusable original-fact views, grouped by distinct navigation/interaction type.
  * No synthetic doctors, appointments, prices or private records.
@@ -90,6 +91,7 @@ export function VerifiedSourcePage({data,go,route}){
     if(tab==="의사"&&!/의사|doctor/.test(label))return false;
     return true;
  });
+ if(route.endsWith("/reviews")&&data.reviewSummary)return <ReviewsSummary data={data} go={go}/>;
  return <section className={"observed-page observed-"+kind} data-source-view={kind}>
    <header className="observed-heading">
     <h1>{data.title}</h1>

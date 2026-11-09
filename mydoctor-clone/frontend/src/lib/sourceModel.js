@@ -85,7 +85,7 @@ export function parsePublicFacts(response,path){
   sections:(f.headings||[]).map(h=>({heading:h,level:"h2",links:[]})),
   hours:[],paragraphs:f.address?[f.address]:[],
   hospitalId:new URLSearchParams(path.split("?")[1]||"").get("hospital_id"),
-  summary:"",sourceQuality:response.quality||f.quality||"unknown",
+  summary:"",reviewSummary:f.review_summary||null,sourceQuality:response.quality||f.quality||"unknown",
   sourceEvidence:response.source_evidence||f.source_evidence||"",
   isCompleteOriginalData:false,
   hasSourceData:!!title

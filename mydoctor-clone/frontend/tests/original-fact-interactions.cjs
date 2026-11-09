@@ -102,6 +102,23 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    assert.match(await page.locator(".observed-bmi-result").innerText(),/24\.2/);
    return {bmi:"24.2"};
   });
+  await test("Observed hospital review facets and visit stats",async()=>{
+   await load("/hospital/10055/reviews");
+   assert.equal(await page.locator('[data-source-view="reviews"]').count(),1);
+   assert.match(await page.locator(".review-metrics").innerText(),/464건/);
+   assert.match(await page.locator(".review-metrics").innerText(),/97%/);
+   assert.equal(await page.locator(".review-facets button").count(),11);
+   await page.getByRole("button",{name:"안구 질환 58건"}).tap();
+   assert.match(await page.locator(".review-filter-label").innerText(),/58건/);
+   return {original_aggregate_reviews:464,readmission_intent:"97%",facets:11};
+  });
+  await test("Observed doctor review facets and patient-independent totals",async()=>{
+   await load("/telemedicine/doctor/탑연합의원-박광규-100/reviews");
+   assert.match(await page.locator(".review-metrics").innerText(),/1,079건/);
+   assert.match(await page.locator(".review-metrics").innerText(),/99%/);
+   assert.equal(await page.locator(".review-facets button").count(),13);
+   return {original_aggregate_reviews:1079,readmission_intent:"99%",facets:13};
+  });
   await test("No page scripting errors",async()=>{
     assert.deepEqual(errors,[]);
     return {browser_errors:0};
