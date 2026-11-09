@@ -40,7 +40,7 @@ async function snapshot(page){
  });
 }
 async function clickProbe(page,label) {
- const c=page.locator("main");
+ const c=(await page.locator("main").count())?page.locator("main").first():page.locator("body");
  const candidates=[
   {kind:"tab",locator:c.locator('[role="tab"],.md-tabs button,.md-clinic-tabs button').filter({visible:true})},
   {kind:"accordion",locator:c.locator('button[aria-expanded]')},
@@ -131,12 +131,18 @@ async function clickProbe(page,label) {
     if(sourceState.h1&&normalize(sourceState.h1)!==normalize(cloneState.h1)){
       item.status="HEADING_MISMATCH";continue;
     }
-    item.clone_data_verified=true; // this only verifies representative visible content checks, not whole source corpus
+    // Passing a text-length threshold does not prove original data completeness.
+    item.visible_content_threshold_passed=true;
     item.clone_interaction=await clickProbe(dst,test.label);
-    if(item.source_interaction.status!==item.clone_interaction.status||item.source_interaction.kind!==item.clone_interaction.kind){
-      item.status="INTERACTION_MISMATCH";continue;
+    if(item.source_interaction?.status==="NO_INTERACTION_FOUND"||
+       item.source_interaction?.status==="ACTION_FAILED"){
+      item.status="SOURCE_INTERACTION_UNOBSERVED";continue;
     }
-    item.ui_verified=true;
+    if(item.source_interaction.status!==item.clone_interaction.status||
+       item.source_interaction.kind!==item.clone_interaction.kind){
+      item.status="INTERACTION_PROBE_DIFFERS";continue;
+    }
+    item.interaction_probe_matched=true; // one probe, never full UI parity
     const safe=test.id.replace(/[^a-z0-9-]/gi,"-");
     const s=await src.screenshot({path:path.join(OUT,"origin-"+safe+".png")});
     const c=await dst.screenshot({path:path.join(OUT,"clone-"+safe+".png")});
@@ -153,10 +159,11 @@ async function clickProbe(page,label) {
  report.summary=report.cases.reduce((o,c)=>(o[c.status]=(o[c.status]||0)+1,o),{});
  report.verified_complete=report.cases.filter(x=>x.status==="FULL_PIXEL_MATCH").length;
  report.source_data_real=report.cases.filter(x=>x.source_verified).length;
- report.genuine_visible_data_matched=report.cases.filter(x=>x.clone_data_verified).length;
+ report.content_length_threshold_passed=report.cases.filter(x=>x.visible_content_threshold_passed).length;
+ report.genuine_visible_data_matched=0; // Not provable by page-length or generic DOM probes.
  report.new_test_candidates=extra;
  fs.writeFileSync(path.join(OUT,"representative-29.json"),JSON.stringify(report,null,2));
- console.log("REPRESENTATIVE AUDIT SUMMARY",JSON.stringify({planned:report.planned,summary:report.summary,observed_source:report.source_data_real,visible_data_matched:report.genuine_visible_data_matched,complete:report.verified_complete,candidate_additions:extra.length}));
+ console.log("REPRESENTATIVE AUDIT SUMMARY",JSON.stringify({planned:report.planned,summary:report.summary,observed_source:report.source_data_real,content_length_threshold_passed:report.content_length_threshold_passed,full_source_data_verified:0,complete:report.verified_complete,candidate_additions:extra.length}));
  // No green CI when comparisons did not genuinely pass. No mass source retry after 429.
  if(report.verified_complete!==manifest.cases.length)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
