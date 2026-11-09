@@ -1,0 +1,66 @@
+[
+  {
+    "id": "health-self-assessment",
+    "path": "/healthLab/test/36",
+    "label": "10문항 자가진단 테스트",
+    "from": "health-article-or-test",
+    "evidence": "원본에 예/아니요 문항 진행과 결과 기능",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "health-encyclopedia",
+    "path": "/healthLab/health-wiki/16/구내염",
+    "label": "질환사전 상세",
+    "from": "health-article-or-test",
+    "evidence": "원본에 정의·진단·치료 항목별 목차",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "health-article-howto",
+    "path": "/healthLab/how-to/56962/감기%20비대면%20진료%20방법%20•%20대상%20•%20금액%20•%20시간%20안내%20(2026)",
+    "label": "비대면 진료 방법 콘텐츠",
+    "from": "health-article-or-test",
+    "evidence": "원본의 절차형 기사 섹션 구성",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "health-calculator-bmr",
+    "path": "/healthLab/calculator/bmr",
+    "label": "기초대사량 계산기",
+    "from": "health-other",
+    "evidence": "성별·나이·신장·체중 입력, BMI와 다른 계산",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "cost-dental",
+    "path": "/medical-cost/치과",
+    "label": "치과 비급여 가격 카테고리",
+    "from": "medical-cost-category",
+    "evidence": "의약품 단위·용량 필터가 아닌 시술·재료·지역별 비교",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "medicine-effect",
+    "path": "/medicine/effect/해열·진통·소염제",
+    "label": "효능별 의약품 탐색",
+    "from": "medicine-filter",
+    "evidence": "효능 기반 분류; 성분 필터와 별도 조작 확인 필요",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "misc-event",
+    "path": "/event",
+    "label": "이벤트 페이지",
+    "from": "other-public",
+    "evidence": "회사 소개 페이지와 다른 메뉴·이벤트 구성",
+    "status": "DISCOVERED_NEEDS_TEST"
+  },
+  {
+    "id": "misc-sitemap",
+    "path": "/sitemap",
+    "label": "사이트맵 페이지",
+    "from": "other-public",
+    "evidence": "회사 소개와 다른 링크 탐색 구조",
+    "status": "DISCOVERED_NEEDS_TEST"
+  }
+]

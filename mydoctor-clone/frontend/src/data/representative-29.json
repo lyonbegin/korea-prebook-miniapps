@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "source_origin": "https://my-doctor.io",
+  "clone": "http://127.0.0.1:5173",
+  "purpose": "Initial 29 code-defined template candidates, NOT 29 verified equivalent functional templates",
+  "passing_rule": "Origin HTTP200 and clone genuine data, headings/facts and click-flow match; screenshot comparison only after data match",
+  "original_route_count_from_db": 206407,
+  "cases": [
+    {
+      "id": "home",
+      "path": "/",
+      "label": "홈페이지",
+      "interaction": "root",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "telemedicine-index",
+      "path": "/telemedicine",
+      "label": "비대면진료 시작",
+      "interaction": "navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "telemedicine-department-list",
+      "path": "/telemedicine/all-department",
+      "label": "진료과·증상 선택",
+      "interaction": "tabs",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "telemedicine-condition",
+      "path": "/telemedicine/고혈압-비대면진료-예약",
+      "label": "질환별 의사 목록",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "doctor-detail",
+      "path": "/telemedicine/doctor/한사랑패밀리의원-허훈-10",
+      "label": "의사 상세",
+      "interaction": "tabs",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "doctor-reviews",
+      "path": "/telemedicine/doctor/탑연합의원-박광규-100/reviews",
+      "label": "의사 후기",
+      "interaction": "filter",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "hospital-search",
+      "path": "/hospital",
+      "label": "병원 찾기",
+      "interaction": "select",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "hospital-availability-search",
+      "path": "/hospital/야간진료",
+      "label": "야간·휴일 병원 목록",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "hospital-by-department",
+      "path": "/dept-hub/내과",
+      "label": "진료과·지역별 병원",
+      "interaction": "select",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "hospital-detail",
+      "path": "/hospital/detail?hospital_id=323",
+      "label": "병원 상세·진료비",
+      "interaction": "tabs",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "hospital-reviews",
+      "path": "/hospital/10055/reviews",
+      "label": "병원 후기",
+      "interaction": "filter",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "medical-cost-index",
+      "path": "/medical-cost",
+      "label": "가격비교 전체",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "medical-cost-category",
+      "path": "/medical-cost/마운자로",
+      "label": "의약품 가격비교",
+      "interaction": "select",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "medical-cost-item-by-area",
+      "path": "/medical-cost/여드름약/이소티논",
+      "label": "가격 세부·지역",
+      "interaction": "select",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "pharmacy-search",
+      "path": "/pharmacy",
+      "label": "약국 찾기",
+      "interaction": "select",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "pharmacy-condition-search",
+      "path": "/pharmacy/야간약국",
+      "label": "야간·휴일 약국",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "map-emergency",
+      "path": "/map/119",
+      "label": "응급실 지도",
+      "interaction": "map",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "map-child-emergency",
+      "path": "/map/baby119",
+      "label": "소아 응급 지도",
+      "interaction": "map",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "map-price-or-pharmacy",
+      "path": "/map/acne",
+      "label": "약품 가격 지도",
+      "interaction": "map",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "medicine-search",
+      "path": "/medicine",
+      "label": "의약품 검색",
+      "interaction": "search",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "medicine-filter",
+      "path": "/medicine/ingredient/세마글루티드",
+      "label": "성분별 의약품",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "medicine-detail",
+      "path": "/medicine/0.9-%EC%97%94%EC%97%90%EC%9D%B4%EC%8B%9C%EC%97%98.%EC%BC%80%EC%9D%B440%EC%A3%BC-200710605",
+      "label": "의약품 상세",
+      "interaction": "tabs",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "health-landing",
+      "path": "/healthLab",
+      "label": "건강정보 홈",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "health-category-index",
+      "path": "/healthLab/FAQ",
+      "label": "건강정보 카테고리",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "health-article-or-test",
+      "path": "/healthLab/info/1268/만성-소화기-질환-관리법",
+      "label": "건강기사·테스트 (분리 후보)",
+      "interaction": "article",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "health-other",
+      "path": "/healthLab/calculator/bmi",
+      "label": "건강계산기 (분리 후보)",
+      "interaction": "calculator",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "qna-index",
+      "path": "/qna",
+      "label": "의료진 Q&A 목록",
+      "interaction": "list-navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "qna-answer",
+      "path": "/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요",
+      "label": "Q&A 답변 상세",
+      "interaction": "article",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    },
+    {
+      "id": "other-public",
+      "path": "/company",
+      "label": "회사 소개·이벤트 (분리 후보)",
+      "interaction": "navigation",
+      "status": "PENDING",
+      "source_verified": false,
+      "clone_data_verified": false,
+      "ui_verified": false
+    }
+  ]
+}

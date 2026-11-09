@@ -93,6 +93,13 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/menu-inventory.cjs
+      - name: Compare 29 representative original and clone screen/interaction templates
+        if: always()
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+          MD_MAX_CASES: 29
+        run: node tests/representative-29.cjs
       - name: Test physical mobile interactions with live public data
         working-directory: mydoctor-clone/frontend
         env:
