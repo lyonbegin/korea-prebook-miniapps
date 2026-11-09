@@ -157,3 +157,8 @@
 
 /* Measured from original and clone 390x844 screenshot alignment: symptom viewport 2px higher. */
 .site:has(.md-symptoms) .viewport{position:relative;top:-2px}
+
+/* Original medical-price screenshot: text wraps 3 lines at 14px, next category header +7px, cards +2px. */
+.md-cost-intro p{font-size:14px;line-height:1.55}
+.md-cost-intro{padding-bottom:28px}
+.md-cost-list h2{margin-bottom:15px}
