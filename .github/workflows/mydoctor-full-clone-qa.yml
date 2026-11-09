@@ -88,6 +88,11 @@ jobs:
         run: |
           curl --fail --show-error --silent https://mydoctor-mobile-api-production.up.railway.app/health
           curl --fail --show-error --silent https://mydoctor-mobile-api-production.up.railway.app/catalog/status
+      - name: Audit original 6 main menus, 11 groups and 103 linked destinations
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/menu-inventory.cjs
       - name: Test physical mobile interactions with live public data
         working-directory: mydoctor-clone/frontend
         env:
