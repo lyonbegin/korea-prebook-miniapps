@@ -36,3 +36,12 @@
  font-size:24px;font-weight:700;line-height:32px;letter-spacing:normal;-webkit-text-stroke:0}
 .md-intro:not(.md-hospital-intro){padding-top:19px}
 .md-cost-intro{padding-top:23px}
+
+/* Original-versus-clone element geometry audit, 390x844, commit b94d021. */
+.md-home{top:-18px;margin-bottom:-18px}
+.md-dept-list{padding-top:14px}
+.md-cost-list{padding-top:32px}
+.md-dept-list h2,.md-cost-list h2,.clinic-prices h2{
+ font-size:20px;font-weight:600;line-height:26px;letter-spacing:normal;-webkit-text-stroke:0
+}
+.clinic-head{padding-top:15px;padding-bottom:16px}

@@ -90,7 +90,7 @@ function HospitalDetail({data,go}){
  const filtered=table?{...table,rows:table.rows.filter(row=>filter==="전체"||row[0].includes(filter)||(filter==="급여"&&row[0].startsWith("급여")))}:null;
  const labels=["전체","급여","대상포진 예방접종","독감 예방접종"];
  return <><section className="clinic-head"><h1>{data.title}</h1>
- <div className="clinic-location"><div><b className="open-dot">● 영업 중</b><strong> · 오늘 (월) 24시간</strong><ChevronRight size={17}/></div><p>◧ 경남 창원시 의창구 용동로57번길 8</p></div>
+ <div className="clinic-location"><div><b className="open-dot">● 영업 중</b><strong> · 오늘 ({new Intl.DateTimeFormat("ko-KR",{weekday:"short",timeZone:"Asia/Seoul"}).format(new Date())}) 24시간</strong><ChevronRight size={17}/></div><p>◧ 경남 창원시 의창구 용동로57번길 8</p></div>
  <div className="clinic-actions"><a href={ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer"><Phone size={17}/>전화</a><a href={"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(data.title)} target="_blank" rel="noreferrer"><Navigation size={17}/>길찾기</a><a href={ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer"><House size={17}/>홈페이지</a></div></section>
  <div className="md-clinic-tabs"><button className={tab==="진료비"?"current":""} onClick={()=>setTab("진료비")}>진료비</button><button className={tab==="병원 정보"?"current":""} onClick={()=>setTab("병원 정보")}>병원 정보</button></div>
  {tab==="진료비"?<><section className="clinic-prices"><h2>{data.title} 진료비 안내</h2><p>나만의닥터에서 수집한 {data.title}의 대면 진료비, 약제비, 접종료 등 모든 가격을 확인해보세요.</p></section>
