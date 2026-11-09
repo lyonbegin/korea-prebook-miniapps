@@ -5927,7 +5927,25 @@
     "tables": [],
     "quality": "verified_public_facts_from_browser",
     "source_evidence": "github-actions-live-origin-http-200-factual-metadata",
-    "observed_at": "2026-11-09T14:51:02.962Z"
+    "observed_at": "2026-11-09T14:51:02.962Z",
+    "pagination": [
+      {
+        "path": "/pharmacy/%EC%95%BC%EA%B0%84%EC%95%BD%EA%B5%AD?page=2",
+        "label": "2"
+      },
+      {
+        "path": "/pharmacy/%EC%95%BC%EA%B0%84%EC%95%BD%EA%B5%AD?page=3",
+        "label": "3"
+      },
+      {
+        "path": "/pharmacy/%EC%95%BC%EA%B0%84%EC%95%BD%EA%B5%AD?page=4",
+        "label": "4"
+      },
+      {
+        "path": "/pharmacy/%EC%95%BC%EA%B0%84%EC%95%BD%EA%B5%AD?page=5",
+        "label": "5"
+      }
+    ]
   },
   {
     "original_url": "https://my-doctor.io/map/119",

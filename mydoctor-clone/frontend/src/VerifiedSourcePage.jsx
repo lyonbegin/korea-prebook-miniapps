@@ -77,7 +77,7 @@ export function VerifiedSourcePage({data,go,route}){
     if(kind==="telemedicine-list")return ["전체","의사","병원"];
     return ["전체"];
  },[kind]);
- const pageLinks=entries.filter(l=>/[?&]page=\d+/.test(l.path));
+ const pageLinks=data.pagination?.length?data.pagination:entries.filter(l=>/[?&]page=\d+/.test(l.path));
  const primary=entries.filter(l=>!/[?&]page=\d+/.test(l.path));
  const shown=primary.filter(l=>{
     const label=normalize(l.label+" "+base(l));

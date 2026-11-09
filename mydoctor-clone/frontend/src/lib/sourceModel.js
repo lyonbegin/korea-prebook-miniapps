@@ -73,6 +73,8 @@ export function parsePublicFacts(response,path){
  const f=response?.facts||{};
  const links=(f.links||[]).map(x=>({label:String(x.label||""),path:localPath(x.path||"")}))
     .filter(x=>x.label&&x.path);
+ const pagination=(f.pagination||[]).map(x=>({label:String(x.label||""),path:localPath(x.path||"")}))
+    .filter(x=>x.label&&x.path);
  const categories=links.filter(x=>x.path.startsWith("/medical-cost/")||x.path.startsWith("/hospital/"))
     .map(x=>({title:x.label,path:x.path}));
  const tables=(f.tables||[]).filter(t=>Array.isArray(t.rows)).map(t=>({
@@ -81,7 +83,7 @@ export function parsePublicFacts(response,path){
  const title=f.headline||f.title||"";
  return {
   path,title,headTitle:f.title||title,description:"",address:f.address||"",
-  links,categories,tables,
+  links,pagination,categories,tables,
   sections:(f.headings||[]).map(h=>({heading:h,level:"h2",links:[]})),
   hours:[],paragraphs:f.address?[f.address]:[],
   hospitalId:new URLSearchParams(path.split("?")[1]||"").get("hospital_id"),
