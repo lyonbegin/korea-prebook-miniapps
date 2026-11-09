@@ -98,3 +98,34 @@
 .md-hidden-links .observed-link{font-size:12px;padding:6px 0;min-height:32px}
 .md-hidden-links .observed-telemedicine-directory{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
 .md-hidden-links .observed-link svg{display:none}
+
+/* Reconstructed actual original mobile homepage service sections with source icons. */
+.md-home-hero{filter:none!important}
+.home-observed-sections{background:white}
+.home-observed-block{padding:28px 20px 34px;border-top:9px solid #f7f8fa}
+.home-observed-block h2{font-size:21px;font-weight:750;letter-spacing:-.55px;line-height:1.43;margin:10px 0 15px}
+.home-observed-block h3{font-size:16px;font-weight:650;line-height:1.5;margin:8px 0 13px}
+.home-observed-block p{line-height:1.56;font-size:16px;margin:9px 0 23px}
+.home-section-tag{font-size:12px;border-radius:20px;color:#366cf4;background:#eaf1ff;padding:6px 10px;display:inline-block;font-weight:700}
+.home-steps{display:flex;flex-direction:column;gap:17px;margin:35px 0 25px}
+.home-step{display:flex;align-items:center;gap:16px;min-height:66px}
+.home-step img{width:54px;height:54px;object-fit:contain;padding:11px;background:#f5f6f8;border-radius:12px}
+.home-step div{display:flex;flex-direction:column;gap:2px}
+.home-step span{color:#326aff;font-size:12px}
+.home-step strong{color:#21262d;font-size:15px}
+.home-step p{margin:0;font-size:13px;color:#627181}
+.home-conditions-heading{margin-top:33px!important;margin-bottom:25px!important}
+.home-observed-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.home-observed-card{box-sizing:border-box;display:flex;align-items:flex-start;flex-direction:column;justify-content:flex-start;
+ padding:13px;border:1px solid #dce0e6;border-radius:9px;min-height:110px;text-decoration:none;color:#20252a}
+.home-observed-card img{width:38px;height:38px;object-fit:contain;margin-bottom:10px}
+.home-observed-card b{font-size:14px;line-height:1.4}
+.home-observed-card small{font-size:12px;color:#6b7890;line-height:1.5;margin-top:4px}
+.home-primary-action{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:25px;border-radius:7px;
+ background:#343d47;color:white;font-weight:700;font-size:14px}
+.home-quick-links{display:flex;flex-direction:column;gap:9px}
+.home-quick-links a{padding:13px;border:1px solid #e2e6ec;border-radius:8px;font-size:14px}
+.home-points-preview{max-width:100%;height:auto;object-fit:contain}
+.home-source-index{margin:0;padding:18px 20px;background:#f7f8fa}
+.home-source-index summary{font-size:13px;font-weight:650;cursor:pointer}
+.home-source-index .observed-link{font-size:12px;min-height:32px;padding:7px 0}

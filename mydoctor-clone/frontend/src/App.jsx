@@ -58,10 +58,94 @@ function HomeScreen({data,go}){
   <div className="md-stats"><span>활성유저수 <b>1위¹</b><br/>회원수 <b>300만+</b></span><span>매출액 <b>1위²</b><br/>앱스토어 평점 <b>4.8점</b></span></div>
   <div className="md-stat-notes"><p>1 모바일인덱스 추정 기준 비대면진료 앱 월간 활성 이용자 수(MAU)<br/>　2026년 1월~8월 8개월 연속 1위 (Android+iOS 합산)</p><p>2 비대면진료 앱 운영사 4개사 2025년 매출액<br/>　(각 사 공시 재무제표 기준)</p></div>
   <img className="md-home-hero" src="https://my-doctor.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fhero-mockup.27qja46teurqn.webp&w=750&q=75" alt="나만의닥터 앱 사용 화면"/>
- </section><section className="md-below"><h2>전국민 누구나, 언제든 어디서나 전화 진료</h2><p>24시간 365일, 전화 한 통으로 진료받고 가까운 약국에서 약을 수령하세요.</p>
- <Anchor className="blue-cta-inline" path="/telemedicine/all-department" label="비대면 진료 시작하기" go={go}/>
- <h2>최저가 병원 예약</h2><Anchor path="/medical-cost" label="진료비 가격 비교" go={go}/>
- </section><section className="md-original-links"><h2>원본 서비스 전체 연결 메뉴</h2><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="home-directory"/></section></>;
+ </section><HomeOverview data={data} go={go}/></>;
+}
+const HOME_PRICE=[
+ ["마운자로","mounjaro.3iuw_p3a_lzqq.svg","/medical-cost/마운자로"],
+ ["위고비","wegovy.1ng_mja5lmh6k.svg","/medical-cost/위고비"],
+ ["탈모약","hairloss.0e8xww15mcc9q.svg","/medical-cost/탈모약"],
+ ["여드름약","skin.1yr9o5z7bd6b4.svg","/medical-cost/여드름약"],
+ ["독감 예방접종","", "/medical-cost/독감예방접종"],
+ ["가다실 9가","gardasil.29d-1lba1im_k.svg","/medical-cost/가다실9가"]
+];
+const HOME_MEDICAL=[
+ ["치과 치료","tooth.0ou2u6kexg7cr.svg","/medical-cost/치과"],
+ ["라식·라섹","eye.2x0wxiz3d0oad.svg","/medical-cost/시력교정술"],
+ ["MRI 검사","mri.0vjgkacrombrc.svg","/medical-cost/MRI검사"],
+ ["초음파 검사","ultrasound.08f94hlk3h_t8.svg","/medical-cost/초음파-검사"],
+ ["예방접종 백신","medicine.0go4ijudiofx9.svg","/medical-cost/예방접종-백신"],
+ ["내시경 검사","endoscope.2s5rgrcpesgsg.svg","/medical-cost/내시경-검사"]
+];
+const HOME_STEPS=[
+ ["STEP 1","증상 선택","진료 받을 증상/진료과 선택","step-1.44nvhvho18h38.svg"],
+ ["STEP 2","비대면 전화 진료","전화로 의사와 진료 후 앱으로 처방전 발행","step-2.1d9x5vc0gayz4.svg"],
+ ["STEP 3","약 수령","가까운 약국에서 약 받으면 끝!","step-3.31yy8rr8i37qs.svg"]
+];
+function HomeOverview({data,go}){
+ const pagePaths=new Set(data.links.map(x=>decodeURIComponent(x.path).split("?")[0]));
+ const safeLink=(route)=>pagePaths.has(decodeURIComponent(route))?route:route;
+ const cards=arr=><div className="home-observed-card-grid">{arr.map(([label,img,route])=>
+  <Anchor key={route} className="home-observed-card" path={safeLink(route)} go={go}>
+    {img?<img alt="" loading="lazy" src={ORIGINAL+"/_next/static/media/"+img}/>:null}
+    <b>{label}</b>
+  </Anchor>)}</div>;
+ return <div className="home-observed-sections">
+  <section className="home-observed-block home-telemedicine">
+   <span className="home-section-tag">비대면 진료</span>
+   <h2>전국민 누구나,<br/>언제든 어디서나 전화 진료</h2>
+   <p>24시간 365일, 전화 한 통으로 진료받고<br/>가까운 약국에서 약을 수령하세요.</p>
+   <div className="home-steps">{HOME_STEPS.map(([num,name,desc,icon])=><div className="home-step" key={num}>
+     <img src={ORIGINAL+"/_next/static/media/"+icon} alt="" loading="lazy"/>
+     <div><span>{num}</span><strong>{name}</strong><p>{desc}</p></div>
+   </div>)}</div>
+   <h2 className="home-conditions-heading">이런 증상들 모두<br/>전화로 진료볼 수 있어요</h2>
+   <div className="home-observed-card-grid symptom">
+    {CATEGORIES.map(([name,desc,img])=><Anchor key={name} className="home-observed-card" path="/telemedicine/all-department" go={go}>
+      <img src={ORIGINAL+"/_next/static/media/"+img} alt="" loading="lazy"/>
+      <b>{name}</b><small>{desc}</small>
+    </Anchor>)}
+   </div>
+   <Anchor className="home-primary-action" label="비대면 진료 시작하기" path="/telemedicine/all-department" go={go}/>
+  </section>
+  <section className="home-observed-block"><h2>나만의닥터 최저가 비교<br/>마운자로, 위고비, 백신 등</h2>
+   {cards(HOME_PRICE)}<Anchor className="home-primary-action" label="의료비 가격 비교" path="/medical-cost" go={go}/>
+  </section>
+  <section className="home-observed-block"><h2>치과, 라식, MRI 가격 비교하고 예약하기</h2>
+   {cards(HOME_MEDICAL)}
+  </section>
+  <section className="home-observed-block"><h2>휴일, 야간에도<br/>문 연 병원·약국 찾기</h2>
+   <div className="home-quick-links">
+    <Anchor path="/hospital/일요일진료" label="일요일 진료 병원" go={go}/>
+    <Anchor path="/hospital/야간진료" label="야간 진료 병원" go={go}/>
+    <Anchor path="/pharmacy/야간약국" label="야간 약국" go={go}/>
+   </div>
+  </section>
+  <section className="home-observed-block"><h2>효능·복용법·주의사항<br/>의약품 정보 찾기</h2>
+   <div className="home-quick-links">
+    <Anchor path="/medicine" label="의약품 검색" go={go}/>
+    <Anchor path="/medicine/effect/해열·진통·소염제" label="해열·진통·소염제" go={go}/>
+    <Anchor path="/medicine/effect/항히스타민제" label="항히스타민제" go={go}/>
+   </div>
+  </section>
+  <section className="home-observed-block"><h2>쌓이는 건강포인트로 병원비 아끼기</h2>
+   <h3>건강관리만 해도 리워드가 쌓이는 앱테크</h3>
+   <img className="home-points-preview" alt="원본 닥터포인트 미리보기" loading="lazy"
+    src={ORIGINAL+"/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpreview.1ni6h0697352_.webp&w=750&q=75"}/>
+  </section>
+  <section className="home-observed-block"><h2>나에게 딱 맞는 건강 콘텐츠</h2>
+   <div className="home-quick-links"><Anchor path="/healthLab" label="건강 정보" go={go}/><Anchor path="/qna" label="의료진 Q&A" go={go}/></div>
+  </section>
+  <section className="home-observed-block"><h2>우리동네 신환 유치<br/>나만의닥터에서 시작하세요</h2>
+   <p>의사가 만든 의료 서비스로서 언제나 의료인의 마음으로 함께 성장하겠습니다.</p>
+   <div className="home-quick-links">
+    <a href={ORIGINAL} rel="noreferrer" target="_blank">병원 제휴하기</a>
+    <a href={ORIGINAL} rel="noreferrer" target="_blank">약국 제휴하기</a>
+   </div>
+  </section>
+  <details className="home-source-index"><summary>원본 전체 공개 경로 확인</summary>
+    <SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="home-directory"/>
+  </details>
+ </div>;
 }
 function DoctorScreen({data,go}){
  const[active,setActive]=useState("증상"),[opened,setOpened]=useState("");
