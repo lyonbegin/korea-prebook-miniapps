@@ -62,12 +62,19 @@ async function clickTarget(page,route){
      const cloneTitle=(await c.locator("h1").first().innerText({timeout:10000})).replace(/\s+/g," ").trim();
      assert.equal(cloneTitle,sourceTitle,"Original and clone detail headings differ");
      entry.status="SAME_CLICK_AND_HEADING";entry.headline=sourceTitle;
-   }catch(e){entry.status="FAIL";entry.error=String(e.message).slice(0,380)}
+   }catch(e){
+     entry.error=String(e.message).slice(0,380);
+     entry.status=/Original rate limit (403|429)/.test(entry.error)?"SOURCE_UNVERIFIED_RATE_LIMIT":"FAIL";
+   }
    finally{await s.close();await c.close();results.push(entry);console.log("ORIGINAL CLICK PAIR",JSON.stringify(entry))}
   }
  }finally{await browser.close()}
  const passed=results.filter(x=>x.status==="SAME_CLICK_AND_HEADING").length;
  fs.writeFileSync("qa-artifacts/original-click-pairs.json",JSON.stringify({passed,total:results.length,pairs:results},null,2));
- console.log("ORIGINAL CLICK PAIR SUMMARY",JSON.stringify({passed,total:results.length,failures:results.filter(x=>x.status!=="SAME_CLICK_AND_HEADING").map(x=>x.name)}));
+ console.log("ORIGINAL CLICK PAIR SUMMARY",JSON.stringify({passed,total:results.length,
+   source_rate_limited:results.filter(x=>x.status==="SOURCE_UNVERIFIED_RATE_LIMIT").length,
+   actual_failed:results.filter(x=>x.status==="FAIL").length,
+   unverified:results.filter(x=>x.status!=="SAME_CLICK_AND_HEADING"&&x.status!=="FAIL").length,
+   failures:results.filter(x=>x.status==="FAIL").map(x=>x.name)}));
  if(passed!==pairs.length)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
