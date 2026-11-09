@@ -1,7 +1,7 @@
 import React,{useEffect,useState}from"react";
 import{ChevronDown,ChevronRight,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3}from"lucide-react";
-import{fetchSource}from"./lib/originalGateway.js";
-import{parseSource,routeFromLocation}from"./lib/sourceModel.js";
+import{fetchPublicFacts}from"./lib/originalGateway.js";
+import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
 
 const ORIGINAL="https://my-doctor.io";
@@ -27,7 +27,7 @@ function useSource(route){
  const[state,setState]=useState({data:null,loading:true,error:""});
  const[retry,setRetry]=useState(0);
  useEffect(()=>{const c=new AbortController();setState({data:null,loading:true,error:""});
-  fetchSource(route,c.signal).then(html=>{const data=parseSource(html,route);if(!c.signal.aborted)setState({data,loading:false,error:data.hasSourceData?"":"원본 데이터 구조를 확인할 수 없습니다."})})
+  fetchPublicFacts(route,c.signal).then(payload=>{const data=parsePublicFacts(payload,route);if(!c.signal.aborted)setState({data,loading:false,error:data.hasSourceData?"":"원본 데이터 구조를 확인할 수 없습니다."})})
   .catch(e=>{if(!c.signal.aborted)setState({data:null,loading:false,error:String(e.message||e)})});return()=>c.abort();
  },[route,retry]);return{...state,refresh:()=>setRetry(x=>x+1)};
 }
@@ -111,7 +111,7 @@ export default function App(){
  <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴">{menu?<X size={25}/>:<Menu size={24}/>}</button></div>
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();go(item.href)}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
  </header>{!home&&<Breadcrumb route={route} go={go}/>}
- <main className="viewport">{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
+ <main className="viewport">{s.data&&<div className="source-quality" role="status">DB 공개 사실 데이터 · {s.data.sourceQuality==="heading_only"?"제목만 확보":s.data.sourceQuality==="verified_title_and_global_navigation"?"메뉴·제목 확보":s.data.sourceQuality==="verified_public_factual_price_rows"?"가격표 확인":"공개 메타데이터 확인"} · 전체 원본 기능 동일성 검증 전</div>}{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
  :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:route==="/telemedicine/all-department"?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<GenericScreen data={s.data} go={go}/>):null}
  </main>{(home||hospitalDetail)&&<a className={home?"fixed-call-to-action":"fixed-call-to-action clinic-action-fixed"} href={home?ORIGINAL:ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer">{home?"나만의 닥터 다운로드":"진료 예약하기"}</a>}
  </div>;

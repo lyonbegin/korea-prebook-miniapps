@@ -66,3 +66,28 @@ export function parseSource(html,path){
    hasSourceData:!!title&&main.querySelectorAll("h1,h2,h3,a[href],table").length>0};
 }
 export function routeFromLocation(){return location.pathname+location.search}
+
+/** Adapt only observed stored factual fields into the existing React view model.
+    A source-title-only cache hit is NOT full content or functional parity. */
+export function parsePublicFacts(response,path){
+ const f=response?.facts||{};
+ const links=(f.links||[]).map(x=>({label:String(x.label||""),path:localPath(x.path||"")}))
+    .filter(x=>x.label&&x.path);
+ const categories=links.filter(x=>x.path.startsWith("/medical-cost/")||x.path.startsWith("/hospital/"))
+    .map(x=>({title:x.label,path:x.path}));
+ const tables=(f.tables||[]).filter(t=>Array.isArray(t.rows)).map(t=>({
+  headers:Array.isArray(t.headers)?t.headers:[],rows:t.rows
+ }));
+ const title=f.headline||f.title||"";
+ return {
+  path,title,headTitle:f.title||title,description:"",
+  links,categories,tables,
+  sections:(f.headings||[]).map(h=>({heading:h,level:"h2",links:[]})),
+  hours:[],paragraphs:f.address?[f.address]:[],
+  hospitalId:new URLSearchParams(path.split("?")[1]||"").get("hospital_id"),
+  summary:"",sourceQuality:response.quality||f.quality||"unknown",
+  sourceEvidence:response.source_evidence||f.source_evidence||"",
+  isCompleteOriginalData:false,
+  hasSourceData:!!title
+ };
+}

@@ -15,6 +15,7 @@ import httpx
 from .catalog_schema import SCHEMA
 from .source_parser import extract_page, source_key
 from .sitemap_index import sync_public_index,backfill_existing_route_types
+from .public_facts import extract_public_facts,seed_observed_facts,insert_facts,safe_route
 
 try:
     import asyncpg
@@ -38,6 +39,7 @@ async def lifespan(app: FastAPI):
             pool=await asyncpg.create_pool(dsn=dsn,min_size=1,max_size=3,timeout=8)
             async with pool.acquire() as c: await c.execute(SCHEMA)
             app.state.pool=pool
+            await seed_observed_facts(pool)
             if os.getenv("SITEMAP_SYNC_ENABLED","1")=="1":
                 async def refresh_types_and_sitemaps():
                     await backfill_existing_route_types(pool)
@@ -72,11 +74,15 @@ async def catalog_status(request:Request):
     counts={}
     for name in tables:
         counts[name]=int(await pool.fetchval(f"SELECT count(*) FROM mydoctor_clone.{name}"))
+    facts=await pool.fetch("SELECT quality,COUNT(*) AS n FROM mydoctor_clone.public_page_facts GROUP BY quality")
+    fact_counts={row["quality"]:int(row["n"]) for row in facts}
+    counts["public_page_facts"]=sum(fact_counts.values())
     fetched=await pool.fetchval("""SELECT COUNT(*) FROM mydoctor_clone.source_records
       WHERE source_evidence='origin_200'""")
     indexed=await pool.fetchval("SELECT COUNT(*) FROM mydoctor_clone.original_routes")
     return {"ok":True,"schema":"mydoctor_clone","records":counts,
             "indexed_public_route_urls":int(indexed),"http_200_original_pages":int(fetched),
+            "public_facts_by_quality":fact_counts,
             "full_catalog_imported":False,
             "note":"Indexed URLs and unverified legacy rows are not verified source content."}
 
@@ -123,6 +129,73 @@ async def catalog_routes(request:Request,section:str="",limit:int=40,offset:int=
                        "source_verified":r["source_verified_at"] is not None,
                        "data_verified":r["data_verified_at"] is not None,
                        "clone_verified":r["clone_verified_at"] is not None} for r in rows]}
+
+@app.get("/catalog/page")
+async def catalog_page(request:Request,path:str="/"):
+    """DB first. On MISS collect only allowed public factual metadata from original.
+    HTML marked no-store/private is NEVER retained. On origin 403/429, only
+    already persisted verified factual data can be returned.
+    """
+    route=safe_route(path)
+    if route is None or not is_allowed_path(urlsplit(route).path):
+        raise HTTPException(400,"Invalid public source path")
+    if request.headers.get("authorization") or request.headers.get("cookie"):
+        raise HTTPException(403,"Authenticated data cannot be used")
+    source_url=BASE+route
+    pool=request.app.state.pool
+    if pool is None:
+        raise HTTPException(503,"PostgreSQL unavailable")
+    row=await pool.fetchrow("""SELECT facts,quality,source_evidence,observed_at
+         FROM mydoctor_clone.public_page_facts WHERE original_url=$1""",source_url)
+    if row:
+        data=json.loads(row["facts"]) if isinstance(row["facts"],str) else dict(row["facts"])
+        return JSONResponse({"ok":True,"cache":"HIT","from":"postgresql",
+             "quality":row["quality"],"source_evidence":row["source_evidence"],
+             "facts":data,"complete_original_data":False},
+            headers={"x-cache":"HIT","x-data-source":"postgresql",
+                     "x-fact-quality":row["quality"]})
+    # First visit: the original is requested only after a DB miss.
+    async with httpx.AsyncClient(timeout=httpx.Timeout(24,connect=8),
+                follow_redirects=False) as client:
+        try:
+            upstream=await client.get(source_url,headers={
+                "accept":"text/html","accept-language":"ko-KR,ko;q=0.9",
+                "user-agent":"MyDoctorPublicFactReader/1.0"})
+        except httpx.HTTPError:
+            raise HTTPException(502,"Original publicly accessible page unavailable")
+    if upstream.status_code!=200:
+        return JSONResponse(status_code=503,content={
+          "ok":False,"source_status":upstream.status_code,
+          "error":"ORIGINAL_PUBLIC_SOURCE_UNAVAILABLE","route":route,
+          "cache":"MISS","complete_original_data":False},
+          headers={"cache-control":"no-store","x-cache":"MISS"})
+    content_type=upstream.headers.get("content-type","").lower()
+    if not content_type.startswith("text/html") or len(upstream.content)>MAX_BYTES:
+        raise HTTPException(502,"Unsupported public content")
+    facts=extract_public_facts(upstream.content,source_url)
+    if not (facts.get("title") or facts.get("headline")):
+        raise HTTPException(502,"No factual source metadata extracted")
+    try:
+        await insert_facts(pool,facts,overwrite=True)
+    except Exception:
+        LOG.exception("Public facts could not be persisted to PostgreSQL")
+        raise HTTPException(503,"Database write failed; original facts are uncommitted")
+    return JSONResponse({"ok":True,"cache":"MISS","from":"original_public_facts",
+       "quality":facts["quality"],"source_evidence":facts["source_evidence"],
+       "facts":facts,"complete_original_data":False},
+       headers={"x-cache":"MISS","x-data-source":"origin-public-facts",
+                "x-fact-quality":facts["quality"]})
+
+@app.get("/catalog/page-cache/status")
+async def public_cache_status(request:Request):
+    pool=request.app.state.pool
+    if not pool:raise HTTPException(503,"PostgreSQL unavailable")
+    rows=await pool.fetch("SELECT quality,COUNT(*) AS n FROM mydoctor_clone.public_page_facts GROUP BY quality")
+    return {"database":"mydoctor_clone.public_page_facts",
+        "total":sum(int(x["n"]) for x in rows),
+        "by_quality":{x["quality"]:int(x["n"]) for x in rows},
+        "cache_mode":"DB_FIRST_PUBLIC_FACTS","raw_no_store_html_cached":False,
+        "full_catalog_imported":False}
 
 async def ingest(pool,url:str,body:bytes,status:int):
     if pool is None or status!=200 or len(body)>MAX_BYTES:return

@@ -53,6 +53,8 @@ jobs:
               assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.hospitals') IS NOT NULL")
               assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.source_records') IS NOT NULL")
               assert await conn.fetchval("SELECT to_regclass('public.foo') IS NULL")
+              assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.public_page_facts') IS NOT NULL")
+
               await conn.close()
           asyncio.run(check())
           PY
