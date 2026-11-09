@@ -72,3 +72,5 @@
 .observed-bmi-inputs label{display:flex;flex-direction:column;gap:6px;font-size:13px}
 .observed-bmi-inputs input{padding:10px;border:1px solid #d9e0e9;border-radius:7px;width:100%}
 .observed-bmi-result{margin-top:14px;font-size:14px}.observed-bmi-result strong{font-size:23px;color:#326dff}
+
+.md-original-links{padding:20px;margin:22px 0 82px;border-top:8px solid #f5f7fa}.md-original-links h2{font-size:18px;margin:8px 0 15px}.md-original-links h3{font-size:14px;font-weight:650;color:#536073;margin:13px 0 8px}.md-original-links .observed-link{min-height:44px;padding:9px 3px;font-size:13px}.source-link-pending{font-size:12px;color:#7b8593;padding:8px 12px}

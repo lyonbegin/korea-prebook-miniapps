@@ -78,25 +78,62 @@ def extract_public_facts(raw:bytes,original_url:str)->dict:
       "quality":quality,"source_evidence":"origin_http_200_public_metadata",
       "observed_at":datetime.now(timezone.utc).isoformat()}
 
+def merge_public_facts(old:dict|None,new:dict)->dict:
+    """Preserve source-backed fields across partial API reads and browser captures.
+    The original's static HTML can expose fewer public links than JS rendering.
+    Never let a newer but narrower response erase observed original URLs/price rows.
+    """
+    if not old:return dict(new)
+    merged={**old,**new}
+    for field in ("headline","title","address"):
+        if not new.get(field):
+            merged[field]=old.get(field,"")
+    for field in ("links","headings"):
+        a=old.get(field,[]) or []
+        b=new.get(field,[]) or []
+        out=[];seen=set()
+        for v in b+a:
+            key=v.get("path") if isinstance(v,dict) else v
+            if key in seen:continue
+            seen.add(key);out.append(v)
+        merged[field]=out[:180 if field=="links" else 90]
+    old_tables=old.get("tables",[]) or []
+    new_tables=new.get("tables",[]) or []
+    count=lambda ts:sum(len(t.get("rows",[])) for t in ts)
+    merged["tables"]=new_tables if count(new_tables)>=count(old_tables) else old_tables
+    merged["quality"]="verified_public_facts_from_browser" if (
+        old.get("quality")=="verified_public_facts_from_browser" or
+        new.get("quality")=="verified_public_facts_from_browser") else new.get("quality",old.get("quality","public_facts"))
+    merged["source_evidence"]="github-actions-and-live-original-public-facts" if merged["quality"]=="verified_public_facts_from_browser" else new.get("source_evidence","unknown")
+    a=old.get("observed_at") or ""
+    b=new.get("observed_at") or ""
+    merged["observed_at"]=max(a,b)
+    return merged
+
 async def insert_facts(pool,facts:dict,overwrite:bool=False)->bool:
-    """A successful live fetch may enrich old title-only seed, never downgrades facts."""
+    """Atomic DB-first upsert; merge browser and origin facts without losing fields."""
     async with pool.acquire() as conn:
-        res=await conn.execute("""INSERT INTO mydoctor_clone.public_page_facts
-         (original_url,route_path,title,headline,facts,quality,source_evidence,observed_at)
-         VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8::timestamptz)
-         ON CONFLICT (original_url) DO UPDATE SET
-           title=EXCLUDED.title,headline=EXCLUDED.headline,
-           facts=EXCLUDED.facts,quality=EXCLUDED.quality,
-           source_evidence=EXCLUDED.source_evidence,observed_at=EXCLUDED.observed_at
-         WHERE $9::boolean AND (
-           mydoctor_clone.public_page_facts.quality='heading_only'
-           OR mydoctor_clone.public_page_facts.quality='verified_title_and_global_navigation'
-           OR mydoctor_clone.public_page_facts.observed_at < EXCLUDED.observed_at)
-         """,facts["original_url"],facts.get("path",urlsplit(facts["original_url"]).path),
-             facts.get("title",""),facts.get("headline",""),
-             json.dumps(facts,ensure_ascii=False),facts.get("quality","heading_only"),
-             facts.get("source_evidence","unknown"),
-             datetime.fromisoformat((facts.get("observed_at") or datetime.now(timezone.utc).isoformat()).replace("Z","+00:00")),overwrite)
+        async with conn.transaction():
+            previous=await conn.fetchrow("""SELECT facts FROM mydoctor_clone.public_page_facts
+              WHERE original_url=$1 FOR UPDATE""",facts["original_url"])
+            old=previous["facts"] if previous else None
+            if isinstance(old,str):
+                old=json.loads(old)
+            combined=merge_public_facts(old,facts) if old and overwrite else dict(facts)
+            when=datetime.fromisoformat((combined.get("observed_at") or
+                 datetime.now(timezone.utc).isoformat()).replace("Z","+00:00"))
+            await conn.execute("""INSERT INTO mydoctor_clone.public_page_facts
+                (original_url,route_path,title,headline,facts,quality,source_evidence,observed_at)
+                VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8::timestamptz)
+                ON CONFLICT (original_url) DO UPDATE SET
+                  title=EXCLUDED.title,headline=EXCLUDED.headline,
+                  facts=EXCLUDED.facts,quality=EXCLUDED.quality,
+                  source_evidence=EXCLUDED.source_evidence,observed_at=EXCLUDED.observed_at
+                WHERE $9::boolean
+            """,facts["original_url"],combined.get("path",urlsplit(facts["original_url"]).path),
+                combined.get("title",""),combined.get("headline",""),
+                json.dumps(combined,ensure_ascii=False),combined.get("quality","heading_only"),
+                combined.get("source_evidence","unknown"),when,overwrite)
     return True
 
 async def seed_observed_facts(pool)->int:

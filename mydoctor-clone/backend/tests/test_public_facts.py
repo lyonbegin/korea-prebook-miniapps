@@ -1,7 +1,7 @@
 import unittest
 import json
 from pathlib import Path
-from app.public_facts import extract_public_facts,safe_route,SEED
+from app.public_facts import extract_public_facts,safe_route,SEED,merge_public_facts
 
 class PublicFactsTests(unittest.TestCase):
     def test_extract_price_rows_and_not_full_page_html(self):
@@ -15,6 +15,19 @@ class PublicFactsTests(unittest.TestCase):
         self.assertIsNone(safe_route("//evil.test"))
         self.assertIsNone(safe_route("/hospital?patient_id=secret"))
         self.assertIsNotNone(safe_route("/hospital/detail?hospital_id=323"))
+    def test_seed_and_live_fact_merging_preserves_browser_links_and_prices(self):
+        old={"title":"Clinic","headline":"Clinic","links":[{"path":"/hospital/detail?hospital_id=1","label":"First"}],
+             "headings":["Hospital"],"tables":[{"rows":[["A","5,000원"],["B","9,000원"]]}],
+             "quality":"public_facts","observed_at":"2026-11-09T15:01:00Z"}
+        newer={"title":"Clinic","headline":"Clinic","links":[{"path":"/hospital/detail?hospital_id=1","label":"First"},
+            {"path":"/hospital/detail?hospital_id=2","label":"Second"}],"headings":["Hospital","Location"],
+            "tables":[{"rows":[["A","5,000원"]]}],"quality":"verified_public_facts_from_browser",
+            "observed_at":"2026-11-09T14:30:00Z"}
+        merged=merge_public_facts(old,newer)
+        self.assertEqual(len(merged["links"]),2)
+        self.assertEqual(len(merged["tables"][0]["rows"]),2)
+        self.assertEqual(merged["quality"],"verified_public_facts_from_browser")
+        self.assertEqual(merged["observed_at"],"2026-11-09T15:01:00Z")
     def test_seed_observations(self):
         rows=json.loads(SEED.read_text(encoding="utf-8"))
         self.assertEqual(len(rows),29)

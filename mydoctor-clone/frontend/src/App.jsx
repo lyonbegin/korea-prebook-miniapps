@@ -3,7 +3,7 @@ import{ChevronDown,ChevronRight,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone
 import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
-import{VerifiedSourcePage}from"./VerifiedSourcePage.jsx";
+import{VerifiedSourcePage,SourceRows}from"./VerifiedSourcePage.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -54,7 +54,7 @@ function HomeScreen({data,go}){
  </section><section className="md-below"><h2>전국민 누구나, 언제든 어디서나 전화 진료</h2><p>24시간 365일, 전화 한 통으로 진료받고 가까운 약국에서 약을 수령하세요.</p>
  <Anchor className="blue-cta-inline" path="/telemedicine/all-department" label="비대면 진료 시작하기" go={go}/>
  <h2>최저가 병원 예약</h2><Anchor path="/medical-cost" label="진료비 가격 비교" go={go}/>
- </section></>;
+ </section><section className="md-original-links"><h2>원본 서비스 전체 연결 메뉴</h2><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="home-directory"/></section></>;
 }
 function DoctorScreen({data,go}){
  const[active,setActive]=useState("증상"),[opened,setOpened]=useState("");
@@ -69,6 +69,7 @@ function DoctorScreen({data,go}){
    </button>
    {opened===name&&<div className="symptom-choices">{items.map(item=>{const path=realSymptom(item);return path?<Anchor key={item} go={go} label={item} path={path}/>:<span key={item} className="source-link-pending">{item} · 원본 링크 미확인</span>})}</div>}
   </div>)}</div>:<div className="department-grid">{departments.map(d=><Anchor className="dept-link" go={go} path={d.path} label={d.label} key={d.path}/>)}</div>}
+ <section className="md-original-links"><h2>원본 비대면 진료 전체 목록</h2><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory"/></section>
  </>;
 }
 function HospitalScreen({data,go}){
@@ -99,14 +100,16 @@ function HospitalScreen({data,go}){
   <label><Stethoscope size={19}/><select aria-label="진료 시간" value={schedule} onChange={e=>setSchedule(e.target.value)}><option value="">모든 진료</option><option value="야간진료">야간진료</option><option value="일요일진료">일요일진료</option><option value="공휴일진료">공휴일진료</option></select><ChevronDown size={16}/></label>
   <button className="md-blue-button" onClick={submitSearch}>병원 조회하기</button>
   {message&&<p role="status" className="source-link-pending">{message}</p>}
- </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{sourceDepts.map(d=><Anchor key={d.path} label={d.label} path={d.path} go={go}/>)}</div></section></>;
+ </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{sourceDepts.map(d=><Anchor key={d.path} label={d.label} path={d.path} go={go}/>)}</div></section>
+ <section className="md-original-links"><h2>원본 조건별 병원 찾기</h2><SourceRows links={data.links.filter(x=>!sourceDepts.some(y=>y.path===x.path)&&x.path!=="/")} go={go}/></section></>;
 }
 function CostScreen({data,go}){
  const[search,setSearch]=useState("");
  const choices=data.categories.filter(x=>!search||x.title.includes(search));
  return <><section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1><p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p></section>
  <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{v.title}</strong><small>{PRICEDESC[v.title]||""}</small></Anchor>)}</div></section>
- <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search} onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div></>;
+ <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search} onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
+ <section className="md-original-links"><h2>주요 가격 비교</h2><SourceRows links={data.links.filter(x=>!data.categories.some(v=>v.path===x.path)&&x.path!=="/")} go={go}/></section></>;
 }
 function HospitalDetail({data,go}){
  const[tab,setTab]=useState("진료비"),[filter,setFilter]=useState("전체");
@@ -120,6 +123,9 @@ function HospitalDetail({data,go}){
  {tab==="진료비"?<><section className="clinic-prices"><h2>{data.title} 진료비 안내</h2><p>나만의닥터에서 수집한 {data.title}의 대면 진료비, 약제비, 접종료 등 모든 가격을 확인해보세요.</p></section>
  <div className="price-chips">{labels.map(l=><button key={l} className={filter===l?"current":""} onClick={()=>setFilter(l)}>{l}</button>)}</div>
  <section className="clinic-table"><h3>전체 진료비</h3>{filtered?<CostTable tables={[filtered]}/>:<p>등록된 공개 가격이 없습니다.</p>}</section></>:<section className="clinic-prices"><h2>{data.title} 위치·영업시간</h2><p>{data.address||"원본 주소 정보 미확보"}</p><div>{data.sections.filter(s=>/진료시간|영업시간|운영/.test(s.heading)).map((s,i)=><p key={i}>{s.heading}</p>)}</div></section>}
+ <section className="md-original-links"><h2>병원 위치·진료 정보 및 주변 병원</h2>
+ {data.sections.filter(s=>!/^(비대면진료|가격비교|병원찾기|약국찾기|의약품 정보|건강 정보|나만의닥터)$/.test(s.heading)).map((s,i)=><h3 key={i}>{s.heading}</h3>)}
+ <SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="nearby-clinics"/></section>
  </>;
 }
 function GenericScreen({data,go}){
