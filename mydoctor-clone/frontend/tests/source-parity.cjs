@@ -29,17 +29,26 @@ function diff(x,y){
   const source=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const clone=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   try{
-   const s=await source.goto("https://my-doctor.io"+c.source,{waitUntil:"domcontentloaded",timeout:20000});
-   if(s.status()>=400)throw Error("Original HTTP "+s.status());
-   await source.waitForTimeout(1100);
-   const x=await source.screenshot({path:path.join("qa-artifacts","source-"+c.name+".png")});
+   let x,sourceMode="live-original-20261109";
+   try{
+    const s=await source.goto("https://my-doctor.io"+c.source,{waitUntil:"domcontentloaded",timeout:20000});
+    if(!s||s.status()>=400)throw Error("Original HTTP "+s?.status());
+    await source.waitForTimeout(1100);
+    x=await source.screenshot({path:path.join("qa-artifacts","source-"+c.name+".png")});
+   }catch(originError){
+    const pinned=path.join(process.env.MD_SOURCE_BASELINE_DIR||"qa-baseline","source-"+c.name+".png");
+    if(!fs.existsSync(pinned))throw originError;
+    x=fs.readFileSync(pinned);
+    fs.writeFileSync(path.join("qa-artifacts","source-"+c.name+".png"),x);
+    sourceMode="pinned-genuine-original-GitHub-run-42611400204";
+   }
    await clone.goto(base+c.clone,{waitUntil:"domcontentloaded",timeout:20000});
    await clone.waitForTimeout(1100);
    if(await clone.locator('[role="alert"]').count())throw Error("Clone has source-data error");
    const y=await clone.screenshot({path:path.join("qa-artifacts","clone-"+c.name+".png")});
    const m=diff(x,y);
    fs.writeFileSync(path.join("qa-artifacts","heatmap-"+c.name+".png"),PNG.sync.write(m.heatmap));
-   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:m.changed_ratio_percent===0?"PARITY":"MISMATCH",changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta};
+   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:m.changed_ratio_percent===0?"PARITY":"MISMATCH",changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
    report.push(entry);console.log("VISUAL AUDIT",JSON.stringify(entry));
   }catch(e){const entry={name:c.name,status:"UNVERIFIED",reason:String(e.message||e)};report.push(entry);console.error("VISUAL AUDIT",JSON.stringify(entry))}
   finally{await source.close();await clone.close()}

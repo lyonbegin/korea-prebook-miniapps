@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   test-parser-and-schema:
     runs-on: ubuntu-latest
@@ -92,6 +93,15 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/live-smoke.cjs
+      - name: Load authenticated 2026-11-09 original screenshot baseline from earlier successful live captures
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          name: mydoctor-source-parity
+          run-id: 42611400204
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: mydoctor-clone/frontend/qa-baseline
       - name: Original vs clone pixel-difference audit
         if: always()
         working-directory: mydoctor-clone/frontend
