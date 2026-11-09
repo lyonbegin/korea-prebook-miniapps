@@ -89,6 +89,14 @@ jobs:
       - name: Build checked-out source
         working-directory: mydoctor-clone/frontend
         run: npm run build
+      - name: Load original 29 mobile and 5 full-page screenshots captured on source HTTP200
+        uses: actions/download-artifact@v4
+        with:
+          name: mydoctor-source-parity
+          run-id: 42650015118
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: mydoctor-clone/frontend/qa-baseline
       - name: Capture factual fields from real public original pages
         working-directory: mydoctor-clone/frontend
         run: node tests/capture-source-facts.cjs
@@ -157,6 +165,12 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/original-click-pairs.cjs
+      - name: Verify 29 genuine source screenshot baselines against clone at 10 percent
+        if: always()
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/visual-baseline-29.cjs
       - name: Compare 29 representative original and clone screen/interaction templates
         if: always()
         working-directory: mydoctor-clone/frontend
@@ -169,15 +183,6 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/live-smoke.cjs
-      - name: Load authenticated 2026-11-09 original screenshot baseline from earlier successful live captures
-        if: always()
-        uses: actions/download-artifact@v4
-        with:
-          name: mydoctor-source-parity
-          run-id: 42611400204
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          path: mydoctor-clone/frontend/qa-baseline
       - name: Original vs clone pixel-difference audit
         if: always()
         working-directory: mydoctor-clone/frontend
