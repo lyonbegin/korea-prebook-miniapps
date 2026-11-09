@@ -27,6 +27,7 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
     await goto("/telemedicine/all-department");
     await page.getByRole("button",{name:"진료과목"}).tap();
     assert.ok(await page.locator(".dept-link").count()>0);
+    assert.ok(await page.locator(".dept-link").count()>=20,"Original has many more than nine departments");
     return "department links "+await page.locator(".dept-link").count();
   });
   await test("medical-cost card navigation and deep link",async()=>{
