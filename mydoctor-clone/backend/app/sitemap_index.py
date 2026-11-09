@@ -46,6 +46,48 @@ def section_of(url:str)->str:
     if path.startswith("medicine/effect"):return "medicine-effect"
     return segment
 
+def template_of(url:str)->str:
+    """UI templates: many URLs may map to the same component and interaction flow.
+    This is an initial conservative classification based on path structure,
+    not a declaration that two original screens have been visually compared.
+    """
+    path=urlsplit(url).path.strip("/")
+    seg=path.split("/") if path else []
+    if not seg:return "home"
+    section=seg[0]
+    if section=="telemedicine":
+        if len(seg)==1:return "telemedicine-index"
+        if seg[1]=="all-department":return "telemedicine-department-list"
+        if seg[1]=="doctor":return "doctor-reviews" if len(seg)>3 and seg[-1]=="reviews" else "doctor-detail"
+        return "telemedicine-condition"
+    if section=="hospital":
+        if len(seg)==1:return "hospital-search"
+        if seg[1]=="detail":return "hospital-detail"
+        if len(seg)>2 and seg[-1]=="reviews":return "hospital-reviews"
+        return "hospital-availability-search"
+    if section=="dept-hub":return "hospital-by-department"
+    if section=="medical-cost":
+        if len(seg)==1:return "medical-cost-index"
+        if len(seg)==2:return "medical-cost-category"
+        return "medical-cost-item-by-area"
+    if section=="pharmacy":return "pharmacy-search" if len(seg)==1 else "pharmacy-condition-search"
+    if section=="map":
+        if len(seg)>1 and seg[1]=="baby119":return "map-child-emergency"
+        if len(seg)>1 and seg[1]=="119":return "map-emergency"
+        return "map-price-or-pharmacy"
+    if section=="medicine":
+        if len(seg)==1:return "medicine-search"
+        if len(seg)>1 and seg[1] in ("ingredient","effect"):return "medicine-filter"
+        return "medicine-detail"
+    if section=="healthLab":
+        if len(seg)==1:return "health-landing"
+        if len(seg)>1 and seg[1] in ("info","how-to","FAQ","health-wiki","test"):
+            if len(seg)<=2:return "health-category-index"
+            return "health-article-or-test"
+        return "health-other"
+    if section=="qna":return "qna-index" if len(seg)<=2 else "qna-answer"
+    return "other-public"
+
 async def record_run(pool,url,status,count,error=""):
     await pool.execute("""INSERT INTO mydoctor_clone.sitemap_imports
       (sitemap_url,http_status,url_count,last_attempt_at,last_success_at,error)
@@ -64,12 +106,15 @@ async def insert_urls(pool,source_url:str,urls:list[str]):
             batch=urls[i:i+BATCH_SIZE]
             paths=[urlsplit(u).path+("?" +urlsplit(u).query if urlsplit(u).query else "") for u in batch]
             sections=[section_of(u) for u in batch]
+            types=[template_of(u) for u in batch]
             await c.execute("""INSERT INTO mydoctor_clone.original_routes
-              (original_url,route_path,source_section,sitemap_url)
-              SELECT * FROM UNNEST($1::TEXT[],$2::TEXT[],$3::TEXT[],$4::TEXT[])
+              (original_url,route_path,source_section,sitemap_url,template_key)
+              SELECT * FROM UNNEST($1::TEXT[],$2::TEXT[],$3::TEXT[],$4::TEXT[],$5::TEXT[])
               ON CONFLICT(original_url) DO UPDATE SET
-                source_section=EXCLUDED.source_section,sitemap_url=EXCLUDED.sitemap_url
-            """,batch,paths,sections,[source_url]*len(batch))
+                source_section=EXCLUDED.source_section,
+                sitemap_url=EXCLUDED.sitemap_url,
+                template_key=EXCLUDED.template_key
+            """,batch,paths,sections,[source_url]*len(batch),types)
 
 async def sync_public_index(pool,delay_seconds:float=0.7,force:bool=False):
     """One bounded pass of official XML sitemaps; stop on 429, no bypass or crawling leaf pages."""

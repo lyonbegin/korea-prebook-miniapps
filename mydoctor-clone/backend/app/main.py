@@ -85,12 +85,19 @@ async def catalog_coverage(request:Request):
       COUNT(data_verified_at) AS data_verified,
       COUNT(clone_verified_at) AS clone_verified
       FROM mydoctor_clone.original_routes GROUP BY source_section ORDER BY COUNT(*) DESC""")
+    types=await pool.fetch("""SELECT template_key AS template,COUNT(*) AS discovered,
+      COUNT(data_verified_at) AS data_verified,
+      COUNT(clone_verified_at) AS clone_verified,
+      MIN(original_url) AS example_url
+      FROM mydoctor_clone.original_routes GROUP BY template_key ORDER BY COUNT(*) DESC""")
     checks=await pool.fetch("""SELECT sitemap_url,http_status,url_count,error,last_attempt_at
       FROM mydoctor_clone.sitemap_imports ORDER BY sitemap_url""")
     return {"discovered_routes":sum(int(r["discovered"]) for r in rows),
             "data_verified_routes":sum(int(r["data_verified"]) for r in rows),
             "clone_verified_routes":sum(int(r["clone_verified"]) for r in rows),
             "sections":[dict(r) for r in rows],
+            "page_types":[dict(r) for r in types],
+            "test_policy":"One representative path per distinct UI/interaction template, plus separately verified unique behaviors.",
             "sitemaps":[{"url":r["sitemap_url"],"status":r["http_status"],
                          "indexed":r["url_count"],"error":r["error"],
                          "last_checked":r["last_attempt_at"].isoformat()} for r in checks],

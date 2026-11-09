@@ -91,6 +91,10 @@ CREATE TABLE IF NOT EXISTS mydoctor_clone.sitemap_imports (
   last_success_at TIMESTAMPTZ,
   error TEXT
 );
+ALTER TABLE mydoctor_clone.original_routes
+  ADD COLUMN IF NOT EXISTS template_key TEXT NOT NULL DEFAULT 'unclassified';
+CREATE INDEX IF NOT EXISTS idx_mydoctor_routes_template
+  ON mydoctor_clone.original_routes(template_key);
 ALTER TABLE mydoctor_clone.source_records
   ADD COLUMN IF NOT EXISTS source_evidence TEXT NOT NULL DEFAULT 'legacy_unverified';
 """
