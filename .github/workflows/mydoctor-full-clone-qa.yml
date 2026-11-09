@@ -93,6 +93,15 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/menu-inventory.cjs
+      - name: Verify original healthLab deep-link SPA routes do not get swallowed by API health proxy
+        working-directory: mydoctor-clone/frontend
+        run: |
+          for route in /healthLab /healthLab/FAQ /healthLab/calculator/bmi; do
+            status=$(curl --silent -o /tmp/mydoctor-health-html -w '%{http_code}' -H 'Accept: text/html' "http://127.0.0.1:5173$route")
+            test "$status" = "200" || { echo "FAIL SPA route $route HTTP $status"; exit 1; }
+            grep -q '<div id="root"></div>' /tmp/mydoctor-health-html || { echo "FAIL missing SPA root $route"; exit 1; }
+            echo "PASS SPA route $route"
+          done
       - name: Compare 29 representative original and clone screen/interaction templates
         if: always()
         working-directory: mydoctor-clone/frontend

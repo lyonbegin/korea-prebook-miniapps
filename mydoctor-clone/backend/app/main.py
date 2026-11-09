@@ -23,7 +23,7 @@ except ImportError:
 LOG = logging.getLogger("mydoctor.gateway")
 BASE = "https://my-doctor.io"
 SENSITIVE = re.compile(r"(token|auth|session|password|secret|cookie|email|phone|patient|member|user|order|payment|reservation|consultation)",re.I)
-ALLOWED = ("/","/hospital","/medical-cost","/telemedicine","/healthLab","/medicine","/pharmacy","/health","/medicineInfo","/price","/dept-hub","/map","/qna")
+ALLOWED = ("/","/hospital","/medical-cost","/telemedicine","/healthLab","/medicine","/pharmacy","/health","/medicineInfo","/price","/dept-hub","/map","/qna","/company","/event","/sitemap")
 MAX_BYTES=4*1024*1024
 
 def is_allowed_path(path: str) -> bool:
