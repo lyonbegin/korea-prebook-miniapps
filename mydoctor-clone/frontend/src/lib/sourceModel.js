@@ -5,7 +5,7 @@ export const MAIN_LINKS=[
   {title:"병원 찾기",path:"/hospital"},
   {title:"의료비 가격 비교",path:"/medical-cost"}
 ];
-const ALLOWED=/^\/(?:hospital|medical-cost|telemedicine|healthLab|medicine|pharmacy)(?:\/|\?|$)/;
+const ALLOWED=/^\/(?:hospital|medical-cost|telemedicine|healthLab|medicine|pharmacy|dept-hub|map|qna|company|event|quiz)(?:\/|\?|$)/;
 const clean=s=>String(s||"").replace(/\s+/g," ").trim();
 export function localPath(href){
   try{const u=new URL(href,ORIGIN);if(u.origin!==ORIGIN)return null;
@@ -80,7 +80,7 @@ export function parsePublicFacts(response,path){
  }));
  const title=f.headline||f.title||"";
  return {
-  path,title,headTitle:f.title||title,description:"",
+  path,title,headTitle:f.title||title,description:"",address:f.address||"",
   links,categories,tables,
   sections:(f.headings||[]).map(h=>({heading:h,level:"h2",links:[]})),
   hours:[],paragraphs:f.address?[f.address]:[],

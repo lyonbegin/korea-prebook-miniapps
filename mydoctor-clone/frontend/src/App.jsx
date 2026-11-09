@@ -3,6 +3,7 @@ import{ChevronDown,ChevronRight,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone
 import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
+import{VerifiedSourcePage}from"./VerifiedSourcePage.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -35,7 +36,7 @@ function Anchor({label,path,go,children,className=""}){return <a href={path} cla
 function Breadcrumb({route,go}){
  const medical=route.startsWith("/medical-cost"),doctor=route.startsWith("/telemedicine"),hospital=route.startsWith("/hospital");
  const detailed=route.startsWith("/hospital/detail");
- return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span>{detailed?<><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><span>창원시 내과</span><span>›</span><strong>창원한마음병원</strong></>:<strong>{medical?"가격비교":doctor?"비대면진료":hospital?"병원찾기":"상세정보"}</strong>}</div>;
+ return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span>{detailed?<><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><span>병원 상세</span></>:<strong>{medical?"가격비교":doctor?"비대면진료":hospital?"병원찾기":"상세정보"}</strong>}</div>;
 }
 function CostTable({tables}){
  return tables.map((t,i)=><div className="table-scroll" key={i}><table className="cost-table">
@@ -91,12 +92,12 @@ function HospitalDetail({data,go}){
  const filtered=table?{...table,rows:table.rows.filter(row=>filter==="전체"||row[0].includes(filter)||(filter==="급여"&&row[0].startsWith("급여")))}:null;
  const labels=["전체","급여","대상포진 예방접종","독감 예방접종"];
  return <><section className="clinic-head"><h1>{data.title}</h1>
- <div className="clinic-location"><div><b className="open-dot">● 영업 중</b><strong> · 오늘 ({new Intl.DateTimeFormat("ko-KR",{weekday:"short",timeZone:"Asia/Seoul"}).format(new Date())}) 24시간</strong><ChevronRight size={17}/></div><p>◧ 경남 창원시 의창구 용동로57번길 8</p></div>
- <div className="clinic-actions"><a href={ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer"><Phone size={17}/>전화</a><a href={"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(data.title)} target="_blank" rel="noreferrer"><Navigation size={17}/>길찾기</a><a href={ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer"><House size={17}/>홈페이지</a></div></section>
+ <div className="clinic-location"><div><strong>병원 공개 정보</strong></div><p>{data.address||"원본 주소 정보 미확보"}</p></div>
+ <div className="clinic-actions"><a href={ORIGINAL+data.path} target="_blank" rel="noreferrer"><Phone size={17}/>전화</a><a href={"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(data.title)} target="_blank" rel="noreferrer"><Navigation size={17}/>길찾기</a><a href={ORIGINAL+data.path} target="_blank" rel="noreferrer"><House size={17}/>홈페이지</a></div></section>
  <div className="md-clinic-tabs"><button className={tab==="진료비"?"current":""} onClick={()=>setTab("진료비")}>진료비</button><button className={tab==="병원 정보"?"current":""} onClick={()=>setTab("병원 정보")}>병원 정보</button></div>
  {tab==="진료비"?<><section className="clinic-prices"><h2>{data.title} 진료비 안내</h2><p>나만의닥터에서 수집한 {data.title}의 대면 진료비, 약제비, 접종료 등 모든 가격을 확인해보세요.</p></section>
  <div className="price-chips">{labels.map(l=><button key={l} className={filter===l?"current":""} onClick={()=>setFilter(l)}>{l}</button>)}</div>
- <section className="clinic-table"><h3>전체 진료비</h3>{filtered?<CostTable tables={[filtered]}/>:<p>등록된 공개 가격이 없습니다.</p>}</section></>:<section className="clinic-prices"><h2>{data.title} 위치·영업시간</h2><p>경남 창원시 의창구 용동로57번길 8</p><p>월요일~일요일 24시간</p></section>}
+ <section className="clinic-table"><h3>전체 진료비</h3>{filtered?<CostTable tables={[filtered]}/>:<p>등록된 공개 가격이 없습니다.</p>}</section></>:<section className="clinic-prices"><h2>{data.title} 위치·영업시간</h2><p>{data.address||"원본 주소 정보 미확보"}</p><div>{data.sections.filter(s=>/진료시간|영업시간|운영/.test(s.heading)).map((s,i)=><p key={i}>{s.heading}</p>)}</div></section>}
  </>;
 }
 function GenericScreen({data,go}){
@@ -112,7 +113,7 @@ export default function App(){
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();go(item.href)}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
  </header>{!home&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport">{s.data&&<div className="source-quality" role="status">DB 공개 사실 데이터 · {s.data.sourceQuality==="heading_only"?"제목만 확보":s.data.sourceQuality==="verified_title_and_global_navigation"?"메뉴·제목 확보":s.data.sourceQuality==="verified_public_factual_price_rows"?"가격표 확인":"공개 메타데이터 확인"} · 전체 원본 기능 동일성 검증 전</div>}{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
- :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:route==="/telemedicine/all-department"?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<GenericScreen data={s.data} go={go}/>):null}
+ :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:route==="/telemedicine/all-department"?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage data={s.data} go={go} route={route}/>):null}
  </main>{(home||hospitalDetail)&&<a className={home?"fixed-call-to-action":"fixed-call-to-action clinic-action-fixed"} href={home?ORIGINAL:ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer">{home?"나만의 닥터 다운로드":"진료 예약하기"}</a>}
  </div>;
 }
