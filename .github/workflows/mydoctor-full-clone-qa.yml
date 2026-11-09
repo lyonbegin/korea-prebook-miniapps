@@ -101,6 +101,7 @@ jobs:
       - name: Commit enriched public facts for existing PostgreSQL startup import
         working-directory: mydoctor-clone/frontend
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git -C ../.. status --short
           git -C ../.. config user.name "github-actions[bot]"
           git -C ../.. config user.email "41898282+github-actions[bot]@users.noreply.github.com"
