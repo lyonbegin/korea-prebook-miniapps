@@ -142,6 +142,11 @@ jobs:
             grep -q '<div id="root"></div>' /tmp/mydoctor-health-html || { echo "FAIL missing SPA root $route"; exit 1; }
             echo "PASS SPA route $route"
           done
+      - name: Verify DB sourced mobile directory search, region, price and calculator actions
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/original-fact-interactions.cjs
       - name: Compare 29 representative original and clone screen/interaction templates
         if: always()
         working-directory: mydoctor-clone/frontend
