@@ -16,3 +16,12 @@
 /* Further original homepage lettershape and photo-background alignment. */
 .md-home h1{font-size:51px;line-height:1.28;letter-spacing:-2.3px;-webkit-text-stroke:1.1px currentColor}
 .md-home-hero{filter:url(#md-remove-dark-backdrop)}
+
+/* Source photo/title measured placements from 2026-11-09 live screenshot. */
+.md-home{position:relative;top:-17px;margin-bottom:-17px}
+.md-home h1{-webkit-text-stroke:2.2px currentColor}
+.md-home-hero{width:390px;max-width:none;position:relative;left:50%;transform:translateX(-50%)}
+.md-intro:not(.md-hospital-intro){padding-bottom:19px}
+.md-intro h1,.clinic-head h1,.md-cost-intro h1{-webkit-text-stroke:.6px currentColor}
+.md-dept-list h2,.md-cost-list h2,.clinic-prices h2{-webkit-text-stroke:.35px currentColor}
+.cost-tile strong{-webkit-text-stroke:.3px currentColor}

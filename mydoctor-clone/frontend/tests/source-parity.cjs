@@ -47,6 +47,21 @@ function diff(x,y){
    if(await clone.locator('[role="alert"]').count())throw Error("Clone has source-data error");
    const y=await clone.screenshot({path:path.join("qa-artifacts","clone-"+c.name+".png")});
    const m=diff(x,y);
+   const sourceMetrics=sourceMode.startsWith("live-")?await source.evaluate(()=>{
+     const el=document.querySelector("h1")||document.querySelector("h2");
+     if(!el)return null;
+     const s=getComputedStyle(el),r=el.getBoundingClientRect();
+     return {fontFamily:s.fontFamily,fontWeight:s.fontWeight,fontSize:s.fontSize,lineHeight:s.lineHeight,
+       letterSpacing:s.letterSpacing,rect:{x:r.x,y:r.y,width:r.width,height:r.height}};
+   }):null;
+   const cloneMetrics=await clone.evaluate(()=>{
+     const el=document.querySelector("h1")||document.querySelector("h2");
+     if(!el)return null;
+     const s=getComputedStyle(el),r=el.getBoundingClientRect();
+     return {fontFamily:s.fontFamily,fontWeight:s.fontWeight,fontSize:s.fontSize,lineHeight:s.lineHeight,
+       letterSpacing:s.letterSpacing,rect:{x:r.x,y:r.y,width:r.width,height:r.height}};
+   });
+   console.log("TYPOGRAPHY AUDIT",c.name,JSON.stringify({sourceMetrics,cloneMetrics}));
    fs.writeFileSync(path.join("qa-artifacts","heatmap-"+c.name+".png"),PNG.sync.write(m.heatmap));
    const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:m.changed_ratio_percent===0?"PARITY":"MISMATCH",changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
    report.push(entry);console.log("VISUAL AUDIT",JSON.stringify(entry));
