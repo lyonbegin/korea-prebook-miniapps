@@ -29,6 +29,32 @@ function diff(x,y){
  }
  return{changed_ratio_percent:+(changed/(width*height)*100).toFixed(2),mean_pixel_delta:+(total/(width*height)).toFixed(2),heatmap};
 }
+// FullPage screenshots can leave React content-visibility/lazy images blank offscreen.
+// Capture the ACTUAL rendered viewport in every scroll region, on both sites.
+async function scrollCompare(source,clone,name){
+ const heights=await Promise.all([source,clone].map(p=>p.evaluate(()=>document.documentElement.scrollHeight)));
+ const max=Math.min(20000,Math.max(...heights)),tileHeight=844,width=390;
+ const positions=[];for(let y=0;y<max;y+=tileHeight)positions.push(y);
+ const heatmap=new PNG({width,height:positions.length*tileHeight});
+ const scores=[];
+ for(let i=0;i<positions.length;i++){
+   const y=positions[i];
+   await Promise.all([source,clone].map(async p=>{
+      await p.evaluate(y=>window.scrollTo(0,y),y);
+      await p.waitForTimeout(280);
+      await p.evaluate(()=>document.fonts.ready);
+   }));
+   const [a,b]=await Promise.all([source.screenshot(),clone.screenshot()]);
+   const current=diff(a,b);
+   scores.push({scroll_top:y,percent:current.changed_ratio_percent});
+   current.heatmap.data.copy(heatmap.data,i*width*tileHeight*4);
+ }
+ await Promise.all([source,clone].map(p=>p.evaluate(()=>window.scrollTo(0,0))));
+ const percent=+(scores.reduce((sum,s)=>sum+s.percent,0)/scores.length).toFixed(2);
+ fs.writeFileSync(path.join("qa-artifacts","heatmap-scroll-"+name+".png"),PNG.sync.write(heatmap));
+ return {changed_ratio_percent:percent,source_height:heights[0],clone_height:heights[1],scroll_tiles:scores};
+}
+
 (async()=>{
  fs.mkdirSync("qa-artifacts",{recursive:true});
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
@@ -37,26 +63,17 @@ function diff(x,y){
   const source=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const clone=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   try{
-   let x,originalFull,sourceMode="live-original-20261109";
+   let x,sourceMode="live-original-20261109";
    try{
     const s=await source.goto("https://my-doctor.io"+c.source,{waitUntil:"domcontentloaded",timeout:20000});
     if(!s||s.status()>=400)throw Error("Original HTTP "+s?.status());
     await source.waitForTimeout(1100);
     x=await source.screenshot({path:path.join("qa-artifacts","source-"+c.name+".png")});
-    // Scan the original page to load lazy images before capturing below-the-fold layout.
-    await source.evaluate(async()=>{
-      const height=Math.min(20000,document.documentElement.scrollHeight);
-      for(let y=0;y<height;y+=800){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,65));}
-      window.scrollTo(0,0);await document.fonts.ready;
-    });
-    originalFull=await source.screenshot({path:path.join("qa-artifacts","source-full-"+c.name+".png"),fullPage:true});
    }catch(originError){
     const pinned=path.join(process.env.MD_SOURCE_BASELINE_DIR||"qa-baseline","source-"+c.name+".png");
     if(!fs.existsSync(pinned))throw originError;
     x=fs.readFileSync(pinned);
     fs.writeFileSync(path.join("qa-artifacts","source-"+c.name+".png"),x);
-    const pinnedFull=path.join(process.env.MD_SOURCE_BASELINE_DIR||"qa-baseline","source-full-"+c.name+".png");
-    if(fs.existsSync(pinnedFull))originalFull=fs.readFileSync(pinnedFull);
     sourceMode="pinned-genuine-original-GitHub-run-42611400204";
    }
    await clone.goto(base+c.clone,{waitUntil:"domcontentloaded",timeout:20000});
@@ -64,14 +81,7 @@ function diff(x,y){
    if(await clone.locator('[role="alert"]').count())throw Error("Clone has source-data error");
    const y=await clone.screenshot({path:path.join("qa-artifacts","clone-"+c.name+".png")});
    const m=diff(x,y);
-   await clone.evaluate(async()=>{
-     const height=Math.min(20000,document.documentElement.scrollHeight);
-     for(let y=0;y<height;y+=800){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,65));}
-     window.scrollTo(0,0);await document.fonts.ready;
-   });
-   const cloneFull=await clone.screenshot({path:path.join("qa-artifacts","clone-full-"+c.name+".png"),fullPage:true});
-   const full=originalFull?diff(originalFull,cloneFull):null;
-   if(full)fs.writeFileSync(path.join("qa-artifacts","heatmap-full-"+c.name+".png"),PNG.sync.write(full.heatmap));
+   const full=sourceMode.startsWith("live-")?await scrollCompare(source,clone,c.name):null;
    const sourceMetrics=sourceMode.startsWith("live-")?await source.evaluate(()=>{
      const el=document.querySelector("h1")||document.querySelector("h2");
      if(!el)return null;
@@ -105,11 +115,11 @@ function diff(x,y){
    }));
    console.log("LAYOUT AUDIT",c.name,JSON.stringify({source:probes[0],clone:probes[1]}));
    fs.writeFileSync(path.join("qa-artifacts","heatmap-"+c.name+".png"),PNG.sync.write(m.heatmap));
-   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:!full?"FULL_PAGE_UNVERIFIED":isVisualPass(m.changed_ratio_percent)&&isVisualPass(full.changed_ratio_percent)?"VISUAL_PASS":"VISUAL_FAIL",visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,changed_ratio_percent:m.changed_ratio_percent,full_page_changed_percent:full?.changed_ratio_percent??null,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
+   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:!full?"FULL_PAGE_UNVERIFIED":isVisualPass(m.changed_ratio_percent)&&isVisualPass(full.changed_ratio_percent)?"VISUAL_PASS":"VISUAL_FAIL",visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,changed_ratio_percent:m.changed_ratio_percent,scroll_rendered_changed_percent:full?.changed_ratio_percent??null,source_page_height:full?.source_height??null,clone_page_height:full?.clone_height??null,scroll_tile_count:full?.scroll_tiles?.length??0,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
    report.push(entry);console.log("VISUAL AUDIT",JSON.stringify(entry));
   }catch(e){const entry={name:c.name,status:"UNVERIFIED",reason:String(e.message||e)};report.push(entry);console.error("VISUAL AUDIT",JSON.stringify(entry))}
   finally{await source.close();await clone.close()}
- }}finally{await browser.close();fs.writeFileSync("qa-artifacts/source-parity.json",JSON.stringify({viewport:{width:390,height:844},pages:report,visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,visual_passed:report.filter(x=>x.status==="VISUAL_PASS").length,visual_failed:report.filter(x=>x.status==="VISUAL_FAIL").length,unverified:report.filter(x=>x.status==="UNVERIFIED"||x.status==="FULL_PAGE_UNVERIFIED").length,meaning:"Both 390x844 viewport and entire scrollable screenshot include layout/images; each must have 10% or less changed pixels. Original full-page baseline missing => UNVERIFIED. Data/feature parity is separate."},null,2))}
+ }}finally{await browser.close();fs.writeFileSync("qa-artifacts/source-parity.json",JSON.stringify({viewport:{width:390,height:844},pages:report,visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,visual_passed:report.filter(x=>x.status==="VISUAL_PASS").length,visual_failed:report.filter(x=>x.status==="VISUAL_FAIL").length,unverified:report.filter(x=>x.status==="UNVERIFIED"||x.status==="FULL_PAGE_UNVERIFIED").length,meaning:"Both the initial 390x844 viewport and the stitched comparison of every scroll-visible viewport must be <=10%. Every tile displays images/lazy content while scrolled into view. Upstream 429 cannot validate full scroll; mark unverified. Data/function tests remain separate."},null,2))}
  // Different or inaccessible originals remain failing parity checks, not success.
  if(report.some(x=>x.status!=="VISUAL_PASS"))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
