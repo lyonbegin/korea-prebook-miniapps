@@ -233,7 +233,7 @@ function CostScreen({data,go}){
  <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=>{const id=decodeURIComponent(v.path.split("?")[0]).split("/")[2];
  const name=ORIGINAL_PRICE_CARD_LABELS[id]||id.replace(/-/g," ");
  const desc=v.title.startsWith(name)?v.title.slice(name.length).trim():v.title;
- return <Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{name}</strong><small>{PRICEDESC[name]||desc||"진료비 가격 비교"}</small></Anchor>})}</div></section>
+ return <Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{name}</strong><small>{PRICEDESC[name]||(desc===name?"":desc)}</small></Anchor>})}</div></section>
  <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search} onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
  <section className="md-original-links"><h2>주요 가격 비교</h2><SourceRows links={data.links.filter(x=>!data.categories.some(v=>v.path===x.path)&&x.path!=="/")} go={go}/></section></>;
 }

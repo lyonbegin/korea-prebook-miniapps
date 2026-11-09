@@ -146,3 +146,11 @@
 .md-awards .award-line{display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap;height:20.5px}
 .md-awards .award-line img{height:16px;width:9px;object-fit:contain;flex-shrink:0}
 .md-awards .award-line span{font-size:10px}
+
+/* Align 390x844 visual source text rectangles while keeping the grid's original y-offset. */
+.md-cost-intro{padding-top:28px;padding-bottom:24px}
+.md-intro:not(.md-hospital-intro){padding-top:24px;padding-bottom:14px}
+.md-hospital-intro{padding-top:20px;padding-bottom:11px}
+.clinic-head{padding-top:20px;padding-bottom:11px}
+.cost-tile{padding-top:21px;padding-bottom:12px}
+.cost-tile small{font-size:13px}
