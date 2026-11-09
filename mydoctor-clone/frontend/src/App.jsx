@@ -54,7 +54,15 @@ function CostTable({tables}){
 function HomeScreen({data,go}){
  return <><svg className="md-colorfilter" width="0" height="0" aria-hidden="true"><defs><filter id="md-remove-dark-backdrop" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  1 1 1 0 -0.25"/></filter></defs></svg><section className="md-home">
   <h1>대한민국 1위<br/>비대면 진료 앱<br/>나만의닥터</h1>
-  <div className="md-awards">♕ 2026 대한민국 소비자 브랜드 대상 진료 부문 1위 ♕<br/>♕ 2024 중앙일보 올해의 우수브랜드대상 · 비대면진료 부문 1위 ♕<br/>♕ 2022 대한민국소비자브랜드 대상 · 서비스만족도 1위 ♕</div>
+  <div className="md-awards">{[
+   "2026 대한민국 소비자 브랜드 대상 진료 부문 1위",
+   "2024 중앙일보 올해의 우수브랜드대상 · 비대면진료 부문 1위",
+   "2022 대한민국소비자브랜드 대상 · 서비스만족도 1위"
+  ].map((s,i)=><div key={i} className="award-line">
+    <img src={ORIGINAL+"/_next/static/media/laurel-left.2ngvh-_bdkhon.svg"} alt=""/>
+    <span>{s}</span>
+    <img src={ORIGINAL+"/_next/static/media/laurel-right.2i_spu7dd09cg.svg"} alt=""/>
+   </div>)}</div>
   <div className="md-stats"><span>활성유저수 <b>1위¹</b><br/>회원수 <b>300만+</b></span><span>매출액 <b>1위²</b><br/>앱스토어 평점 <b>4.8점</b></span></div>
   <div className="md-stat-notes"><p>1 모바일인덱스 추정 기준 비대면진료 앱 월간 활성 이용자 수(MAU)<br/>　2026년 1월~8월 8개월 연속 1위 (Android+iOS 합산)</p><p>2 비대면진료 앱 운영사 4개사 2025년 매출액<br/>　(각 사 공시 재무제표 기준)</p></div>
   <img className="md-home-hero" src="https://my-doctor.io/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fhero-mockup.27qja46teurqn.webp&w=750&q=75" alt="나만의닥터 앱 사용 화면"/>
@@ -260,6 +268,6 @@ export default function App(){
  </header>{!home&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
  :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:route==="/telemedicine/all-department"?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage data={s.data} go={go} route={route}/>):null}
- </main><OriginalFooter go={go}/>{home&&<a className="fixed-call-to-action" href={ORIGINAL} target="_blank" rel="noreferrer">나만의닥터 원본 서비스</a>}
+ </main><OriginalFooter go={go}/>{home&&<a className="fixed-call-to-action" href="https://abr.ge/zskg4p" target="_blank" rel="noreferrer">나만의 닥터 다운로드</a>}
  </div>;
 }
