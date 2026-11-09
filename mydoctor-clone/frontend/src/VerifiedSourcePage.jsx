@@ -14,12 +14,19 @@ function verifiedLinks(links){
  const seen=new Set();
  return (links||[]).filter(x=>x.path&&x.label&&x.path!=="/"&&!seen.has(x.path)&&seen.add(x.path));
 }
-export function SourceRows({links,go,kind="directory"}){
- return <div className={"observed-links observed-"+kind}>
- {links.map(link=><a key={link.path} href={link.path} className="observed-link"
-    onClick={e=>{e.preventDefault();go(link.path)}}>
-   <span>{link.label}</span><ChevronRight size={16} aria-hidden="true"/>
- </a>)}
+export function SourceRows({links,go,kind="directory",defaultMaxHeight=null}){
+ const [expanded,setExpanded]=useState(false);
+ const hasMore=defaultMaxHeight!==null&&links.length>20;
+ return <div className="observed-row-container">
+  <div className={"observed-links observed-"+kind+(hasMore&&!expanded?" is-collapsed":"")}
+    style={hasMore&&!expanded?{maxHeight:defaultMaxHeight,overflow:"hidden"}:undefined}>
+  {links.map(link=><a key={link.path} href={link.path} className="observed-link"
+     onClick={e=>{e.preventDefault();go(link.path)}}>
+    <span>{link.label}</span><ChevronRight size={16} aria-hidden="true"/>
+  </a>)}
+  </div>
+  {hasMore&&<button type="button" className="observed-expand" aria-expanded={expanded}
+    onClick={()=>setExpanded(!expanded)}>{expanded?"접기":"전체 보기"} <ChevronRight size={15}/></button>}
  </div>;
 }
 function SourceTables({tables}){

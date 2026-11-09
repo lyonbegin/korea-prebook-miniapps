@@ -14,7 +14,13 @@ const CATEGORIES=[
 ["소화기 질환","속쓰림, 장염, 위염 등","stomache.2ca46vciyelst.svg",["속쓰림","장염","위염"]],
 ["신경 질환","두통, 편두통, 안면경련 등","brain.3ieuexq3w4qcx.svg",["두통","편두통","안면경련"]],
 ["안구 질환","안구건조증, 결막염, 다래끼 등","eye.29a209_iyho6n.svg",["안구건조증","결막염","다래끼"]],
-["여성 질환","질염, 생리통, 생리불순 등","female.454xcj48d_sp8.svg",["질염","생리통","생리불순"]]
+["여성 질환","질염, 생리통, 생리불순 등","female.454xcj48d_sp8.svg",["질염","생리통","생리불순"]],
+["정신 질환","우울증, 강박장애, 공황장애 등","meditation.2jeysu9ce35-2.svg",["우울증","강박장애","공황장애"]],
+["정형외과 질환","근육통, 근육경련, 관절염 등","xRay.42-50yr98ed7b.svg",["근육통","근육경련","관절염"]],
+["치과 질환","치통, 충치, 치주염 등","tooth.3--dr6sp_2q3d.svg",["치통","충치","치주염"]],
+["탈모","탈모, 여성 탈모 등","hairloss.0e8xww15mcc9q.svg",["탈모","여성 탈모"]],
+["피부 질환","여드름, 무좀, 땀띠 등","skin.1yr9o5z7bd6b4.svg",["여드름","무좀","땀띠"]],
+["호흡기 질환","감기, 독감, 코로나 등","cold.0zdk5k602s-60.svg",["감기","독감","코로나"]]
 ];
 const DOC_DEPTS=["가정의학과","결핵과","내과","마취통증의학과","방사선종양학과","병리과","비뇨의학과","사상체질과","산부인과","성형외과","소아청소년과","신경과","신경외과","안과","영상의학과","예방의학과","외과","응급의학과","이비인후과","재활의학과","정신건강의학과","정형외과","직업환경의학과","진단검사의학과","치과","침구과","피부과","한방내과","한방부인과","한방소아과"];
 const PRICEDESC={"마운자로":"나만의닥터 마운자로 최저가 비교","위고비":"나만의닥터 위고비, 오젬픽 등 최저가 비교","에페":"나만의닥터 에페 최저가 비교","탈모약":"피나스테리드, 두타스테리드 등 최저가 비교","여드름약":"이소트레티노인, 클린다마이신 등 최저가 비교","독감예방접종":"독감 백신 전국 최저가 가격 비교"};
@@ -69,7 +75,7 @@ function DoctorScreen({data,go}){
    </button>
    {opened===name&&<div className="symptom-choices">{items.map(item=>{const path=realSymptom(item);return path?<Anchor key={item} go={go} label={item} path={path}/>:<span key={item} className="source-link-pending">{item} · 원본 링크 미확인</span>})}</div>}
   </div>)}</div>:<div className="department-grid">{departments.map(d=><Anchor className="dept-link" go={go} path={d.path} label={d.label} key={d.path}/>)}</div>}
- <section className="md-original-links"><h2>원본 비대면 진료 전체 목록</h2><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory"/></section>
+ <section className="md-original-links md-telemedicine-links"><h2>비대면진료</h2><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory" defaultMaxHeight={950}/></section>
  </>;
 }
 function HospitalScreen({data,go}){

@@ -17,6 +17,7 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   await test("real hospital detail and prices",async()=>{await goto("/hospital/detail?hospital_id=323");await page.locator("h1").first().waitFor({timeout:15000});assert.equal(await page.locator('[role="alert"]').count(),0);assert.ok(await page.locator("table tbody tr").count()>0,"Actual published hospital price rows not rendered");await page.screenshot({path:"qa-artifacts/hospital-323.png"});return await page.locator("h1").first().innerText()});
   await test("symptom accordion opens and closes",async()=>{
     await goto("/telemedicine/all-department");
+    assert.equal(await page.locator(".symptom-group").count(),13,"Original has 13 real symptom sections");
     const b=page.locator(".symptom-group").first();
     await b.tap(); assert.equal(await b.getAttribute("aria-expanded"),"true");
     assert.ok(await page.locator(".symptom-choices a").count()>0);
