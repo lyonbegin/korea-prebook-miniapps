@@ -12,3 +12,7 @@
 .cost-tile strong{font-weight:760}
 .clinic-action-fixed{left:calc(50% - 175px);transform:none;width:350px;border-radius:9px;bottom:11px}
 @media(max-width:369px){.clinic-action-fixed{left:20px;width:calc(100% - 40px)}}
+
+/* Further original homepage lettershape and photo-background alignment. */
+.md-home h1{font-size:51px;line-height:1.28;letter-spacing:-2.3px;-webkit-text-stroke:1.1px currentColor}
+.md-home-hero{filter:url(#md-remove-dark-backdrop)}

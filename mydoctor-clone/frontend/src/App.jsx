@@ -43,7 +43,7 @@ function CostTable({tables}){
  </table></div>);
 }
 function HomeScreen({data,go}){
- return <><section className="md-home">
+ return <><svg className="md-colorfilter" width="0" height="0" aria-hidden="true"><defs><filter id="md-remove-dark-backdrop" colorInterpolationFilters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  1 1 1 0 -0.25"/></filter></defs></svg><section className="md-home">
   <h1>대한민국 1위<br/>비대면 진료 앱<br/>나만의닥터</h1>
   <div className="md-awards">♕ 2026 대한민국 소비자 브랜드 대상 진료 부문 1위 ♕<br/>♕ 2024 중앙일보 올해의 우수브랜드대상 · 비대면진료 부문 1위 ♕<br/>♕ 2022 대한민국소비자브랜드 대상 · 서비스만족도 1위 ♕</div>
   <div className="md-stats"><span>활성유저수 <b>1위¹</b><br/>회원수 <b>300만+</b></span><span>매출액 <b>1위²</b><br/>앱스토어 평점 <b>4.8점</b></span></div>
