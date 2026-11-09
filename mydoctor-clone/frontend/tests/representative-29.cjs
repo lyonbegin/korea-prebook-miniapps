@@ -111,7 +111,6 @@ async function clickProbe(page,label) {
     item.source_evidence={title:sourceState.title,h1:sourceState.h1,chars:sourceState.chars,
                          controls:sourceState.controls,link_count:sourceState.links.length};
     if(sourceState.chars<35){item.status="SOURCE_EMPTY";continue}
-    item.source_interaction=await clickProbe(src,test.label);
     const response=await dst.goto(base+test.path,{waitUntil:"domcontentloaded",timeout});
     item.clone_http=response?.status()||0;
     if(item.clone_http!==200){item.status="CLONE_HTTP_ERROR";continue}
@@ -152,6 +151,8 @@ async function clickProbe(page,label) {
     }
     // Passing a text-length threshold does not prove original data completeness.
     item.visible_content_threshold_passed=true;
+    // Run user-interaction probes only AFTER matching initial viewport images are captured.
+    item.source_interaction=await clickProbe(src,test.label);
     item.clone_interaction=await clickProbe(dst,test.label);
     if(item.source_interaction?.status==="NO_INTERACTION_FOUND"||
        item.source_interaction?.status==="ACTION_FAILED"){
