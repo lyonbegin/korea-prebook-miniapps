@@ -1,0 +1,48 @@
+/* Original-vs-clone mobile screenshot audit. Similarity is MEASURED, never presumed. */
+const{chromium}=require("playwright");
+const{PNG}=require("pngjs");
+const fs=require("node:fs"),path=require("node:path");
+const base=process.env.MD_URL||"http://127.0.0.1:5173";
+const cases=[
+ {name:"home",source:"/",clone:"/"},
+ {name:"doctor-selection",source:"/telemedicine/all-department",clone:"/telemedicine/all-department"},
+ {name:"hospital-search",source:"/hospital",clone:"/hospital"},
+ {name:"medical-cost",source:"/medical-cost",clone:"/medical-cost"},
+ {name:"hospital-detail",source:"/hospital/detail?hospital_id=323",clone:"/hospital/detail?hospital_id=323"}];
+function diff(x,y){
+ const a=PNG.sync.read(x),b=PNG.sync.read(y);
+ if(a.width!==b.width||a.height!==b.height)throw Error("Different dimensions");
+ let changed=0,total=0;
+ const heatmap=new PNG({width:a.width,height:a.height});
+ for(let i=0;i<a.data.length;i+=4){
+  const dx=Math.max(Math.abs(a.data[i]-b.data[i]),Math.abs(a.data[i+1]-b.data[i+1]),Math.abs(a.data[i+2]-b.data[i+2]));
+  total+=dx;if(dx>20)changed++;
+  heatmap.data[i]=Math.min(255,dx*4);heatmap.data[i+1]=0;heatmap.data[i+2]=0;heatmap.data[i+3]=255;
+ }
+ return{changed_ratio_percent:+(changed/(a.width*a.height)*100).toFixed(2),mean_pixel_delta:+(total/(a.width*a.height)).toFixed(2),heatmap};
+}
+(async()=>{
+ fs.mkdirSync("qa-artifacts",{recursive:true});
+ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const report=[];
+ try{for(const c of cases){
+  const source=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const clone=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  try{
+   const s=await source.goto("https://my-doctor.io"+c.source,{waitUntil:"domcontentloaded",timeout:20000});
+   if(s.status()>=400)throw Error("Original HTTP "+s.status());
+   await source.waitForTimeout(1100);
+   const x=await source.screenshot({path:path.join("qa-artifacts","source-"+c.name+".png")});
+   await clone.goto(base+c.clone,{waitUntil:"domcontentloaded",timeout:20000});
+   await clone.waitForTimeout(1100);
+   if(await clone.locator('[role="alert"]').count())throw Error("Clone has source-data error");
+   const y=await clone.screenshot({path:path.join("qa-artifacts","clone-"+c.name+".png")});
+   const m=diff(x,y);
+   fs.writeFileSync(path.join("qa-artifacts","heatmap-"+c.name+".png"),PNG.sync.write(m.heatmap));
+   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:m.changed_ratio_percent===0?"PARITY":"MISMATCH",changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta};
+   report.push(entry);console.log("VISUAL AUDIT",JSON.stringify(entry));
+  }catch(e){const entry={name:c.name,status:"UNVERIFIED",reason:String(e.message||e)};report.push(entry);console.error("VISUAL AUDIT",JSON.stringify(entry))}
+  finally{await source.close();await clone.close()}
+ }}finally{await browser.close();fs.writeFileSync("qa-artifacts/source-parity.json",JSON.stringify({viewport:{width:390,height:844},pages:report,meaning:"Observed initial viewport only. A successful workflow is never proof of pixel or functional parity."},null,2))}
+ // Diagnostics are saved even if the original has rate limits. Strict gating is in live-smoke.
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,107 @@
+name: MyDoctor source/clone parity and mobile E2E
+on:
+  push:
+    branches:
+      - feature/mydoctor-full-clone-20261109
+    paths:
+      - mydoctor-clone/**
+      - .github/workflows/mydoctor-full-clone-qa.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-parser-and-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: mydoctorqa
+          POSTGRES_USER: qa
+          POSTGRES_PASSWORD: ephemeral-test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U qa -d mydoctorqa"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install backend dependencies
+        working-directory: mydoctor-clone/backend
+        run: pip install -r requirements.txt
+      - name: Verify public parser (not invented original data)
+        working-directory: mydoctor-clone/backend
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Initialize independent schema in isolated CI PostgreSQL
+        working-directory: mydoctor-clone/backend
+        env:
+          TEST_DATABASE_URL: postgresql://qa:ephemeral-test-password@127.0.0.1:5432/mydoctorqa
+        run: |
+          python - <<'PY'
+          import os,asyncio,asyncpg
+          from app.catalog_schema import SCHEMA
+          async def check():
+              conn=await asyncpg.connect(os.environ['TEST_DATABASE_URL'])
+              await conn.execute(SCHEMA)
+              assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.hospitals') IS NOT NULL")
+              assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.source_records') IS NOT NULL")
+              assert await conn.fetchval("SELECT to_regclass('public.foo') IS NULL")
+              await conn.close()
+          asyncio.run(check())
+          PY
+  test-mobile-against-real-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install exact Playwright browser-compatible package
+        working-directory: mydoctor-clone/frontend
+        run: npm install --no-audit --no-fund
+      - name: Build checked-out source
+        working-directory: mydoctor-clone/frontend
+        run: npm run build
+      - name: Start local checked-out frontend and verified public API
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_TEST_PROXY_TARGET: https://mydoctor-mobile-api-production.up.railway.app
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5173 >/tmp/mydoctor-vite.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl --fail --silent http://127.0.0.1:5173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/mydoctor-vite.log
+          exit 1
+      - name: Confirm actual public upstream API and PostgreSQL availability
+        run: |
+          curl --fail --show-error --silent https://mydoctor-mobile-api-production.up.railway.app/health
+          curl --fail --show-error --silent https://mydoctor-mobile-api-production.up.railway.app/catalog/status
+      - name: Test physical mobile interactions with live public data
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/live-smoke.cjs
+      - name: Original vs clone pixel-difference audit
+        if: always()
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/source-parity.cjs
+      - name: Upload original screenshots clone screenshots, differences and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-source-parity
+          path: mydoctor-clone/frontend/qa-artifacts/
+          if-no-files-found: warn
