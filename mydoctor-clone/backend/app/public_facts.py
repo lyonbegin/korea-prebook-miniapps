@@ -30,7 +30,7 @@ def safe_route(value:str)->str|None:
     u=urlsplit(value)
     decoded=unquote(u.path)
     if (u.scheme or u.netloc or not decoded.startswith("/") or decoded.startswith("//")
-          or "\\" in decoded or "\x00" in decoded or ".." in decoded.split("/")
+          or "//" in decoded or "\\" in decoded or "\x00" in decoded or ".." in decoded.split("/")
           or any(s in decoded.lower() for s in ("%2e","%2f","%5c","%00"))):
         return None
     if any(any(s in k.lower() for s in ("token","auth","session","patient","user","password","email","cookie","private","secret","order","payment","reservation"))
