@@ -116,6 +116,23 @@ async def insert_urls(pool,source_url:str,urls:list[str]):
                 template_key=EXCLUDED.template_key
             """,batch,paths,sections,[source_url]*len(batch),types)
 
+async def backfill_existing_route_types(pool):
+    """Reclassify previously indexed URLs locally; zero requests to origin."""
+    done=0
+    while True:
+        rows=await pool.fetch("""SELECT original_url FROM mydoctor_clone.original_routes
+            WHERE template_key='unclassified' ORDER BY original_url LIMIT 1500""")
+        if not rows:break
+        urls=[r["original_url"] for r in rows]
+        kinds=[template_of(u) for u in urls]
+        await pool.execute("""UPDATE mydoctor_clone.original_routes t
+           SET template_key=x.template_key
+           FROM UNNEST($1::TEXT[],$2::TEXT[]) AS x(original_url,template_key)
+           WHERE t.original_url=x.original_url""",urls,kinds)
+        done+=len(rows)
+    LOG.info("Reclassified %s historical sitemap URLs into distinct screen types",done)
+    return done
+
 async def sync_public_index(pool,delay_seconds:float=0.7,force:bool=False):
     """One bounded pass of official XML sitemaps; stop on 429, no bypass or crawling leaf pages."""
     checked=await pool.fetchval("""SELECT last_success_at FROM mydoctor_clone.sitemap_imports

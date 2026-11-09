@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from .catalog_schema import SCHEMA
 from .source_parser import extract_page, source_key
-from .sitemap_index import sync_public_index
+from .sitemap_index import sync_public_index,backfill_existing_route_types
 
 try:
     import asyncpg
@@ -39,7 +39,10 @@ async def lifespan(app: FastAPI):
             async with pool.acquire() as c: await c.execute(SCHEMA)
             app.state.pool=pool
             if os.getenv("SITEMAP_SYNC_ENABLED","1")=="1":
-                app.state.sitemap_task=asyncio.create_task(sync_public_index(pool))
+                async def refresh_types_and_sitemaps():
+                    await backfill_existing_route_types(pool)
+                    await sync_public_index(pool)
+                app.state.sitemap_task=asyncio.create_task(refresh_types_and_sitemaps())
         except Exception:
             LOG.exception("mydoctor schema startup failed")
     yield
