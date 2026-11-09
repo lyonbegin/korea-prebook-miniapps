@@ -71,6 +71,9 @@ jobs:
           asyncio.run(check())
           PY
   test-mobile-against-real-source:
+    permissions:
+      contents: write
+      actions: read
     runs-on: ubuntu-latest
     timeout-minutes: 20
     container:
@@ -86,6 +89,20 @@ jobs:
       - name: Build checked-out source
         working-directory: mydoctor-clone/frontend
         run: npm run build
+      - name: Capture factual fields from real public original pages
+        working-directory: mydoctor-clone/frontend
+        run: node tests/capture-source-facts.cjs
+      - name: Commit enriched public facts for existing PostgreSQL startup import
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mydoctor-clone/backend/data/public_source_facts_20261109.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data(mydoctor): enrich publicly verified page facts [skip ci]"
+            git push origin HEAD:feature/mydoctor-full-clone-20261109
+          else
+            echo "No new observed factual fields; no DB seed changes."
+          fi
       - name: Start local checked-out frontend and verified public API
         working-directory: mydoctor-clone/frontend
         env:

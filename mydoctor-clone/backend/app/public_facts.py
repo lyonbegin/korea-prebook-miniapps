@@ -115,7 +115,7 @@ async def seed_observed_facts(pool)->int:
             continue
         # During startup seed import must NOT overwrite richer factual records.
         try:
-            await insert_facts(pool,row,overwrite=False)
+            await insert_facts(pool,row,overwrite=row.get("quality")=="verified_public_facts_from_browser")
             inserted+=1
         except Exception:
             LOG.exception("Public fact seeding failed for one route")
