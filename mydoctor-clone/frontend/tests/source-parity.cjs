@@ -52,7 +52,7 @@ function diff(x,y){
      if(!el)return null;
      const s=getComputedStyle(el),r=el.getBoundingClientRect();
      return {fontFamily:s.fontFamily,fontWeight:s.fontWeight,fontSize:s.fontSize,lineHeight:s.lineHeight,
-       letterSpacing:s.letterSpacing,rect:{x:r.x,y:r.y,width:r.width,height:r.height}};
+       letterSpacing:s.letterSpacing,fontLoaded:document.fonts.check('700 24px "Pretendard Variable"'),rect:{x:r.x,y:r.y,width:r.width,height:r.height}};
    }):null;
    const cloneMetrics=await clone.evaluate(()=>{
      const el=document.querySelector("h1")||document.querySelector("h2");
