@@ -133,3 +133,9 @@
 /* 390px original mobile crumb height and symptom subtitle line wraps. */
 .breadcrumb{height:36px}
 .md-intro:not(.md-hospital-intro) p{font-size:16px;line-height:1.6}
+
+/* Source-backed Sunday/night hospital sections and original page links. */
+.md-original-links .observed-hospital-hours{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 8px;margin-bottom:20px}
+.md-original-links .observed-hospital-hours .observed-link{min-height:34px;padding:7px 3px;font-size:12px}
+.observed-pages{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:25px 0}
+.observed-pages a{display:flex;justify-content:center;align-items:center;width:36px;height:36px;border:1px solid #d8dce5;border-radius:7px;font-size:13px}

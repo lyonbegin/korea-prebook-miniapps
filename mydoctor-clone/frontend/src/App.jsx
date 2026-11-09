@@ -192,7 +192,11 @@ function HospitalScreen({data,go}){
   <button className="md-blue-button" onClick={submitSearch}>병원 조회하기</button>
   {message&&<p role="status" className="source-link-pending">{message}</p>}
  </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{sourceDepts.map(d=><Anchor key={d.path} label={d.label} path={d.path} go={go}/>)}</div></section>
- <section className="md-original-links"><h2>원본 조건별 병원 찾기</h2><SourceRows links={data.links.filter(x=>!sourceDepts.some(y=>y.path===x.path)&&x.path!=="/")} go={go}/></section></>;
+ <section className="md-original-links"><h2>일요일 진료</h2>
+ <SourceRows links={data.links.filter(x=>decodeURIComponent(x.path).startsWith("/hospital/일요일진료"))} go={go} kind="hospital-hours"/>
+ <h2>야간 진료</h2>
+ <SourceRows links={data.links.filter(x=>decodeURIComponent(x.path).startsWith("/hospital/야간진료"))} go={go} kind="hospital-hours"/>
+ </section></>;
 }
 const ORIGINAL_PRICE_CARD_ORDER=[
 "마운자로","위고비","삭센다","에페","다이어트약","탈모약","여드름약","독감예방접종","가다실9가","대상포진예방접종",

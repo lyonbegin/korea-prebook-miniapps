@@ -76,7 +76,9 @@ export function VerifiedSourcePage({data,go,route}){
     if(kind==="telemedicine-list")return ["전체","의사","병원"];
     return ["전체"];
  },[kind]);
- const shown=entries.filter(l=>{
+ const pageLinks=entries.filter(l=>/[?&]page=\d+/.test(l.path));
+ const primary=entries.filter(l=>!/[?&]page=\d+/.test(l.path));
+ const shown=primary.filter(l=>{
     const label=normalize(l.label+" "+base(l));
     if(search&&!label.includes(normalize(search)))return false;
     if(regional&&region!=="전체"&&!label.includes(region))return false;
@@ -112,6 +114,10 @@ export function VerifiedSourcePage({data,go,route}){
    <div className="observed-count" role="status">원본에서 확인된 연결 항목 {shown.length}개</div>
    {shown.length?<SourceRows links={shown} go={go} kind={kind}/>:
     <p className="observed-empty">{entries.length?"일치하는 항목이 없습니다.":"현재 저장된 원본 연결 항목이 없습니다."}</p>}
+   {!!pageLinks.length&&<nav className="observed-pages" aria-label="원본 목록 페이지">
+     {pageLinks.map(link=><a href={link.path} key={link.path}
+       onClick={e=>{e.preventDefault();go(link.path)}}>{link.label}</a>)}
+   </nav>}
    {data.sourceQuality&&<div className="observed-source-foot">원본 공개 사실 데이터 · {data.sourceQuality} · 전체 원본 기능 검증 전</div>}
  </section>;
 }
