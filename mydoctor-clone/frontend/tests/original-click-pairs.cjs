@@ -17,15 +17,23 @@ function canonical(url){const u=new URL(url,"https://my-doctor.io");return decod
 async function goto(page,root,route){
  const r=await page.goto(root+route,{waitUntil:"domcontentloaded",timeout:18000});
  if(r?.status()===429||r?.status()===403)throw Error("Original rate limit "+r.status());
- await page.locator("h1,.observed-heading,main").first().waitFor({timeout:13000});
+ await page.locator("body").waitFor({timeout:13000});
+ if((await page.locator("body").innerText()).trim().length<20)
+   throw Error("Original or clone loaded a blank page");
  await page.waitForTimeout(450);
 }
 async function clickTarget(page,route){
  const all=page.locator("a[href]");
- const idx=await all.evaluateAll((els,p)=>els.findIndex(a=>{
-   try{const u=new URL(a.getAttribute("href"),location.origin);return decodeURIComponent(u.pathname+u.search)===decodeURIComponent(p)}
-   catch{return false}
- }),route);
+ const idx=await all.evaluateAll((els,p)=>{
+   const matches=els.map((a,i)=>({a,i})).filter(({a})=>{
+      try{const u=new URL(a.getAttribute("href"),location.origin);
+          return decodeURIComponent(u.pathname+u.search)===decodeURIComponent(p)}
+      catch{return false}
+   });
+   const visible=matches.find(({a})=>a.getClientRects().length>0&&
+        getComputedStyle(a).visibility!=="hidden"&&getComputedStyle(a).display!=="none");
+   return visible?visible.i:-1;
+ },route);
  if(idx<0)throw Error("Missing matching original href "+route);
  await all.nth(idx).tap({timeout:10000});
  await page.waitForURL(url=>canonical(url.toString())===canonical(route),{timeout:14000});
