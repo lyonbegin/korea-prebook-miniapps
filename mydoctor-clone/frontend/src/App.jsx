@@ -121,7 +121,7 @@ function HomeOverview({data,go}){
   <section className="home-observed-block"><h2>치과, 라식, MRI 가격 비교하고 예약하기</h2>
    {cards(HOME_MEDICAL)}
   </section>
-  <section className="home-observed-block"><h2>휴일, 야간에도<br/>문 연 병원·약국 찾기</h2>
+  <section className="home-observed-block"><h2>휴일, 야간에도문 연 병원•약국 찾기</h2>
    <div className="home-quick-links">
     <Anchor path="/hospital/일요일진료" label="일요일 진료 병원" go={go}/>
     <Anchor path="/hospital/야간진료" label="야간 진료 병원" go={go}/>
@@ -144,10 +144,10 @@ function HomeOverview({data,go}){
    <div className="home-quick-links"><Anchor path="/healthLab" label="건강 정보" go={go}/><Anchor path="/qna" label="의료진 Q&A" go={go}/></div>
   </section>
   <section className="home-observed-block"><h2>우리동네 신환 유치<br/>나만의닥터에서 시작하세요</h2>
-   <p>의사가 만든 의료 서비스로서 언제나 의료인의 마음으로 함께 성장하겠습니다.</p>
+   <h3>의사가 만든 의료 서비스로서 언제나 의료인의 마음으로 함께 성장하겠습니다.</h3>
    <div className="home-quick-links">
-    <a href={ORIGINAL} rel="noreferrer" target="_blank">병원 제휴하기</a>
-    <a href={ORIGINAL} rel="noreferrer" target="_blank">약국 제휴하기</a>
+    <a href={ORIGINAL} rel="noreferrer" target="_blank"><h3>병원 제휴하기</h3></a>
+    <a href={ORIGINAL} rel="noreferrer" target="_blank"><h3>약국 제휴하기</h3></a>
    </div>
   </section>
   <details className="home-source-index"><summary>원본 전체 공개 경로 확인</summary>
