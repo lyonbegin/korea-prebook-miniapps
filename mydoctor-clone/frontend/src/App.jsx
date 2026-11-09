@@ -58,26 +58,48 @@ function HomeScreen({data,go}){
 }
 function DoctorScreen({data,go}){
  const[active,setActive]=useState("증상"),[opened,setOpened]=useState("");
- const departments=data.links.filter(v=>v.path.startsWith("/telemedicine/")&&!/all-department/.test(v.path));
+ const departments=data.links.filter(v=>v.path.startsWith("/telemedicine/")&&/(과|과\)|의학과)$/.test(v.label.trim())&&!/all-department/.test(v.path));
+ const realSymptom=item=>data.links.find(v=>v.path.startsWith("/telemedicine/")&&
+   (v.label.trim()===item||v.label.includes("("+item+")")))?.path;
  return <><section className="md-intro"><h1>비대면 진료 예약</h1><p>앱 다운로드 없이 비대면 진료를 예약하려면, <a href={ORIGINAL+"/telemedicine/all-department"} target="_blank" rel="noreferrer">나만의닥터</a>에서 증상 선택 &gt; 의사 선택 &gt; 증상/예약 정보 입력을 진행해주세요.</p></section>
  <div className="md-tabs"><button className={active==="증상"?"current":""} onClick={()=>setActive("증상")}>증상</button><button className={active==="진료과목"?"current":""} onClick={()=>setActive("진료과목")}>진료과목</button></div>
  {active==="증상"?<div className="md-symptoms">{CATEGORIES.map(([name,desc,icon,items])=><div className="symptom-section" key={name}>
    <button className="symptom-group" onClick={()=>setOpened(opened===name?"":name)} aria-expanded={opened===name}>
      <img src={ORIGINAL+"/_next/static/media/"+icon} alt=""/><span><b>{name}</b><small>{desc}</small></span><ChevronDown size={19}/>
    </button>
-   {opened===name&&<div className="symptom-choices">{items.map(item=><Anchor key={item} go={go} label={item} path={"/telemedicine/"+encodeURIComponent(item+"-비대면진료-예약")}/>)}</div>}
+   {opened===name&&<div className="symptom-choices">{items.map(item=>{const path=realSymptom(item);return path?<Anchor key={item} go={go} label={item} path={path}/>:<span key={item} className="source-link-pending">{item} · 원본 링크 미확인</span>})}</div>}
   </div>)}</div>:<div className="department-grid">{departments.map(d=><Anchor className="dept-link" go={go} path={d.path} label={d.label} key={d.path}/>)}</div>}
  </>;
 }
 function HospitalScreen({data,go}){
- const[region,setRegion]=useState(""),[dept,setDept]=useState(""),[schedule,setSchedule]=useState("");
+ const[region,setRegion]=useState(""),[dept,setDept]=useState(""),[schedule,setSchedule]=useState(""),[message,setMessage]=useState("");
+ const sourceDepts=data.links.filter(v=>v.path.startsWith("/dept-hub/")&&decodeURIComponent(v.path).split("/").filter(Boolean).length===2);
+ const availableHours=data.links.filter(v=>v.path.startsWith("/hospital/")&&/야간진료|일요일진료|공휴일진료/.test(decodeURIComponent(v.path)));
+ const findRoute=()=>{
+    if(schedule){
+      const existing=availableHours.find(x=>decodeURIComponent(x.path).includes(schedule));
+      return existing?.path+(region?"/"+encodeURIComponent(region):"")||null;
+    }
+    if(dept){
+      const existing=sourceDepts.find(x=>x.label===dept);
+      return existing?.path+(region?"/"+encodeURIComponent(region):"")||null;
+    }
+    if(region)return null;
+    return "/hospital";
+ };
+ const submitSearch=()=>{
+    const target=findRoute();
+    if(target){setMessage("");go(target)}
+    else setMessage("선택 조건에 해당하는 원본 경로가 아직 확보되지 않았습니다.");
+ };
  return <><section className="md-intro md-hospital-intro"><h1>근처 병원 찾기</h1><p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p></section>
  <section className="md-lookup">
   <label><MapPin size={19}/><select aria-label="지역" value={region} onChange={e=>setRegion(e.target.value)}><option value="">지역</option>{["서울","경기","인천","부산","대구","광주","대전","울산","세종","경남","경북","전남","전북","강원","충남","충북","제주"].map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
   <label><BriefcaseMedical size={19}/><select aria-label="진료과" value={dept} onChange={e=>setDept(e.target.value)}><option value="">진료과</option>{DOC_DEPTS.map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
   <label><Stethoscope size={19}/><select aria-label="진료 시간" value={schedule} onChange={e=>setSchedule(e.target.value)}><option value="">모든 진료</option><option value="야간진료">야간진료</option><option value="일요일진료">일요일진료</option><option value="공휴일진료">공휴일진료</option></select><ChevronDown size={16}/></label>
-  <button className="md-blue-button" onClick={()=>{if(schedule)go("/hospital/"+encodeURIComponent(schedule)+(region?"/"+encodeURIComponent(region):""));else go("/hospital")}}>병원 조회하기</button>
- </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{DOC_DEPTS.map(d=><Anchor key={d} label={d} path={"/telemedicine/"+encodeURIComponent(d+"-비대면진료-예약")} go={go}/>)}</div></section></>;
+  <button className="md-blue-button" onClick={submitSearch}>병원 조회하기</button>
+  {message&&<p role="status" className="source-link-pending">{message}</p>}
+ </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{sourceDepts.map(d=><Anchor key={d.path} label={d.label} path={d.path} go={go}/>)}</div></section></>;
 }
 function CostScreen({data,go}){
  const[search,setSearch]=useState("");
@@ -114,6 +136,6 @@ export default function App(){
  </header>{!home&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport">{s.data&&<div className="source-quality" role="status">DB 공개 사실 데이터 · {s.data.sourceQuality==="heading_only"?"제목만 확보":s.data.sourceQuality==="verified_title_and_global_navigation"?"메뉴·제목 확보":s.data.sourceQuality==="verified_public_factual_price_rows"?"가격표 확인":"공개 메타데이터 확인"} · 전체 원본 기능 동일성 검증 전</div>}{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
  :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:route==="/telemedicine/all-department"?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage data={s.data} go={go} route={route}/>):null}
- </main>{(home||hospitalDetail)&&<a className={home?"fixed-call-to-action":"fixed-call-to-action clinic-action-fixed"} href={home?ORIGINAL:ORIGINAL+"/hospital/detail?hospital_id=323"} target="_blank" rel="noreferrer">{home?"나만의 닥터 다운로드":"진료 예약하기"}</a>}
+ </main>{home&&<a className="fixed-call-to-action" href={ORIGINAL} target="_blank" rel="noreferrer">나만의닥터 원본 서비스</a>}
  </div>;
 }
