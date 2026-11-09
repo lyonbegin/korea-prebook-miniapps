@@ -156,11 +156,13 @@ jobs:
           MD_URL: http://127.0.0.1:5173
         run: node tests/original-fact-interactions.cjs
       - name: Compare 29 real original factual link heading and price row sets against clone
+        if: always()
         working-directory: mydoctor-clone/frontend
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/original-fact-29.cjs
       - name: Click actual identical original and clone paths and compare destination titles
+        if: always()
         working-directory: mydoctor-clone/frontend
         env:
           MD_URL: http://127.0.0.1:5173
@@ -179,6 +181,7 @@ jobs:
           MD_MAX_CASES: 29
         run: node tests/representative-29.cjs
       - name: Test physical mobile interactions with live public data
+        if: always()
         working-directory: mydoctor-clone/frontend
         env:
           MD_URL: http://127.0.0.1:5173
