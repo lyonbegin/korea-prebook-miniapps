@@ -154,3 +154,6 @@
 .clinic-head{padding-top:20px;padding-bottom:11px}
 .cost-tile{padding-top:21px;padding-bottom:12px}
 .cost-tile small{font-size:13px}
+
+/* Measured from original and clone 390x844 screenshot alignment: symptom viewport 2px higher. */
+.site:has(.md-symptoms) .viewport{position:relative;top:-2px}
