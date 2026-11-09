@@ -3011,7 +3011,92 @@
     "tables": [],
     "quality": "verified_public_facts_from_browser",
     "source_evidence": "github-actions-live-origin-http-200-factual-metadata",
-    "observed_at": "2026-11-09T14:50:58.168Z"
+    "observed_at": "2026-11-09T14:50:58.168Z",
+    "review_summary": {
+      "provider": "박광규",
+      "kind": "doctor",
+      "total_reviews": 1079,
+      "revisit_percent": 99,
+      "facets": [
+        {
+          "label": "피부 질환",
+          "count": 201
+        },
+        {
+          "label": "호흡기 질환",
+          "count": 189
+        },
+        {
+          "label": "안구 질환",
+          "count": 179
+        },
+        {
+          "label": "고혈압/고지혈증/당뇨",
+          "count": 118
+        },
+        {
+          "label": "신경/통증 질환",
+          "count": 77
+        },
+        {
+          "label": "정형외과 질환",
+          "count": 76
+        },
+        {
+          "label": "탈모",
+          "count": 75
+        },
+        {
+          "label": "소화기 질환",
+          "count": 37
+        },
+        {
+          "label": "다이어트",
+          "count": 23
+        },
+        {
+          "label": "귀/코/목 질환",
+          "count": 11
+        },
+        {
+          "label": "헤르페스",
+          "count": 10
+        },
+        {
+          "label": "여성 질환",
+          "count": 4
+        },
+        {
+          "label": "소아 질환",
+          "count": 1
+        }
+      ],
+      "channel_counts": [
+        {
+          "name": "비대면 진료 후기",
+          "count": 1079
+        }
+      ],
+      "service_stats": [
+        {
+          "label": "친절도",
+          "description": "친절해요",
+          "percent": 99
+        },
+        {
+          "label": "설명",
+          "description": "자세했어요",
+          "percent": 95
+        },
+        {
+          "label": "시간 준수",
+          "description": "잘 지켜요",
+          "percent": 99
+        }
+      ],
+      "source_url": "https://my-doctor.io/telemedicine/doctor/탑연합의원-박광규-100/reviews",
+      "provenance": "original_public_aggregate_counts_http200_20261110"
+    }
   },
   {
     "original_url": "https://my-doctor.io/hospital",
@@ -4367,7 +4452,72 @@
     "tables": [],
     "quality": "verified_public_facts_from_browser",
     "source_evidence": "github-actions-live-origin-http-200-factual-metadata",
-    "observed_at": "2026-11-09T14:51:00.621Z"
+    "observed_at": "2026-11-09T14:51:00.621Z",
+    "review_summary": {
+      "provider": "동산의원",
+      "kind": "hospital",
+      "total_reviews": 464,
+      "revisit_percent": 97,
+      "facets": [
+        {
+          "label": "안구 질환",
+          "count": 58
+        },
+        {
+          "label": "피부 질환",
+          "count": 48
+        },
+        {
+          "label": "여성 질환",
+          "count": 43
+        },
+        {
+          "label": "호흡기 질환",
+          "count": 28
+        },
+        {
+          "label": "고혈압/고지혈증/당뇨",
+          "count": 21
+        },
+        {
+          "label": "헤르페스",
+          "count": 11
+        },
+        {
+          "label": "소화기 질환",
+          "count": 5
+        },
+        {
+          "label": "소아 질환",
+          "count": 4
+        },
+        {
+          "label": "탈모",
+          "count": 4
+        },
+        {
+          "label": "비뇨기 질환",
+          "count": 1
+        },
+        {
+          "label": "정형외과 질환",
+          "count": 1
+        }
+      ],
+      "channel_counts": [
+        {
+          "name": "비대면 진료 후기",
+          "count": 224
+        },
+        {
+          "name": "방문 진료 후기",
+          "count": 240
+        }
+      ],
+      "service_stats": [],
+      "source_url": "https://my-doctor.io/hospital/10055/reviews",
+      "provenance": "original_public_aggregate_counts_http200_20261110"
+    }
   },
   {
     "original_url": "https://my-doctor.io/medical-cost",
