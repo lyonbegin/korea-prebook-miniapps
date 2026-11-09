@@ -95,6 +95,19 @@ ALTER TABLE mydoctor_clone.original_routes
   ADD COLUMN IF NOT EXISTS template_key TEXT NOT NULL DEFAULT 'unclassified';
 CREATE INDEX IF NOT EXISTS idx_mydoctor_routes_template
   ON mydoctor_clone.original_routes(template_key);
+CREATE TABLE IF NOT EXISTS mydoctor_clone.public_page_facts (
+ original_url TEXT PRIMARY KEY,
+ route_path TEXT NOT NULL,
+ title TEXT,
+ headline TEXT,
+ facts JSONB NOT NULL,
+ quality TEXT NOT NULL,
+ source_evidence TEXT NOT NULL,
+ observed_at TIMESTAMPTZ NOT NULL,
+ persisted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_mydoctor_public_page_facts_path
+ ON mydoctor_clone.public_page_facts(route_path);
 ALTER TABLE mydoctor_clone.source_records
   ADD COLUMN IF NOT EXISTS source_evidence TEXT NOT NULL DEFAULT 'legacy_unverified';
 """

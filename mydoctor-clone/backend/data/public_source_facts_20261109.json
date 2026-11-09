@@ -1,0 +1,1207 @@
+[
+  {
+    "original_url": "https://my-doctor.io/",
+    "path": "/",
+    "title": "나만의닥터 - 대한민국 1위 비대면 진료 어플",
+    "headline": "대한민국 1위\n비대면 진료 앱\n나만의닥터",
+    "headings": [],
+    "links": [
+      {
+        "label": "탈모",
+        "path": "/telemedicine/%ED%83%88%EB%AA%A8-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "여드름",
+        "path": "/telemedicine/%EC%97%AC%EB%93%9C%EB%A6%84-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "감기",
+        "path": "/telemedicine/%EA%B0%90%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "산부인과",
+        "path": "/telemedicine/%EC%82%B0%EB%B6%80%EC%9D%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "고혈압",
+        "path": "/telemedicine/%EA%B3%A0%ED%98%88%EC%95%95-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "증상 · 진료과 전체 보기",
+        "path": "/telemedicine/all-department",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "대상포진",
+        "path": "/telemedicine/%EB%8C%80%EC%83%81%ED%8F%AC%EC%A7%84-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "두드러기",
+        "path": "/telemedicine/%EB%91%90%EB%93%9C%EB%9F%AC%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "코로나",
+        "path": "/telemedicine/%EC%BD%94%EB%A1%9C%EB%82%98-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "독감",
+        "path": "/telemedicine/%EB%8F%85%EA%B0%90-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "질염",
+        "path": "/telemedicine/%EC%A7%88%EC%97%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "갱년기",
+        "path": "/telemedicine/%EA%B0%B1%EB%85%84%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "고지혈증",
+        "path": "/telemedicine/%EA%B3%A0%EC%A7%80%ED%98%88%EC%A6%9D-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "녹내장",
+        "path": "/telemedicine/%EB%85%B9%EB%82%B4%EC%9E%A5-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "과민성대장증후군",
+        "path": "/telemedicine/%EA%B3%BC%EB%AF%BC%EC%84%B1%EB%8C%80%EC%9E%A5%EC%A6%9D%ED%9B%84%EA%B5%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "헤르페스",
+        "path": "/telemedicine/%ED%97%A4%EB%A5%B4%ED%8E%98%EC%8A%A4-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "공황장애",
+        "path": "/telemedicine/%EA%B3%B5%ED%99%A9%EC%9E%A5%EC%95%A0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "방광염",
+        "path": "/telemedicine/%EB%B0%A9%EA%B4%91%EC%97%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "이비인후과",
+        "path": "/telemedicine/%EC%9D%B4%EB%B9%84%EC%9D%B8%ED%9B%84%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정형외과",
+        "path": "/telemedicine/%EC%A0%95%ED%98%95%EC%99%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "내과",
+        "path": "/telemedicine/%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "피부과",
+        "path": "/telemedicine/%ED%94%BC%EB%B6%80%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "안과",
+        "path": "/telemedicine/%EC%95%88%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "치과",
+        "path": "/telemedicine/%EC%B9%98%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아청소년과",
+        "path": "/telemedicine/%EC%86%8C%EC%95%84%EA%B3%BC-%EC%86%8C%EC%95%84%EC%B2%AD%EC%86%8C%EB%85%84%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "비뇨의학과",
+        "path": "/telemedicine/%EB%B9%84%EB%87%A8%EA%B8%B0%EA%B3%BC-%EB%B9%84%EB%87%A8%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "가정의학과",
+        "path": "/telemedicine/%EA%B0%80%EC%A0%95%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정신건강의학과",
+        "path": "/telemedicine/%EC%A0%95%EC%8B%A0%EA%B3%BC-%EC%A0%95%EC%8B%A0%EA%B1%B4%EA%B0%95%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "신경과",
+        "path": "/telemedicine/%EC%8B%A0%EA%B2%BD%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "외과",
+        "path": "/telemedicine/%EC%99%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "성형외과",
+        "path": "/telemedicine/%EC%84%B1%ED%98%95%EC%99%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "마취통증의학과",
+        "path": "/telemedicine/%EB%A7%88%EC%B7%A8%ED%86%B5%EC%A6%9D%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "재활의학과",
+        "path": "/telemedicine/%EC%9E%AC%ED%99%9C%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소화기내과",
+        "path": "/telemedicine/%EC%86%8C%ED%99%94%EA%B8%B0%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "호흡기내과",
+        "path": "/telemedicine/%ED%98%B8%ED%9D%A1%EA%B8%B0%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "구강내과",
+        "path": "/telemedicine/%EA%B5%AC%EA%B0%95%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "순환기내과",
+        "path": "/telemedicine/%EC%88%9C%ED%99%98%EA%B8%B0%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아치과",
+        "path": "/telemedicine/%EC%86%8C%EC%95%84%EC%B9%98%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "신장내과",
+        "path": "/telemedicine/%EC%8B%A0%EC%9E%A5%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "마운자로",
+        "path": "/medical-cost/%EB%A7%88%EC%9A%B4%EC%9E%90%EB%A1%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "탈모약",
+        "path": "/medical-cost/%ED%83%88%EB%AA%A8%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "예방접종 백신",
+        "path": "/medical-cost/%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85-%EB%B0%B1%EC%8B%A0",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "초음파 검사",
+        "path": "/medical-cost/%EC%B4%88%EC%9D%8C%ED%8C%8C-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정밀 검사",
+        "path": "/medical-cost/%EC%A0%95%EB%B0%80-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "가격비교 전체 보기",
+        "path": "/medical-cost",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "위고비",
+        "path": "/medical-cost/%EC%9C%84%EA%B3%A0%EB%B9%84",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "삭센다",
+        "path": "/medical-cost/%EC%82%AD%EC%84%BC%EB%8B%A4",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "다이어트 경구약",
+        "path": "/medical-cost/%EB%8B%A4%EC%9D%B4%EC%96%B4%ED%8A%B8%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "모발 이식",
+        "path": "/medical-cost/%EB%AA%A8%EB%B0%9C-%EC%9D%B4%EC%8B%9D",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "여드름약",
+        "path": "/medical-cost/%EC%97%AC%EB%93%9C%EB%A6%84%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "독감 예방접종",
+        "path": "/medical-cost/%EB%8F%85%EA%B0%90%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "대상포진 예방접종",
+        "path": "/medical-cost/%EB%8C%80%EC%83%81%ED%8F%AC%EC%A7%84%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "가다실 9가",
+        "path": "/medical-cost/%EA%B0%80%EB%8B%A4%EC%8B%A49%EA%B0%80",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "처치 및 수술",
+        "path": "/medical-cost/%EC%B2%98%EC%B9%98-%EB%B0%8F-%EC%88%98%EC%88%A0",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "치과 치료",
+        "path": "/medical-cost/%EC%B9%98%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "수액",
+        "path": "/medical-cost/%EC%88%98%EC%95%A1",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "항원·호르몬·유전자·병리 검사",
+        "path": "/medical-cost/%ED%95%AD%EC%9B%90-%ED%98%B8%EB%A5%B4%EB%AA%AC-%EC%9C%A0%EC%A0%84%EC%9E%90-%EB%B3%91%EB%A6%AC-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "MRI 검사",
+        "path": "/medical-cost/MRI%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "내시경 검사",
+        "path": "/medical-cost/%EB%82%B4%EC%8B%9C%EA%B2%BD-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "시력교정술",
+        "path": "/medical-cost/%EC%8B%9C%EB%A0%A5%EA%B5%90%EC%A0%95%EC%88%A0",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "다이어트 주사 지도",
+        "path": "/map/diet-injection",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "피부과",
+        "path": "/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "내과",
+        "path": "/dept-hub/%EB%82%B4%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "이비인후과",
+        "path": "/dept-hub/%EC%9D%B4%EB%B9%84%EC%9D%B8%ED%9B%84%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정형외과",
+        "path": "/dept-hub/%EC%A0%95%ED%98%95%EC%99%B8%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "안과",
+        "path": "/dept-hub/%EC%95%88%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "병원찾기 전체 보기",
+        "path": "/hospital",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "비뇨의학과",
+        "path": "/dept-hub/%EB%B9%84%EB%87%A8%EC%9D%98%ED%95%99%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정신건강의학과",
+        "path": "/dept-hub/%EC%A0%95%EC%8B%A0%EA%B1%B4%EA%B0%95%EC%9D%98%ED%95%99%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "산부인과",
+        "path": "/dept-hub/%EC%82%B0%EB%B6%80%EC%9D%B8%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아청소년과",
+        "path": "/dept-hub/%EC%86%8C%EC%95%84%EC%B2%AD%EC%86%8C%EB%85%84%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "신경과",
+        "path": "/dept-hub/%EC%8B%A0%EA%B2%BD%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "신경외과",
+        "path": "/dept-hub/%EC%8B%A0%EA%B2%BD%EC%99%B8%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "치과",
+        "path": "/dept-hub/%EC%B9%98%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "성형외과",
+        "path": "/dept-hub/%EC%84%B1%ED%98%95%EC%99%B8%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "외과",
+        "path": "/dept-hub/%EC%99%B8%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "재활의학과",
+        "path": "/dept-hub/%EC%9E%AC%ED%99%9C%EC%9D%98%ED%95%99%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "마취통증의학과",
+        "path": "/dept-hub/%EB%A7%88%EC%B7%A8%ED%86%B5%EC%A6%9D%EC%9D%98%ED%95%99%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "야간 진료 병원",
+        "path": "/hospital/%EC%95%BC%EA%B0%84%EC%A7%84%EB%A3%8C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "일요일 진료 병원",
+        "path": "/hospital/%EC%9D%BC%EC%9A%94%EC%9D%BC%EC%A7%84%EB%A3%8C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "공휴일 진료 병원",
+        "path": "/hospital/%EA%B3%B5%ED%9C%B4%EC%9D%BC%EC%A7%84%EB%A3%8C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "응급실 찾기",
+        "path": "/map/119",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아 응급 · 달빛어린이병원",
+        "path": "/map/baby119",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "문 연 약국 지도",
+        "path": "/map/119?tab=pharmacy",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "탈모약 최저가 약국",
+        "path": "/map/hair-loss",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "여드름약 최저가 약국",
+        "path": "/map/acne",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아 약국 지도",
+        "path": "/map/baby119?tab=pharmacy",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "약국찾기 전체 보기",
+        "path": "/pharmacy",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "해열 · 진통 · 소염제",
+        "path": "/medicine/effect/%ED%95%B4%EC%97%B4%C2%B7%EC%A7%84%ED%86%B5%C2%B7%EC%86%8C%EC%97%BC%EC%A0%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "진해거담제",
+        "path": "/medicine/effect/%EC%A7%84%ED%95%B4%EA%B1%B0%EB%8B%B4%EC%A0%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "항히스타민제",
+        "path": "/medicine/effect/%ED%95%AD%ED%9E%88%EC%8A%A4%ED%83%80%EB%AF%BC%EC%A0%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소화성궤양용제",
+        "path": "/medicine/effect/%EC%86%8C%ED%99%94%EC%84%B1%EA%B6%A4%EC%96%91%EC%9A%A9%EC%A0%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "혈압강하제",
+        "path": "/medicine/effect/%ED%98%88%EC%95%95%EA%B0%95%ED%95%98%EC%A0%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "당뇨병용제",
+        "path": "/medicine/effect/%EB%8B%B9%EB%87%A8%EB%B3%91%EC%9A%A9%EC%A0%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "의약품 정보 홈 · 약 검색",
+        "path": "/medicine",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "세마글루티드",
+        "path": "/medicine/ingredient/%EC%84%B8%EB%A7%88%EA%B8%80%EB%A3%A8%ED%8B%B0%EB%93%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "리라글루티드",
+        "path": "/medicine/ingredient/%EB%A6%AC%EB%9D%BC%EA%B8%80%EB%A3%A8%ED%8B%B0%EB%93%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "건강꿀팁",
+        "path": "/healthLab/info/list",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "자주 묻는 질문",
+        "path": "/healthLab/FAQ",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "의료진 Q&A",
+        "path": "/qna",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "비대면 진료 이용 방법",
+        "path": "/healthLab/how-to",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "질환 백과",
+        "path": "/healthLab/health-wiki",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "건강 정보 홈",
+        "path": "/healthLab",
+        "evidence": "verified_original_global_navigation"
+      }
+    ],
+    "tables": [],
+    "quality": "verified_title_and_global_navigation",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/telemedicine",
+    "path": "/telemedicine",
+    "title": "비대면 진료 의사 찾기 - 증상·진료과별 - 나만의닥터",
+    "headline": "비대면 진료 예약",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/telemedicine/all-department",
+    "path": "/telemedicine/all-department",
+    "title": "비대면 진료 의사 찾기 - 증상·진료과별 - 나만의닥터",
+    "headline": "비대면 진료 예약",
+    "headings": [],
+    "links": [
+      {
+        "label": "탈모",
+        "path": "/telemedicine/%ED%83%88%EB%AA%A8-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "여드름",
+        "path": "/telemedicine/%EC%97%AC%EB%93%9C%EB%A6%84-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "감기",
+        "path": "/telemedicine/%EA%B0%90%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "산부인과",
+        "path": "/telemedicine/%EC%82%B0%EB%B6%80%EC%9D%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "고혈압",
+        "path": "/telemedicine/%EA%B3%A0%ED%98%88%EC%95%95-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "증상 · 진료과 전체 보기",
+        "path": "/telemedicine/all-department",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "대상포진",
+        "path": "/telemedicine/%EB%8C%80%EC%83%81%ED%8F%AC%EC%A7%84-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "두드러기",
+        "path": "/telemedicine/%EB%91%90%EB%93%9C%EB%9F%AC%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "코로나",
+        "path": "/telemedicine/%EC%BD%94%EB%A1%9C%EB%82%98-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "독감",
+        "path": "/telemedicine/%EB%8F%85%EA%B0%90-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "질염",
+        "path": "/telemedicine/%EC%A7%88%EC%97%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "갱년기",
+        "path": "/telemedicine/%EA%B0%B1%EB%85%84%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "고지혈증",
+        "path": "/telemedicine/%EA%B3%A0%EC%A7%80%ED%98%88%EC%A6%9D-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "녹내장",
+        "path": "/telemedicine/%EB%85%B9%EB%82%B4%EC%9E%A5-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "과민성대장증후군",
+        "path": "/telemedicine/%EA%B3%BC%EB%AF%BC%EC%84%B1%EB%8C%80%EC%9E%A5%EC%A6%9D%ED%9B%84%EA%B5%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "헤르페스",
+        "path": "/telemedicine/%ED%97%A4%EB%A5%B4%ED%8E%98%EC%8A%A4-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "공황장애",
+        "path": "/telemedicine/%EA%B3%B5%ED%99%A9%EC%9E%A5%EC%95%A0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "방광염",
+        "path": "/telemedicine/%EB%B0%A9%EA%B4%91%EC%97%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "이비인후과",
+        "path": "/telemedicine/%EC%9D%B4%EB%B9%84%EC%9D%B8%ED%9B%84%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정형외과",
+        "path": "/telemedicine/%EC%A0%95%ED%98%95%EC%99%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "내과",
+        "path": "/telemedicine/%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "피부과",
+        "path": "/telemedicine/%ED%94%BC%EB%B6%80%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "안과",
+        "path": "/telemedicine/%EC%95%88%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "치과",
+        "path": "/telemedicine/%EC%B9%98%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아청소년과",
+        "path": "/telemedicine/%EC%86%8C%EC%95%84%EA%B3%BC-%EC%86%8C%EC%95%84%EC%B2%AD%EC%86%8C%EB%85%84%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "비뇨의학과",
+        "path": "/telemedicine/%EB%B9%84%EB%87%A8%EA%B8%B0%EA%B3%BC-%EB%B9%84%EB%87%A8%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "가정의학과",
+        "path": "/telemedicine/%EA%B0%80%EC%A0%95%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정신건강의학과",
+        "path": "/telemedicine/%EC%A0%95%EC%8B%A0%EA%B3%BC-%EC%A0%95%EC%8B%A0%EA%B1%B4%EA%B0%95%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "신경과",
+        "path": "/telemedicine/%EC%8B%A0%EA%B2%BD%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "외과",
+        "path": "/telemedicine/%EC%99%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "성형외과",
+        "path": "/telemedicine/%EC%84%B1%ED%98%95%EC%99%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "마취통증의학과",
+        "path": "/telemedicine/%EB%A7%88%EC%B7%A8%ED%86%B5%EC%A6%9D%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "재활의학과",
+        "path": "/telemedicine/%EC%9E%AC%ED%99%9C%EC%9D%98%ED%95%99%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소화기내과",
+        "path": "/telemedicine/%EC%86%8C%ED%99%94%EA%B8%B0%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "호흡기내과",
+        "path": "/telemedicine/%ED%98%B8%ED%9D%A1%EA%B8%B0%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "구강내과",
+        "path": "/telemedicine/%EA%B5%AC%EA%B0%95%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "순환기내과",
+        "path": "/telemedicine/%EC%88%9C%ED%99%98%EA%B8%B0%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "소아치과",
+        "path": "/telemedicine/%EC%86%8C%EC%95%84%EC%B9%98%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "신장내과",
+        "path": "/telemedicine/%EC%8B%A0%EC%9E%A5%EB%82%B4%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      }
+    ],
+    "tables": [],
+    "quality": "verified_title_and_global_navigation",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/telemedicine/고혈압-비대면진료-예약",
+    "path": "/telemedicine/고혈압-비대면진료-예약",
+    "title": "고혈압 비대면진료 예약 • 약 처방",
+    "headline": "고혈압 비대면 진료 예약",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/telemedicine/doctor/한사랑패밀리의원-허훈-10",
+    "path": "/telemedicine/doctor/한사랑패밀리의원-허훈-10",
+    "title": "산부인과 비대면진료 예약 - 한사랑패밀리의원(허훈 의사)",
+    "headline": "허훈 산부인과 의사",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/telemedicine/doctor/탑연합의원-박광규-100/reviews",
+    "path": "/telemedicine/doctor/탑연합의원-박광규-100/reviews",
+    "title": "박광규 가정의학과 의사 후기 1,079건 · 재진료 의향 99% (2026)",
+    "headline": "박광규 가정의학과 의사 후기 1,079건 · 재진료 의향 99% (2026)",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/hospital",
+    "path": "/hospital",
+    "title": "근처 병원 찾기 · 야간·일요일 진료 병원 | 나만의닥터",
+    "headline": "근처 병원 찾기",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/hospital/야간진료",
+    "path": "/hospital/야간진료",
+    "title": "전국 야간 진료 병원 18361곳 (2026)",
+    "headline": "전국 야간/심야 진료 - 18361개 병원의 실시간 정보를 확인해보세요",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/dept-hub/내과",
+    "path": "/dept-hub/내과",
+    "title": "근처 내과 찾기 · 지역별 내과 병원 비교 (2026)",
+    "headline": "근처 내과 찾기",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/hospital/detail?hospital_id=323",
+    "path": "/hospital/detail?hospital_id=323",
+    "title": "창원한마음병원 경남 창원시 봉림동 | 리뷰, 가격, 진료시간 - 나만의닥터",
+    "headline": "창원한마음병원",
+    "headings": [],
+    "links": [],
+    "tables": [
+      {
+        "headers": [
+          "진료 항목",
+          "진료비",
+          "비고",
+          "진료 방식",
+          "건강보험 적용"
+        ],
+        "rows": [
+          [
+            "급여 진료 · 대면",
+            "5,600원",
+            "6~64세 기준",
+            "대면 진료",
+            "적용(급여)"
+          ],
+          [
+            "대상포진 예방접종",
+            "230,000원",
+            "1회 접종 기준",
+            "예방접종",
+            "미적용(비급여)"
+          ],
+          [
+            "독감 예방접종",
+            "40,000원",
+            "1회 접종 기준",
+            "예방접종",
+            "미적용(비급여)"
+          ]
+        ]
+      }
+    ],
+    "quality": "verified_public_factual_price_rows",
+    "source_evidence": "github-actions-http200-and-public-facts-fetch-20261109",
+    "observed_at": "2026-11-09T14:14:00Z",
+    "address": "경남 창원시 의창구 용동로57번길 8"
+  },
+  {
+    "original_url": "https://my-doctor.io/hospital/10055/reviews",
+    "path": "/hospital/10055/reviews",
+    "title": "동산의원 후기 464건 · 재진료 의향 97% (2026)",
+    "headline": "동산의원 후기 464건 · 재진료 의향 97% (2026)",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/medical-cost",
+    "path": "/medical-cost",
+    "title": "의료비 가격 비교 | 나만의닥터",
+    "headline": "의료비 가격 비교 | 나만의닥터",
+    "headings": [],
+    "links": [
+      {
+        "label": "마운자로",
+        "path": "/medical-cost/%EB%A7%88%EC%9A%B4%EC%9E%90%EB%A1%9C",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "탈모약",
+        "path": "/medical-cost/%ED%83%88%EB%AA%A8%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "예방접종 백신",
+        "path": "/medical-cost/%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85-%EB%B0%B1%EC%8B%A0",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "초음파 검사",
+        "path": "/medical-cost/%EC%B4%88%EC%9D%8C%ED%8C%8C-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "정밀 검사",
+        "path": "/medical-cost/%EC%A0%95%EB%B0%80-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "가격비교 전체 보기",
+        "path": "/medical-cost",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "위고비",
+        "path": "/medical-cost/%EC%9C%84%EA%B3%A0%EB%B9%84",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "삭센다",
+        "path": "/medical-cost/%EC%82%AD%EC%84%BC%EB%8B%A4",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "다이어트 경구약",
+        "path": "/medical-cost/%EB%8B%A4%EC%9D%B4%EC%96%B4%ED%8A%B8%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "모발 이식",
+        "path": "/medical-cost/%EB%AA%A8%EB%B0%9C-%EC%9D%B4%EC%8B%9D",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "여드름약",
+        "path": "/medical-cost/%EC%97%AC%EB%93%9C%EB%A6%84%EC%95%BD",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "독감 예방접종",
+        "path": "/medical-cost/%EB%8F%85%EA%B0%90%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "대상포진 예방접종",
+        "path": "/medical-cost/%EB%8C%80%EC%83%81%ED%8F%AC%EC%A7%84%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "가다실 9가",
+        "path": "/medical-cost/%EA%B0%80%EB%8B%A4%EC%8B%A49%EA%B0%80",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "처치 및 수술",
+        "path": "/medical-cost/%EC%B2%98%EC%B9%98-%EB%B0%8F-%EC%88%98%EC%88%A0",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "치과 치료",
+        "path": "/medical-cost/%EC%B9%98%EA%B3%BC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "수액",
+        "path": "/medical-cost/%EC%88%98%EC%95%A1",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "항원·호르몬·유전자·병리 검사",
+        "path": "/medical-cost/%ED%95%AD%EC%9B%90-%ED%98%B8%EB%A5%B4%EB%AA%AC-%EC%9C%A0%EC%A0%84%EC%9E%90-%EB%B3%91%EB%A6%AC-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "MRI 검사",
+        "path": "/medical-cost/MRI%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "내시경 검사",
+        "path": "/medical-cost/%EB%82%B4%EC%8B%9C%EA%B2%BD-%EA%B2%80%EC%82%AC",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "시력교정술",
+        "path": "/medical-cost/%EC%8B%9C%EB%A0%A5%EA%B5%90%EC%A0%95%EC%88%A0",
+        "evidence": "verified_original_global_navigation"
+      },
+      {
+        "label": "다이어트 주사 지도",
+        "path": "/map/diet-injection",
+        "evidence": "verified_original_global_navigation"
+      }
+    ],
+    "tables": [],
+    "quality": "verified_title_and_global_navigation",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/medical-cost/마운자로",
+    "path": "/medical-cost/마운자로",
+    "title": "마운자로 가격 비교 지도 — 전국 병원/약국 처방 (2026) | 최저 269,000원~",
+    "headline": "전국 마운자로 처방 병원/약국 가격 비교 정보 (2026)",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/medical-cost/여드름약/이소티논",
+    "path": "/medical-cost/여드름약/이소티논",
+    "title": "이소티논(이소트레티노인) 전국 여드름약 처방 성지 병원/약국 가격비교(2026)",
+    "headline": "전국 여드름약 처방 성지 병원/약국 가격비교(2026) - 이소티논, 니메겐 등 이소트레티노인",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/pharmacy",
+    "path": "/pharmacy",
+    "title": "휴일/야간 약국 찾기 · 일요일·야간·공휴일 영업 약국 | 나만의닥터",
+    "headline": "휴일/야간 약국 찾기",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/pharmacy/야간약국",
+    "path": "/pharmacy/야간약국",
+    "title": "전국 야간 약국 1995곳 (2026)",
+    "headline": "전국 야간 약국 목록 - 1995곳",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/map/119",
+    "path": "/map/119",
+    "title": "응급의료포털 • 문 연 병원/약국/응급실 찾기 - 나만의닥터",
+    "headline": "119 지도",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/map/baby119",
+    "path": "/map/baby119",
+    "title": "소아과 119 지도 • 응급의료포털 - 나만의닥터",
+    "headline": "소아과 119 지도",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/map/acne",
+    "path": "/map/acne",
+    "title": "먹는 여드름 약 가격 찾기 | 최저 7,500원 부터",
+    "headline": "여드름약 가격 최저가 찾기",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/medicine",
+    "path": "/medicine",
+    "title": "의약품 정보 검색 | 나만의닥터",
+    "headline": "의약품 정보 검색",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/medicine/ingredient/세마글루티드",
+    "path": "/medicine/ingredient/세마글루티드",
+    "title": "세마글루티드 성분 의약품 | 나만의닥터",
+    "headline": "세마글루티드 성분 의약품",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/medicine/0.9-%EC%97%94%EC%97%90%EC%9D%B4%EC%8B%9C%EC%97%98.%EC%BC%80%EC%9D%B440%EC%A3%BC-200710605",
+    "path": "/medicine/0.9-%EC%97%94%EC%97%90%EC%9D%B4%EC%8B%9C%EC%97%98.%EC%BC%80%EC%9D%B440%EC%A3%BC-200710605",
+    "title": "0.9% 엔에이시엘.케이40주 처방·효능·부작용·복용법 | 염화나트륨, 염화칼륨 | 나만의닥터",
+    "headline": "0.9% 엔에이시엘.케이40주 (염화나트륨, 염화칼륨)",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/healthLab",
+    "path": "/healthLab",
+    "title": "나만의 위한 건강 꿀팁부터 매일 포인트를 드리는 퀴즈까지",
+    "headline": "",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/healthLab/FAQ",
+    "path": "/healthLab/FAQ",
+    "title": "나만의닥터와 함께 하는 건강 FAQ",
+    "headline": "건강 FAQ",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/healthLab/info/1268/만성-소화기-질환-관리법",
+    "path": "/healthLab/info/1268/만성-소화기-질환-관리법",
+    "title": "만성 소화기 질환의 초기 증상과 관리 방법, 어떻게 시작할까? | 나만의닥터",
+    "headline": "만성 소화기 질환의 초기 증상과 관리 방법, 어떻게 시작할까?",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/healthLab/calculator/bmi",
+    "path": "/healthLab/calculator/bmi",
+    "title": "비만도 계산기",
+    "headline": "비만도 계산기",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/qna",
+    "path": "/qna",
+    "title": "의료진 Q&A | 나만의닥터",
+    "headline": "의료진 Q&A",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요",
+    "path": "/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요",
+    "title": "아침에 첫발을 디딜 때 발뒤꿈치가 아픈데 족저근막염일까요? | 나만의닥터",
+    "headline": "아침에 첫발을 디딜 때 발뒤꿈치가 아픈데 족저근막염일까요?",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  },
+  {
+    "original_url": "https://my-doctor.io/company",
+    "path": "/company",
+    "title": "나만의닥터 | 대한민국 1위 비대면 진료 앱",
+    "headline": "나만의닥터",
+    "headings": [],
+    "links": [],
+    "tables": [],
+    "quality": "heading_only",
+    "source_evidence": "github-actions-live-origin-http-200-run-42632535893",
+    "observed_at": "2026-11-09T14:14:00Z"
+  }
+]
