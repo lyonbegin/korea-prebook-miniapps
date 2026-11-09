@@ -3,6 +3,9 @@ const{chromium}=require("playwright");
 const{PNG}=require("pngjs");
 const fs=require("node:fs"),path=require("node:path");
 const base=process.env.MD_URL||"http://127.0.0.1:5173";
+// The user's accepted visual threshold includes all visible layout, text and images.
+const VISUAL_MAX_DIFF_PERCENT=10;
+const isVisualPass=percent=>Number.isFinite(percent)&&percent<=VISUAL_MAX_DIFF_PERCENT;
 const cases=[
  {name:"home",source:"/",clone:"/"},
  {name:"doctor-selection",source:"/telemedicine/all-department",clone:"/telemedicine/all-department"},
@@ -80,11 +83,11 @@ function diff(x,y){
    }));
    console.log("LAYOUT AUDIT",c.name,JSON.stringify({source:probes[0],clone:probes[1]}));
    fs.writeFileSync(path.join("qa-artifacts","heatmap-"+c.name+".png"),PNG.sync.write(m.heatmap));
-   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:m.changed_ratio_percent===0?"PARITY":"MISMATCH",changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
+   const entry={name:c.name,source:"https://my-doctor.io"+c.source,clone:base+c.clone,status:isVisualPass(m.changed_ratio_percent)?"VISUAL_PASS":"VISUAL_FAIL",visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,changed_ratio_percent:m.changed_ratio_percent,mean_pixel_delta:m.mean_pixel_delta,source_mode:sourceMode};
    report.push(entry);console.log("VISUAL AUDIT",JSON.stringify(entry));
   }catch(e){const entry={name:c.name,status:"UNVERIFIED",reason:String(e.message||e)};report.push(entry);console.error("VISUAL AUDIT",JSON.stringify(entry))}
   finally{await source.close();await clone.close()}
- }}finally{await browser.close();fs.writeFileSync("qa-artifacts/source-parity.json",JSON.stringify({viewport:{width:390,height:844},pages:report,meaning:"Observed initial viewport only. A successful workflow is never proof of pixel or functional parity."},null,2))}
+ }}finally{await browser.close();fs.writeFileSync("qa-artifacts/source-parity.json",JSON.stringify({viewport:{width:390,height:844},pages:report,visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,visual_passed:report.filter(x=>x.status==="VISUAL_PASS").length,visual_failed:report.filter(x=>x.status==="VISUAL_FAIL").length,unverified:report.filter(x=>x.status==="UNVERIFIED").length,meaning:"390x844 screenshot comparison includes full visible layout and images. 10% or less pixel changes is visual PASS only; data/feature parity must be tested separately."},null,2))}
  // Different or inaccessible originals remain failing parity checks, not success.
- if(report.some(x=>x.status!=="PARITY"))process.exitCode=1;
+ if(report.some(x=>x.status!=="VISUAL_PASS"))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});

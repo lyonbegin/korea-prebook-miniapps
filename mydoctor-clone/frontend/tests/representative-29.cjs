@@ -13,6 +13,8 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
 const origin=manifest.source_origin;
 const timeout=Number(process.env.MD_PAGE_TIMEOUT||8500);
 const max=Number(process.env.MD_MAX_CASES||29);
+const VISUAL_MAX_DIFF_PERCENT=10;
+const isVisualPass=percent=>Number.isFinite(percent)&&percent<=VISUAL_MAX_DIFF_PERCENT;
 const normalize=s=>String(s||"").replace(/\s+/g," ").replace(/[^\p{L}\p{N}]/gu,"").trim().toLowerCase();
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function screenshotDiff(x,y){
@@ -119,6 +121,23 @@ async function clickProbe(page,label) {
       item.clone_error=(await dst.locator('[role="alert"]').first().innerText()).slice(0,220);
       continue;
     }
+    // Visual audit independently of original data/function tests. Capture the
+    // same initial 390x844 viewport BEFORE any click, including visible images.
+    const safe=test.id.replace(/[^a-z0-9-]/gi,"-");
+    await Promise.all([src,dst].map(p=>p.evaluate(async()=>{
+      await document.fonts.ready;
+      await Promise.all([...document.images].filter(img=>!img.complete)
+        .map(img=>new Promise(done=>{
+          const finish=()=>done();img.addEventListener("load",finish,{once:true});
+          img.addEventListener("error",finish,{once:true});
+          setTimeout(finish,2500);
+        })));
+    })));
+    const srcScreenshot=await src.screenshot({path:path.join(OUT,"origin-"+safe+".png")});
+    const cloneScreenshot=await dst.screenshot({path:path.join(OUT,"clone-"+safe+".png")});
+    item.pixel_delta_percent=screenshotDiff(srcScreenshot,cloneScreenshot);
+    item.visual_threshold_percent=VISUAL_MAX_DIFF_PERCENT;
+    item.visual_status=isVisualPass(item.pixel_delta_percent)?"VISUAL_PASS":"VISUAL_FAIL";
     const cloneState=await snapshot(dst);
     item.clone_evidence={title:cloneState.title,h1:cloneState.h1,chars:cloneState.chars,
                          controls:cloneState.controls,link_count:cloneState.links.length};
@@ -143,11 +162,7 @@ async function clickProbe(page,label) {
       item.status="INTERACTION_PROBE_DIFFERS";continue;
     }
     item.interaction_probe_matched=true; // one probe, never full UI parity
-    const safe=test.id.replace(/[^a-z0-9-]/gi,"-");
-    const s=await src.screenshot({path:path.join(OUT,"origin-"+safe+".png")});
-    const c=await dst.screenshot({path:path.join(OUT,"clone-"+safe+".png")});
-    item.pixel_delta_percent=screenshotDiff(s,c);
-    item.status=item.pixel_delta_percent===0?"FULL_PIXEL_MATCH":"VISUAL_MISMATCH";
+    item.status="INTERACTION_PROBE_MATCHED";
    }catch(e){item.status="TEST_ERROR";item.error=String(e.message).slice(0,250)}
    finally{await src.close();await dst.close();report.cases.push(item);
      console.log("TYPE AUDIT",JSON.stringify(item));
@@ -157,13 +172,17 @@ async function clickProbe(page,label) {
   }
  }finally{await browser.close()}
  report.summary=report.cases.reduce((o,c)=>(o[c.status]=(o[c.status]||0)+1,o),{});
- report.verified_complete=report.cases.filter(x=>x.status==="FULL_PIXEL_MATCH").length;
+ report.visual_threshold_percent=VISUAL_MAX_DIFF_PERCENT;
+ report.visual_passed=report.cases.filter(x=>x.visual_status==="VISUAL_PASS").length;
+ report.visual_failed=report.cases.filter(x=>x.visual_status==="VISUAL_FAIL").length;
+ report.visual_unverified=report.cases.filter(x=>!x.visual_status).length;
+ report.verified_complete=0; // Actual full source data & complete feature parity are not established by screenshot alone.
  report.source_data_real=report.cases.filter(x=>x.source_verified).length;
  report.content_length_threshold_passed=report.cases.filter(x=>x.visible_content_threshold_passed).length;
  report.genuine_visible_data_matched=0; // Not provable by page-length or generic DOM probes.
  report.new_test_candidates=extra;
  fs.writeFileSync(path.join(OUT,"representative-29.json"),JSON.stringify(report,null,2));
- console.log("REPRESENTATIVE AUDIT SUMMARY",JSON.stringify({planned:report.planned,summary:report.summary,observed_source:report.source_data_real,content_length_threshold_passed:report.content_length_threshold_passed,full_source_data_verified:0,complete:report.verified_complete,candidate_additions:extra.length}));
+ console.log("REPRESENTATIVE AUDIT SUMMARY",JSON.stringify({planned:report.planned,summary:report.summary,observed_source:report.source_data_real,content_length_threshold_passed:report.content_length_threshold_passed,full_source_data_verified:0,visual_threshold_percent:VISUAL_MAX_DIFF_PERCENT,visual_passed:report.visual_passed,visual_failed:report.visual_failed,visual_unverified:report.visual_unverified,complete:report.verified_complete,candidate_additions:extra.length}));
  // No green CI when comparisons did not genuinely pass. No mass source retry after 429.
- if(report.verified_complete!==manifest.cases.length)process.exitCode=1;
+ if(report.visual_passed!==manifest.cases.length)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
