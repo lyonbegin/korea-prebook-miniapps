@@ -92,14 +92,22 @@ jobs:
       - name: Capture factual fields from real public original pages
         working-directory: mydoctor-clone/frontend
         run: node tests/capture-source-facts.cjs
+      - name: Preserve captured public factual metadata as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-observed-public-facts
+          path: mydoctor-clone/backend/data/public_source_facts_20261109.json
       - name: Commit enriched public facts for existing PostgreSQL startup import
+        working-directory: mydoctor-clone/frontend
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add mydoctor-clone/backend/data/public_source_facts_20261109.json
-          if ! git diff --cached --quiet; then
-            git commit -m "data(mydoctor): enrich publicly verified page facts [skip ci]"
-            git push origin HEAD:feature/mydoctor-full-clone-20261109
+          git -C ../.. status --short
+          git -C ../.. config user.name "github-actions[bot]"
+          git -C ../.. config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C ../.. add mydoctor-clone/backend/data/public_source_facts_20261109.json
+          if ! git -C ../.. diff --cached --quiet; then
+            git -C ../.. commit -m "data(mydoctor): enrich publicly verified page facts [skip ci]"
+            git -C ../.. push origin HEAD:feature/mydoctor-full-clone-20261109
           else
             echo "No new observed factual fields; no DB seed changes."
           fi
