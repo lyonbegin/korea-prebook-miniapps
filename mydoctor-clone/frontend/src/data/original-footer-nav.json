@@ -1,0 +1,208 @@
+{
+  "source": "https://my-doctor.io/medical-cost",
+  "groups": [
+    {
+      "title": "비대면진료",
+      "links": [
+        {
+          "href": "/telemedicine/%ED%83%88%EB%AA%A8-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+          "label": "탈모"
+        },
+        {
+          "href": "/telemedicine/%EC%97%AC%EB%93%9C%EB%A6%84-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+          "label": "여드름"
+        },
+        {
+          "href": "/telemedicine/%EA%B0%90%EA%B8%B0-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+          "label": "감기"
+        },
+        {
+          "href": "/telemedicine/%EC%82%B0%EB%B6%80%EC%9D%B8%EA%B3%BC-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+          "label": "산부인과"
+        },
+        {
+          "href": "/telemedicine/%EA%B3%A0%ED%98%88%EC%95%95-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD",
+          "label": "고혈압"
+        },
+        {
+          "href": "/telemedicine/all-department",
+          "label": "증상 · 진료과 전체 보기"
+        }
+      ]
+    },
+    {
+      "title": "가격비교",
+      "links": [
+        {
+          "href": "/medical-cost/%EB%A7%88%EC%9A%B4%EC%9E%90%EB%A1%9C",
+          "label": "마운자로"
+        },
+        {
+          "href": "/medical-cost/%ED%83%88%EB%AA%A8%EC%95%BD",
+          "label": "탈모약"
+        },
+        {
+          "href": "/medical-cost/%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85-%EB%B0%B1%EC%8B%A0",
+          "label": "예방접종 백신"
+        },
+        {
+          "href": "/medical-cost/%EC%B4%88%EC%9D%8C%ED%8C%8C-%EA%B2%80%EC%82%AC",
+          "label": "초음파 검사"
+        },
+        {
+          "href": "/medical-cost/%EC%A0%95%EB%B0%80-%EA%B2%80%EC%82%AC",
+          "label": "정밀 검사"
+        },
+        {
+          "href": "/medical-cost",
+          "label": "가격비교 전체 보기"
+        }
+      ]
+    },
+    {
+      "title": "병원찾기",
+      "links": [
+        {
+          "href": "/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC",
+          "label": "피부과"
+        },
+        {
+          "href": "/dept-hub/%EB%82%B4%EA%B3%BC",
+          "label": "내과"
+        },
+        {
+          "href": "/dept-hub/%EC%9D%B4%EB%B9%84%EC%9D%B8%ED%9B%84%EA%B3%BC",
+          "label": "이비인후과"
+        },
+        {
+          "href": "/dept-hub/%EC%A0%95%ED%98%95%EC%99%B8%EA%B3%BC",
+          "label": "정형외과"
+        },
+        {
+          "href": "/dept-hub/%EC%95%88%EA%B3%BC",
+          "label": "안과"
+        },
+        {
+          "href": "/hospital",
+          "label": "병원찾기 전체 보기"
+        }
+      ]
+    },
+    {
+      "title": "약국찾기",
+      "links": [
+        {
+          "href": "/map/119?tab=pharmacy",
+          "label": "문 연 약국 지도"
+        },
+        {
+          "href": "/map/hair-loss",
+          "label": "탈모약 최저가 약국"
+        },
+        {
+          "href": "/map/acne",
+          "label": "여드름약 최저가 약국"
+        },
+        {
+          "href": "/map/baby119?tab=pharmacy",
+          "label": "소아 약국 지도"
+        },
+        {
+          "href": "/pharmacy",
+          "label": "약국찾기 전체 보기"
+        }
+      ]
+    },
+    {
+      "title": "의약품 정보",
+      "links": [
+        {
+          "href": "/medicine/effect/%ED%95%B4%EC%97%B4%C2%B7%EC%A7%84%ED%86%B5%C2%B7%EC%86%8C%EC%97%BC%EC%A0%9C",
+          "label": "해열 · 진통 · 소염제"
+        },
+        {
+          "href": "/medicine/effect/%EC%A7%84%ED%95%B4%EA%B1%B0%EB%8B%B4%EC%A0%9C",
+          "label": "진해거담제"
+        },
+        {
+          "href": "/medicine/effect/%ED%95%AD%ED%9E%88%EC%8A%A4%ED%83%80%EB%AF%BC%EC%A0%9C",
+          "label": "항히스타민제"
+        },
+        {
+          "href": "/medicine/effect/%EC%86%8C%ED%99%94%EC%84%B1%EA%B6%A4%EC%96%91%EC%9A%A9%EC%A0%9C",
+          "label": "소화성궤양용제"
+        },
+        {
+          "href": "/medicine/effect/%ED%98%88%EC%95%95%EA%B0%95%ED%95%98%EC%A0%9C",
+          "label": "혈압강하제"
+        },
+        {
+          "href": "/medicine/effect/%EB%8B%B9%EB%87%A8%EB%B3%91%EC%9A%A9%EC%A0%9C",
+          "label": "당뇨병용제"
+        },
+        {
+          "href": "/medicine",
+          "label": "의약품 정보 홈 · 약 검색"
+        }
+      ]
+    },
+    {
+      "title": "건강 정보",
+      "links": [
+        {
+          "href": "/healthLab/info/list",
+          "label": "건강꿀팁"
+        },
+        {
+          "href": "/healthLab/FAQ",
+          "label": "자주 묻는 질문"
+        },
+        {
+          "href": "/qna",
+          "label": "의료진 Q&A"
+        },
+        {
+          "href": "/healthLab/how-to",
+          "label": "비대면 진료 이용 방법"
+        },
+        {
+          "href": "/healthLab/health-wiki",
+          "label": "질환 백과"
+        },
+        {
+          "href": "/healthLab",
+          "label": "건강 정보 홈"
+        }
+      ]
+    },
+    {
+      "title": "나만의닥터",
+      "links": [
+        {
+          "href": "https://abr.ge/zskg4p",
+          "label": "앱 다운로드"
+        },
+        {
+          "href": "/event",
+          "label": "이벤트"
+        },
+        {
+          "href": "https://mydoctor.oopy.io/",
+          "label": "공지사항"
+        },
+        {
+          "href": "/#partner-section",
+          "label": "제휴 신청"
+        },
+        {
+          "href": "/company",
+          "label": "회사 소개"
+        },
+        {
+          "href": "https://merakiplace.ninehire.site/",
+          "label": "채용"
+        }
+      ]
+    }
+  ]
+}
