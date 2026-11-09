@@ -83,3 +83,18 @@
 .md-telemedicine-links .observed-link svg{display:none}
 .observed-expand{display:flex;align-items:center;justify-content:center;gap:4px;padding:13px;width:100%;background:white;border:1px solid #e6eaf0;color:#55677d;border-radius:8px;font-size:13px;margin:12px 0}
 .observed-expand svg{transform:rotate(90deg)}
+
+/* Verified original footer: 7 group labels, 42 source links, mobile two-column rows. */
+.original-footer{box-sizing:border-box;background:#f5f6f8;color:#677584;padding:22px 20px 36px}
+.original-footer-nav{display:flex;flex-direction:column;gap:25px}
+.original-footer-nav section h2{font-size:14px;font-weight:650;color:#596777;margin:0 0 12px}
+.original-footer-links{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.original-footer-links a{color:#74808e;font-size:12px;font-weight:400;min-height:29px;padding:5px 0;line-height:1.4}
+.original-company{font-size:11px;color:#87929d;line-height:1.55;margin-top:24px;border-top:1px solid #e0e4e8;padding-top:21px}
+.original-company strong{font-size:12px;color:#697582}
+.original-company p{margin:5px 0}
+.md-hidden-links{padding:14px 18px;background:#f6f7f9;font-size:13px}
+.md-hidden-links summary{cursor:pointer;font-size:13px;font-weight:600;color:#68758a;padding:7px 0}
+.md-hidden-links .observed-link{font-size:12px;padding:6px 0;min-height:32px}
+.md-hidden-links .observed-telemedicine-directory{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
+.md-hidden-links .observed-link svg{display:none}

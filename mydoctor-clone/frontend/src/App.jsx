@@ -4,6 +4,7 @@ import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
 import{VerifiedSourcePage,SourceRows}from"./VerifiedSourcePage.jsx";
+import OriginalFooter from "./OriginalFooter.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -75,7 +76,7 @@ function DoctorScreen({data,go}){
    </button>
    {opened===name&&<div className="symptom-choices">{items.map(item=>{const path=realSymptom(item);return path?<Anchor key={item} go={go} label={item} path={path}/>:<span key={item} className="source-link-pending">{item} · 원본 링크 미확인</span>})}</div>}
   </div>)}</div>:<div className="department-grid">{departments.map(d=><Anchor className="dept-link" go={go} path={d.path} label={d.label} key={d.path}/>)}</div>}
- <section className="md-original-links md-telemedicine-links"><h2>비대면진료</h2><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory" defaultMaxHeight={950}/></section>
+ <details className="md-hidden-links"><summary>전체 증상 · 진료과 링크 보기</summary><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory"/></details>
  </>;
 }
 function HospitalScreen({data,go}){
@@ -111,9 +112,10 @@ function HospitalScreen({data,go}){
 }
 function CostScreen({data,go}){
  const[search,setSearch]=useState("");
- const choices=data.categories.filter(x=>!search||x.title.includes(search));
+ const categoryCards=data.categories.filter(x=>decodeURIComponent(x.path).split("?")[0].split("/").filter(Boolean).length===2);
+ const choices=categoryCards.filter(x=>!search||x.title.includes(search));
  return <><section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1><p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p></section>
- <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{v.title}</strong><small>{PRICEDESC[v.title]||""}</small></Anchor>)}</div></section>
+ <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=>{const name=decodeURIComponent(v.path.split("?")[0].split("/")[2]).replace(/-/g," ");const desc=v.title.startsWith(name)?v.title.slice(name.length).trim():v.title;return <Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{name}</strong><small>{PRICEDESC[name]||desc||"진료비 가격 비교"}</small></Anchor>})}</div></section>
  <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search} onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
  <section className="md-original-links"><h2>주요 가격 비교</h2><SourceRows links={data.links.filter(x=>!data.categories.some(v=>v.path===x.path)&&x.path!=="/")} go={go}/></section></>;
 }
@@ -148,6 +150,6 @@ export default function App(){
  </header>{!home&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
  :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:route==="/telemedicine/all-department"?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage data={s.data} go={go} route={route}/>):null}
- </main>{home&&<a className="fixed-call-to-action" href={ORIGINAL} target="_blank" rel="noreferrer">나만의닥터 원본 서비스</a>}
+ </main><OriginalFooter go={go}/>{home&&<a className="fixed-call-to-action" href={ORIGINAL} target="_blank" rel="noreferrer">나만의닥터 원본 서비스</a>}
  </div>;
 }
