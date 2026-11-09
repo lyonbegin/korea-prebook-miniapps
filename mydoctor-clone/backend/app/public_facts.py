@@ -8,7 +8,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime,timezone
-from urllib.parse import urljoin,urlsplit,parse_qsl
+from urllib.parse import urljoin,urlsplit,parse_qsl,unquote
 from bs4 import BeautifulSoup
 from .source_parser import page_kind
 
@@ -20,15 +20,23 @@ MAX_TABLES=12
 MAX_ROWS=100
 
 def safe_route(value:str)->str|None:
+    """One stable Unicode route for both browser %-encoding and PostgreSQL keys.
+
+    Decode only the path, not query parameters; reject escaped traversal and
+    network-path references after decoding, before DB lookup or origin GET.
+    """
     if not isinstance(value,str) or len(value)>1500 or not value.startswith("/") or value.startswith("//"):
         return None
     u=urlsplit(value)
-    if u.scheme or u.netloc or "\\" in value or "\x00" in value or ".." in u.path.split("/"):
+    decoded=unquote(u.path)
+    if (u.scheme or u.netloc or not decoded.startswith("/") or decoded.startswith("//")
+          or "\\" in decoded or "\x00" in decoded or ".." in decoded.split("/")
+          or any(s in decoded.lower() for s in ("%2e","%2f","%5c","%00"))):
         return None
     if any(any(s in k.lower() for s in ("token","auth","session","patient","user","password","email","cookie","private","secret","order","payment","reservation"))
            for k,v in parse_qsl(u.query,keep_blank_values=True)):
         return None
-    return value
+    return decoded+("?" +u.query if u.query else "")
 
 def extract_public_facts(raw:bytes,original_url:str)->dict:
     """Parses strictly public factual fields from a successfully accessed HTML page."""

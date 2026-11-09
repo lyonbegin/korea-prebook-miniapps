@@ -15,6 +15,14 @@ class PublicFactsTests(unittest.TestCase):
         self.assertIsNone(safe_route("//evil.test"))
         self.assertIsNone(safe_route("/hospital?patient_id=secret"))
         self.assertIsNotNone(safe_route("/hospital/detail?hospital_id=323"))
+    def test_percent_encoded_korean_deep_link_hits_unicode_source_cache(self):
+        canonical="/telemedicine/doctor/탑연합의원-박광규-100/reviews"
+        encoded="/telemedicine/doctor/%ED%83%91%EC%97%B0%ED%95%A9%EC%9D%98%EC%9B%90-%EB%B0%95%EA%B4%91%EA%B7%9C-100/reviews"
+        self.assertEqual(safe_route(encoded),canonical)
+        self.assertEqual(safe_route(canonical),canonical)
+        self.assertEqual(safe_route("/pharmacy/%EC%95%BC%EA%B0%84%EC%95%BD%EA%B5%AD?page=2"),"/pharmacy/야간약국?page=2")
+        self.assertIsNone(safe_route("/hospital/%2e%2e/hidden"))
+        self.assertIsNone(safe_route("/hospital/%2F%2Fevil.example"))
     def test_seed_and_live_fact_merging_preserves_browser_links_and_prices(self):
         old={"title":"Clinic","headline":"Clinic","links":[{"path":"/hospital/detail?hospital_id=1","label":"First"}],
              "headings":["Hospital"],"tables":[{"rows":[["A","5,000원"],["B","9,000원"]]}],
