@@ -44,7 +44,7 @@ NATIVE_RESOURCES = {
     "doctor-sorting-filter": ("patient-api/doctor/sorting-filter/", ()),
     "pharmacy-list": ("patient-api/pharmacist/pharmacy/", ("offset", "limit")),
     "app-config": ("patient-api/app/configure/", ()),
-    "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department", "search_filter_keys", "city_ids", "district_ids")),
+    "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department", "search_filter_keys", "city_ids", "district_ids", "sort_filter_key")),
     # The original getHospitalListV2 uses HOSPITAL_BASE_ROUTE_V2 + '/'.
     # Runtime verified: GET allowed, but anonymous access returns 401.
     "hospital-list": ("patient-api/v2/hospital/",
@@ -74,7 +74,7 @@ BLOCKED_VALUE = re.compile(
     r"(?<![\w.+-])[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}(?!\w))", re.I
 )
 NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng", "category_id"}
-TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering", "myd_link_key"}
+TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering", "myd_link_key", "sort_filter_key"}
 
 NATIVE_CACHE_SCHEMA = """
 CREATE SCHEMA IF NOT EXISTS mydoctor_clone;
