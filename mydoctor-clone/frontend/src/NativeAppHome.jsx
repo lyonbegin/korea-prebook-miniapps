@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import {
   Stethoscope,Hospital,Tags,Pill,ChevronRight,MapPin,
   Clock3,Search,HeartPulse,Syringe,FileText,MessageCircle,
@@ -10,6 +10,25 @@ import {
  * Public links keep the app's on-demand DB/source-data lifecycle.
  * This screen does not claim an exact screenshot or source JSX reconstruction.
  */
+const appSymptoms=[
+ {label:"감기·비염",path:"/telemedicine/감기-비대면진료-예약",icon:Activity,tone:"sky"},
+ {label:"소아과",path:"/telemedicine/소아과-소아청소년과-비대면진료-예약",icon:HeartPulse,tone:"peach"},
+ {label:"탈모약 처방",path:"/telemedicine/탈모-비대면진료-예약",icon:Pill,tone:"coral"},
+ {label:"여드름·피부",path:"/telemedicine/여드름-비대면진료-예약",icon:Stethoscope,tone:"rose"},
+ {label:"다이어트",path:"/medical-cost/다이어트약",icon:Tags,tone:"orange"},
+ {label:"여성질환",path:"/telemedicine/산부인과-비대면진료-예약",icon:HeartPulse,tone:"pink"},
+ {label:"안과·인공눈물",path:"/telemedicine/안과-비대면진료-예약",icon:Activity,tone:"slate"},
+ {label:"헤르페스",path:"/telemedicine/헤르페스-비대면진료-예약",icon:Stethoscope,tone:"blue"},
+ {label:"당뇨·고혈압",path:"/telemedicine/고혈압-비대면진료-예약",icon:Syringe,tone:"mint"}
+];
+const appBookings=[
+ {label:"마운자로",path:"/medical-cost/마운자로",icon:Tags,tone:"sky"},
+ {label:"위고비",path:"/medical-cost/위고비",icon:Tags,tone:"peach"},
+ {label:"가다실 9가",path:"/medical-cost/가다실9가",icon:Syringe,tone:"coral"},
+ {label:"대상포진",path:"/medical-cost/대상포진예방접종",icon:HeartPulse,tone:"rose"},
+ {label:"독감 예방접종",path:"/medical-cost/독감예방접종",icon:Syringe,tone:"orange"},
+ {label:"치과 치료",path:"/medical-cost/치과",icon:Hospital,tone:"blue"}
+];
 const quick = [
   {name:"비대면 진료",sub:"증상·진료과 선택",path:"/telemedicine/all-department",icon:Stethoscope},
   {name:"병원 찾기",sub:"야간·휴일 진료",path:"/hospital",icon:Hospital},
@@ -41,22 +60,35 @@ function NavLink({path,go,children,className="",label}) {
   return <a href={path} className={className} onClick={e=>{e.preventDefault();go(path,{label:label||undefined})}}>{children}</a>;
 }
 export default function NativeAppHome({data,go}) {
+  const [homeMode,setHomeMode]=useState("telemedicine");
   const observed=(data?.links||[]).filter(x=>x.path&&x.label&&x.path!=="/");
+  const appCards=homeMode==="telemedicine"?appSymptoms:appBookings;
   return <div className="native-home" data-native-reference="mydoctor-6.50.0">
-    <section className="native-home-greeting">
-      <p className="native-overline">나만의닥터</p>
-      <h1>어떤 도움이 필요하세요?</h1>
-      <NavLink path="/hospital" go={go} className="native-home-search" label="병원 검색">
-        <Search size={19}/><span>병원, 진료과, 증상을 검색해 보세요</span><ChevronRight size={17}/>
+    <section className="native-home-top">
+      <NavLink className="native-home-banner" path="/telemedicine/all-department" go={go} label="비대면 진료">
+        <span>365일 24시간 전국민 누구나</span>
+        <strong>비대면 진료 받을 수 있어요!</strong>
+        <Stethoscope aria-hidden="true" size={38}/>
       </NavLink>
-    </section>
-    <section className="native-home-primary" aria-label="주요 서비스">
-      <NavLink className="native-hero-care" path="/telemedicine/all-department" go={go} label="비대면 진료">
-        <span className="native-hero-eyebrow">비대면 진료</span>
-        <strong>병원에 가지 않고<br/>전화로 진료받기</strong>
-        <span className="native-hero-cta">진료 시작하기 <ChevronRight size={16}/></span>
-        <Stethoscope className="native-hero-icon" size={64} strokeWidth={1.35}/>
-      </NavLink>
+      <div className="native-app-service-box">
+        <div className="native-segment" role="tablist" aria-label="진료 서비스 선택">
+          <button type="button" role="tab" aria-selected={homeMode==="telemedicine"}
+            className={homeMode==="telemedicine"?"selected":""}
+            onClick={()=>setHomeMode("telemedicine")}>비대면 진료</button>
+          <button type="button" role="tab" aria-selected={homeMode==="booking"}
+            className={homeMode==="booking"?"selected":""}
+            onClick={()=>setHomeMode("booking")}>최저가 병원 예약</button>
+        </div>
+        <div className="native-symptom-grid">
+          {appCards.map(({label,path,icon:Icon,tone})=>
+           <NavLink key={path} path={path} go={go} className="native-symptom-item" label={label}>
+            <span className={"native-symptom-icon tone-"+tone}><Icon aria-hidden="true" size={28} strokeWidth={1.8}/></span>
+            <span>{label}</span>
+           </NavLink>)}
+        </div>
+        <NavLink className="native-app-all" path={homeMode==="telemedicine"?"/telemedicine/all-department":"/medical-cost"}
+            go={go} label="전체 보기">전체 보기 <ChevronRight size={16}/></NavLink>
+      </div>
     </section>
     <section className="native-home-block" aria-label="서비스 바로가기">
       <div className="native-heading"><h2>빠른 서비스</h2></div>
