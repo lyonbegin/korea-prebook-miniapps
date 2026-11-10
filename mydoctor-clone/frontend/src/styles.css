@@ -855,3 +855,24 @@
 .site-app-native .native-price-source-status{font-size:12px;line-height:1.7;color:#667483;padding:11px 14px;border-radius:10px;background:#f7f8fa}
 .site-app-native .native-price-detail-route>h1{font-size:22px;margin:20px 20px 5px;font-weight:800}
 .site-app-native .native-price-detail-route .native-price-regions{padding-top:13px}
+
+/* MyDoctor 6.50.0 Hermes myd-link destination, real source-key navigation */
+.site-app-native .native-link-screen{padding:0 0 42px;background:#fff;min-height:80dvh}
+.site-app-native .native-link-header{padding:27px 20px 20px;border-bottom:8px solid #f5f7fb}
+.site-app-native .native-link-header span{color:#3473ff;font-size:12px;font-weight:750}
+.site-app-native .native-link-header h1{font-size:25px;font-weight:850;color:#232b39;margin:9px 0}
+.site-app-native .native-link-header p{font-size:13px;color:#768296;line-height:1.6;margin:0}
+.site-app-native .native-link-screen>.native-price-source-status{margin:20px}
+.site-app-native .native-link-facts{margin:16px 20px;border:1px solid #e9ecf2;border-radius:14px;overflow:hidden}
+.site-app-native .native-link-facts>div{display:grid;grid-template-columns:minmax(95px,40%) 1fr;gap:12px;padding:12px 14px;border-bottom:1px solid #eff2f5}
+.site-app-native .native-link-facts>div:last-child{border-bottom:none}
+.site-app-native .native-link-facts span{color:#8190a3;font-size:12px;overflow-wrap:anywhere}
+.site-app-native .native-link-facts strong{color:#263145;font-weight:650;font-size:12px;overflow-wrap:anywhere}
+.site-app-native .native-link-doctor{margin:20px;padding:12px 0}
+.site-app-native .native-link-doctor>div:first-child{display:flex;align-items:center;gap:9px}
+.site-app-native .native-link-doctor h2{font-size:19px;margin:0;font-weight:800}
+.site-app-native .native-link-doctor>p{color:#6b7a8c;font-size:12px;line-height:1.6}
+.site-app-native .native-link-doctor>button,.site-app-native .native-link-error button{display:flex;align-items:center;justify-content:center;gap:10px;background:#326dff;border:0;color:white;border-radius:12px;padding:14px 20px;font-weight:750;min-height:47px;width:100%}
+.site-app-native .native-link-doctor .native-api-section{padding:0;margin:17px 0}
+.site-app-native .native-link-error{margin:22px 20px;padding:20px;border:1px solid #f0e1e2;border-radius:14px}
+.site-app-native .native-link-error p{font-size:13px;line-height:1.5;color:#777}
