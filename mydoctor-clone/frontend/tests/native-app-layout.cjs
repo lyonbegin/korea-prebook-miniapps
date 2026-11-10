@@ -49,6 +49,22 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    if(banners!==8)throw Error("Original native banner count wrong: "+banners);
    return {menus:menu,banners};
   });
+  await check("original Hermes HomeNavigationConfig renders three source cards and live touch",async()=>{
+   await page.locator('[data-original-nav-count="3"]').waitFor({timeout:20000});
+   const cards=page.locator(".hermes-home-navigation .hermes-home-nav-card");
+   if(await cards.count()!==3)throw Error("actual home config must have fixed hospital + 2 source entries");
+   const labels=await cards.allTextContents();
+   if(!labels[1].includes("다이어트")||!labels[2].includes("수액"))
+     throw Error("native config title mismatch "+JSON.stringify(labels));
+   const imgs=page.locator(".hermes-config-nav-card img");
+   if(await imgs.count()!==2)throw Error("source navigation must render 2 original source images");
+   await cards.nth(1).tap();
+   await page.locator(".native-data-dialog").waitFor({timeout:4000});
+   const link=page.locator('.hermes-native-open-link[href^="merakiyourdoctor://navigate?screen=WegovyRecordBridgeScreen"]');
+   if(await link.count()!==1)throw Error("original source deep link unavailable");
+   await page.getByRole("button",{name:"닫기"}).tap();
+   return {sourceCards:3,sourceImages:2,labels:labels.map(x=>x.trim())};
+  });
   await check("mobile tap toggles native app telemedicine and booking",async()=>{
    const booking=page.getByRole("tab",{name:"최저가 병원 예약"});
    await booking.tap();
