@@ -50,9 +50,12 @@ jobs:
           python - <<'PY'
           import os,asyncio,asyncpg
           from app.catalog_schema import SCHEMA
+          from app.native_catalog import NATIVE_CACHE_SCHEMA
           async def check():
               conn=await asyncpg.connect(os.environ['TEST_DATABASE_URL'])
               await conn.execute(SCHEMA)
+              await conn.execute(NATIVE_CACHE_SCHEMA)
+              assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.native_public_api_cache') IS NOT NULL")
               assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.hospitals') IS NOT NULL")
               assert await conn.fetchval("SELECT to_regclass('mydoctor_clone.source_records') IS NOT NULL")
               assert await conn.fetchval("SELECT to_regclass('public.foo') IS NULL")
