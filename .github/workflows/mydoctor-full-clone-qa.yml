@@ -141,6 +141,12 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/menu-inventory.cjs
+      - name: Test actual menu taps, page content and result-row click-through (not just URLs)
+        if: always()
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/menu-click-e2e.cjs
       - name: Verify original healthLab deep-link SPA routes do not get swallowed by API health proxy
         working-directory: mydoctor-clone/frontend
         run: |
