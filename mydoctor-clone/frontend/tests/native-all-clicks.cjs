@@ -27,20 +27,51 @@ async function observe(page,kind,label,href,index){
     fields:facts,preview:trim(await page.locator("main").innerText()).slice(0,220)};
  }
  if(kind==="price"){
+   // The legacy publicly verified fact gateway may need real time to return;
+   // an immediate loading placeholder is NOT a meaningful test result.
+   await page.locator(".source-route-loading")
+      .waitFor({state:"hidden",timeout:10000}).catch(()=>{});
    await Promise.race([
-    page.locator('[data-real-region-count]').waitFor({timeout:max}).catch(()=>{}),
-    page.locator(".source-route-error").waitFor({timeout:max}).catch(()=>{}),
-    page.locator('.native-price-source-status[role="alert"]').waitFor({timeout:max}).catch(()=>{}),
-    page.locator(".source-route-loading").waitFor({timeout:max}).catch(()=>{})
+      page.locator(".native-region-price-row,.observed-page,.source-route-error,.native-price-source-status[role=alert]")
+       .first().waitFor({timeout:4500}).catch(()=>{}),
+      page.waitForTimeout(4500)
    ]);
    const regions=await page.locator(".native-region-price-row").count();
    const error=await page.locator('.source-route-error,.native-price-source-status[role="alert"]').count();
-   const facts=await page.locator(".original-verified-page,.verified-source-page,main table,main .source-data-table").count();
+   const facts=await page.locator(".observed-table,main table").count();
+   const links=await page.locator('.observed-page .observed-link').count();
    const loading=await page.locator(".source-route-loading").count();
-   return {index,label,href,url:new URL(page.url()).pathname,
-    status:regions?"PASS_NATIVE_REGIONS":error?"FAIL_SOURCE_ERROR":loading?"FAIL_STILL_LOADING":
-    facts?"PASS_SOURCE_FACTS":"FAIL_NO_DETAIL_DATA",
-    regionRows:regions,preview:trim(await page.locator("main").innerText()).slice(0,220)};
+   const entry={index,label,href,url:new URL(page.url()).pathname,
+     status:regions?"PASS_NATIVE_REGIONS":error?"FAIL_SOURCE_ERROR":
+       loading?"FAIL_STILL_LOADING":
+       facts?"PASS_SOURCE_TABLE":links?"PASS_SOURCE_LINKS":"FAIL_NO_DETAIL_DATA",
+     regionRows:regions,sourceTables:facts,sourceLinks:links,
+     preview:trim(await page.locator("main").innerText()).slice(0,220)};
+   if(links&&!regions){
+     const detail=page.locator('.observed-page .observed-link').first();
+     const detailHref=await detail.getAttribute("href");
+     entry.firstResultHref=detailHref;
+     try{
+       await detail.tap({timeout:3500});
+       await page.waitForTimeout(150);
+       const current=segment(new URL(page.url()).pathname);
+       const expected=segment(new URL(detailHref,base).pathname);
+       entry.clickedResultRoute=current;
+       if(current!==expected){entry.status="FAIL_RESULT_LINK_NO_NAV";return entry}
+       await page.locator(".source-route-loading")
+          .waitFor({state:"hidden",timeout:7500}).catch(()=>{});
+       const e=await page.locator('.source-route-error,main [role="alert"]').count();
+       const loaded=await page.locator('.observed-page,main .clinic-head,main .original-price-detail').count();
+       entry.resultPageLoaded=Boolean(loaded&&!e);
+       if(e)entry.status="FAIL_RESULT_DETAIL_API_ERROR";
+       else if(!loaded)entry.status="FAIL_RESULT_DETAIL_UNAVAILABLE";
+       else entry.status=facts?"PASS_SOURCE_TABLE_AND_RESULT":"PASS_SOURCE_LINKS_AND_RESULT";
+     }catch(error){
+       entry.status="FAIL_RESULT_LINK_TAP";
+       entry.resultError=trim(error.message).slice(0,190);
+     }
+   }
+   return entry;
  }
 }
 (async()=>{
