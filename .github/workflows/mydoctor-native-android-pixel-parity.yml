@@ -1,0 +1,81 @@
+name: MyDoctor ORIGINAL Android 6.50.0 Pixel Parity
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/mydoctor-full-clone-20261109
+    paths:
+      - .github/workflows/mydoctor-native-android-pixel-parity.yml
+      - mydoctor-clone/android-reference/**
+permissions:
+  contents: read
+concurrency:
+  group: mydoctor-v650-android-pixel-reference-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  native-android-vs-railway:
+    name: Install ORIGINAL 6.50.0 APK and pixel-diff against production web
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Android emulator KVM accelerator on GitHub runner
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install web screenshot browser
+        working-directory: mydoctor-clone/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Install exact pixel comparison dependencies
+        run: python3 -m pip install --user --disable-pip-version-check Pillow numpy
+      - name: Install ORIGINAL app on Android 15 Google APIs emulator and capture reference screen
+        id: emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        continue-on-error: true
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 6G
+          emulator-boot-timeout: 600
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: bash mydoctor-clone/android-reference/capture_original.sh
+      - name: Screenshot actual deployed Railway web at equal viewport
+        if: always()
+        run: node mydoctor-clone/android-reference/capture_web.cjs
+      - name: Produce real pixel-by-pixel comparison, overlays and 3-way images
+        if: always()
+        continue-on-error: true
+        run: python3 mydoctor-clone/android-reference/compare_pixels.py
+      - name: Upload original app screens, UI trees, screenshots, pixel diffs and summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-original-650-android-vs-railway-pixel-audit
+          path: mydoctor-clone/android-reference/artifacts/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Enforce real original screenshot availability and 90 percent pixel target
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,sys
+          p=pathlib.Path("mydoctor-clone/android-reference/artifacts/pixel_parity_report.json")
+          if not p.is_file():sys.exit("FAILED: no actual native screenshot comparison report")
+          d=json.loads(p.read_text())
+          print("ORIGINAL_ANDROID_PIXEL_AUDIT:",json.dumps(d["summary"]))
+          if d["summary"]["measured"]<1:sys.exit("FAILED: original APK was not installed/captured")
+          if d["summary"]["failed"] or d["summary"]["missing"]:
+              sys.exit("NOT PIXEL-MATCHED: fix Android-vs-web deltas before claiming parity")
+          PY
