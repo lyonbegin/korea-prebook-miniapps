@@ -1,5 +1,5 @@
 import React,{useEffect,useState}from"react";
-import{ChevronDown,ChevronRight,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3}from"lucide-react";
+import{ChevronDown,ChevronRight,ChevronLeft,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3,Home,Tags,Hospital,LayoutGrid}from"lucide-react";
 import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
@@ -7,6 +7,7 @@ import{VerifiedSourcePage,SourceRows}from"./VerifiedSourcePage.jsx";
 import {isCompanyRoute,isOriginalDistinctRoute} from "./OriginalDistinctPages.jsx";
 import OriginalFooter from "./OriginalFooter.jsx";
 import originalPriceCards from "./data/original-medical-cost-cards.json";
+import NativeAppHome from "./NativeAppHome.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -48,6 +49,29 @@ function useSource(route){
   });
   return()=>c.abort();
  },[route,retry]);return{...state,refresh:()=>setRetry(x=>x+1)};
+}
+const APP_TABS=[
+  {label:"홈",path:"/",icon:Home},
+  {label:"비대면 진료",path:"/telemedicine/all-department",icon:Stethoscope},
+  {label:"가격 비교",path:"/medical-cost",icon:Tags},
+  {label:"병원 찾기",path:"/hospital",icon:Hospital}
+];
+function AppTabBar({route,go,onMenu,menuOpen}){
+ const selected=route.startsWith("/telemedicine")?"/telemedicine/all-department":
+  route.startsWith("/medical-cost")?"/medical-cost":
+  (route.startsWith("/hospital")||route.startsWith("/dept-hub")||route.startsWith("/map")||route.startsWith("/pharmacy"))?"/hospital":"/";
+ return <nav className="native-app-tabbar" aria-label="앱 하단 메뉴">
+  {APP_TABS.map(({label,path,icon:Icon})=><a key={path} href={path}
+    aria-current={selected===path?"page":undefined}
+    className={"native-tab"+(selected===path?" current":"")}
+    onClick={e=>{e.preventDefault();go(path,{label})}}>
+    <Icon size={22} strokeWidth={selected===path?2.25:1.85} aria-hidden="true"/><span>{label}</span>
+   </a>)}
+  <button type="button" className={"native-tab"+(menuOpen?" current":"")}
+    aria-label="서비스 전체 메뉴" aria-expanded={menuOpen} onClick={onMenu}>
+    <LayoutGrid size={22} aria-hidden="true"/><span>전체</span>
+  </button>
+ </nav>;
 }
 function Anchor({label,path,go,children,className=""}){return <a href={path} className={className} onClick={e=>{e.preventDefault();go(path)}}>{children||label}</a>}
 function Breadcrumb({route,go}){
