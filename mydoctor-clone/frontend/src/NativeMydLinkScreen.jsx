@@ -29,8 +29,9 @@ export default function NativeMydLinkScreen({route,title,go}){
  const [loading,setLoading]=useState(true);
  const [showDoctors,setShowDoctors]=useState(false);
  const [activeFilters,setActiveFilters]=useState([]);
+ const [filterNotice,setFilterNotice]=useState("");
  useEffect(()=>{
-   setResult(null);setError("");setLoading(true);setShowDoctors(false);setActiveFilters([]);
+   setResult(null);setError("");setLoading(true);setShowDoctors(false);setActiveFilters([]);setFilterNotice("");
    if(!key){setLoading(false);setError("유효한 원본 메뉴 키가 없습니다.");return}
    const controller=new AbortController();
    fetchNativeCatalog("myd-link",{myd_link_key:key},controller.signal)
@@ -53,9 +54,26 @@ export default function NativeMydLinkScreen({route,title,go}){
  const searchFilters=(Array.isArray(rawFilters)?rawFilters:[]).map(item=>{
    const key=item?.key??item?.filter_key??item?.filterKey;
    return {key:typeof key==="string"?key:null,
-      label:string(item?.name)||string(item?.label)||string(item?.title)||string(key)};
+      label:string(item?.filter_name)||string(item?.name)||string(item?.label)||string(item?.title)||string(key),
+      requiredAuth:item?.required_auth===true,
+      requiredLocation:item?.required_location===true};
  }).filter(f=>f.key&&/^[A-Za-z0-9_-]{1,55}$/.test(f.key));
- const params=activeFilters.length?{search_filter_keys:activeFilters.join(",")}:{};
+ const defaultSort=link?.doctor_list_sort_rule?.default_filter_key||
+      payload?.doctor_list_sort_rule?.default_filter_key;
+ const params={...(typeof defaultSort==="string"&&/^[A-Za-z0-9_-]{1,55}$/.test(defaultSort)?
+        {sort_filter_key:defaultSort}:{}),
+       ...(activeFilters.length?{search_filter_keys:activeFilters.join(",")}:{})};
+ function selectOriginalFilter(filter){
+   if(filter.requiredAuth){
+     setFilterNotice("원본 앱에서 로그인이 필요한 필터입니다.");return;
+   }
+   if(filter.requiredLocation){
+     setFilterNotice("원본 앱에서 위치 정보가 필요한 필터입니다.");return;
+   }
+   setFilterNotice("");
+   setActiveFilters(old=>old.includes(filter.key)?
+      old.filter(x=>x!==filter.key):[...old,filter.key]);
+ }
  return <div className="native-link-screen" data-native-link-key={key||""}>
   <div className="native-link-header">
    <span>나만의닥터 앱 메뉴</span>
@@ -79,9 +97,9 @@ export default function NativeMydLinkScreen({route,title,go}){
        {searchFilters.map(f=><button key={f.key} type="button"
         aria-pressed={activeFilters.includes(f.key)}
         className={activeFilters.includes(f.key)?"active":""}
-        onClick={()=>setActiveFilters(old=>old.includes(f.key)?
-          old.filter(x=>x!==f.key):[...old,f.key])}>{f.label}</button>)}
+        onClick={()=>selectOriginalFilter(f)}>{f.label}</button>)}
       </div>}
+      {filterNotice&&<p className="native-price-source-status" role="status">{filterNotice}</p>}
       <button type="button" onClick={()=>setShowDoctors(x=>!x)}
        aria-expanded={showDoctors}>
        <Search size={17}/>{showDoctors?"의료진 목록 닫기":"원본 의사 목록 보기"}<ChevronRight size={17}/>
