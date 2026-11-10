@@ -1,0 +1,203 @@
+
+/* Nine source-specific page types, 390x844 verified original screenshot.
+   Styles are scoped so the previously passing 20 page types stay untouched. */
+.site-original-nine .breadcrumb{height:24px}
+.original-record-archive{margin:44px 18px 90px;padding:16px;border-top:7px solid #f5f6f8;font-size:13px;color:#647084}
+.original-record-archive summary{cursor:pointer;font-weight:650}
+.original-record-archive a{display:block;padding:8px 0;border-bottom:1px solid #eef0f3;color:#2c343f}
+.original-record-archive h2{font-size:15px}
+.original-record-archive table{font-size:11px;border-collapse:collapse;margin-top:15px;width:100%}
+.original-record-archive td,.original-record-archive th{border:1px solid #dbe0e6;padding:7px 3px}
+
+/* Source doctor profile */
+.original-doctor-profile{width:100%;color:#1b1e24}
+.original-doctor-portrait{height:236px;background:#eeeff3;position:relative;overflow:hidden}
+.original-doctor-portrait>img{height:100%;width:100%;object-fit:cover;object-position:center 20%}
+.original-doctor-back{position:absolute;left:10px;top:11px;background:#a5a5a5bd;color:white;
+ border:0;display:flex;align-items:center;justify-content:center;border-radius:50%;width:36px;height:36px}
+.original-doctor-head{padding:18px 20px 15px}
+.original-doctor-head p{font-size:13px;color:#929aa6;margin:0 0 8px}
+.original-doctor-head h1{font-size:19px;line-height:26px;letter-spacing:-.3px;margin:0 0 11px;font-weight:750}
+.original-doctor-head small{color:#9aa4af;font-size:13px}
+.original-doctor-tabs{display:flex;gap:0;border-top:1px solid #e9edf0;border-bottom:1px solid #e1e4e8}
+.original-doctor-tabs button{flex:1;border:0;background:#fff;height:46px;font-size:15px;
+ color:#929ba8;font-weight:600}
+.original-doctor-tabs button.current{color:#20242b;border-bottom:2px solid #252a30}
+.original-doctor-information{padding:3px 18px 80px}
+.original-doctor-information h2{margin:18px 0 10px;font-size:16px;font-weight:700}
+.original-doctor-information h3{font-size:15px}
+.original-doctor-information p{font-size:14px;color:#5b646f;line-height:24px;margin:0 0 30px}
+.original-doctor-week{background:#fbfcfd;padding:6px 16px;border-radius:8px}
+.original-doctor-week div{padding:12px 0;border-bottom:1px solid #e8ecf0;font-size:13px}
+.original-doctor-week span{color:#fa5b62;margin-left:9px}
+.original-doctor-hospital{display:flex;justify-content:space-between;padding:16px 2px;border-bottom:1px solid #e6e9ed;font-size:14px}
+.original-doctor-booking{position:fixed;bottom:0;width:100%;max-width:560px;left:50%;transform:translateX(-50%);background:#fff;
+ padding:8px 18px 13px;text-align:center;box-shadow:0 -3px 11px #1017200a;z-index:12}
+.original-doctor-booking p{margin:0 0 10px;color:#2f69e3;font-size:12px}
+.original-doctor-booking a{background:#326dff;color:white;border-radius:9px;display:block;
+ text-align:center;padding:14px 0;font-weight:700;font-size:15px}
+
+/* Real night-treatment hospital cards (source images and 2026 published hours). */
+.original-hospital-night{color:#20252a}
+.original-hospital-night>header{padding:18px 18px 16px;border-bottom:8px solid #f7f8fa}
+.original-hospital-night h1{font-size:20px;line-height:1.35;letter-spacing:-.25px;margin:0 0 12px;font-weight:750}
+.original-hospital-night>header p{font-size:14px;color:#505761;line-height:1.6;margin:0}
+.original-hospital-night-search{display:none}
+.original-hospital-night-regions{display:none}
+.original-hospital-night-list{padding:0 18px}
+.original-hospital-night-card{display:flex;gap:12px;min-height:112px;padding:17px 0;
+ border-bottom:1px solid #e9ecef;justify-content:space-between;align-items:flex-start}
+.original-hospital-night-card>div{min-width:0;flex:1}
+.original-hospital-night-card h2{font-size:14px;line-height:21px;font-weight:700;margin:0 0 5px}
+.original-hospital-night-time,.original-hospital-night-location{font-size:12px;margin:2px 0;line-height:18px;display:flex;align-items:center;gap:5px}
+.original-hospital-night-time{color:#2e6fff}
+.original-hospital-night-location{color:#929cac}
+.original-hospital-night-card>img{height:64px;width:64px;border-radius:8px;flex-shrink:0;object-fit:cover}
+.original-hospital-night-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:8px}
+.original-hospital-night-tags span{background:#f2f3f5;padding:3px 5px;color:#606a78;font-size:11px}
+.original-hospital-night-fees{padding:26px 18px}
+.original-hospital-night-fees h2{font-size:19px}
+.original-source-pricetable{border-collapse:collapse;width:100%;font-size:11px;table-layout:auto}
+.original-source-pricetable td,.original-source-pricetable th{border:1px solid #e4e6e9;padding:10px 6px;font-weight:450;text-align:left}
+.original-source-pricetable th{background:#f7f8fa}
+
+/* The original price-compare screen starts with four large form controls,
+   not a database table. Real source tables and hospital links follow the fold. */
+.original-price-compare{color:#161a20}
+.original-price-intro{padding:18px 18px 0}
+.original-price-intro h1{font-size:21px;font-weight:750;line-height:1.38;letter-spacing:-.4px;margin:0 0 10px}
+.original-price-intro p{font-size:14px;font-weight:600;line-height:23px;margin:0;color:#20252b;word-break:keep-all}
+.original-price-form{padding:24px 18px 39px}
+.original-price-form label{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#929ba6;margin:0 0 16px}
+.original-price-form select{background:#fff;appearance:none;width:100%;height:43px;border:1px solid #d7dce2;border-radius:7px;
+ color:#1c232b;font-size:14px;padding:0 35px 0 14px;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-position:right 11px center;background-repeat:no-repeat}
+.original-price-twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.original-price-submit{background:#316bff;color:#fff;border:0;border-radius:9px;height:48px;width:100%;font-weight:700;font-size:14px}
+.original-price-results{border-top:8px solid #f6f7f9;padding:27px 18px 60px}
+.original-price-results>h2{font-size:18px;line-height:1.4;margin:8px 0 20px}
+.original-price-mode{display:flex;height:45px;background:#f4f5f7;border-radius:8px;padding:3px;margin:0 0 27px}
+.original-price-mode button{width:50%;border:0;background:none;border-radius:6px;color:#7b8492;font-size:14px;font-weight:650}
+.original-price-mode button.selected{background:#fff;color:#2e6fff;box-shadow:0 1px 5px #10172012}
+.original-price-hospital-entry{border:1px solid #e5e8ed;display:flex;justify-content:space-between;
+ border-radius:8px;margin-bottom:8px;padding:13px;font-size:14px}
+.original-price-tablewrap{padding-top:26px}
+.original-price-tablewrap h2{font-size:18px}
+.original-price-maplink{display:block;background:#326dff;color:#fff;border-radius:7px;text-align:center;padding:13px}
+
+/* Original drug article, no generic search or table above the first drug text. */
+.original-drug-intro{padding:24px 18px 22px;border-bottom:8px solid #f4f6f8}
+.original-drug-manufacturer{font-size:12px;color:#2d6fff;margin-bottom:13px}
+.original-drug-intro h1{font-size:21px;line-height:1.36;font-weight:750;margin:0 0 12px;letter-spacing:-.3px}
+.original-drug-reviewed{font-size:11px!important;color:#9ba5b1!important;margin:0 0 14px!important}
+.original-drug-intro p{font-size:13px;line-height:23px;color:#545d68;margin:8px 0}
+.original-drug-symptoms{padding:26px 18px 30px}
+.original-drug-symptoms h2,.original-drug-content h2{font-size:19px;font-weight:750;line-height:1.4;margin:0 0 15px}
+.original-drug-symptoms>span{background:#f1f3f5;border-radius:22px;font-size:13px;padding:7px 12px}
+.original-drug-symptoms p,.original-drug-content p{font-size:14px;line-height:23px;color:#505967;margin:14px 0}
+.original-drug-symptoms>a{display:block;background:#316bff;color:white;font-weight:700;text-align:center;
+ padding:14px 8px;border-radius:9px}
+.original-drug-content{padding:25px 18px 65px}
+.original-drug-content h2{margin-top:27px}
+.original-drug-content button{background:white;border:1px solid #dce2e9;border-radius:8px;padding:13px;display:flex;gap:8px}
+.original-drug-content a{display:block;font-size:13px;padding:8px 0}
+
+/* Observed medical editor title, author, two prose lines, and light-gray TOC. */
+.original-health-article{padding:20px 18px 80px}
+.original-health-article h1{font-size:20px;line-height:1.4;letter-spacing:-.25px;margin:0 0 19px;font-weight:750}
+.original-health-author{display:flex;gap:8px;align-items:center;margin:0 0 21px}
+.original-health-author img{width:36px;height:36px;border-radius:50%;object-fit:contain}
+.original-health-author>div{display:flex;flex-direction:column;gap:4px}
+.original-health-author b{font-size:12px;color:#2c333b;font-weight:650}
+.original-health-author b span{color:#8a94a2;margin-left:4px}
+.original-health-author small{font-size:11px;color:#a1a9b4}
+.original-health-article>p{font-size:13px;line-height:24px;margin:0 0 16px;color:#4e5661}
+.original-health-article>p strong{font-weight:700;color:#232832}
+.original-health-toc{background:#f8f9fb;border-radius:12px;padding:25px;margin:49px 0 79px;
+ display:flex;flex-direction:column;gap:11px}
+.original-health-toc b{font-size:13px;margin-bottom:6px}
+.original-health-toc a{font-size:13px;text-decoration:underline;color:#536070}
+.original-health-article section h2{font-size:18px;font-weight:750;line-height:1.4;margin:0 0 20px}
+.original-health-article section p{font-size:14px;line-height:24px;color:#4e5864}
+.original-health-article section img{max-width:100%;height:auto}
+
+/* Source Q&A: 35 real department chips; first answer preview below chip bank. */
+.original-qna-index{padding:18px 18px 65px}
+.original-qna-index>header{display:flex;justify-content:space-between;align-items:center;margin:0 0 18px}
+.original-qna-index h1{font-size:20px;line-height:26px;margin:0;font-weight:750}
+.original-qna-index>header>a{font-size:13px;color:#2e6fff;border:1px solid #3b75ff;
+ border-radius:10px;padding:9px 12px}
+.original-qna-chips{display:flex;gap:7px;row-gap:9px;flex-wrap:wrap}
+.original-qna-chips a{display:inline-flex;align-items:center;white-space:nowrap;border:1px solid #dce1e5;
+ border-radius:22px;padding:7px 10px;font-size:12px;line-height:16px;color:#434c56}
+.original-qna-search{display:none}
+.original-qna-questions{margin-top:30px}
+.original-qna-item{display:block;position:relative;border-bottom:1px solid #e5e9ec;padding:16px 10px 18px 0}
+.original-qna-item strong{font-size:13px;line-height:21px;display:flex;gap:5px;align-items:flex-start;font-weight:700;padding-right:12px}
+.original-qna-item strong span{color:#2e6fff}
+.original-qna-item p{font-size:13px;color:#54606b;line-height:19px;margin:7px 19px 2px 17px;max-height:38px;overflow:hidden}
+.original-qna-item>svg{position:absolute;right:0;top:33px;color:#a4afbb}
+
+/* Modal and emergency tab structure observed at original 390x844. */
+.original-baby119{position:relative;min-height:800px}
+.original-baby119-gap{height:24px}
+.original-baby119>header{background:#2869e6;color:#fff;padding:10px 16px;
+ height:70px;display:flex;align-items:center;justify-content:space-between}
+.original-baby119>header small{font-size:11px}
+.original-baby119 h1{font-size:16px;margin:3px 0 0;font-weight:700}
+.original-baby119>header button{background:#ffe700;border:0;border-radius:7px;padding:11px 15px;font-size:13px;color:#222}
+.original-baby119 nav{height:45px;display:flex;background:#f5f6f8}
+.original-baby119 nav button{flex:1;font-size:12px;color:#7b8592;border:0;background:transparent}
+.original-baby119 nav button.current{border-bottom:3px solid #3c6eff;color:#1f2935;font-weight:700}
+.original-baby119-map{height:580px;position:relative;background:#dfe4e8;overflow:hidden}
+.original-baby119-filters{display:flex;gap:6px;padding:14px 12px}
+.original-baby119-filters button{background:white;border:1px solid #d8dfe4;border-radius:19px;padding:7px 11px;font-size:12px}
+.original-baby119-filters button.current{border-color:#407bff;color:#2f6fff}
+.original-baby119-mapgrid{position:absolute;top:90px;left:0;right:0;height:500px;
+ background:repeating-linear-gradient(19deg,transparent 0,transparent 30px,#a5afb922 30px,#a5afb922 33px,transparent 33px,transparent 75px),
+ repeating-linear-gradient(107deg,transparent 0,transparent 50px,#bdc3ca88 50px,#bdc3ca88 53px,transparent 53px,transparent 101px);
+ display:grid;grid-template-columns:1fr 1fr;align-items:start;justify-items:center;color:#98a3b0;font-size:12px;opacity:.7}
+.original-baby119-list{padding:20px}
+.original-baby119-list h2{font-size:18px}
+.original-baby119-list a{display:block;padding:12px;border-bottom:1px solid #e7e9ee}
+.original-baby119-overlay{position:fixed;inset:0;background:#0003;z-index:25;display:flex;
+ justify-content:center;align-items:flex-start;padding-top:36.5vh}
+.original-baby119-dialog{width:calc(100% - 20px);max-width:372px;height:398px;border-radius:17px;
+ background:white;text-align:center;display:flex;flex-direction:column;align-items:center;
+ padding:24px 17px 15px;box-shadow:0 4px 17px #1d283130}
+.original-baby119-dialog>p{font-size:13px;color:#6a7686;margin:0 0 8px}
+.original-baby119-dialog h2{font-size:24px;line-height:1.31;margin:0;font-weight:800;letter-spacing:-.6px}
+.original-baby119-phone{height:175px;position:relative;width:130px;margin:12px auto 4px}
+.original-baby119-phone-screen{width:82px;height:148px;border:6px solid #2e3339;border-radius:12px;
+ background:#f5f8ff;position:absolute;top:0;left:20px;display:flex;align-items:center;flex-direction:column}
+.original-baby119-phone-screen i{height:6px;width:30px;background:#252a30;border-radius:4px;margin:2px auto 23px}
+.original-baby119-phone-screen span{color:#fff;background:#3b7aff;border:4px solid #ffda2f;border-radius:50%;
+ height:22px;width:22px;font-size:6px;margin:3px}
+.original-baby119-hand{width:75px;height:80px;background:#f5b5c3;border-radius:38px 28px 12px 8px;
+ transform:rotate(-28deg);position:absolute;left:65px;top:95px;opacity:.9}
+.original-baby119-dialog>a{width:100%;display:flex;justify-content:center;align-items:center;
+ height:50px;border-radius:8px;background:#2f6eff;color:white;font-size:14px;font-weight:700}
+.original-baby119-dialog>button{height:40px;background:white;border:0;color:#475461;font-size:13px}
+
+/* Original company page has NO standard global desktop/mobile header. */
+.site-company{background:#eaf2ff!important}
+.site-company .viewport{background:#eaf2ff}
+.original-company-landing{min-height:100vh;background:#eaf2ff;padding:70px 18px 40px}
+.original-company-identity{text-align:center;margin:0 0 26px}
+.original-company-identity img{height:84px;width:84px;border-radius:24px;box-shadow:0 5px 15px #0c296e19}
+.original-company-identity h1{margin:11px 0 5px;font-size:20px;font-weight:750}
+.original-company-identity>strong{font-size:13px;color:#3670eb}
+.original-company-identity>p{font-size:12px;color:#7c8da8;line-height:20px;margin:18px 0}
+.original-company-cards{display:flex;flex-direction:column;gap:10px}
+.original-company-cards>a{background:white;border-radius:14px;min-height:83px;padding:16px;display:flex;
+ align-items:center;gap:14px;box-shadow:0 3px 14px #3251840b}
+.original-company-cards>a.primary{background:#316bff;color:#fff}
+.original-company-cards>a>span{width:37px;height:39px;flex-shrink:0;border-radius:10px;background:#f0f5ff;
+ display:flex;align-items:center;justify-content:center;font-size:23px}
+.original-company-cards>a.primary>span{background:#5585ff}
+.original-company-cards>a>div{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.original-company-cards b{font-size:13px;font-weight:700}
+.original-company-cards small{font-size:11px;color:#77859a;line-height:18px}
+.original-company-cards .primary small{color:#e6edff}
+.original-company-cards svg{width:15px;color:#6f7b8c}
+.original-company-cards .primary svg{color:white}
