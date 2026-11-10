@@ -31,7 +31,7 @@ export function SourceRows({links,go,kind="directory",defaultMaxHeight=null}){
   <div className={"observed-links observed-"+kind+(hasMore&&!expanded?" is-collapsed":"")}
     style={hasMore&&!expanded?{maxHeight:defaultMaxHeight,overflow:"hidden"}:undefined}>
   {navigable.map(link=><a key={link.path} href={link.path} className="observed-link"
-     onClick={e=>{e.preventDefault();go(link.path)}}>
+     onClick={e=>{e.preventDefault();go(link.path,{label:link.label})}}>
     <span>{link.label}</span><ChevronRight size={16} aria-hidden="true"/>
   </a>)}
   </div>
@@ -99,7 +99,7 @@ function MedicineLandingPage({data,go}){
   <section className="original-medicine-quick">
     <h2>지금 바로 볼 수 있어요</h2>
     <div className="original-medicine-cards">
-      {featured.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+      {featured.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path,{label:x.label})}}>{x.label}</a>)}
     </div>
   </section>
   <section className="original-medicine-categories">
@@ -107,7 +107,7 @@ function MedicineLandingPage({data,go}){
    <h2>효능별로 찾기</h2>
    <div className="original-medicine-effect-links">
      {effects.slice(0,12).map(x=><a key={x.path} href={x.path}
-       onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+       onClick={e=>{e.preventDefault();go(x.path,{label:x.label})}}>{x.label}</a>)}
    </div>
   </section>
   <details className="original-medicine-directory">
@@ -133,7 +133,7 @@ function FAQIndexPage({data,go}){
      const label=end>=0?link.label.slice(0,end+1):link.label;
      const tags=end>=0?link.label.slice(end+1).trim():"";
      return <a href={link.path} key={link.path} className="original-faq-item"
-       onClick={e=>{e.preventDefault();go(link.path)}}>
+       onClick={e=>{e.preventDefault();go(link.path,{label:link.label})}}>
        <span className="original-faq-item-text"><strong>{label}</strong>
          {tags&&<small>{tags}</small>}</span><ChevronRight size={20} aria-hidden="true"/>
      </a>;
@@ -142,7 +142,7 @@ function FAQIndexPage({data,go}){
    {!!pages.length&&<nav className="original-faq-pagination" aria-label="건강 FAQ 페이지">
      {pages.map(x=><a href={x.path} key={x.path}
        aria-current={decodeURIComponent(x.path)==="/healthLab/FAQ"?"page":undefined}
-       onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+       onClick={e=>{e.preventDefault();go(x.path,{label:x.label})}}>{x.label}</a>)}
    </nav>}
  </section>;
 }
@@ -228,7 +228,7 @@ function NightPharmacyPage({data,go}){
    })}</div>
    {openOnly&&!cards.length&&<p className="observed-empty">현재 영업 중인 것으로 확인되는 약국이 없습니다.</p>}
    {!!pages.length&&<nav className="observed-pages" aria-label="야간 약국 목록 페이지">
-     {pages.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+     {pages.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path,{label:x.label})}}>{x.label}</a>)}
    </nav>}
    <details className="md-hidden-links original-pharmacy-directory">
      <summary>지역별 약국·관련 정보 전체 보기</summary>
@@ -344,7 +344,7 @@ export function VerifiedSourcePage({data,go,route}){
     <p className="observed-empty">{entries.length?"일치하는 항목이 없습니다.":"현재 저장된 원본 연결 항목이 없습니다."}</p>}
    {!!pageLinks.length&&<nav className="observed-pages" aria-label="원본 목록 페이지">
      {pageLinks.map(link=><a href={link.path} key={link.path}
-       onClick={e=>{e.preventDefault();go(link.path)}}>{link.label}</a>)}
+       onClick={e=>{e.preventDefault();go(link.path,{label:link.label})}}>{link.label}</a>)}
    </nav>}
    {data.sourceQuality&&<div className="observed-source-foot">원본 공개 사실 데이터 · {data.sourceQuality} · 전체 원본 기능 검증 전</div>}
  </section>;
