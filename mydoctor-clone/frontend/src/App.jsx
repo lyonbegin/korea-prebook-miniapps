@@ -44,6 +44,10 @@ function Anchor({label,path,go,children,className=""}){return <a href={path} cla
 function Breadcrumb({route,go}){
  const medical=route.startsWith("/medical-cost"),doctor=route.startsWith("/telemedicine"),hospital=route.startsWith("/hospital");
  const detailed=route.startsWith("/hospital/detail");
+ const cleanRoute=decodeURIComponent(route.split("?")[0]);
+ if(cleanRoute==="/healthLab/FAQ")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="건강 정보" path="/healthLab" go={go}/><span>›</span><strong>건강 FAQ</strong></div>;
+ if(cleanRoute==="/pharmacy/야간약국")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="약국찾기" path="/pharmacy" go={go}/><span>›</span><strong>전국 야간 약국</strong></div>;
+ if(cleanRoute==="/hospital/10055/reviews")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><Anchor label="동산의원" path="/hospital/detail?hospital_id=10055" go={go}/><span>›</span><strong>후기</strong></div>;
  return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span>{detailed?<><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><span>병원 상세</span></>:<strong>{medical?"가격비교":doctor?"비대면진료":hospital?"병원찾기":"상세정보"}</strong>}</div>;
 }
 function CostTable({tables}){
