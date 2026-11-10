@@ -1,0 +1,56 @@
+name: MyDoctor 6.50 Native Real Tap Smoke
+on:
+  push:
+    branches:
+      - feature/mydoctor-full-clone-20261109
+    paths:
+      - .github/workflows/mydoctor-native-tap-now.yml
+      - mydoctor-clone/frontend/src/**
+      - mydoctor-clone/frontend/tests/native-app-layout.cjs
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-native-taps:
+    name: Tap live clone source-backed mobile routes at 390x844
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install exact Playwright dependencies
+        working-directory: mydoctor-clone/frontend
+        run: npm install --no-audit --no-fund
+      - name: Build real React pages
+        working-directory: mydoctor-clone/frontend
+        run: npm run build
+      - name: Start frontend and original-JSON API proxy
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_TEST_PROXY_TARGET: https://mydoctor-mobile-api-production.up.railway.app
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5173 >/tmp/native-app-vite.log 2>&1 &
+          for i in $(seq 1 45); do
+            curl -fsS http://127.0.0.1:5173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/native-app-vite.log
+          exit 1
+      - name: Tap source-backed app routes and record failures
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/native-app-layout.cjs
+      - name: Preserve screenshot and interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-native-live-taps-390x844
+          path: |
+            mydoctor-clone/frontend/qa-artifacts/native-app-layout.json
+            mydoctor-clone/frontend/qa-artifacts/native-fail-*.png
+          if-no-files-found: warn
