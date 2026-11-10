@@ -356,3 +356,10 @@
 .original-review-hospital .review-metrics strong{font-size:16px;font-weight:500}
 .original-review-hospital .review-source-tags span{display:inline-flex;align-items:center;gap:4px}
 .original-review-hospital .review-source-tags img{display:inline-block;width:16px;height:16px;object-fit:contain}
+
+
+/* Pharmacy source screenshot: colored filled time icon and bold schedule status. */
+.original-pharmacy-cardline .pharmacy-time-icon{background:#2f6eff;color:#fff;border-radius:50%;padding:2px;stroke-width:2.4}
+.original-pharmacy-cardline .pharmacy-status-label{color:#626b75;font-weight:600}
+.original-pharmacy-cardline:has(.pharmacy-time-icon){gap:5px}
+.original-pharmacy-cardline>svg:not(.pharmacy-time-icon){stroke-width:2.7}
