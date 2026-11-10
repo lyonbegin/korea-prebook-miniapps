@@ -141,7 +141,7 @@
 .observed-pages a{display:flex;justify-content:center;align-items:center;width:36px;height:36px;border:1px solid #d8dce5;border-radius:7px;font-size:13px}
 
 /* Fixed from side-by-side original/clone 390px screenshot, latest capture: source hero has white background. */
-.md-home-hero{filter:none!important;margin-top:0}
+.md-home-hero{filter:url(#md-remove-dark-backdrop)!important;margin-top:0}
 .md-stats{margin-top:16px}
 .md-awards .award-line{display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap;height:20.5px}
 .md-awards .award-line img{height:16px;width:9px;object-fit:contain;flex-shrink:0}
