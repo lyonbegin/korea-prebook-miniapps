@@ -170,6 +170,33 @@ class NativeCatalogTest(unittest.TestCase):
         self.assertEqual(len(pool.writes),0)
         self.assertEqual(len(tasks.tasks),1)
 
+    def test_native_myd_link_is_path_segment_not_query_and_never_forwards_auth(self):
+        pool=FakePool()
+        tasks=BackgroundTasks()
+        upstream=FakeClient(FakeHTTPResponse(data={
+          "data":{"link_type":"doctor_list","key":"symptom-acneOralMedication",
+                  "doctor_list_filter_rule":{"search_filter_keys":["acne"]}}
+        }))
+        with patch("app.native_catalog.httpx.AsyncClient",return_value=upstream):
+            result=asyncio.run(get_native_public_catalog(
+                req(pool,"myd_link_key=symptom-acneOralMedication"),
+                tasks,"myd-link"))
+        self.assertEqual(result.status_code,200)
+        self.assertEqual(
+          upstream.seen[0][0],
+          "https://api-prod.merakiplace.work/patient-api/app/myd-link/symptom-acneOralMedication")
+        self.assertEqual(len(tasks.tasks),1)
+        self.assertEqual(len(pool.writes),0)
+
+    def test_native_myd_link_rejects_untrusted_path_components(self):
+        for dangerous in ("..%2Fuser%2Fme","%2Fadmin","https%3A%2F%2Fevil.com",
+                          "","foo%3Ftoken%3D123"):
+            pool=FakePool()
+            with self.assertRaises(Exception):
+                asyncio.run(get_native_public_catalog(
+                    req(pool,"myd_link_key="+dangerous),BackgroundTasks(),"myd-link"))
+            self.assertFalse(pool.queries)
+
     def test_no_store_original_never_cached(self):
         pool=FakePool()
         tasks=BackgroundTasks()
