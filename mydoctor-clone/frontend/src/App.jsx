@@ -270,16 +270,25 @@ const ORIGINAL_PRICE_CARD_LABELS={
 function CostScreen({data,go}){
  const[search,setSearch]=useState("");
  const choices=originalPriceCards.filter(x=>!search||[x.title,x.subtitle].join(" ").includes(search));
- return <><section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1>
- <p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p></section>
- <section className="md-cost-list"><h2>가격 비교 카테고리</h2>
- <div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}>
- <strong>{v.title}</strong>{v.subtitle&&<small>{v.subtitle}</small>}</Anchor>)}</div></section>
- <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search}
-  onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
- <section className="md-original-links"><h2>주요 가격 비교</h2>
- <SourceRows links={data.links.filter(x=>!originalPriceCards.some(v=>decodeURIComponent(v.path)===decodeURIComponent(x.path))&&x.path!=="/")} go={go}/></section>
- </>;
+ return <div className="native-price-directory">
+  <section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1>
+   <p>항목별 진료비와 약값을 확인해 보세요.</p>
+  </section>
+  <div className="md-search-quiet native-price-search"><Search size={19} aria-hidden="true"/>
+    <input aria-label="가격 비교 항목 검색" value={search}
+      onChange={e=>setSearch(e.target.value)} placeholder="어떤 가격이 궁금하세요?"/>
+    {search&&<button type="button" aria-label="검색어 지우기" onClick={()=>setSearch("")}><X size={17}/></button>}
+  </div>
+  <section className="md-cost-list"><h2>가격 비교 카테고리</h2>
+    <div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}>
+      <strong>{v.title}</strong>{v.subtitle&&<small>{v.subtitle}</small>}<ChevronRight size={17} className="native-price-arrow"/>
+     </Anchor>)}</div>
+    {choices.length===0&&<p role="status" className="native-price-empty">검색 결과가 없습니다.</p>}
+  </section>
+  <section className="md-original-links"><h2>주요 가격 비교</h2>
+   <SourceRows links={data.links.filter(x=>!originalPriceCards.some(v=>decodeURIComponent(v.path)===decodeURIComponent(x.path))&&x.path!=="/")} go={go}/>
+  </section>
+ </div>;
 }
 function HospitalDetail({data,go}){
  const[tab,setTab]=useState("진료비"),[filter,setFilter]=useState("전체");
