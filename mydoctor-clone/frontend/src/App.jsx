@@ -9,6 +9,7 @@ import OriginalFooter from "./OriginalFooter.jsx";
 import originalPriceCards from "./data/original-medical-cost-cards.json";
 import NativeAppHome from "./NativeAppHome.jsx";
 import NativeApiCatalog from "./NativeApiCatalog.jsx";
+import NativeMydLinkScreen from "./NativeMydLinkScreen.jsx";
 import NativePriceRegions from "./NativePriceRegions.jsx";
 
 const ORIGINAL="https://my-doctor.io";
@@ -40,6 +41,11 @@ function useSource(route){
  const[state,setState]=useState({data:null,loading:true,error:""});
  const[retry,setRetry]=useState(0);
  useEffect(()=>{const c=new AbortController();setState({data:null,loading:true,error:""});
+  // Our native MyD-link route has no legacy website HTML source.
+  if(route.startsWith("/native/myd-link/")){
+    setState({data:null,loading:false,error:""});
+    return()=>c.abort();
+  }
   // Keep the loading view visible until the original response actually arrives.
   // The API now sends first-visit source facts before asynchronously persisting
   // them, so a synthetic 8-second timeout would incorrectly hide a valid load.
@@ -333,7 +339,8 @@ export default function App(){
  const companyPage=isCompanyRoute(route),distinctPage=isOriginalDistinctRoute(route),childEmergency=decodeURIComponent(route.split("?")[0])==="/map/baby119";
  // App-native core screens never wait for the legacy my-doctor.io HTML gateway.
  const nativePriceDetail=decodeURIComponent(route.split("?")[0])==="/medical-cost/마운자로";
- const nativeRoot=home||nativePriceDetail||route==="/hospital"||route==="/medical-cost"||
+ const nativeMydLink=route.startsWith("/native/myd-link/");
+ const nativeRoot=home||nativeMydLink||nativePriceDetail||route==="/hospital"||route==="/medical-cost"||
    route==="/telemedicine/all-department"||route==="/telemedicine";
  const appData=s.data||{links:[],tables:[],sections:[],paragraphs:[]};
  return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
@@ -345,6 +352,7 @@ export default function App(){
  </header>}{!home&&!companyPage&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>
   {nativeRoot?(home?<NativeAppHome data={appData} go={go}/>:
+     nativeMydLink?<NativeMydLinkScreen route={route} title={routeName} go={go}/>:
      route==="/hospital"?<HospitalScreen data={appData} go={go}/>:
      route==="/medical-cost"?<CostScreen data={appData} go={go}/>:
      nativePriceDetail?<section className="native-price-detail-route"><h1>마운자로 가격 비교</h1><NativePriceRegions verticalKey="mounjaro"/></section>:
