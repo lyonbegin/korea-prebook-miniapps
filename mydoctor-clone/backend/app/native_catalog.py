@@ -121,6 +121,34 @@ def sanitize_public_json(value: Any, depth: int = 0) -> Any:
         return value
     raise ValueError("Unsupported original JSON type")
 
+def public_json_shape(value: Any, depth: int = 0) -> Any:
+    """Data-free shape summary; records only field names and JSON types."""
+    if depth >= 4:
+        return "nested"
+    if isinstance(value, dict):
+        return {str(key)[:70]: public_json_shape(v, depth + 1)
+                for key, v in list(value.items())[:24]}
+    if isinstance(value, list):
+        return {"array_length": len(value),
+                "first_item_shape": public_json_shape(value[0], depth + 1)
+                    if value else "empty"}
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "string"
+    return "null"
+
+
+def log_native_shape(resource: str, data: Any, origin: str) -> None:
+    schema = json.dumps(public_json_shape(data), ensure_ascii=False)
+    logging.getLogger("uvicorn.error").info(
+        "NATIVE_APK_650_JSON_SHAPE resource=%s from=%s shape=%s",
+        resource, origin, schema[:2900],
+    )
+
+
 def safe_parameters(resource: str, args) -> str:
     if resource not in NATIVE_RESOURCES:
         raise HTTPException(404, "Unknown native catalog resource")
@@ -183,6 +211,7 @@ async def get_native_public_catalog(
         data = cached["response_json"]
         if isinstance(data, str):
             data = json.loads(data)
+        log_native_shape(resource, data, "postgresql")
         return JSONResponse(
             {"ok": True, "resource": resource, "cache": "HIT",
              "from": "postgresql", "data": data,
@@ -231,6 +260,7 @@ async def get_native_public_catalog(
         raise HTTPException(502, "Original public JSON response failed validation")
     if not isinstance(clean, (dict, list)) or not clean:
         raise HTTPException(502, "Empty original public JSON response")
+    log_native_shape(resource, clean, "original_json_200")
     cache_control = reply.headers.get("cache-control", "").lower()
     cacheable = not any(x in cache_control for x in ("private", "no-store"))
     if cacheable:
