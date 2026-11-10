@@ -43,11 +43,11 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         continue-on-error: true
         with:
-          api-level: 35
-          # Alternate Play Store system image may expose a compatible ARM64
-          # native-bridge integration unavailable in the prior google_apis image.
-          # This is a diagnostic experiment; gate still fails without native UI.
-          target: google_apis_playstore
+          api-level: 30
+          # Official Android 11 x86_64 Google APIs image supports native
+          # ARM64 binary translation (Android Emulator release notes).
+          # Android 15 x86_64 image previously could not load libreactnative.so.
+          target: google_apis
           arch: x86_64
           profile: pixel_5
           ram-size: 4096M
