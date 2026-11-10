@@ -185,6 +185,11 @@ NATIVE_FAILURE_PROBES = (
     ("lowest_price_v2", "GET", "/patient-api/medical-map/lowest-price/v2"),
     ("lowest_price_v2_slash", "GET", "/patient-api/medical-map/lowest-price/v2/"),
     ("lowest_price_v1", "GET", "/patient-api/medical-map/lowest-price"),
+    # Actual suffixes recovered from Hermes function 27183/27187/27191.
+    ("lowest_price_categories_actual", "GET", "/patient-api/medical-map/lowest-price/categories"),
+    ("lowest_price_v1_regions_actual", "GET", "/patient-api/medical-map/lowest-price/regions"),
+    ("lowest_price_v2_regions_actual", "GET", "/patient-api/medical-map/lowest-price/v2/regions"),
+    ("lowest_price_v2_regions_options", "OPTIONS", "/patient-api/medical-map/lowest-price/v2/regions"),
     ("lowest_price_v2_options", "OPTIONS", "/patient-api/medical-map/lowest-price/v2"),
     ("lowest_price_v2_slash_options", "OPTIONS", "/patient-api/medical-map/lowest-price/v2/"),
     ("hospital_v2_options", "OPTIONS", "/patient-api/v2/hospital/"),
