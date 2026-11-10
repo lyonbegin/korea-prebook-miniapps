@@ -124,7 +124,7 @@ jobs:
           if [ -f ../backend/data/public_menu_facts_20261110.json ]; then git -C ../.. add mydoctor-clone/backend/data/public_menu_facts_20261110.json; fi
           if ! git -C ../.. diff --cached --quiet; then
             git -C ../.. commit -m "data(mydoctor): enrich publicly verified page facts [skip ci]"
-            git -C ../.. push origin HEAD:feature/mydoctor-full-clone-20261109
+            git -C ../.. push origin HEAD:feature/mydoctor-full-clone-20261109 || echo "MENU SEED PUSH CONFLICT: data preserved as artifact; continue actual browser-click QA"
           else
             echo "No new observed factual fields; no DB seed changes."
           fi
