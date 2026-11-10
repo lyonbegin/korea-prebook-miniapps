@@ -337,3 +337,6 @@
 .review-top{padding-bottom:13px}
 .review-channel{padding-top:17px}
 .review-channel>p{margin-bottom:10px}
+
+/* Source screenshot card top is 3px earlier than the clone at 390x844. */
+.original-medicine-quick h2{margin-bottom:15px}
