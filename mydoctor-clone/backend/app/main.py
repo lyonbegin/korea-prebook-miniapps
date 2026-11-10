@@ -15,7 +15,7 @@ import httpx
 from .catalog_schema import SCHEMA
 from .source_parser import extract_page, source_key
 from .sitemap_index import sync_public_index,backfill_existing_route_types
-from .public_facts import extract_public_facts,seed_observed_facts,insert_facts,safe_route
+from .public_facts import extract_public_facts,seed_observed_facts,seed_menu_facts,insert_facts,safe_route
 
 try:
     import asyncpg
@@ -40,6 +40,7 @@ async def lifespan(app: FastAPI):
             async with pool.acquire() as c: await c.execute(SCHEMA)
             app.state.pool=pool
             await seed_observed_facts(pool)
+            await seed_menu_facts(pool)
             if os.getenv("SITEMAP_SYNC_ENABLED","1")=="1":
                 async def refresh_types_and_sitemaps():
                     await backfill_existing_route_types(pool)
