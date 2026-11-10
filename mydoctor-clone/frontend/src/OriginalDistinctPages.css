@@ -267,3 +267,10 @@
 .original-baby119-phone{height:183px}
 .original-baby119-dialog>p{color:#2e73ff;font-size:15px}
 .original-baby119-hand{left:67px;top:91px}
+
+
+/* Remaining Q&A image registration: publicly sourced pills are 6px
+   above clone's recorded baseline; the question list starts 2px lower. */
+.original-qna-chips{position:relative;top:-6px}
+.original-qna-questions{position:relative;top:2px}
+.original-qna-item>svg{display:none}
