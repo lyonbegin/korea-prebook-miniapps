@@ -241,3 +241,17 @@
 .original-baby119-phone{height:205px}
 .original-company-identity img{width:96px;height:96px}
 .original-company-landing{padding-top:44px}
+
+
+/* Screen-specific original screenshot registration, after 25/29 CI pass.
+   Retain true source text, article content and first-fold selectors. */
+.original-hospital-night>header{padding-bottom:46px}
+.original-hospital-night-card{min-height:150px;padding:22px 0}
+.original-hospital-night-time,.original-hospital-night-location{margin:4px 0}
+.original-drug-symptoms p{font-size:17px;line-height:27px}
+.original-qna-questions{margin-top:7px}
+.original-baby119>header{height:80px}
+.original-baby119 nav{height:47px}
+.original-baby119-dialog{padding-top:27px}
+.original-baby119-phone{margin-top:25px}
+.original-baby119-hand{top:78px;left:86px}
