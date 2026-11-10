@@ -93,6 +93,63 @@ function FAQIndexPage({data,go}){
  </section>;
 }
 
+
+const KOREAN_REGIONS=new Set(["전국","강원","경기","경남","경북","대구","대전","부산","서울","세종","울산","인천","전남광주","전북","제주","충남","충북"]);
+/** The original has opening-hour, weekly schedule, address and telephone cards. */
+function NightPharmacyPage({data,go}){
+ const [regionOpen,setRegionOpen]=useState(false);
+ const [kindOpen,setKindOpen]=useState(false);
+ const [selected,setSelected]=useState(null);
+ const today=new Intl.DateTimeFormat("ko-KR",{weekday:"short",timeZone:"Asia/Seoul"}).format(new Date()).replace("요일","");
+ const regions=verifiedLinks(data.links).filter(x=>KOREAN_REGIONS.has(x.label)&&decodeURIComponent(x.path).startsWith("/pharmacy/야간약국"));
+ const mapLink=data.links.find(x=>x.label==="지도 보기")?.path;
+ const sundayLink=data.links.find(x=>x.label==="일요일약국")?.path;
+ const pages=data.pagination?.length?data.pagination:data.links.filter(x=>/^[2-9]\d*$/.test(x.label.trim())&&/[?&]page=\d+/.test(x.path));
+ const count=data.title.match(/([\d,]+)곳/)?.[1]||"";
+ const cards=data.pharmacyCards||[];
+ const sourceTitle=data.title.includes("목록")?data.title:data.title.replace("전국 야간 약국 ","전국 야간 약국 목록 - ");
+ return <section className="original-pharmacy" data-source-view="pharmacy-list">
+   <div className="original-pharmacy-heading"><h1>{sourceTitle}</h1>
+     <p>나만의닥터에서 조회한 {count}개 전국 야간 문 연 약국의 위치, 영업시간을 알려드릴게요.</p>
+   </div>
+   <div className="original-pharmacy-controls">
+     <button className="original-pharmacy-select" type="button" aria-expanded={regionOpen}
+       onClick={()=>{setRegionOpen(!regionOpen);setKindOpen(false)}}><MapPin size={20}/>전국 <ChevronRight size={18}/></button>
+     {regionOpen&&<nav className="original-pharmacy-options" aria-label="지역 선택">
+       {regions.map(x=><a key={x.path} href={x.path} onClick={e=>{e.preventDefault();setRegionOpen(false);go(x.path)}}>{x.label}</a>)}
+     </nav>}
+     <button className="original-pharmacy-select" type="button" aria-expanded={kindOpen}
+       onClick={()=>{setKindOpen(!kindOpen);setRegionOpen(false)}}>야간약국 <ChevronRight size={18}/></button>
+     {kindOpen&&<div className="original-pharmacy-options" role="group" aria-label="약국 종류 선택">
+       {sundayLink&&<a href={sundayLink} onClick={e=>{e.preventDefault();go(sundayLink)}}>일요일약국</a>}
+       <span aria-current="true">야간약국</span>
+     </div>}
+     {mapLink&&<a className="original-pharmacy-map" href={mapLink} onClick={e=>{e.preventDefault();go(mapLink)}}>지도 보기</a>}
+   </div>
+   <div className="original-pharmacy-list">{cards.map((card,i)=>{
+     const exp=new RegExp("\\("+today+"\\)\\s*([^,]+)");
+     const day=card.weekly_hours?.match(exp)?.[1]||card.today_hours?.replace(/^\([^)]+\)\s*/,"");
+     return <article className="original-pharmacy-card" key={card.name+"-"+i}>
+       <h2><button type="button" aria-expanded={selected===i}
+         onClick={()=>setSelected(selected===i?null:i)}>{card.name}</button></h2>
+       {day&&<p className="original-pharmacy-cardline"><span className="pharmacy-time-icon">◷</span>({today}) {day}</p>}
+       {card.weekly_hours&&<p className="original-pharmacy-cardline"><span aria-hidden="true">▦</span>
+         <span><b>야간 영업</b> {card.weekly_hours}</span></p>}
+       {card.address&&<p className="original-pharmacy-cardline"><MapPin size={16}/><span>{card.address}</span></p>}
+       {card.phone&&<p className="original-pharmacy-cardline"><span aria-hidden="true">☎</span>
+         <a href={"tel:"+card.phone}>{card.phone}</a></p>}
+       {selected===i&&<div className="original-pharmacy-expanded" role="region" aria-label={card.name+" 정보"}>
+         <strong>{card.name}</strong><p>{card.address}</p>
+         {card.phone&&<a href={"tel:"+card.phone}>전화 걸기</a>}
+       </div>}
+     </article>;
+   })}</div>
+   {!!pages.length&&<nav className="observed-pages" aria-label="야간 약국 목록 페이지">
+     {pages.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+   </nav>}
+ </section>;
+}
+
 export function VerifiedSourcePage({data,go,route}){
  const kind=getViewType(route);
  const [search,setSearch]=useState("");
@@ -123,6 +180,7 @@ export function VerifiedSourcePage({data,go,route}){
     return true;
  });
  if(route.split("?")[0]==="/healthLab/FAQ")return <FAQIndexPage data={data} go={go}/>;
+ if(route.split("?")[0]==="/pharmacy/야간약국"&&data.pharmacyCards?.length)return <NightPharmacyPage data={data} go={go}/>;
  if(route.endsWith("/reviews")&&data.reviewSummary)return <ReviewsSummary data={data} go={go}/>;
  return <section className={"observed-page observed-"+kind} data-source-view={kind}>
    <header className="observed-heading">
