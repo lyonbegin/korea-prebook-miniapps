@@ -1,8 +1,8 @@
 /**
  * Real 390x844 touchscreen clicks on EVERY observed row under /dept-hub/피부과.
- * No simulated API success. Each user tap must open its correct ORIGINAL child
- * destination if that child's factual data is not verified in our DB.
- * Original HTTP 429 is reported separately (never misrepresented as a data pass).
+ * Every item must open a LOCAL detail route. That route reads the DB or
+ * fetches the original source on demand. An origin 429 or a missing detail
+ * is a failure, not a successful external redirect or a mocked response.
  */
 const fs=require("node:fs");
 const {chromium}=require("playwright");
@@ -27,17 +27,9 @@ const key=href=>{const u=new URL(href,"https://my-doctor.io");return decodeURICo
   for(let i=0;i<entries.length;i++){
    const row={number:i+1,label:entries[i].label,href:entries[i].href,kind:entries[i].data,status:"NOT_TESTED"};
    try{
-    if(row.kind==="original-external"){
-     if(entries[i].target!=="_blank")throw Error("unverified original target must open new tab");
-     const popupEvent=page.waitForEvent("popup",{timeout:7000});
-     await links.nth(i).tap({timeout:7000});
-     const popup=await popupEvent;
-     await popup.waitForURL(url=>url.hostname==="my-doctor.io",{timeout:7500});
-     row.opened=popup.url();
-     row.destination_matches=key(row.opened)===key(row.href);
-     row.status=row.destination_matches?"OPENED_REAL_ORIGINAL":"WRONG_DESTINATION";
-     await popup.close();
-    }else{
+    if(row.kind!=="origin-on-demand")throw Error("Source rows must navigate within the clone (on-demand origin API)");
+    if(entries[i].target==="_blank")throw Error("Source row unexpectedly opens a new tab");
+    {
      const href=new URL(row.href);
      const before=key(page.url());
      await links.nth(i).tap({timeout:7000});
