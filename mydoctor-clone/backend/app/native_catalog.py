@@ -142,7 +142,7 @@ def safe_parameters(resource: str, args) -> str:
                 raise HTTPException(400, "Coordinate out of range")
             if key in ("page", "offset", "size", "limit") and (not val.isdecimal() or int(val) > (100 if key in ("limit", "size") else 2000)):
                 raise HTTPException(400, "Invalid pagination")
-        elif key in TEXT_FIELD and not re.fullmatch(r"[\\w가-힣 .:-]{1,80}", val):
+        elif key in TEXT_FIELD and not re.fullmatch(r"[\w가-힣 .:-]{1,80}", val):
             raise HTTPException(400, "Invalid search parameter")
         query.append((key, val))
     return urlencode(sorted(query))
