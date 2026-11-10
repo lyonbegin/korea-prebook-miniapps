@@ -51,6 +51,11 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/native-app-layout.cjs
+      - name: Touch-test the ACTUAL Railway production website, not only local Vite
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: https://mydoctor-mobile-web-production.up.railway.app
+        run: node tests/native-app-layout.cjs
       - name: Preserve screenshot and interaction evidence
         if: always()
         uses: actions/upload-artifact@v4
