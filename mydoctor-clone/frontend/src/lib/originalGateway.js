@@ -22,3 +22,26 @@ export async function fetchPublicFacts(route,signal){
  }
  return body;
 }
+
+/** App 6.50.0 observed endpoint catalog, not legacy website HTML.
+ * Native requests go through our allowlisted, DB-first Railway API.
+ * This never forwards application credentials, cookies or patient data.
+ */
+const NATIVE_RESOURCES=new Set(["home-menu","home-banner","app-config","doctor-list",
+ "hospital-list","pharmacy-nearby","lowest-price","health-info"]);
+export async function fetchNativeCatalog(resource,parameters={},signal){
+ if(!NATIVE_RESOURCES.has(resource))throw Error("원본 앱 자원 목록에 없습니다: "+resource);
+ const query=new URLSearchParams();
+ for(const [key,value] of Object.entries(parameters)){
+   if(value!==undefined&&value!==null&&value!=="")query.append(key,String(value));
+ }
+ const url=API+"/native/catalog/"+resource+(query.size?"?"+query.toString():"");
+ const response=await fetch(url,{method:"GET",credentials:"omit",headers:{Accept:"application/json"},signal});
+ const body=await response.json().catch(()=>null);
+ if(!response.ok||!body?.ok){
+   const error=body?.error||"NATIVE_CATALOG_UNAVAILABLE";
+   const e=new Error("원본 앱 API: "+error+" ("+(body?.origin_http_status||response.status)+")");
+   e.details=body;e.status=response.status;throw e;
+ }
+ return body;
+}
