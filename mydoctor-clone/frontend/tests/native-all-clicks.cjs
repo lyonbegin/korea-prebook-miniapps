@@ -86,7 +86,7 @@ async function observe(page,kind,label,href,index){
  async function runOne(kind,href,label,index,isButton){
   try{
    await goto(kind==="home"?"/":"/medical-cost");
-   const locator=kind==="home"?page.locator(".native-symptom-item").nth(index):
+   const locator=kind==="home"?page.locator('[data-native-menu-count="20"] .native-symptom-item').nth(index):
      page.locator(".md-cost-grid .cost-tile").nth(index);
    await locator.waitFor({timeout:6500});
    await locator.tap({timeout:3500});
@@ -104,7 +104,7 @@ async function observe(page,kind,label,href,index){
  try{
   await goto("/");
   await page.locator('[data-native-menu-count="20"]').waitFor({timeout:14000});
-  const menus=await page.locator(".native-symptom-item").evaluateAll(els=>
+  const menus=await page.locator('[data-native-menu-count="20"] .native-symptom-item').evaluateAll(els=>
     els.map((e,i)=>({index:i,label:(e.innerText||"").trim(),
        href:e.getAttribute("href"),isButton:e.tagName==="BUTTON"})));
   for(const item of menus){
