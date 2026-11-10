@@ -191,3 +191,6 @@
 /* Revert experimentally worse 14.5px: 14px yielded 10.85% measured pixel difference. */
 .md-cost-intro p{font-size:14px;line-height:1.55}
 
+
+/* 390px original screenshot: price cards begin 4px above current cloned grid. */
+.md-cost-list h2{margin-bottom:11px}
