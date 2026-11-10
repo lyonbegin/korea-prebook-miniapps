@@ -330,3 +330,10 @@
 .original-medicine-effect-links a{font-size:14px;border:1px solid #e6e9ef;padding:12px;border-radius:8px}
 .original-medicine-directory{margin:18px 20px;padding:14px;border:1px solid #eff1f4;border-radius:8px}
 .original-medicine-directory summary{cursor:pointer;color:#667487;font-size:14px}
+
+
+/* Review baseline correction from actual 390×844 source/clone screenshots:
+   first review header 15px late and first reviewer 25px late. */
+.review-top{padding-bottom:13px}
+.review-channel{padding-top:17px}
+.review-channel>p{margin-bottom:10px}
