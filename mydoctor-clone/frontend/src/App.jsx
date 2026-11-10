@@ -229,7 +229,7 @@ function DoctorScreen({data,go}){
  <details className="md-hidden-links"><summary>전체 증상 · 진료과 링크 보기</summary><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory"/></details>
  </div>;
 }
-function HospitalScreen({data,go}){
+function HospitalScreen({data,go,verticalKey=""}){
  const[region,setRegion]=useState(""),[dept,setDept]=useState(""),[schedule,setSchedule]=useState(""),[message,setMessage]=useState("");
  const sourceDepts=data.links.filter(v=>v.path.startsWith("/dept-hub/")&&decodeURIComponent(v.path).split("/").filter(Boolean).length===2);
  const availableHours=data.links.filter(v=>v.path.startsWith("/hospital/")&&/야간진료|일요일진료|공휴일진료/.test(decodeURIComponent(v.path)));
@@ -250,7 +250,7 @@ function HospitalScreen({data,go}){
     if(target){setMessage("");go(target)}
     else setMessage("선택 조건에 해당하는 원본 경로가 아직 확보되지 않았습니다.");
  };
- return <><NativeApiCatalog resource="hospital-list" title="원본 앱 병원 목록" go={go} compact/><section className="md-intro md-hospital-intro"><h1>근처 병원 찾기</h1><p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p></section>
+ return <><NativeApiCatalog resource="hospital-list" parameters={verticalKey?{vertical_key:verticalKey}:{}} title="원본 앱 병원 목록" go={go} compact/><section className="md-intro md-hospital-intro"><h1>근처 병원 찾기</h1><p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p></section>
  <section className="md-lookup">
   <label><MapPin size={19}/><select aria-label="지역" value={region} onChange={e=>setRegion(e.target.value)}><option value="">지역</option>{["서울","경기","인천","부산","대구","광주","대전","울산","세종","경남","경북","전남","전북","강원","충남","충북","제주"].map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
   <label><BriefcaseMedical size={19}/><select aria-label="진료과" value={dept} onChange={e=>setDept(e.target.value)}><option value="">진료과</option>{DOC_DEPTS.map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
@@ -342,9 +342,11 @@ export default function App(){
  // App-native core screens never wait for the legacy my-doctor.io HTML gateway.
  const nativePriceDetail=decodeURIComponent(route.split("?")[0])==="/medical-cost/마운자로";
  const nativeMydLink=route.startsWith("/native/myd-link/");
+ const hospitalRoute=route.split("?")[0]==="/hospital";
+ const originalHospitalVertical=new URLSearchParams(route.split("?")[1]||"").get("vertical_key")||"";
  const nativePharmacy=route==="/pharmacy";
  const nativeFaq=route==="/healthLab/FAQ"||route==="/faq";
- const nativeRoot=home||nativeMydLink||nativePharmacy||nativeFaq||nativePriceDetail||route==="/hospital"||route==="/medical-cost"||
+ const nativeRoot=home||nativeMydLink||nativePharmacy||nativeFaq||nativePriceDetail||hospitalRoute||route==="/medical-cost"||
    route==="/telemedicine/all-department"||route==="/telemedicine";
  const appData=s.data||{links:[],tables:[],sections:[],paragraphs:[]};
  return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
@@ -359,7 +361,7 @@ export default function App(){
      nativeMydLink?<NativeMydLinkScreen route={route} title={routeName} go={go}/>:
      nativePharmacy?<NativePharmacyScreen data={appData} go={go}/>:
      nativeFaq?<NativeFaqScreen/>:
-     route==="/hospital"?<HospitalScreen data={appData} go={go}/>:
+     hospitalRoute?<HospitalScreen data={appData} verticalKey={originalHospitalVertical} go={go}/>:
      route==="/medical-cost"?<CostScreen data={appData} go={go}/>:
      nativePriceDetail?<section className="native-price-detail-route"><h1>마운자로 가격 비교</h1><NativePriceRegions verticalKey="mounjaro"/></section>:
      <DoctorScreen data={appData} go={go}/>):
