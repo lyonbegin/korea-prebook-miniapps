@@ -1,4 +1,5 @@
-import React,{useMemo,useState}from "react";
+import React,{useEffect,useMemo,useState}from "react";
+import {fetchPublicFacts} from "./lib/originalGateway.js";
 import{Search,ChevronRight,MapPin,Clock3,CalendarDays,Phone,CheckCircle2}from "lucide-react";
 import ReviewsSummary from "./ReviewsSummary.jsx";
 import OriginalDistinctPage,{isOriginalDistinctRoute} from "./OriginalDistinctPages.jsx";
@@ -59,6 +60,7 @@ function getViewType(path){
  if(path.startsWith("/telemedicine/doctor/")||path.startsWith("/hospital/")&&path.endsWith("/reviews"))return "reviews-or-doctor";
  if(path.startsWith("/telemedicine/"))return "telemedicine-list";
  if(path.startsWith("/map/"))return "map-directory";
+ if(/^\/qna\/\d+(?:\/|$)/.test(path))return "qna-detail";
  if(path.startsWith("/qna"))return "qna-directory";
  if(path.startsWith("/healthLab"))return "health-directory";
  return "public-directory";
@@ -228,6 +230,48 @@ function NightPharmacyPage({data,go}){
  </section>;
 }
 
+
+/** Parent listing contains public question and answer previews; the child page
+ * must visibly show its selected question rather than repeating the index.
+ * Never claim a truncated original preview is a full medical answer.
+ */
+function PublicQnaDetail({data,route,go}){
+ const [parent,setParent]=useState(null);
+ useEffect(()=>{
+   const controller=new AbortController();
+   fetchPublicFacts("/qna",controller.signal).then(payload=>{
+     if(!controller.signal.aborted)setParent(payload.facts||null);
+   }).catch(()=>{});
+   return()=>controller.abort();
+ },[route]);
+ const clean=p=>{try{return decodeURIComponent(p.split("?")[0])}catch{return p}};
+ const source=parent?.links?.find(x=>clean(x.path)===clean(route));
+ const fallback=()=>{const p=clean(route).split("/").slice(3).join("/");return p.replace(/-/g," ").trim()};
+ const raw=(source?.label||"").replace(/^Q\s*/,"");
+ const delimiter=raw.indexOf("?");
+ const question=delimiter>=0?raw.slice(0,delimiter+1):fallback();
+ const excerpt=delimiter>=0?raw.slice(delimiter+1).trim():"";
+ const id=clean(route).split("/")[2];
+ const metadata=parent?.qna_card_metadata?.[id]||"";
+ return <article className="observed-page original-public-qna-detail" data-source-view="qna-detail">
+   <header className="observed-heading"><h1>{data.title}</h1></header>
+   <nav className="qna-detail-back">
+     <a href="/qna" onClick={e=>{e.preventDefault();go("/qna")}}>의료진 Q&A 목록으로 돌아가기</a>
+   </nav>
+   <div className="qna-detail-body">
+     <span className="qna-detail-mark">Q</span>
+     <h2>{question||data.title}</h2>
+     {metadata&&<p className="qna-detail-metadata">{metadata}</p>}
+     {excerpt&&<section className="qna-detail-preview"><h3>공개 목록의 답변 미리보기</h3><p>{excerpt}</p></section>}
+     <a className="qna-detail-full-original" href={"https://my-doctor.io"+route} target="_blank" rel="noreferrer">원본에서 질문과 답변 전체 보기</a>
+   </div>
+   {!!data.sections?.length&&<SectionHeadings sections={data.sections}/>}
+   {!!data.tables?.length&&<SourceTables tables={data.tables}/>}
+   {!!data.links?.length&&<section className="qna-detail-related"><h2>연관 공개 자료</h2>
+      <SourceRows links={verifiedLinks(data.links)} go={go} kind="qna-detail-related"/></section>}
+ </article>;
+}
+
 export function VerifiedSourcePage({data,go,route}){
  const kind=getViewType(route);
  const [search,setSearch]=useState("");
@@ -258,6 +302,7 @@ export function VerifiedSourcePage({data,go,route}){
     return true;
  });
  if(isOriginalDistinctRoute(route))return <OriginalDistinctPage data={data} go={go} route={route}/>;
+ if(kind==="qna-detail")return <PublicQnaDetail data={data} go={go} route={route}/>;
  if(route.split("?")[0]==="/medicine")return <MedicineLandingPage data={data} go={go}/>;
  if(route.split("?")[0]==="/healthLab/FAQ")return <FAQIndexPage data={data} go={go}/>;
  if(decodeURIComponent(route.split("?")[0])==="/pharmacy/야간약국"&&data.pharmacyCards?.length)return <NightPharmacyPage data={data} go={go}/>;
