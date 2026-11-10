@@ -21,7 +21,16 @@ const requiredById={
  "medical-cost-index":[".md-cost-grid"],
  "pharmacy-condition-search":[".original-pharmacy-card"],
  "medicine-search":[".original-medicine-search",".original-medicine-cards a"],
- "health-category-index":[".original-faq-search",".original-faq-item"]
+ "health-category-index":[".original-faq-search",".original-faq-item"],
+ "doctor-detail":[".original-doctor-portrait img",".original-doctor-tabs",".original-doctor-information"],
+ "hospital-availability-search":[".original-hospital-night-card",".original-hospital-night-card img"],
+ "medical-cost-category":[".original-price-form",".original-price-submit",".original-price-results"],
+ "medical-cost-item-by-area":[".original-price-form",".original-price-submit",".original-price-results"],
+ "map-child-emergency":[".original-baby119-dialog",".original-baby119-overlay",".original-baby119-map"],
+ "medicine-detail":[".original-drug-intro",".original-drug-symptoms",".original-drug-content"],
+ "health-article-or-test":[".original-health-author",".original-health-toc",".original-health-fixed-action"],
+ "qna-index":[".original-qna-chips a",".original-qna-item"],
+ "other-public":[".original-company-identity img",".original-company-cards a"]
 };
 async function auditStructure(page,id){
  const required=requiredById[id]||[];
