@@ -257,3 +257,10 @@
  color:#454c57;font-size:13px}
 .original-pharmacy-expanded p{margin:5px 0}
 .original-pharmacy-expanded a{display:inline-block;color:#2f6eff;padding-top:8px}
+
+
+/* Screenshot geometry from original baseline 42650015118 vs actual clone:
+   FAQ original question divider pitch = 87px; clone = 93px.
+   Original question text aligns 20px down from row start. */
+.original-faq-item{min-height:87px;align-items:flex-start}
+.original-faq-item svg{align-self:center}
