@@ -251,6 +251,82 @@ async def audit_source_endpoints_once(app) -> None:
                     }
                 LOG.warning("native-path-audit %s %s", name, results[name])
                 await asyncio.sleep(0.15)
+            # The original Hermes price screen uses route.params.verticalKey
+            # with an observed 'mounjaro' default. Query categories first,
+            # then use only IDs actually returned by the origin.
+            try:
+                cats = await client.get(
+                    ORIGIN + "/patient-api/medical-map/lowest-price/categories",
+                    params={"vertical_key": "mounjaro"},
+                    headers={"accept": "application/json",
+                             "user-agent": "MyDoctorNativeStaticPathAudit/0.1"},
+                )
+                cat_result = {"http_status": cats.status_code,
+                              "query_key": "vertical_key",
+                              "query_source": "Hermes app route default mounjaro",
+                              "method": "GET"}
+                found_ids = []
+                if cats.status_code == 200 and cats.headers.get(
+                        "content-type", "").startswith("application/json"):
+                    body = sanitize_public_json(cats.json())
+                    cat_result["shape"] = public_json_shape(body)
+                    def walk_categories(value, depth=0):
+                        if depth > 5 or len(found_ids) >= 8:
+                            return
+                        if isinstance(value, list):
+                            for item in value[:20]:
+                                walk_categories(item, depth+1)
+                        elif isinstance(value, dict):
+                            if ("id" in value and
+                                isinstance(value["id"], (int, str)) and
+                                str(value["id"]).isdigit()):
+                                found_ids.append(str(value["id"]))
+                            for key in ("data","results","categories","items",
+                                        "list","children","subcategories"):
+                                if key in value:
+                                    walk_categories(value[key], depth+1)
+                    walk_categories(body)
+                else:
+                    try:
+                        cat_error=cats.json()
+                        if isinstance(cat_error,dict):
+                            cat_result["error_field_names"]=list(cat_error)[:8]
+                    except ValueError:
+                        pass
+                results["lowest_categories_vertical_mounjaro"]=cat_result
+                LOG.warning("native-path-audit categories-with-original-vertical %s",cat_result)
+                if found_ids:
+                    category_id=found_ids[0]
+                    for variant in ("none","district"):
+                        params={"category_id":category_id}
+                        if variant != "none":
+                            params["variant"]=variant
+                        reg=await client.get(
+                            ORIGIN + "/patient-api/medical-map/lowest-price/v2/regions",
+                            params=params,
+                            headers={"accept":"application/json",
+                                     "user-agent":"MyDoctorNativeStaticPathAudit/0.1"},
+                        )
+                        item={"http_status":reg.status_code,
+                              "category_id":"observed_from_original_categories",
+                              "variant":variant,
+                              "response_content_type":reg.headers.get(
+                                  "content-type","").split(";")[0]}
+                        if reg.status_code==200 and item["response_content_type"]=="application/json":
+                            item["response_shape"]=public_json_shape(
+                                sanitize_public_json(reg.json()))
+                        elif item["response_content_type"]=="application/json":
+                            try:
+                                err=reg.json()
+                                if isinstance(err,dict):
+                                    item["error_field_names"]=list(err)[:8]
+                            except ValueError:
+                                pass
+                        results["lowest_v2_regions_with_real_id_"+variant]=item
+                        LOG.warning("native-path-audit lowest-v2-with-real-category %s",item)
+            except (httpx.HTTPError,ValueError) as err:
+                results["lowest_categories_vertical_mounjaro"]={
+                    "error_type":type(err).__name__}
     except Exception as err:
         LOG.exception("Native static-path audit failed: %s", type(err).__name__)
     app.state.native_path_diagnostics = {
