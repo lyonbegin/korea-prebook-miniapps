@@ -75,15 +75,19 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    assert.ok(all.some(x=>x.includes("5,000원")));
    return {tables:2,factual_prices:all.length};
   });
-  await test("Night pharmacy region selection",async()=>{
+  await test("Night pharmacy 50 real source cards and region routing",async()=>{
    await load("/pharmacy/야간약국");
-   const rows=page.locator(".observed-link");
-   const count=await rows.count();
-   assert.ok(count>=15);
-   await page.getByRole("button",{name:"서울",exact:true}).tap();
-   const filtered=await rows.count();
-   assert.ok(filtered>=1&&filtered<count);
-   return {all:count,filtered};
+   assert.equal(await page.locator('[data-source-view="pharmacy-list"]').count(),1);
+   const cards=page.locator(".original-pharmacy-card");
+   const count=await cards.count();
+   assert.equal(count,50,"Original first page contains 50 observed pharmacy cards");
+   assert.match(await cards.first().innerText(),/지곡백화점약국/);
+   assert.match(await cards.first().innerText(),/충청남도 서산시/);
+   assert.match(await cards.first().innerText(),/041-662-2808/);
+   await page.getByRole("button",{name:/전국/}).first().tap();
+   const region=page.locator('.original-pharmacy-options a').filter({hasText:"서울"}).first();
+   assert.ok((await region.getAttribute("href")).includes("/pharmacy/"));
+   return {cards:count,verified_source:"public original location, hours, phone",seoul_region_link:await region.getAttribute("href")};
   });
   await test("Original QnA visible link routing",async()=>{
    await load("/qna");
@@ -105,12 +109,12 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   await test("Observed hospital review facets and visit stats",async()=>{
    await load("/hospital/10055/reviews");
    assert.equal(await page.locator('[data-source-view="reviews"]').count(),1);
-   assert.match(await page.locator(".review-metrics").innerText(),/464건/);
+   assert.match(await page.locator(".review-metrics").innerText(),/465건/);
    assert.match(await page.locator(".review-metrics").innerText(),/97%/);
    assert.equal(await page.locator(".review-facets button").count(),11);
    await page.getByRole("button",{name:"안구 질환 58건"}).tap();
    assert.match(await page.locator(".review-filter-label").innerText(),/58건/);
-   return {original_aggregate_reviews:464,readmission_intent:"97%",facets:11};
+   return {original_aggregate_reviews:465,readmission_intent:"97%",facets:11};
   });
   await test("Observed doctor review facets and patient-independent totals",async()=>{
    await load("/telemedicine/doctor/탑연합의원-박광규-100/reviews");
