@@ -876,3 +876,7 @@
 .site-app-native .native-link-doctor .native-api-section{padding:0;margin:17px 0}
 .site-app-native .native-link-error{margin:22px 20px;padding:20px;border:1px solid #f0e1e2;border-radius:14px}
 .site-app-native .native-link-error p{font-size:13px;line-height:1.5;color:#777}
+
+.site-app-native .native-link-filter-list{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.site-app-native .native-link-filter-list button{border:1px solid #e4e9f2;background:#f5f7fa;color:#5e697c;border-radius:19px;padding:9px 12px;min-height:39px;font-size:12px;font-weight:650}
+.site-app-native .native-link-filter-list button.active{color:#2468ef;background:#eaf2ff;border-color:#9abaff}
