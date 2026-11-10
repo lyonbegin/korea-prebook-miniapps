@@ -4,7 +4,7 @@ export default function ReviewsSummary({data,go}){
  const review=data.reviewSummary;
  const [selected,setSelected]=useState("전체");
  const facets=selected==="전체"?review.facets:review.facets.filter(x=>x.label===selected);
- return <div className={"original-review"+(review.kind==="hospital"?" original-review-hospital":"")} data-source-view="reviews">
+ return <div className={"original-review"+(review.kind==="hospital"?" original-review-hospital":" original-review-doctor")} data-source-view="reviews">
    <section className="review-top">
     <h1>{data.title}</h1>
     <div className="review-metrics">
@@ -32,7 +32,15 @@ export default function ReviewsSummary({data,go}){
      return <section className={"review-channel"+(samples.length?" review-channel-with-cards":"")} key={x.name}>
        <h2>{review.provider}{review.kind==="doctor"?" 의사":""} {x.name} {fmt(x.count)}건</h2>
        <p>최근 글 후기 우선 100건 표시</p>
-       {samples.length?<ol className="review-card-list">{samples.map((card,i)=><li className="review-source-card" key={x.name+"-"+i}>
+       {samples.length&&review.kind==="doctor"?<ol className="review-card-list original-doctor-review-cards">{samples.map((card,i)=><li className="review-doctor-source-card" key={x.name+"-"+i}>
+       <div className="review-doctor-meta"><strong>{card.condition}</strong><span>{card.reviewer}</span><span>{card.date}</span></div>
+       <div className="review-doctor-positive">{card.rating}</div>
+       <p className="review-doctor-excerpt">{card.excerpt}</p>
+       <div className="review-doctor-feedback">{(card.feedback||[]).map(item=><div key={item.label} className="review-doctor-feedback-row">
+         {review.tag_icons?.[item.label]&&<img src={review.tag_icons[item.label]} alt=""/>}
+         <span className="review-doctor-feedback-label">{item.label}</span><strong>{item.value}</strong>
+       </div>)}</div>
+      </li>)}</ol>:samples.length?<ol className="review-card-list">{samples.map((card,i)=><li className="review-source-card" key={x.name+"-"+i}>
          <div className="review-source-doctor">{card.avatar?<img src={card.avatar} alt=""/>:<span aria-hidden="true">{card.doctor?.slice(0,1)}</span>}<span>{card.doctor}</span></div>
          <span className="review-source-positive">{card.rating}</span>
          <div className="review-source-meta"><strong>{card.condition}</strong><span>{card.reviewer}</span><span>{card.date}</span></div>
