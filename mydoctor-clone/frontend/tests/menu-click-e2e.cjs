@@ -66,6 +66,33 @@ const targets=[
    }catch(e){rec.status="ERROR";rec.reason=String(e.message).slice(0,250);}
    finally{out.push(rec);console.log("REAL MENU CLICK "+JSON.stringify(rec))}
  }
+ // Regression for the user's exact report: a menu entry cannot silently do
+ // nothing when the original server returns HTTP 429 and the DB has a MISS.
+ try{
+   await page.goto(base+"/",{waitUntil:"domcontentloaded",timeout:20000});
+   await page.locator("main h1").waitFor({timeout:14000});
+   await page.route("**/catalog/page?*",async route=>{
+     const url=new URL(route.request().url()),requested=url.searchParams.get("path")||"";
+     if(requested.includes("탈모-비대면진료-예약")){
+       await route.fulfill({status:503,contentType:"application/json",
+         body:JSON.stringify({ok:false,source_status:429,error:"ORIGINAL_PUBLIC_SOURCE_UNAVAILABLE"})});
+     }else await route.continue();
+   });
+   await page.getByRole("button",{name:"전체 메뉴"}).tap();
+   const section=page.locator(".source-menu-section").filter({hasText:"비대면진료"}).first();
+   await section.locator(".source-menu-root").tap();
+   await section.locator(".source-menu-links a").filter({hasText:"탈모"}).first().tap();
+   await page.locator(".source-route-error[role=alert]").waitFor({timeout:7000});
+   const sourceLink=await page.locator(".source-route-actions a").first().getAttribute("href");
+   const correct=sourceLink?.startsWith("https://my-doctor.io/telemedicine/")&&
+      await page.locator(".source-route-error h1").first().textContent().then(v=>v.includes("탈모"));
+   const result={menu:"원본 429 → 재조회/원본 링크",status:correct?"PASS":"FAIL",
+     original:sourceLink,alert:await page.locator(".source-route-error h2").first().textContent()};
+   out.push(result);console.log("REAL MENU FALLBACK "+JSON.stringify(result));
+ }catch(e){
+   const result={menu:"원본 429 → 재조회/원본 링크",status:"ERROR",reason:String(e.message).slice(0,200)};
+   out.push(result);console.log("REAL MENU FALLBACK "+JSON.stringify(result));
+ }
  await browser.close();
  fs.mkdirSync("qa-artifacts",{recursive:true});
  fs.writeFileSync("qa-artifacts/real-menu-clicks.json",JSON.stringify({cases:out,browser_errors:issues},null,2));
