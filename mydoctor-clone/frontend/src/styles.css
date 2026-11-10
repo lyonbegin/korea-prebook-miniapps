@@ -475,3 +475,156 @@
    Labels distinguish public-source navigation from a DB-backed local detail. */
 .observed-link-original{cursor:pointer}
 .observed-source-external{color:#326dff;font-size:11px;white-space:nowrap;font-weight:650;margin-left:9px;flex-shrink:0}
+
+/* APP REFERENCE 6.50.0
+ * React Native/Hermes navigation and visual hierarchy adapted for mobile web.
+ * Replaces the source WEBSITE marketing shell, preserves all dynamic routes.
+ * Native screenshot-level accuracy must be measured separately against APK.
+ */
+.site-app-native {
+ --app-blue:#326dff;
+ --app-text:#1e2024;
+ --app-subtext:#747d89;
+ --app-border:#eff0f2;
+ --app-subtle:#f6f7f9;
+ position:relative;
+ background:#fff;
+ color:var(--app-text);
+ font-family:Pretendard,"Apple SD Gothic Neo",-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;
+ padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));
+}
+.site-app-native:not(.site-company) .native-app-header{
+ position:sticky;top:0;z-index:40;
+ height:56px;background:#fff;border-bottom:1px solid var(--app-border);
+}
+.site-app-native .toprow{height:56px!important;padding:0 20px!important}
+.site-app-native .native-brand{font-size:21px;font-weight:850;letter-spacing:-.8px;color:#2671ff}
+.site-app-native .native-app-back{
+ display:flex;gap:8px;align-items:center;max-width:calc(100% - 55px);
+ padding:0;border:0;background:none;color:var(--app-text);
+ text-align:left;font-size:18px;font-weight:750;letter-spacing:-.4px;min-height:44px;
+}
+.site-app-native .native-app-back span{
+ display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.site-app-native .menu-btn{min-width:42px;min-height:44px;justify-content:center}
+.site-app-native .breadcrumb{display:none!important}
+.site-app-native .viewport{min-height:calc(100dvh - 150px)}
+.site-app-native .source-menu{
+ position:absolute;top:56px;left:0;right:0;max-height:calc(100dvh - 130px);
+ background:#fff;border:0;border-top:1px solid var(--app-border);
+ border-radius:0 0 16px 16px;box-shadow:0 12px 24px #1e202420;
+ padding:12px 20px;overflow:auto;z-index:50;
+}
+.site-app-native .source-menu-links{grid-template-columns:1fr 1fr}
+.site-app-native .native-app-tabbar{
+ box-sizing:border-box;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:0;position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+ width:100%;max-width:560px;z-index:40;
+ height:calc(66px + env(safe-area-inset-bottom,0px));
+ padding-bottom:env(safe-area-inset-bottom,0px);
+ border-top:1px solid #eceef2;background:#fff;
+ box-shadow:0 -3px 14px #11182708;
+}
+.site-app-native .native-tab{
+ min-width:0;display:flex;flex-direction:column;justify-content:center;
+ align-items:center;gap:5px;padding:7px 2px;
+ color:#9098a6;font-size:10px;line-height:1.35;font-weight:600;
+ background:none;border:0;white-space:nowrap;
+}
+.site-app-native .native-tab.current{color:#306bff;font-weight:750}
+.site-app-native .native-tab svg{flex-shrink:0}
+.site-app-native .original-footer,.site-app-native .fixed-call-to-action{display:none!important}
+.site-app-native .native-home{background:#fff}
+.site-app-native .native-home-greeting{padding:28px 20px 16px}
+.site-app-native .native-overline{
+ margin:0 0 8px;font-size:12px;font-weight:800;color:var(--app-blue);
+}
+.site-app-native .native-home-greeting h1{
+ margin:0 0 20px;font-size:25px;line-height:1.4;letter-spacing:-.9px;
+ font-weight:800;word-break:keep-all;
+}
+.site-app-native .native-home-search{
+ display:flex;align-items:center;gap:11px;min-height:48px;padding:0 14px;
+ border:1px solid #e6e9ee;background:#f7f8fa;border-radius:12px;
+ color:#868e9b;font-size:13px;
+}
+.site-app-native .native-home-search span{flex:1}
+.site-app-native .native-home-primary{padding:8px 20px 20px}
+.site-app-native .native-hero-care{
+ position:relative;display:flex;flex-direction:column;align-items:flex-start;
+ justify-content:center;min-height:164px;padding:20px 21px;
+ overflow:hidden;border-radius:17px;
+ background:linear-gradient(115deg,#e7f0ff 0%,#f1f7ff 100%);color:#174b9b;
+}
+.site-app-native .native-hero-eyebrow{font-size:12px;font-weight:750;margin-bottom:10px}
+.site-app-native .native-hero-care strong{
+ position:relative;z-index:2;font-size:21px;font-weight:850;
+ line-height:1.42;letter-spacing:-.6px;
+}
+.site-app-native .native-hero-cta{margin-top:15px;display:flex;align-items:center;font-size:12px;font-weight:750;color:#2f6def}
+.site-app-native .native-hero-icon{position:absolute;right:20px;bottom:24px;color:#8fbaff;opacity:.95}
+.site-app-native .native-home-block{padding:24px 20px 26px}
+.site-app-native .native-section-break{height:9px;background:#f6f7f9}
+.site-app-native .native-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:17px}
+.site-app-native .native-heading h2{font-size:19px;font-weight:800;letter-spacing:-.55px;margin:0}
+.site-app-native .native-section-more{display:flex;align-items:center;gap:3px;color:#838b96;font-size:12px;white-space:nowrap}
+.site-app-native .native-section-desc{margin:-6px 0 18px;color:#818a97;font-size:13px;line-height:1.45}
+.site-app-native .native-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.site-app-native .native-quick-item{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;gap:5px}
+.site-app-native .native-quick-icon{
+ width:56px;height:56px;display:flex;align-items:center;justify-content:center;
+ color:#326dff;background:#f0f5ff;border-radius:17px;margin-bottom:3px;
+}
+.site-app-native .native-quick-item strong{font-size:12px;line-height:1.4;font-weight:750;word-break:keep-all}
+.site-app-native .native-quick-item small{font-size:10px;color:#8b94a0;line-height:1.3;word-break:keep-all}
+.site-app-native .native-topic-grid,.site-app-native .native-dept-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+}
+.site-app-native .native-topic-item,.site-app-native .native-dept-item{
+ display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:52px;
+ padding:10px 12px;background:#f8f9fb;border-radius:11px;
+ font-size:13px;font-weight:650;letter-spacing:-.25px;
+}
+.site-app-native .native-topic-item svg,.site-app-native .native-dept-item svg{flex-shrink:0;color:#a0a6b1}
+.site-app-native .native-utility-list{margin-top:22px;border-top:1px solid var(--app-border)}
+.site-app-native .native-utility-row{
+ display:flex;align-items:center;gap:12px;min-height:54px;border-bottom:1px solid var(--app-border);
+ font-size:14px;font-weight:650;
+}
+.site-app-native .native-utility-row svg:first-child{color:#4678eb}
+.site-app-native .native-utility-row span{flex:1}
+.site-app-native .native-utility-row svg:last-child{color:#b1b6c0}
+.site-app-native .native-health-links{display:flex;flex-direction:column}
+.site-app-native .native-health-link{
+ display:flex;align-items:center;gap:13px;padding:16px 2px;
+ border-bottom:1px solid var(--app-border);
+}
+.site-app-native .native-health-link svg:first-child{color:#4779f4}
+.site-app-native .native-health-link strong{flex:1;font-size:14px;font-weight:700}
+.site-app-native .native-health-link svg:last-child{color:#b1b6c0}
+.site-app-native .native-source-paths{padding:20px 20px 25px;border-top:9px solid var(--app-subtle)}
+.site-app-native .native-source-paths summary{font-weight:700;font-size:13px;cursor:pointer}
+.site-app-native .native-source-paths summary span{color:#7e8796}
+.site-app-native .native-observed-row{display:flex;align-items:center;justify-content:space-between;
+ gap:10px;font-size:13px;padding:13px 0;border-bottom:1px solid #f0f1f4}
+.site-app-native .native-observed-row span{overflow-wrap:anywhere}
+.site-app-native .native-observed-row svg{color:#8f97a4;flex-shrink:0}
+/* All previously cloned public-data screens now live within the app shell. */
+.site-app-native .observed-page .observed-heading h1{font-weight:800;letter-spacing:-.6px}
+.site-app-native .observed-link{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ min-height:49px;padding:13px 4px;border-bottom:1px solid #eff0f2;
+}
+.site-app-native .observed-link svg{color:#989fab;flex-shrink:0}
+.site-app-native .source-route-loading,.site-app-native .source-route-error{min-height:45dvh}
+@media(min-width:561px){
+ body:has(.site-app-native){background:#f5f6f8}
+ .site-app-native{box-shadow:0 0 22px #19243a12}
+}
+@media(max-width:360px){
+ .site-app-native .native-quick-icon{width:49px;height:49px}
+ .site-app-native .native-quick-item strong{font-size:11px}
+ .site-app-native .native-tab{font-size:9px}
+ .site-app-native .native-home-greeting h1{font-size:23px}
+}
