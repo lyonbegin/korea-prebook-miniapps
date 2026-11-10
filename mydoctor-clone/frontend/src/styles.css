@@ -346,3 +346,13 @@
 .review-facets.original-hospital-facets{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .review-facet-row{display:flex;flex-wrap:wrap;gap:8px;width:100%}
 .review-facets.original-hospital-facets .review-facet-row{flex-wrap:nowrap}
+
+
+/* Verified source hospital review metrics x/y correction, measured at 390x844.
+   Keep the facet and review card vertical starts stable while moving counters up. */
+.original-review-hospital .review-top h1{margin-bottom:12px}
+.original-review-hospital .review-metrics{margin-bottom:48px}
+.original-review-hospital .review-metrics div{gap:6px}
+.original-review-hospital .review-metrics strong{font-size:16px;font-weight:500}
+.original-review-hospital .review-source-tags span{display:inline-flex;align-items:center;gap:4px}
+.original-review-hospital .review-source-tags img{display:inline-block;width:16px;height:16px;object-fit:contain}
