@@ -53,8 +53,8 @@ BLOCKED_KEY = re.compile(
     r"address_detail|ssn)(?:$|_)", re.I
 )
 BLOCKED_VALUE = re.compile(
-    r"(?:Bearer\\s+[A-Za-z0-9._~+/-]{12,}|"
-    r"(?<![\\w.+-])[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}(?!\\w))", re.I
+    r"(?:Bearer\s+[A-Za-z0-9._~+/-]{12,}|"
+    r"(?<![\w.+-])[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}(?!\w))", re.I
 )
 NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng"}
 TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region"}
@@ -92,7 +92,7 @@ def public_inventory() -> dict:
 
 def is_private_field(key: str) -> bool:
     """Check snake_case, camelCase, hyphenated and case-insensitive field names."""
-    canonical = re.sub(r"([a-z0-9])([A-Z])", r"\\1_\\2", key)
+    canonical = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", key)
     canonical = re.sub(r"[^A-Za-z0-9]+", "_", canonical).lower()
     return bool(BLOCKED_KEY.search(canonical))
 
