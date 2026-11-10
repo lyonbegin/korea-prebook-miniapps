@@ -28,7 +28,7 @@ export async function fetchPublicFacts(route,signal){
  * This never forwards application credentials, cookies or patient data.
  */
 const NATIVE_RESOURCES=new Set(["home-menu","home-banner","app-config","doctor-list",
- "hospital-list","pharmacy-nearby","lowest-price","health-info"]);
+ "hospital-list","pharmacy-nearby","lowest-price-categories","lowest-price","health-info"]);
 export async function fetchNativeCatalog(resource,parameters={},signal){
  if(!NATIVE_RESOURCES.has(resource))throw Error("원본 앱 자원 목록에 없습니다: "+resource);
  const query=new URLSearchParams();
