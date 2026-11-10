@@ -368,3 +368,14 @@
 /* Measured original hospital directory at 390px: larger department labels and ~35px line pitch. */
 .md-dept-list div{column-gap:17px;row-gap:10px}
 .md-dept-list a{font-size:14px;line-height:25px;letter-spacing:-.1px}
+
+
+/* Original hospital review measured at 390x844:
+   metric top +30px, facet pills 27px height / 34px row pitch,
+   unchanged first-review position after reflow. */
+.original-review-hospital .review-top h1{margin-bottom:42px}
+.original-review-hospital .review-metrics{margin-bottom:26px}
+.original-review-hospital .review-facet-heading{margin-bottom:9px}
+.original-review-hospital .review-facets.original-hospital-facets{gap:6px}
+.original-review-hospital .review-facets.original-hospital-facets button{padding:7px 8px}
+.original-review-hospital .review-top{padding-bottom:22px}
