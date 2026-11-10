@@ -67,12 +67,14 @@ class NativeCatalogTest(unittest.TestCase):
     def test_static_xapk_paths_not_mistaken_for_validated_schema(self):
         inv = public_inventory()
         self.assertEqual(inv["evidence"], "static_path_only")
-        self.assertEqual(len(NATIVE_RESOURCES), 8)
+        self.assertEqual(len(NATIVE_RESOURCES), 9)
         self.assertTrue(all(x["method"] == "GET_UNVERIFIED" for x in inv["resources"]))
 
     def test_no_freeform_proxy_or_private_query_parameters(self):
         self.assertEqual(safe_parameters("home-menu", QueryParams("")), "")
         self.assertEqual(safe_parameters("home-banner", QueryParams("expose_place=home")), "expose_place=home")
+        self.assertEqual(safe_parameters("lowest-price-categories", QueryParams("vertical_key=mounjaro")), "vertical_key=mounjaro")
+        self.assertEqual(safe_parameters("lowest-price", QueryParams("category_id=12&variant=district")), "category_id=12&variant=district")
         with self.assertRaises(Exception):
             safe_parameters("patient-api/user/me", QueryParams(""))
         with self.assertRaises(Exception):
@@ -136,12 +138,37 @@ class NativeCatalogTest(unittest.TestCase):
         tasks=BackgroundTasks()
         client=FakeClient(FakeHTTPResponse(status=404,headers={"content-type":"text/html"}))
         with patch("app.native_catalog.httpx.AsyncClient",return_value=client):
-            result=asyncio.run(get_native_public_catalog(req(pool),tasks,"lowest-price"))
+            result=asyncio.run(get_native_public_catalog(req(pool,"category_id=1"),tasks,"lowest-price"))
         self.assertEqual(result.status_code,502)
         body=json.loads(result.body)
         self.assertEqual(body["origin_http_status"],404)
         self.assertEqual(body["error"],"NATIVE_API_ENDPOINT_NOT_FOUND")
         self.assertFalse(tasks.tasks)
+
+    def test_price_requires_original_mandatory_query_fields(self):
+        with self.assertRaises(Exception):
+            asyncio.run(get_native_public_catalog(
+                req(FakePool()),BackgroundTasks(),"lowest-price"))
+        with self.assertRaises(Exception):
+            asyncio.run(get_native_public_catalog(
+                req(FakePool()),BackgroundTasks(),"lowest-price-categories"))
+
+    def test_verified_original_price_region_path_and_display_before_cache(self):
+        pool=FakePool()
+        tasks=BackgroundTasks()
+        source={"data":{"national_lowest_price":188000,
+                        "regions":[{"display_name":"서울","lowest_price":194000}]}}
+        client=FakeClient(FakeHTTPResponse(data=source))
+        with patch("app.native_catalog.httpx.AsyncClient",return_value=client):
+            response=asyncio.run(get_native_public_catalog(
+                req(pool,"category_id=12&variant=district"),tasks,"lowest-price"))
+        body=json.loads(response.body)
+        self.assertEqual(response.status_code,200)
+        self.assertEqual(body["data"],source)
+        self.assertIn("/patient-api/medical-map/lowest-price/v2/regions?",client.seen[0][0])
+        self.assertIn("category_id=12",client.seen[0][0])
+        self.assertEqual(len(pool.writes),0)
+        self.assertEqual(len(tasks.tasks),1)
 
     def test_no_store_original_never_cached(self):
         pool=FakePool()
