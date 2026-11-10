@@ -166,3 +166,35 @@ async def seed_observed_facts(pool)->int:
             LOG.exception("Public fact seeding failed for one route")
     LOG.info("Public observed fact seed records checked: %s",inserted)
     return inserted
+
+
+MENU_SEED=Path(__file__).resolve().parents[1]/"data"/"public_menu_facts_20261110.json"
+
+async def seed_menu_facts(pool)->int:
+    """Import independently captured HTTP200 public menu page facts from versioned records.
+
+    Never populate a destination just because a menu name exists. A route must
+    have an actual original HTTP 200 browser observation before entering the DB.
+    The 29 representative pages retain their separate baseline/test seed.
+    """
+    try:
+        entries=json.loads(MENU_SEED.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        LOG.info("No validated menu destination facts yet")
+        return 0
+    count=0
+    for item in entries:
+        url=item.get("original_url","")
+        path=item.get("path","")
+        if (not url.startswith(ROOT+"/")
+            or not urlsplit(url).path==path.split("?")[0]
+            or not item.get("headline")
+            or item.get("source_evidence")!="github-actions-live-origin-http-200-factual-metadata"):
+            continue
+        try:
+            await insert_facts(pool,item,overwrite=item.get("quality")=="verified_public_facts_from_browser")
+            count+=1
+        except Exception:
+            LOG.exception("Could not seed verified public menu page %s",path)
+    LOG.info("Verified public menu destination facts imported: %s",count)
+    return count
