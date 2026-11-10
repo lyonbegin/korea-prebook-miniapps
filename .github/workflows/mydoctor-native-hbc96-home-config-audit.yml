@@ -36,4 +36,14 @@ jobs:
               if isinstance(node,str):return {"str_len":len(node),"sample":node[:180] if depth>=2 else "<string>"}
               return node
           print("NATIVE_HOME_CONFIG_SHAPE",json.dumps(shape(src),ensure_ascii=False)[:7500])
+          value=src.get("data",{}).get("value") if isinstance(src,dict) else None
+          if isinstance(value,str):
+              try:
+                  entries=json.loads(value)
+                  print("NATIVE_HOME_CONFIG_PUBLIC_NAV_ITEMS",json.dumps([
+                      {key:entry.get(key) for key in ("title","navigationUrl","imageUrl","minimumVersion","isOpenBrowser","shouldCheckLogin")}
+                      for entry in entries[:12] if isinstance(entry,dict)
+                  ],ensure_ascii=False)[:9500])
+              except (TypeError,ValueError) as e:
+                  print("NATIVE_HOME_CONFIG_PARSE_FAILURE",str(e)[:100])
           PY
