@@ -86,8 +86,9 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   await check("APK-proven acne MyD link opens live doctor-list touch action",async()=>{
    await page.goto(base+"/native/myd-link/symptom-acneOralMedication",{waitUntil:"domcontentloaded"});
    await page.locator(".native-link-facts").waitFor({timeout:16000});
-   const action=page.getByRole("button",{name:/원본 의사 목록 보기/});
-   await action.tap();
+   const action=page.getByRole("button",{name:/원본 의사 목록 보기|의료진 목록 닫기/});
+   await action.waitFor({timeout:10000});
+   if(await action.getAttribute("aria-expanded")!=="true")await action.tap();
    await page.locator('[data-native-resource="doctor-list"]').waitFor({timeout:10000});
    await page.locator('[data-native-resource="doctor-list"][data-native-state="loaded"],[data-native-resource="doctor-list"][data-native-state="unavailable"]')
       .first().waitFor({timeout:16000});
