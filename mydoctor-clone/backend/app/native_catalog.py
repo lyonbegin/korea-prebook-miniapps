@@ -43,7 +43,8 @@ NATIVE_RESOURCES = {
     "doctor-list-banner": ("patient-api/app/doctor-list-banner/", ()),
     "doctor-sorting-filter": ("patient-api/doctor/sorting-filter/", ()),
     "pharmacy-list": ("patient-api/pharmacist/pharmacy/", ("offset", "limit")),
-    "app-config": ("patient-api/app/configure/", ()),
+    # Hermes #22854/#46011/#46013: original app home nav config GET, with key in PATH.
+    "app-config": ("patient-api/app/configure/", ("config_key",)),
     "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department", "search_filter_keys", "city_ids", "district_ids", "sort_filter_key")),
     # The original getHospitalListV2 uses HOSPITAL_BASE_ROUTE_V2 + '/'.
     # Runtime verified: GET allowed, but anonymous access returns 401.
@@ -74,7 +75,7 @@ BLOCKED_VALUE = re.compile(
     r"(?<![\w.+-])[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}(?!\w))", re.I
 )
 NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng", "category_id"}
-TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering", "myd_link_key", "sort_filter_key"}
+TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering", "myd_link_key", "sort_filter_key", "config_key"}
 
 NATIVE_CACHE_SCHEMA = """
 CREATE SCHEMA IF NOT EXISTS mydoctor_clone;
@@ -389,7 +390,15 @@ async def get_native_public_catalog(
     if resource == "lowest-price" and not request.query_params.get("category_id"):
         raise HTTPException(400, "category_id required by original app")
     query = safe_parameters(resource, request.query_params)
-    if resource == "myd-link":
+    if resource == "app-config":
+        # Only the exact HOME_NAVIGATION_CONFIG key recovered from Hermes 6.50.0.
+        # No arbitrary config keys, private flags, or authenticated configuration.
+        if (request.query_params.get("config_key") != "HomeNavigationConfig"
+            or len(request.query_params) != 1):
+            raise HTTPException(400, "Only original HomeNavigationConfig is allowed")
+        path = path + "HomeNavigationConfig/"
+        origin_query = ""
+    elif resource == "myd-link":
         key_parameter = request.query_params.get("myd_link_key", "")
         # This is a path component, NOT a query parameter in the original app.
         if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", key_parameter)
