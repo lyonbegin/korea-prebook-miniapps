@@ -67,7 +67,7 @@ class NativeCatalogTest(unittest.TestCase):
     def test_static_xapk_paths_not_mistaken_for_validated_schema(self):
         inv = public_inventory()
         self.assertEqual(inv["evidence"], "static_path_only")
-        self.assertEqual(len(NATIVE_RESOURCES), 10)
+        self.assertEqual(len(NATIVE_RESOURCES), 15)
         self.assertTrue(all(x["method"] == "GET_UNVERIFIED" for x in inv["resources"]))
 
     def test_no_freeform_proxy_or_private_query_parameters(self):
