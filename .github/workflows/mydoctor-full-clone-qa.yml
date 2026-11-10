@@ -92,6 +92,9 @@ jobs:
       - name: Build checked-out source
         working-directory: mydoctor-clone/frontend
         run: npm run build
+      - name: Audit 103 menu destinations for real HTTP200-sourced data (never count a URL as data)
+        working-directory: mydoctor-clone/frontend
+        run: node tests/menu-source-coverage.cjs
       - name: Load original 29 mobile and 5 full-page screenshots captured on source HTTP200
         uses: actions/download-artifact@v4
         with:
