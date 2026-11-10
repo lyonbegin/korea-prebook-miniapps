@@ -57,12 +57,24 @@ adb install-multiple -r "${APKS[@]}" | tee "$OUT/install_result.txt"
 adb shell pm path com.merakiplace.mydoctor | tee -a "$OUT/install_result.txt"
 adb shell pm clear com.merakiplace.mydoctor || :
 adb shell am force-stop com.merakiplace.mydoctor || :
-adb shell monkey -p com.merakiplace.mydoctor -c android.intent.category.LAUNCHER 1 \
-    > "$OUT/launch_result.txt" 2>&1 || true
-sleep 18
+adb logcat -c || :
+# aapt confirmed launchable-activity is com.userproduct.MainActivity.
+adb shell am start -W -n 'com.merakiplace.mydoctor/com.userproduct.MainActivity' \
+   > "$OUT/launch_result.txt" 2>&1 || :
+sleep 12
+adb shell dumpsys activity activities | grep -m 9 -E '(mResumedActivity|topResumedActivity|merakiplace|MainActivity)' \
+   >> "$OUT/launch_result.txt" || :
+adb logcat -d -v threadtime -t 3200 > "$OUT/launch_logcat_full.txt" || :
+grep -Ei '(AndroidRuntime|FATAL EXCEPTION|com[.]merakiplace|com[.]userproduct|Fatal signal|SoLoader|UnsatisfiedLinkError|native.bridge|ndk.translation|CRASH|Caused by|libhermes|linker)' \
+  "$OUT/launch_logcat_full.txt" | tail -n 240 > "$OUT/crash_diagnostics.txt" || :
 if ! adb shell pidof com.merakiplace.mydoctor >/dev/null; then
-  echo 'APP_LAUNCH_FAILED: no running process' | tee -a "$OUT/launch_result.txt"
-  adb shell dumpsys activity activities | grep -m 7 -E '(mResumedActivity|topResumedActivity|merakiplace)' >> "$OUT/launch_result.txt" || :
+  echo 'APP_LAUNCH_FAILED: original app process exited; NO native UI pixel baseline' | tee -a "$OUT/launch_result.txt"
+  adb exec-out screencap -p > "$OUT/android_launch_failed_not_a_reference.png" || :
+  exit 8
+fi
+if ! grep -q 'com.merakiplace.mydoctor' "$OUT/launch_result.txt"; then
+  echo 'APP_FOREGROUND_UNVERIFIED: refusing to call launcher screen original UI' | tee -a "$OUT/launch_result.txt"
+  exit 8
 fi
 # Save real emulator frames, full Android UI hierarchy, and visible screen text.
 capture(){
