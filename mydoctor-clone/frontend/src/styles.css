@@ -420,7 +420,7 @@
 /* Original hospital public review: first heading is 3px lower; feedback tags
    are 10px below excerpt and the second review begins 10px lower. */
 .original-review-hospital .review-channel-with-cards{padding-top:20px}
-.original-review-hospital .review-source-tags{margin-top:13px}
+.original-review-hospital .review-source-tags{margin-top:7px}
 
 
 /* Source text-md-text-secondary measured in verified original screenshots:
