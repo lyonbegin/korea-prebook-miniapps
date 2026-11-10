@@ -90,6 +90,13 @@ def public_inventory() -> dict:
         "excluded": "all authenticated, user-specific and reservation-mutation routes",
     }
 
+def is_private_field(key: str) -> bool:
+    """Check snake_case, camelCase, hyphenated and case-insensitive field names."""
+    canonical = re.sub(r"([a-z0-9])([A-Z])", r"\\1_\\2", key)
+    canonical = re.sub(r"[^A-Za-z0-9]+", "_", canonical).lower()
+    return bool(BLOCKED_KEY.search(canonical))
+
+
 def sanitize_public_json(value: Any, depth: int = 0) -> Any:
     """Remove private fields from public catalog JSON; fail closed on unsupported nodes."""
     if depth > MAX_DEPTH:
@@ -98,7 +105,7 @@ def sanitize_public_json(value: Any, depth: int = 0) -> Any:
         result = {}
         for k, v in value.items():
             key = str(k)
-            if BLOCKED_KEY.search(key) or len(key) > 100:
+            if is_private_field(key) or len(key) > 100:
                 continue
             result[key] = sanitize_public_json(v, depth + 1)
         return result
@@ -133,7 +140,7 @@ def safe_parameters(resource: str, args) -> str:
                 raise HTTPException(400, "Invalid numeric native parameter")
             if not (-180 <= num <= 180) and key in ("latitude", "longitude", "lat", "lng"):
                 raise HTTPException(400, "Coordinate out of range")
-            if key in ("page", "offset", "size", "limit") and (not val.isdecimal() or int(val) > 2000):
+            if key in ("page", "offset", "size", "limit") and (not val.isdecimal() or int(val) > (100 if key in ("limit", "size") else 2000)):
                 raise HTTPException(400, "Invalid pagination")
         elif key in TEXT_FIELD and not re.fullmatch(r"[\\w가-힣 .:-]{1,80}", val):
             raise HTTPException(400, "Invalid search parameter")
