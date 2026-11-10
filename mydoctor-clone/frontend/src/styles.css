@@ -431,3 +431,18 @@
 .original-review .review-facets button:not(.active){color:#393f46}
 .original-review .review-source-excerpt{color:#393f46!important}
 .original-review .review-source-tags span{color:#393f46}
+
+
+/* Interactive navigation: source fetches take time on DB cache MISS. A selected
+   menu entry always provides visible feedback and a verified source destination. */
+.source-route-loading{min-height:340px;padding:35px 20px 50px;text-align:left;color:#252b33}
+.source-route-title{font-size:21px;font-weight:750;line-height:1.4;letter-spacing:-.4px;margin:0 0 15px}
+.source-route-loading p{font-size:14px;line-height:23px;color:#647084;margin:0 0 24px}
+.source-route-loading a,.source-route-actions a{display:inline-flex;justify-content:center;align-items:center;
+ background:#316bff;color:#fff;border-radius:9px;padding:13px 17px;font-size:14px;font-weight:700}
+.source-route-error{min-height:340px;padding-top:28px}
+.source-route-error h1{margin:0 0 14px;font-size:20px;line-height:1.4;color:#1e2630}
+.source-route-error h2{font-size:17px;margin:0 0 18px}
+.source-route-error p{line-height:1.6;font-size:14px}
+.source-route-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:17px}
+.source-route-actions button{min-height:46px;font-weight:650}
