@@ -51,9 +51,14 @@ async def lifespan(app: FastAPI):
                 app.state.sitemap_task=asyncio.create_task(refresh_types_and_sitemaps())
         except Exception:
             LOG.exception("mydoctor schema startup failed")
-    # Six anonymous read-only source requests classify why the former
-    # generic gateway returned 503. No caching and no sensitive data recorded.
-    app.state.native_probe_task=asyncio.create_task(audit_source_endpoints_once(app))
+    # Static Hermes audit is completed. Do not repeatedly probe a third-party
+    # production API on every Railway deployment. Explicit opt-in for diagnosis.
+    app.state.native_probe_task=None
+    app.state.native_path_diagnostics={"state":"disabled_after_completed_audit",
+                                        "results":{},
+                                        "enable_via":"NATIVE_DIAG_PROBE_ENABLED=1"}
+    if os.getenv("NATIVE_DIAG_PROBE_ENABLED","0")=="1":
+        app.state.native_probe_task=asyncio.create_task(audit_source_endpoints_once(app))
     yield
     native_task=getattr(app.state,"native_probe_task",None)
     if native_task and not native_task.done():
