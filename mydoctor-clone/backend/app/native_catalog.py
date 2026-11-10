@@ -33,6 +33,8 @@ MAX_DEPTH = 18
 # GET is a controlled probe hypothesis, not a recovered method declaration.
 NATIVE_RESOURCES = {
     "home-menu": ("patient-api/app/home-menu/", ()),
+    # Hermes 31795 getMydLink: concat(base, mydLinkKey), GET
+    "myd-link": ("patient-api/app/myd-link/", ("myd_link_key",)),
     "home-banner": ("patient-api/app/app-banner/", ("expose_place",)),
     "app-config": ("patient-api/app/configure/", ()),
     "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department")),
@@ -65,7 +67,7 @@ BLOCKED_VALUE = re.compile(
     r"(?<![\w.+-])[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}(?!\w))", re.I
 )
 NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng", "category_id"}
-TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering"}
+TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering", "myd_link_key"}
 
 NATIVE_CACHE_SCHEMA = """
 CREATE SCHEMA IF NOT EXISTS mydoctor_clone;
@@ -378,6 +380,16 @@ async def get_native_public_catalog(
     if resource == "lowest-price" and not request.query_params.get("category_id"):
         raise HTTPException(400, "category_id required by original app")
     query = safe_parameters(resource, request.query_params)
+    if resource == "myd-link":
+        key_parameter = request.query_params.get("myd_link_key", "")
+        # This is a path component, NOT a query parameter in the original app.
+        if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,79}", key_parameter)
+            or len(request.query_params) != 1):
+            raise HTTPException(400, "A single observed-style myd_link_key is required")
+        path = path + key_parameter
+        origin_query = ""
+    else:
+        origin_query = query
     key = hashlib.sha256((SOURCE_VERSION + ":" + resource + "?" + query).encode()).hexdigest()
     pool = request.app.state.pool
     if pool is None:
@@ -399,7 +411,7 @@ async def get_native_public_catalog(
              "schema_verified": False},
             headers={"x-cache": "HIT", "x-data-source": "native-app-json-postgres"},
         )
-    url = ORIGIN + "/" + path + ("?" + query if query else "")
+    url = ORIGIN + "/" + path + ("?" + origin_query if origin_query else "")
     async with httpx.AsyncClient(
         timeout=httpx.Timeout(16, connect=6),
         follow_redirects=False,
