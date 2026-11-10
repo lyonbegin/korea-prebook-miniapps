@@ -464,3 +464,9 @@
  border-radius:9px;font-weight:700;font-size:14px;padding:15px 10px}
 .qna-detail-related{padding-top:23px}
 .qna-detail-related h2{font-size:17px;margin:0 0 11px}
+
+
+/* Route-specific subtitle: list click must not look identical to parent index. */
+.observed-route-context{padding:0 0 14px;border-bottom:1px solid #e9edf2;margin-bottom:18px}
+.observed-route-context h2{font-size:20px;line-height:1.45;color:#222b35;font-weight:750;margin:4px 0 7px}
+.observed-route-context p{font-size:13px;line-height:1.6;color:#768393;margin:0}
