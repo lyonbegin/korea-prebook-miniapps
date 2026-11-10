@@ -104,6 +104,7 @@ jobs:
         working-directory: mydoctor-clone/frontend
         run: node tests/capture-source-facts.cjs
       - name: Capture real public menu destinations from original HTTP200 across all 6 categories
+        if: github.event_name == 'workflow_dispatch'
         working-directory: mydoctor-clone/frontend
         env:
           MD_MENU_CAPTURE_LIMIT: 36
@@ -117,6 +118,7 @@ jobs:
             mydoctor-clone/backend/data/public_source_facts_20261109.json
             mydoctor-clone/backend/data/public_menu_facts_20261110.json
       - name: Commit enriched public facts for existing PostgreSQL startup import
+        if: github.event_name == 'workflow_dispatch'
         working-directory: mydoctor-clone/frontend
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
