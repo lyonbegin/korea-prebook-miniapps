@@ -22,6 +22,17 @@ const key="symptom-acneOralMedication";
     if(envelope.myd_link&&typeof envelope.myd_link==="object")
       result.nested_link_fields=Object.keys(envelope.myd_link).slice(0,30);
     result.link_type=typeof envelope.link_type==="string"?envelope.link_type:null;
+    const filters=envelope.doctor_list_filter_rule?.search_filters;
+    result.search_filter_count=Array.isArray(filters)?filters.length:null;
+    result.search_filter_options=Array.isArray(filters)?filters.slice(0,8).map(x=>({
+      field_names:x&&typeof x==="object"?Object.keys(x).slice(0,16):[],
+      key:typeof x?.key==="string"?x.key:null,
+      filter_key:typeof x?.filter_key==="string"?x.filter_key:null,
+      name:typeof x?.name==="string"?x.name:null
+    })):[];
+    const sorts=envelope.doctor_list_sort_rule;
+    result.sort_filter_count=Array.isArray(sorts?.sort_filters)?sorts.sort_filters.length:null;
+    result.sort_default_filter_key=typeof sorts?.default_filter_key==="string"?sorts.default_filter_key:null;
   }
   result.error=json?.error||null;
  }catch(error){result.error=error.name||"ProbeError"}
