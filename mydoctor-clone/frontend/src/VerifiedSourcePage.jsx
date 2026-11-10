@@ -78,7 +78,7 @@ function MedicineLandingPage({data,go}){
    <h1>의약품 정보 검색</h1>
    <p>찾는 약의 효능·복용법·주의사항·부작용을 확인하세요.</p>
    <form className="original-medicine-search" onSubmit={e=>e.preventDefault()}>
-    <input type="search" aria-label="원본 자료 검색" placeholder="약 이름 · 성분으로 검색"
+    <input type="text" aria-label="원본 자료 검색" placeholder="약 이름 · 성분으로 검색"
       value={query} onChange={e=>setQuery(e.target.value)}/>
     <button type="submit">검색</button>
    </form>
