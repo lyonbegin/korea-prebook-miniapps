@@ -9,6 +9,7 @@ import OriginalFooter from "./OriginalFooter.jsx";
 import originalPriceCards from "./data/original-medical-cost-cards.json";
 import NativeAppHome from "./NativeAppHome.jsx";
 import NativeApiCatalog from "./NativeApiCatalog.jsx";
+import NativePriceRegions from "./NativePriceRegions.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -281,7 +282,7 @@ function CostScreen({data,go}){
       onChange={e=>setSearch(e.target.value)} placeholder="어떤 가격이 궁금하세요?"/>
     {search&&<button type="button" aria-label="검색어 지우기" onClick={()=>setSearch("")}><X size={17}/></button>}
   </div>
-  <NativeApiCatalog resource="lowest-price" title="원본 앱 실시간 가격 데이터" go={go} compact/>
+  <NativePriceRegions verticalKey="mounjaro"/>
   <section className="md-cost-list"><h2>가격 비교 카테고리</h2>
     <div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}>
       <strong>{v.title}</strong>{v.subtitle&&<small>{v.subtitle}</small>}<ChevronRight size={17} className="native-price-arrow"/>
@@ -331,7 +332,8 @@ export default function App(){
 
  const companyPage=isCompanyRoute(route),distinctPage=isOriginalDistinctRoute(route),childEmergency=decodeURIComponent(route.split("?")[0])==="/map/baby119";
  // App-native core screens never wait for the legacy my-doctor.io HTML gateway.
- const nativeRoot=home||route==="/hospital"||route==="/medical-cost"||
+ const nativePriceDetail=decodeURIComponent(route.split("?")[0])==="/medical-cost/마운자로";
+ const nativeRoot=home||nativePriceDetail||route==="/hospital"||route==="/medical-cost"||
    route==="/telemedicine/all-department"||route==="/telemedicine";
  const appData=s.data||{links:[],tables:[],sections:[],paragraphs:[]};
  return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
@@ -345,6 +347,7 @@ export default function App(){
   {nativeRoot?(home?<NativeAppHome data={appData} go={go}/>:
      route==="/hospital"?<HospitalScreen data={appData} go={go}/>:
      route==="/medical-cost"?<CostScreen data={appData} go={go}/>:
+     nativePriceDetail?<section className="native-price-detail-route"><h1>마운자로 가격 비교</h1><NativePriceRegions verticalKey="mounjaro"/></section>:
      <DoctorScreen data={appData} go={go}/>):
     s.loading?<div className="source-route-loading" role="status">
        <div className="source-route-title">{routeName}</div>
