@@ -1,5 +1,6 @@
 import React,{useEffect,useMemo,useState}from "react";
 import {fetchPublicFacts} from "./lib/originalGateway.js";
+import {hasLocalSourceFacts,originalSite} from "./lib/verifiedRouteCoverage.js";
 import{Search,ChevronRight,MapPin,Clock3,CalendarDays,Phone,CheckCircle2}from "lucide-react";
 import ReviewsSummary from "./ReviewsSummary.jsx";
 import OriginalDistinctPage,{isOriginalDistinctRoute} from "./OriginalDistinctPages.jsx";
@@ -30,10 +31,17 @@ export function SourceRows({links,go,kind="directory",defaultMaxHeight=null}){
  return <div className="observed-row-container">
   <div className={"observed-links observed-"+kind+(hasMore&&!expanded?" is-collapsed":"")}
     style={hasMore&&!expanded?{maxHeight:defaultMaxHeight,overflow:"hidden"}:undefined}>
-  {navigable.map(link=><a key={link.path} href={link.path} className="observed-link"
-     onClick={e=>{e.preventDefault();go(link.path,{label:link.label})}}>
-    <span>{link.label}</span><ChevronRight size={16} aria-hidden="true"/>
-  </a>)}
+  {navigable.map(link=>{
+   const local=hasLocalSourceFacts(link.path);
+   return <a key={link.path} href={local?link.path:originalSite+link.path}
+     target={local?undefined:"_blank"} rel={local?undefined:"noopener noreferrer"}
+     data-link-data={local?"source-verified-db":"original-external"}
+     className={"observed-link"+(local?"":" observed-link-original")}
+     onClick={local?e=>{e.preventDefault();go(link.path,{label:link.label})}:undefined}>
+    <span>{link.label}</span>
+    {local?<ChevronRight size={16} aria-hidden="true"/>:
+      <span className="observed-source-external">원본에서 보기 ↗</span>}
+  </a>})}
   </div>
   {hasMore&&<button type="button" className="observed-expand" aria-expanded={expanded}
     onClick={()=>setExpanded(!expanded)}>{expanded?"접기":"전체 보기"} <ChevronRight size={15}/></button>}
