@@ -27,7 +27,10 @@ BYTES=$(wc -c < "$APP_DIR/original.xapk")
 test "$BYTES" -gt 80000000 || { echo "INVALID APK DOWNLOAD ($BYTES bytes)"; exit 5; }
 unzip -tqq "$APP_DIR/original.xapk" || { echo 'Corrupted XAPK'; exit 5; }
 unzip -oq "$APP_DIR/original.xapk" -d "$APP_DIR/extracted"
-mapfile -d '' APKS < <(find "$APP_DIR/extracted" -name '*.apk' -type f -print0)
+# Compatible with both GNU bash and macOS bash 3.2.
+APKS=()
+while IFS= read -r -d '' apk_file; do APKS+=("$apk_file"); done \
+  < <(find "$APP_DIR/extracted" -name '*.apk' -type f -print0)
 test "${#APKS[@]}" -gt 1 || { echo "Expected split APKs"; exit 5; }
 BASE=""
 for p in "${APKS[@]}"; do
@@ -45,13 +48,26 @@ fi
 # The downloaded APK must contain the EXACT SAME Hermes UI program as
 # the XAPK provided by the user. Otherwise a 6.50.0 label is insufficient.
 HERMES_EXPECTED="6c99d3d6766668dd29909eb49edb92a004e588b7f49c8f93a54730c31e9a4802"
-HERMES_ACTUAL=$(unzip -p "$BASE" assets/index.android.bundle | sha256sum | awk '{print $1}')
+HERMES_ACTUAL=$(python3 - "$BASE" <<'PY'
+import hashlib,sys,zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    print(hashlib.sha256(z.read("assets/index.android.bundle")).hexdigest())
+PY
+)
 printf 'Hermes expected user-uploaded SHA256: %s\\nDownloaded Hermes SHA256: %s\\n' "$HERMES_EXPECTED" "$HERMES_ACTUAL" >> "$OUT/device_metadata.txt"
 if [[ "$HERMES_ACTUAL" != "$HERMES_EXPECTED" ]]; then
   echo 'WRONG_BINARY: downloaded app has different Hermes UI from user-provided v6.50.0 XAPK' | tee "$OUT/installation_blocker.txt"
   exit 6
 fi
-SHA=$(sha256sum "$BASE" | awk '{print $1}')
+SHA=$(python3 - "$BASE" <<'PY'
+import hashlib,sys
+with open(sys.argv[1],"rb") as f:
+    h=hashlib.sha256()
+    for block in iter(lambda:f.read(1024*1024),b""):
+        h.update(block)
+    print(h.hexdigest())
+PY
+)
 printf 'Source: APKPure original 6.50.0 (1206) ARM64\nXAPK bytes: %s\nbase.apk sha256: %s\n' "$BYTES" "$SHA" >> "$OUT/device_metadata.txt"
 adb install-multiple -r "${APKS[@]}" | tee "$OUT/install_result.txt"
 adb shell pm path com.merakiplace.mydoctor | tee -a "$OUT/install_result.txt"
