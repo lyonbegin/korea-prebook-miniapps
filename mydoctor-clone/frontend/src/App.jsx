@@ -8,6 +8,7 @@ import {isCompanyRoute,isOriginalDistinctRoute} from "./OriginalDistinctPages.js
 import OriginalFooter from "./OriginalFooter.jsx";
 import originalPriceCards from "./data/original-medical-cost-cards.json";
 import NativeAppHome from "./NativeAppHome.jsx";
+import NativeApiCatalog from "./NativeApiCatalog.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -208,6 +209,7 @@ function DoctorScreen({data,go}){
  const realSymptom=item=>data.links.find(v=>v.path.startsWith("/telemedicine/")&&
    (v.label.trim()===item||v.label.includes("("+item+")")))?.path;
  return <div className="native-doctor-directory"><section className="md-intro"><h1>비대면 진료</h1><p>진료받을 증상이나 진료과를 선택해 주세요.</p></section>
+ <NativeApiCatalog resource="doctor-list" title="원본 앱 의사 목록" go={go} compact/>
  <div className="md-tabs"><button className={active==="증상"?"current":""} onClick={()=>setActive("증상")}>증상</button><button className={active==="진료과목"?"current":""} onClick={()=>setActive("진료과목")}>진료과목</button></div>
  {active==="증상"?<div className="md-symptoms">{CATEGORIES.map(([name,desc,icon,items])=><div className="symptom-section" key={name}>
    <button className="symptom-group" onClick={()=>setOpened(opened===name?"":name)} aria-expanded={opened===name}>
@@ -239,7 +241,7 @@ function HospitalScreen({data,go}){
     if(target){setMessage("");go(target)}
     else setMessage("선택 조건에 해당하는 원본 경로가 아직 확보되지 않았습니다.");
  };
- return <><section className="md-intro md-hospital-intro"><h1>근처 병원 찾기</h1><p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p></section>
+ return <><NativeApiCatalog resource="hospital-list" title="원본 앱 병원 목록" go={go} compact/><section className="md-intro md-hospital-intro"><h1>근처 병원 찾기</h1><p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p></section>
  <section className="md-lookup">
   <label><MapPin size={19}/><select aria-label="지역" value={region} onChange={e=>setRegion(e.target.value)}><option value="">지역</option>{["서울","경기","인천","부산","대구","광주","대전","울산","세종","경남","경북","전남","전북","강원","충남","충북","제주"].map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
   <label><BriefcaseMedical size={19}/><select aria-label="진료과" value={dept} onChange={e=>setDept(e.target.value)}><option value="">진료과</option>{DOC_DEPTS.map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
@@ -279,6 +281,7 @@ function CostScreen({data,go}){
       onChange={e=>setSearch(e.target.value)} placeholder="어떤 가격이 궁금하세요?"/>
     {search&&<button type="button" aria-label="검색어 지우기" onClick={()=>setSearch("")}><X size={17}/></button>}
   </div>
+  <NativeApiCatalog resource="lowest-price" title="원본 앱 실시간 가격 데이터" go={go} compact/>
   <section className="md-cost-list"><h2>가격 비교 카테고리</h2>
     <div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}>
       <strong>{v.title}</strong>{v.subtitle&&<small>{v.subtitle}</small>}<ChevronRight size={17} className="native-price-arrow"/>
