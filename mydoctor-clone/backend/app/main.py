@@ -13,7 +13,7 @@ from fastapi.responses import Response, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from .catalog_schema import SCHEMA
-from .native_catalog import NATIVE_CACHE_SCHEMA, get_native_public_catalog, public_inventory
+from .native_catalog import NATIVE_CACHE_SCHEMA, get_native_public_catalog, public_inventory, audit_source_endpoints_once
 from .source_parser import extract_page, source_key
 from .sitemap_index import sync_public_index,backfill_existing_route_types
 from .public_facts import extract_public_facts,seed_observed_facts,seed_menu_facts,insert_facts,safe_route
@@ -51,7 +51,15 @@ async def lifespan(app: FastAPI):
                 app.state.sitemap_task=asyncio.create_task(refresh_types_and_sitemaps())
         except Exception:
             LOG.exception("mydoctor schema startup failed")
+    # Six anonymous read-only source requests classify why the former
+    # generic gateway returned 503. No caching and no sensitive data recorded.
+    app.state.native_probe_task=asyncio.create_task(audit_source_endpoints_once(app))
     yield
+    native_task=getattr(app.state,"native_probe_task",None)
+    if native_task and not native_task.done():
+        native_task.cancel()
+        try: await native_task
+        except asyncio.CancelledError: pass
     task=getattr(app.state,"sitemap_task",None)
     if task and not task.done():
         task.cancel()
@@ -133,6 +141,12 @@ async def catalog_routes(request:Request,section:str="",limit:int=40,offset:int=
                        "source_verified":r["source_verified_at"] is not None,
                        "data_verified":r["data_verified_at"] is not None,
                        "clone_verified":r["clone_verified_at"] is not None} for r in rows]}
+
+@app.get("/native/catalog/path-diagnostics")
+async def native_path_diagnostics(request: Request):
+    """Status-only observations of alternate 6.50.0 endpoint strings."""
+    return getattr(request.app.state,"native_path_diagnostics",
+                   {"state":"pending","results":{}})
 
 @app.get("/native/catalog/inventory")
 async def native_inventory():
