@@ -56,7 +56,7 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   });
   await test("Night hospital list actual source URLs",async()=>{
    await load("/hospital/야간진료");
-   const rows=page.locator(".observed-link");
+   const rows=page.locator(".original-hospital-night-card");
    assert.ok(await rows.count()>=15,"Original hospital list is missing");
    const dest=await rows.first().getAttribute("href");
    assert.match(dest,/^\/hospital\/detail\?hospital_id=\d+/);
@@ -69,8 +69,8 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   });
   await test("MyDoctor Mounjaro original fact price tables",async()=>{
    await load("/medical-cost/마운자로");
-   assert.equal(await page.locator(".observed-table").count(),2);
-   const all=await page.locator(".observed-table tbody tr").allTextContents();
+   assert.equal(await page.locator(".original-price-tablewrap").count(),2);
+   const all=await page.locator(".original-price-tablewrap tbody tr").allTextContents();
    assert.ok(all.some(x=>x.includes("269,000원")));
    assert.ok(all.some(x=>x.includes("5,000원")));
    return {tables:2,factual_prices:all.length};
@@ -91,8 +91,8 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   });
   await test("Original QnA visible link routing",async()=>{
    await load("/qna");
-   assert.equal(await page.locator('[data-source-view="qna-directory"]').count(),1);
-   const rows=page.locator(".observed-link");
+   assert.equal(await page.locator('[data-source-view="qna-index"]').count(),1);
+   const rows=page.locator(".original-qna-item");
    const count=await rows.count();
    assert.ok(count>=15,"QnA sourced links are not displayed");
    const link=rows.first();
