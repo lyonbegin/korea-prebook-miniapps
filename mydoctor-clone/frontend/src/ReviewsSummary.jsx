@@ -16,12 +16,14 @@ export default function ReviewsSummary({data,go}){
         <b>{x.description}</b><strong>{x.percent}%</strong></div>)}
     </div>}
     <h2 className="review-facet-heading">증상별 후기</h2>
-    <div className="review-facets" role="group" aria-label="증상별 후기 분류">
-      {review.facets.map(x=><button type="button" key={x.label}
+    <div className={"review-facets"+(review.kind==="hospital"&&review.facets.length===11?" original-hospital-facets":"")} role="group" aria-label="증상별 후기 분류">
+      {(review.kind==="hospital"&&review.facets.length===11?
+        [review.facets.slice(0,3),review.facets.slice(3,5),review.facets.slice(5,8),review.facets.slice(8,11)]:
+        [review.facets]).map((group,i)=><div className="review-facet-row" key={i}>{group.map(x=><button type="button" key={x.label}
         className={selected===x.label?"active":""}
         aria-pressed={selected===x.label} onClick={()=>setSelected(selected===x.label?"전체":x.label)}>
         {x.label} {fmt(x.count)}건
-      </button>)}
+      </button>)}</div>)}
     </div>
     {selected!=="전체"&&<p className="review-filter-label" role="status">{facets[0]?.label} {fmt(facets[0]?.count)}건</p>}
    </section>
