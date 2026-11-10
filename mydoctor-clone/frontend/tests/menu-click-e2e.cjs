@@ -53,6 +53,12 @@ const targets=[
            try{await page.locator("main h1,main [role=alert]").first().waitFor({timeout:11000});}catch{}
            rec.child_title=await page.locator("main h1").first().textContent().catch(()=>"");
            rec.child_alert=await page.locator('main [role=alert]').first().textContent().catch(()=>"");
+           if(root==="건강 정보"){
+             const detail=page.locator('.original-public-qna-detail');
+             rec.detail_rendered=await detail.count()===1;
+             rec.child_question=await detail.locator('h2').first().textContent().catch(()=>"");
+             if(!rec.detail_rendered||!rec.child_question?.includes("디스크"))rec.status="CHILD_FAIL";
+           }
            if(!rec.child_url_changed||!rec.child_title||rec.child_alert)rec.status="CHILD_FAIL";
          }
        }
