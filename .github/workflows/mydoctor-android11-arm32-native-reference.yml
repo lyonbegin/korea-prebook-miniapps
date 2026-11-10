@@ -1,0 +1,79 @@
+name: MyDoctor Android 11 x86_64 ARM32 translated original pixels
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths:
+      - .github/workflows/mydoctor-android11-arm32-native-reference.yml
+permissions:
+  contents: read
+jobs:
+  exact-original-arm32:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Android hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install screenshot and pixel tools
+        run: |
+          cd mydoctor-clone/frontend
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          python3 -m pip install Pillow numpy
+      - name: Install exact 6.50.0 armeabi-v7a APK on Android 11 x86_64
+        id: native
+        uses: reactivecircus/android-emulator-runner@v2
+        continue-on-error: true
+        env:
+          MYDOCTOR_XAPK_ABI: armeabi-v7a
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 6G
+          emulator-boot-timeout: 600
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: bash mydoctor-clone/android-reference/capture_original.sh
+      - name: Screenshot exact Railway clone viewport
+        if: always()
+        run: node mydoctor-clone/android-reference/capture_web.cjs
+      - name: Run strict pixel diff (never use launcher as source)
+        if: always()
+        continue-on-error: true
+        run: python3 mydoctor-clone/android-reference/compare_pixels.py
+      - name: Save screenshots, original UI trees, logcat and pixel overlays
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-original-650-api30-arm32-verified-pixels
+          path: mydoctor-clone/android-reference/artifacts/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Enforce original app screenshot and <=10 percent RGB mismatch
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,sys
+          p=pathlib.Path("mydoctor-clone/android-reference/artifacts/pixel_parity_report.json")
+          if not p.is_file():sys.exit("FAILED_NO_PIXEL_REPORT")
+          d=json.loads(p.read_text())
+          print("REAL_NATIVE_PIXEL_RESULTS",json.dumps(d["summary"]))
+          if d["summary"]["measured"]<1:sys.exit("FAILED_NO_ORIGINAL_APP_UI")
+          if d["summary"]["failed"] or d["summary"]["missing"]:
+              sys.exit("FAILED_ORIGINAL_AND_WEB_PIXEL_MISMATCH")
+          PY
