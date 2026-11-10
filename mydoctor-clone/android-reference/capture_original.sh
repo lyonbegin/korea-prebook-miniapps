@@ -37,7 +37,8 @@ if [[ -z "$BASE" ]]; then BASE="${APKS[0]}"; fi
 # apk metadata and signature MUST be source-derived (not fabricated).
 AAPT="$(find "${ANDROID_HOME:-/opt/android-sdk}" -path '*/build-tools/*/aapt' -type f | sort -V | tail -1)"
 if [ -n "$AAPT" ]; then
-  "$AAPT" dump badging "$BASE" | head -n 6 > "$OUT/package_info.txt"
+  "$AAPT" dump badging "$BASE" > "$OUT/package_badging_all.txt"
+  head -n 6 "$OUT/package_badging_all.txt" > "$OUT/package_info.txt"
   grep -q "name='com.merakiplace.mydoctor'" "$OUT/package_info.txt"
   grep -q "versionName='6.50.0'" "$OUT/package_info.txt"
 fi
