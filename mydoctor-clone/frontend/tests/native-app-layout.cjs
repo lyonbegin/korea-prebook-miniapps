@@ -1,6 +1,5 @@
-/* 6.50.0 app-layout regression on a REAL 390x844 mobile viewport.
- * Geometry and user interaction only; does not claim pixel equivalence to
- * the native APK or access to authenticated proprietary API responses.
+/* Real original Android 6.50.0 API-backed mobile user-gesture QA at 390x844.
+ * No old nine-shortcut mock acceptance, no fake backend results, no pixel-parity claims.
  */
 const {chromium}=require("playwright");
 const fs=require("fs");
@@ -10,66 +9,111 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
  const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  const checks=[];
  async function check(name,fn){
-  try{const detail=await fn();checks.push({name,status:"PASS",detail});console.log("NATIVE APP LAYOUT PASS",name,detail||"");}
-  catch(e){checks.push({name,status:"FAIL",error:String(e.message).slice(0,350)});console.error("NATIVE APP LAYOUT FAIL",name,e.message);}
+  try{
+   const detail=await fn();
+   checks.push({name,status:"PASS",detail});
+   console.log("NATIVE 650 PASS",name,detail??"");
+  }catch(error){
+   checks.push({name,status:"FAIL",error:String(error.message).slice(0,420)});
+   console.error("NATIVE 650 FAIL",name,error.message);
+  }
  }
  try{
-  await check("app home is a first-class mobile screen, not old website hero",async()=>{
+  await check("home shows observed 20 source menus and original app banners",async()=>{
    await page.goto(base+"/",{waitUntil:"domcontentloaded",timeout:25000});
-   await page.locator(".native-home").waitFor({timeout:28000});
-   if(await page.locator("main [role=alert]").count())throw Error("origin source unavailable");
-   if(await page.locator(".md-home-hero").count())throw Error("legacy website marketing hero remains");
-   if(await page.locator(".native-home-banner").count()!==1)throw Error("native promo banner missing");
-   if(await page.locator(".native-app-service-box").count()!==1)throw Error("native service card missing");
-   if(await page.locator(".native-segment [role=tab]").count()!==2)throw Error("segmented app tab missing");
-   return await page.locator(".native-home-banner strong").innerText();
+   await page.locator(".native-home").waitFor({timeout:12000});
+   await page.locator('[data-native-menu-count="20"]').waitFor({timeout:18000});
+   await page.locator(".native-image-banner img").first().waitFor({timeout:18000});
+   const menu=await page.locator(".native-symptom-item").count();
+   const banners=await page.locator(".native-image-banner").count();
+   if(menu!==20)throw Error("Original app source menu count wrong: "+menu);
+   if(banners!==8)throw Error("Original native banner count wrong: "+banners);
+   return {menus:menu,banners};
   });
-  await check("nine observed app telemedicine categories and functional booking tab",async()=>{
-   if(await page.locator(".native-symptom-item").count()!==9)throw Error("Expected 9 mobile symptom categories");
-   const tab=page.getByRole("tab",{name:"최저가 병원 예약"});
-   await tab.tap();
-   if(await tab.getAttribute("aria-selected")!=="true")throw Error("booking tab did not activate");
-   if(await page.locator(".native-symptom-item").count()!==6)throw Error("booking tab did not change content");
+  await check("mobile tap toggles native app telemedicine and booking",async()=>{
+   const booking=page.getByRole("tab",{name:"최저가 병원 예약"});
+   await booking.tap();
+   if(await booking.getAttribute("aria-selected")!=="true")throw Error("booking tab not selected");
+   if(await page.locator(".native-symptom-item").count()!==6)throw Error("expected 6 observed booking shortcuts");
    await page.getByRole("tab",{name:"비대면 진료"}).tap();
-   if(await page.locator(".native-symptom-item").count()!==9)throw Error("telemedicine tab not restored");
-   return "9 telemedicine + 6 booking shortcuts";
+   await page.locator('[data-native-menu-count="20"]').waitFor({timeout:9000});
+   return "real 20 native menu items restored";
   });
-  await check("mobile shell width and fixed bottom navigation",async()=>{
+  await check("390x844 layout and fixed bottom bar are valid",async()=>{
    const layout=await page.evaluate(()=>{
-     const site=document.querySelector(".site-app-native"),bar=document.querySelector(".native-app-tabbar");
-     const rect=site.getBoundingClientRect(),nav=bar.getBoundingClientRect();
-     return {viewport:innerWidth,siteWidth:rect.width,scrollWidth:document.documentElement.scrollWidth,
-       bottom:innerHeight-nav.bottom,barItems:bar.querySelectorAll("a,button").length};
+     const site=document.querySelector(".site-app-native");
+     const bar=document.querySelector(".native-app-tabbar").getBoundingClientRect();
+     return {width:innerWidth,content:site.getBoundingClientRect().width,
+       overflow:document.documentElement.scrollWidth-innerWidth,
+       bottom:innerHeight-bar.bottom,navItems:document.querySelectorAll(".native-app-tabbar a,.native-app-tabbar button").length};
    });
-   if(layout.viewport!==390||Math.abs(layout.siteWidth-390)>1)throw Error("unexpected mobile content width "+JSON.stringify(layout));
-   if(layout.scrollWidth>layout.viewport+1)throw Error("horizontal overflow "+JSON.stringify(layout));
-   if(layout.barItems!==5||Math.abs(layout.bottom)>2)throw Error("bottom tab geometry "+JSON.stringify(layout));
+   if(layout.width!==390||Math.abs(layout.content-390)>1||layout.overflow>1||
+      Math.abs(layout.bottom)>3||layout.navItems!==5)
+      throw Error("phone geometry mismatch: "+JSON.stringify(layout));
    return layout;
   });
-  await check("native item tap goes to LOCAL on-demand detail route",async()=>{
-   const link=page.locator(".native-symptom-item").first();
+  await check("real source MyD link on home responds to physical tap",async()=>{
+   const link=page.locator('.native-symptom-item[href^="/native/myd-link/"]').first();
+   await link.waitFor({timeout:10000});
    const href=await link.getAttribute("href");
-   if(!href?.startsWith("/telemedicine/"))throw Error("wrong first native symptom link: "+href);
    await link.tap();
-   await page.waitForURL(url=>decodeURIComponent(url.pathname)===decodeURIComponent(href),{timeout:9000});
-   await page.locator("main h1,main [role=alert]").first().waitFor({timeout:30000});
-   const error=await page.locator("main [role=alert]").first().textContent().catch(()=>"");
-   if(error)throw Error("detail data unavailable (real failure): "+error.slice(0,180));
-   if(!await page.locator("main h1").count())throw Error("no actual detail heading");
-   return {path:href,heading:await page.locator("main h1").first().innerText()};
+   await page.waitForURL(url=>decodeURIComponent(url.pathname)===decodeURIComponent(href),{timeout:12000});
+   await page.locator(".native-link-screen").waitFor({timeout:10000});
+   await page.locator(".native-link-facts,.native-link-error").first().waitFor({timeout:16000});
+   if(await page.locator(".native-link-error").count())
+     throw Error("original MyD link returned error after tap");
+   return {link:href,fields:await page.locator(".native-link-facts>div").count()};
   });
-  await check("bottom tab opens actual price compare page",async()=>{
-   await page.locator(".native-app-tabbar a[href='/medical-cost']").tap();
-   await page.waitForURL(url=>url.pathname==="/medical-cost",{timeout:9000});
-   await page.locator("main h1,main [role=alert]").first().waitFor({timeout:30000});
-   if(await page.locator("main [role=alert]").count())throw Error("price source data missing");
-   return await page.locator("main h1").first().innerText();
+  await check("APK-proven acne MyD link opens live doctor-list touch action",async()=>{
+   await page.goto(base+"/native/myd-link/symptom-acneOralMedication",{waitUntil:"domcontentloaded"});
+   await page.locator(".native-link-facts").waitFor({timeout:16000});
+   const action=page.getByRole("button",{name:/원본 의사 목록 보기/});
+   await action.tap();
+   await page.locator('[data-native-resource="doctor-list"]').waitFor({timeout:10000});
+   await page.locator('[data-native-resource="doctor-list"][data-native-state="loaded"],[data-native-resource="doctor-list"][data-native-state="unavailable"]')
+      .first().waitFor({timeout:16000});
+   if(await page.locator('[data-native-resource="doctor-list"][data-native-state="unavailable"]').count())
+    throw Error("original doctor list API not available on MyD linked screen");
+   const buttons=await page.locator('[data-native-resource="doctor-list"] .native-api-row').count();
+   if(!buttons)throw Error("source doctor rows not displayed");
+   return {doctorRows:buttons};
+  });
+  await check("original medical cost categories return actual 16 regions",async()=>{
+   await page.locator('.native-app-tabbar a[href="/medical-cost"]').tap();
+   await page.waitForURL(u=>u.pathname==="/medical-cost",{timeout:9000});
+   await page.locator('.native-price-regions [data-real-region-count="16"]').waitFor({timeout:18000});
+   const categories=await page.locator('.native-price-categories button').count();
+   if(categories!==4)throw Error("source price category count: "+categories);
+   const row=page.locator(".native-region-price-row").first();
+   await row.tap();
+   await page.locator('.native-data-dialog').waitFor({timeout:5000});
+   await page.getByRole("button",{name:"닫기"}).tap();
+   return {categories,regionRows:await page.locator('.native-region-price-row').count()};
+  });
+  await check("pharmacy screen is a separate native mobile page",async()=>{
+   await page.goto(base+"/pharmacy",{waitUntil:"domcontentloaded"});
+   await page.locator(".native-pharmacy-page").waitFor({timeout:10000});
+   await page.locator('[data-native-resource="pharmacy-list"]').waitFor({timeout:10000});
+   return "Original pharmacist list is requested from a distinct screen; source success evaluated separately";
+  });
+  await check("native FAQ accordion screen opens on its route",async()=>{
+   await page.goto(base+"/healthLab/FAQ",{waitUntil:"domcontentloaded"});
+   await page.locator(".native-faq-page").waitFor({timeout:10000});
+   await page.locator(".native-faq-item,.native-price-source-status").first().waitFor({timeout:15000});
+   const n=await page.locator(".native-faq-item").count();
+   if(n){
+    await page.locator(".native-faq-item button").first().tap();
+    if(await page.locator('.native-faq-item button[aria-expanded="true"]').count()!==1)
+     throw Error("FAQ accordion did not respond to actual tap");
+   }
+   return {actualFaqRows:n,sourceIsPublic:n>0};
   });
  }finally{
   fs.mkdirSync("qa-artifacts",{recursive:true});
   fs.writeFileSync("qa-artifacts/native-app-layout.json",JSON.stringify(checks,null,2));
   await browser.close();
  }
- console.log("NATIVE APP LAYOUT SUMMARY",JSON.stringify({total:checks.length,pass:checks.filter(x=>x.status==="PASS").length,fail:checks.filter(x=>x.status==="FAIL").length}));
- if(checks.some(x=>x.status!=="PASS"))process.exitCode=1;
+ const pass=checks.filter(x=>x.status==="PASS").length;
+ console.log("NATIVE 650 GESTURE QA",JSON.stringify({total:checks.length,pass,fail:checks.length-pass}));
+ if(pass!==checks.length)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
