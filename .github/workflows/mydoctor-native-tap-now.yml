@@ -56,6 +56,11 @@ jobs:
         env:
           MD_URL: https://mydoctor-mobile-web-production.up.railway.app
         run: node tests/native-app-layout.cjs
+      - name: Touch-test EVERY real home menu and price tile on deployed Railway
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: https://mydoctor-mobile-web-production.up.railway.app
+        run: node tests/native-all-clicks.cjs
       - name: Preserve screenshot and interaction evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,5 +68,6 @@ jobs:
           name: mydoctor-native-live-taps-390x844
           path: |
             mydoctor-clone/frontend/qa-artifacts/native-app-layout.json
+            mydoctor-clone/frontend/qa-artifacts/native-all-clicks.json
             mydoctor-clone/frontend/qa-artifacts/native-fail-*.png
           if-no-files-found: warn
