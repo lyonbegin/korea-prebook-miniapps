@@ -10,6 +10,7 @@ import originalPriceCards from "./data/original-medical-cost-cards.json";
 import NativeAppHome from "./NativeAppHome.jsx";
 import NativeApiCatalog from "./NativeApiCatalog.jsx";
 import NativeMydLinkScreen from "./NativeMydLinkScreen.jsx";
+import {NativePharmacyScreen,NativeFaqScreen} from "./NativeAdditionalScreens.jsx";
 import NativePriceRegions from "./NativePriceRegions.jsx";
 
 const ORIGINAL="https://my-doctor.io";
@@ -340,7 +341,9 @@ export default function App(){
  // App-native core screens never wait for the legacy my-doctor.io HTML gateway.
  const nativePriceDetail=decodeURIComponent(route.split("?")[0])==="/medical-cost/마운자로";
  const nativeMydLink=route.startsWith("/native/myd-link/");
- const nativeRoot=home||nativeMydLink||nativePriceDetail||route==="/hospital"||route==="/medical-cost"||
+ const nativePharmacy=route==="/pharmacy";
+ const nativeFaq=route==="/healthLab/FAQ"||route==="/faq";
+ const nativeRoot=home||nativeMydLink||nativePharmacy||nativeFaq||nativePriceDetail||route==="/hospital"||route==="/medical-cost"||
    route==="/telemedicine/all-department"||route==="/telemedicine";
  const appData=s.data||{links:[],tables:[],sections:[],paragraphs:[]};
  return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
@@ -353,6 +356,8 @@ export default function App(){
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>
   {nativeRoot?(home?<NativeAppHome data={appData} go={go}/>:
      nativeMydLink?<NativeMydLinkScreen route={route} title={routeName} go={go}/>:
+     nativePharmacy?<NativePharmacyScreen data={appData} go={go}/>:
+     nativeFaq?<NativeFaqScreen/>:
      route==="/hospital"?<HospitalScreen data={appData} go={go}/>:
      route==="/medical-cost"?<CostScreen data={appData} go={go}/>:
      nativePriceDetail?<section className="native-price-detail-route"><h1>마운자로 가격 비교</h1><NativePriceRegions verticalKey="mounjaro"/></section>:
