@@ -99,6 +99,127 @@ printf 'Source: APKPure original 6.50.0 (1206) ARM64\nXAPK bytes: %s\nbase.apk s
 adb install-multiple -r "${APKS[@]}" | tee "$OUT/install_result.txt"
 adb shell pm path com.merakiplace.mydoctor | tee -a "$OUT/install_result.txt"
 adb shell pm clear com.merakiplace.mydoctor || :
+# Android 11 x86_64's ARM native bridge advertises ARM64, but SoLoader
+# searches /data/app/<pkg>/lib/arm64 while a modern split APK may retain
+# only the uncompressed .so files INSIDE split_config.arm64_v8a.apk.
+# On disposable Google APIs emulator only, put the EXACT unmodified
+# libraries from the signed split in the expected native library folder.
+# This does NOT alter any APK signature, code, Hermes bytecode or public API.
+if [[ "${MYDOCTOR_EMULATOR_EXTRACT_ORIGINAL_SO:-0}" == "1" ]]; then
+  {
+    echo "NATIVE_LIB_RESTORE_MODE=original_signed_split_only"
+    adb root
+    adb wait-for-device
+    adb shell id
+    PKG_BASE=$(adb shell pm path com.merakiplace.mydoctor | tr -d '\r' | grep '/base.apk
+# Collect ALL startup logcat from before launch. Previous tail-of-3200 cut off
+# the actual crash due excessive fresh Google service log volume.
+adb logcat -G 16M || :
+adb logcat -c || :
+adb shell am start -n 'com.merakiplace.mydoctor/com.userproduct.MainActivity' \
+   > "$OUT/launch_result.txt" 2>&1 || :
+adb exec-out screencap -p > "$OUT/android_launch_early_not_reference.png" || :
+sleep 2
+adb exec-out screencap -p > "$OUT/android_launch_after2s_not_reference.png" || :
+sleep 10
+adb shell dumpsys activity activities | grep -m 9 -E '(mResumedActivity|topResumedActivity|merakiplace|MainActivity)' \
+  >> "$OUT/launch_result.txt" || :
+adb logcat -d -v threadtime > "$OUT/launch_logcat_full.txt" || :
+grep -Ei '(AndroidRuntime|FATAL EXCEPTION|com[.]merakiplace|com[.]userproduct|Fatal signal|SoLoader|UnsatisfiedLinkError|native.bridge|ndk.translation|CRASH|Caused by|libhermes|linker|ReactNative|ReactHost|ReactInstance)' \
+  "$OUT/launch_logcat_full.txt" | tail -n 300 > "$OUT/crash_diagnostics.txt" || :
+TOP=$(adb shell dumpsys activity activities | grep 'topResumedActivity=' | tail -1 || :)
+echo "VERIFIED_TOP_ACTIVITY=$TOP" >> "$OUT/launch_result.txt"
+if ! adb shell pidof com.merakiplace.mydoctor >/dev/null || [[ "$TOP" != *com.merakiplace.mydoctor* ]]; then
+  echo 'APP_LAUNCH_FAILED: process exited or original app not foreground; no native UI reference' | tee -a "$OUT/launch_result.txt"
+  adb exec-out screencap -p > "$OUT/android_launch_failed_not_a_reference.png" || :
+  exit 8
+fi
+
+# Save real emulator frames, full Android UI hierarchy, and visible screen text.
+capture(){
+  local label="$1"
+  adb exec-out screencap -p > "$OUT/android_${label}.png"
+  adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+  adb pull /sdcard/window.xml "$OUT/android_${label}.xml" >/dev/null 2>&1 || :
+  echo "CAPTURED_ANDROID:$label $(file "$OUT/android_${label}.png")"
+}
+capture home
+# Native React UI labels are extracted from uiautomator when accessibility permits.
+# Each scenario restarts original home and taps only a discovered, displayed element.
+find_tap(){
+  local label="$1"; local terms="$2"
+  python3 - "$OUT/android_home.xml" "$terms" <<'PY'
+import sys,xml.etree.ElementTree as ET,re
+try: root=ET.parse(sys.argv[1]).getroot()
+except Exception: sys.exit(3)
+terms=sys.argv[2].split('|')
+candidates=[]
+for n in root.iter('node'):
+  caption=" ".join((n.get('text',''),n.get('content-desc',''))).strip()
+  box=n.get('bounds','')
+  m=re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',box)
+  if not m: continue
+  x1,y1,x2,y2=map(int,m.groups())
+  if x2<=x1 or y2<=y1 or not caption:continue
+  for rank,t in enumerate(terms):
+    if t in caption and len(caption)<110:
+      candidates.append((rank,len(caption),caption,(x1+x2)//2,(y1+y2)//2))
+if candidates:
+ candidates.sort()
+ print(candidates[0][3],candidates[0][4],candidates[0][2],sep='|')
+else:sys.exit(2)
+PY
+}
+for spec in 'medical-cost:최저가|가격 비교|가격비교|최저가 병원|약값' \
+            'telemedicine:비대면 진료|비대면진료|진료받기' \
+            'hospital:병원 찾기|병원찾기|주변 병원' \
+            'mounjaro:마운자로'; do
+  label="${spec%%:*}"; names="${spec#*:}"
+  # Return to actual app home between tests.
+  adb shell am force-stop com.merakiplace.mydoctor || :
+  adb shell monkey -p com.merakiplace.mydoctor -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1 || :
+  sleep 6
+  adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+  adb pull /sdcard/window.xml "$OUT/android_home.xml" >/dev/null 2>&1 || :
+  if found=$(find_tap "$label" "$names"); then
+    x="$(echo "$found" | cut -d'|' -f1)"
+    y="$(echo "$found" | cut -d'|' -f2)"
+    echo "$label: tapped native element $(echo "$found" | cut -d'|' -f3-) at ($x,$y)" | tee -a "$OUT/navigation_actions.txt"
+    adb shell input tap "$x" "$y"
+    sleep 5
+    capture "$label"
+  else
+    echo "$label: NOT_FOUND_IN_ORIGINAL_UI_TREE (not pretending navigated)" | tee -a "$OUT/navigation_actions.txt"
+  fi
+done
+# Original app and overlay are not successful merely because files were created.
+test -s "$OUT/android_home.png"
+echo 'ANDROID_EMULATOR_CAPTURE_COMPLETED'
+ | head -1)
+    PKG_BASE="${PKG_BASE#package:}"
+    test -n "$PKG_BASE"
+    PKG_DIR="${PKG_BASE%/base.apk}"
+    case "$XAPK_ABI" in
+      arm64-v8a) LIB_ABI="arm64-v8a"; LIB_ABBREV="arm64" ;;
+      armeabi-v7a) LIB_ABI="armeabi-v7a"; LIB_ABBREV="arm" ;;
+    esac
+    mkdir -p "$APP_DIR/extracted_native_libs"
+    for APK in "${APKS[@]}"; do
+      unzip -joq "$APK" "lib/$LIB_ABI/*.so" -d "$APP_DIR/extracted_native_libs" 2>/dev/null || :
+    done
+    test -s "$APP_DIR/extracted_native_libs/libreactnative.so"
+    TARGET="$PKG_DIR/lib/$LIB_ABBREV"
+    adb shell "mkdir -p '$TARGET'"
+    adb push "$APP_DIR/extracted_native_libs/." "$TARGET/"
+    adb shell "chmod 755 '$TARGET'" || :
+    adb shell "chmod 644 '$TARGET'/*.so" || :
+    adb shell "restorecon -RF '$TARGET'" || :
+    adb shell "ls -la '$TARGET/libreactnative.so'"
+    echo "EMULATOR_ORIGINAL_NATIVE_LIB_RESTORE_COMPLETED"
+  } > "$OUT/native_library_restore.txt" 2>&1 || {
+    echo "EMULATOR_ORIGINAL_NATIVE_LIB_RESTORE_FAILED" | tee -a "$OUT/native_library_restore.txt"
+  }
+fi
 adb shell am force-stop com.merakiplace.mydoctor || :
 # Collect ALL startup logcat from before launch. Previous tail-of-3200 cut off
 # the actual crash due excessive fresh Google service log volume.
