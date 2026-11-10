@@ -37,7 +37,7 @@ NATIVE_RESOURCES = {
     "myd-link": ("patient-api/app/myd-link/", ("myd_link_key",)),
     "home-banner": ("patient-api/app/app-banner/", ("expose_place",)),
     "app-config": ("patient-api/app/configure/", ()),
-    "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department")),
+    "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department", "search_filter_keys", "city_ids", "district_ids")),
     # The original getHospitalListV2 uses HOSPITAL_BASE_ROUTE_V2 + '/'.
     # Runtime verified: GET allowed, but anonymous access returns 401.
     "hospital-list": ("patient-api/v2/hospital/",
@@ -182,6 +182,8 @@ def safe_parameters(resource: str, args) -> str:
                 raise HTTPException(400, "Invalid pagination")
             if key == "category_id" and (not val.isdecimal() or int(val) < 1 or int(val) > 100000000):
                 raise HTTPException(400, "Invalid price category id")
+        elif key == "search_filter_keys" and not re.fullmatch(r"[A-Za-z0-9_-]{1,55}(,[A-Za-z0-9_-]{1,55}){0,14}", val):
+            raise HTTPException(400, "Invalid native doctor search filter keys")
         elif key in ("city_ids","district_ids") and not re.fullmatch(r"\d{1,9}(,\d{1,9}){0,10}", val):
             raise HTTPException(400, "Invalid region code list")
         elif key in TEXT_FIELD and not re.fullmatch(r"[\w가-힣 .:-]{1,80}", val):
