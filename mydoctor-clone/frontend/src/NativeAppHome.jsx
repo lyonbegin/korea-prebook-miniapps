@@ -214,31 +214,45 @@ function HermesHomeNavigation({go}){
 export default function NativeAppHome({data,go}) {
   const [homeMode,setHomeMode]=useState("telemedicine");
   const observed=(data?.links||[]).filter(x=>x.path&&x.label&&x.path!=="/");
-  const appCards=homeMode==="telemedicine"?appSymptoms:appBookings;
+  const focusSection=(mode)=>{
+    setHomeMode(mode);
+    const sectionId=mode==="telemedicine"?"hermes-medical-telemedicine":"hermes-medical-booking";
+    document.getElementById(sectionId)?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
   return <div className="native-home hermes-v650-home" data-native-reference="mydoctor-6.50.0-hbc96">
     <section className="native-home-top">
       <HermesHomeNavigation go={go}/>
       <div className="native-app-service-box hermes-medical-appointment">
         <div className="native-segment hermes-appointment-headings" role="tablist" aria-label="진료 서비스 선택">
           <button type="button" role="tab" aria-selected={homeMode==="telemedicine"}
+            aria-controls="hermes-medical-telemedicine"
             className={homeMode==="telemedicine"?"selected":""}
-            onClick={()=>setHomeMode("telemedicine")}>비대면 진료</button>
+            onClick={()=>focusSection("telemedicine")}>비대면 진료</button>
           <button type="button" role="tab" aria-selected={homeMode==="booking"}
+            aria-controls="hermes-medical-booking"
             className={homeMode==="booking"?"selected":""}
-            onClick={()=>setHomeMode("booking")}>최저가 병원 예약</button>
+            onClick={()=>focusSection("booking")}>최저가 병원 예약</button>
         </div>
-        {homeMode==="telemedicine"?<NativeHomeMenuGrid go={go}/>:
-          <div className="native-symptom-grid">
-            {appCards.map(({label,path,icon:Icon,tone})=>
+        <section id="hermes-medical-telemedicine" className="hermes-medical-section"
+          aria-label="비대면 진료 메뉴">
+          <h2>비대면 진료</h2>
+          <NativeHomeMenuGrid go={go}/>
+        </section>
+        <div className="hermes-medical-divider" role="presentation"/>
+        <section id="hermes-medical-booking" className="hermes-medical-section"
+          aria-label="최저가 병원 예약 메뉴">
+          <h2>최저가 병원 예약</h2>
+          <div className="native-symptom-grid hermes-booking-grid">
+            {appBookings.map(({label,path,icon:Icon,tone})=>
               <NavLink key={path} path={path} go={go} className="native-symptom-item" label={label}>
                 <span className={"native-symptom-icon tone-"+tone}><Icon aria-hidden="true" size={28} strokeWidth={1.8}/></span>
                 <span>{label}</span>
               </NavLink>)}
-          </div>}
+          </div>
+        </section>
         <NavLink className="native-app-all hermes-all-symptoms"
-          path={homeMode==="telemedicine"?"/telemedicine/all-department":"/medical-cost"}
-          go={go} label={homeMode==="telemedicine"?"모든 증상 보기":"전체 보기"}>
-          {homeMode==="telemedicine"?"모든 증상 보기":"전체 보기"} <ChevronRight size={16}/>
+          path="/telemedicine/all-department" go={go} label="모든 증상 보기">
+          모든 증상 보기 <ChevronRight size={16}/>
         </NavLink>
       </div>
       <NativeHomeBanner go={go}/>
