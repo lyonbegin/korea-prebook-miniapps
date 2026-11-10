@@ -201,3 +201,43 @@
 .original-company-cards .primary small{color:#e6edff}
 .original-company-cards svg{width:15px;color:#6f7b8c}
 .original-company-cards .primary svg{color:white}
+
+
+/* 390x844 original-source second-pass layout calibration, isolated to nine types. */
+.site-original-nine .breadcrumb{height:36px}
+.original-hospital-night h1{font-size:24px;line-height:1.30;font-weight:750}
+.original-hospital-night>header p{font-size:16px;line-height:1.62}
+.original-hospital-night>header{padding-bottom:30px}
+.original-hospital-night-card{min-height:128px;padding:20px 0}
+.original-hospital-night-card h2{font-size:15px}
+.original-hospital-night-card>img{width:72px;height:72px}
+.original-hospital-night-time,.original-hospital-night-location{font-size:13px}
+.original-price-intro h1{font-size:23px}
+.original-price-intro p{font-size:16px;line-height:26px}
+.original-price-form{padding-top:31px;padding-bottom:54px}
+.original-price-form select{height:50px}
+.original-price-form label{margin-bottom:18px}
+.original-drug-intro h1{font-size:24px;line-height:1.36}
+.original-drug-intro p{font-size:14px;line-height:24px}
+.original-drug-reviewed{font-size:12px!important}
+.original-drug-symptoms h2,.original-drug-content h2{font-size:21px}
+.original-drug-symptoms p,.original-drug-content p{font-size:16px;line-height:27px}
+.original-health-article h1{font-size:24px;line-height:1.35}
+.original-health-article>p{font-size:15px;line-height:26px}
+.original-health-toc{margin-top:60px;padding:30px;min-height:145px}
+.original-health-fixed-action{position:fixed;bottom:9px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);
+ max-width:536px;background:#fff;box-shadow:0 -5px 19px #16283d16;border:1px solid #eef0f5;
+ border-radius:10px;padding:9px 12px;z-index:20}
+.original-health-fixed-action span{display:block;font-size:12px;color:#596775;text-align:center;margin:1px 0 8px}
+.original-health-fixed-action a{display:block;padding:13px;text-align:center;background:#306cff;border-radius:8px;color:#fff;font-weight:700;font-size:14px}
+.original-qna-index{padding-top:20px}
+.original-qna-chips{gap:8px;row-gap:9px}
+.original-qna-chips a{font-size:14px;padding:8px 12px;line-height:17px}
+.original-qna-item strong,.original-qna-item p{font-size:14px}
+.original-baby119-gap{height:0}
+.original-baby119-overlay{padding-top:41.9vh}
+.original-baby119-dialog{height:452px;text-align:left;padding:24px 20px 15px}
+.original-baby119-dialog>p,.original-baby119-dialog h2{width:100%;text-align:left}
+.original-baby119-phone{height:205px}
+.original-company-identity img{width:96px;height:96px}
+.original-company-landing{padding-top:44px}
