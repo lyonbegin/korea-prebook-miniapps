@@ -139,6 +139,31 @@ async def native_inventory():
     """Literal endpoint paths found in the original 6.50.0 Hermes bundle."""
     return public_inventory()
 
+@app.get("/native/catalog/status")
+async def native_catalog_status(request: Request):
+    """Report actually observed anonymous 200 JSON without equating path discovery to usable data."""
+    pool = request.app.state.pool
+    if not pool:
+        raise HTTPException(503, "PostgreSQL unavailable")
+    rows = await pool.fetch(
+        """SELECT resource,COUNT(*) AS successful_json_responses,MAX(fetched_at) AS last_fetched
+           FROM mydoctor_clone.native_public_api_cache
+           WHERE origin_status=200 GROUP BY resource ORDER BY resource"""
+    )
+    return {
+      "source_version": "6.50.0",
+      "evidence_level": "anonymous_GET_200_JSON_cached",
+      "observed_resources": {
+        r["resource"]: {
+          "cache_entries": int(r["successful_json_responses"]),
+          "last_fetched": r["last_fetched"].isoformat() if r["last_fetched"] else None
+        } for r in rows
+      },
+      "observed_count": len(rows),
+      "unverified_count": max(0, 8 - len(rows)),
+      "no_auth_or_user_data_stored": True
+    }
+
 @app.get("/native/catalog/{resource}")
 async def native_catalog(resource: str, request: Request, background_tasks: BackgroundTasks):
     """Strictly allowlisted anonymous GET with PostgreSQL-first asynchronous cache."""
