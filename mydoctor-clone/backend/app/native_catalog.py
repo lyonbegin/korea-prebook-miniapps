@@ -38,7 +38,12 @@ NATIVE_RESOURCES = {
     "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department")),
     "hospital-list": ("patient-api/hospital/", ("page", "limit", "size", "offset", "region", "department")),
     "pharmacy-nearby": ("patient-api/pharmacist/v2/nearby-pharmacy", ("latitude", "longitude", "lat", "lng", "page", "limit")),
-    "lowest-price": ("patient-api/medical-map/lowest-price/v2", ("latitude", "longitude", "lat", "lng", "region", "page", "limit")),
+    # Verified with Hermes function 27181/27183 and original anonymous GET 200.
+    "lowest-price-categories": ("patient-api/medical-map/lowest-price/categories",
+                                ("vertical_key",)),
+    # Verified with Hermes function 27189/27191 and original anonymous GET 200.
+    "lowest-price": ("patient-api/medical-map/lowest-price/v2/regions",
+                     ("category_id", "variant")),
     "health-info": ("patient-api/health-lab/v2/home/", ("page", "limit")),
 }
 
@@ -56,8 +61,8 @@ BLOCKED_VALUE = re.compile(
     r"(?:Bearer\s+[A-Za-z0-9._~+/-]{12,}|"
     r"(?<![\w.+-])[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}(?!\w))", re.I
 )
-NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng"}
-TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region"}
+NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng", "category_id"}
+TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant"}
 
 NATIVE_CACHE_SCHEMA = """
 CREATE SCHEMA IF NOT EXISTS mydoctor_clone;
@@ -80,8 +85,8 @@ def public_inventory() -> dict:
         "source": "Android 6.50.0 Hermes string table",
         "origin": ORIGIN,
         "evidence": "static_path_only",
-        "runtime_method": "GET_probe_unverified",
-        "response_schema": "unverified_until_successful_anonymous_JSON",
+        "runtime_method": "GET for verified price categories/regions; others per-route unverified",
+        "response_schema": "price GET confirmed; full per-field mapping not yet verified",
         "resources": [
             {"name": name, "source_path": path,
              "method": "GET_UNVERIFIED", "query_keys": list(keys)}
@@ -170,6 +175,8 @@ def safe_parameters(resource: str, args) -> str:
                 raise HTTPException(400, "Coordinate out of range")
             if key in ("page", "offset", "size", "limit") and (not val.isdecimal() or int(val) > (100 if key in ("limit", "size") else 2000)):
                 raise HTTPException(400, "Invalid pagination")
+            if key == "category_id" and (not val.isdecimal() or int(val) < 1 or int(val) > 100000000):
+                raise HTTPException(400, "Invalid price category id")
         elif key in TEXT_FIELD and not re.fullmatch(r"[\w가-힣 .:-]{1,80}", val):
             raise HTTPException(400, "Invalid search parameter")
         query.append((key, val))
@@ -359,6 +366,12 @@ async def get_native_public_catalog(
     if resource not in NATIVE_RESOURCES:
         raise HTTPException(404, "Unknown native catalog resource")
     path, _ = NATIVE_RESOURCES[resource]
+    # The original app constructs GET /categories?vertical_key=... and
+    # GET /v2/regions?category_id=... . Missing values MUST fail locally.
+    if resource == "lowest-price-categories" and not request.query_params.get("vertical_key"):
+        raise HTTPException(400, "vertical_key required by original app")
+    if resource == "lowest-price" and not request.query_params.get("category_id"):
+        raise HTTPException(400, "category_id required by original app")
     query = safe_parameters(resource, request.query_params)
     key = hashlib.sha256((SOURCE_VERSION + ":" + resource + "?" + query).encode()).hexdigest()
     pool = request.app.state.pool
