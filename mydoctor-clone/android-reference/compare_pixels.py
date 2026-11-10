@@ -33,8 +33,31 @@ def metrics(orig, web, key):
                 mae=round(mae,3),rmse=round(rms,3),
                 tolerance_rgb=THRESHOLD,
                 diff=f"pixel_diff_{key}.png",overlay=f"overlay_{key}.png")
+def verified_original_launch():
+    """Reject launcher/splash captures, even when someone saved android_home.png."""
+    log=BASE/"launch_result.txt"
+    meta=BASE/"device_metadata.txt"
+    if not log.is_file() or not meta.is_file():
+        return False,"MISSING_PROVENANCE"
+    launch=log.read_text(encoding="utf-8",errors="replace")
+    metadata=meta.read_text(encoding="utf-8",errors="replace")
+    if ("APP_LAUNCH_FAILED" in launch
+        or "VERIFIED_TOP_ACTIVITY=" not in launch
+        or not any("com.merakiplace.mydoctor" in line
+                   for line in launch.splitlines()
+                   if line.startswith("VERIFIED_TOP_ACTIVITY="))):
+        return False,"ORIGINAL_APP_NOT_FOREGROUND"
+    if ("Hermes expected user-uploaded SHA256" not in metadata
+        or "Downloaded Hermes SHA256" not in metadata):
+        return False,"NO_EXACT_HERMES_PROVENANCE"
+    return True,"VERIFIED_RUNNING_ORIGINAL"
+ORIGINAL_LAUNCH_OK, ORIGINAL_LAUNCH_REASON = verified_original_launch()
 def compare(label):
     a,b=BASE/f"android_{label}.png",BASE/f"web_{label}.png"
+    if not ORIGINAL_LAUNCH_OK:
+        return dict(name=label,state="UNVERIFIED_ORIGINAL_LAUNCH",
+                    reason=ORIGINAL_LAUNCH_REASON,
+                    android_exists=a.exists(),web_exists=b.exists())
     if not a.is_file() or not b.is_file():
         return dict(name=label,state="MISSING_REFERENCE",
                     android_exists=a.exists(),web_exists=b.exists())
@@ -76,14 +99,15 @@ def compare(label):
                 acceptance="PASS" if full["mismatch_pct"]<=10 else "FAIL",
                 comparison=f"side_by_side_{label}.png")
 out=dict(app="com.merakiplace.mydoctor",original_version="6.50.0",
-  source="ORIGINAL_ANDROID_EMULATOR_NOT_HERMES_UI_GUESS",
+  source="ACTUAL_RUNNING_ANDROID_OR_NONE",
   threshold="<=10% pixels differ by >25 RGB intensity",
   created_at_utc=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
   records=[compare(name) for name in LABELS])
 out["summary"]=dict(measured=sum(x["state"]=="MEASURED" for x in out["records"]),
   passed=sum(x.get("acceptance")=="PASS" for x in out["records"]),
   failed=sum(x.get("acceptance")=="FAIL" for x in out["records"]),
-  missing=sum(x["state"]=="MISSING_REFERENCE" for x in out["records"]))
+  missing=sum(x["state"]!="MEASURED" for x in out["records"]),
+  provenance=ORIGINAL_LAUNCH_REASON)
 (BASE/"pixel_parity_report.json").write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding="utf-8")
 def row(rec):
     name=html.escape(rec["name"]); state=rec["state"]
