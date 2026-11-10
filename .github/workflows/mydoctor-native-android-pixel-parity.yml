@@ -44,7 +44,10 @@ jobs:
         continue-on-error: true
         with:
           api-level: 35
-          target: google_apis
+          # Alternate Play Store system image may expose a compatible ARM64
+          # native-bridge integration unavailable in the prior google_apis image.
+          # This is a diagnostic experiment; gate still fails without native UI.
+          target: google_apis_playstore
           arch: x86_64
           profile: pixel_5
           ram-size: 4096M
