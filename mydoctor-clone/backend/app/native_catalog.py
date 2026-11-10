@@ -175,6 +175,78 @@ def safe_parameters(resource: str, args) -> str:
         query.append((key, val))
     return urlencode(sorted(query))
 
+# Diagnostic path variants are derived from the 6.50.0 Hermes strings.
+# Do not assume that a path found in the string table is a GET list endpoint.
+# Anonymous GET only; no credentials, no mutations, no source response body logged.
+NATIVE_FAILURE_PROBES = (
+    ("hospital_original_guess", "/patient-api/hospital/"),
+    ("hospital_v2_candidate", "/patient-api/v2/hospital"),
+    ("hospital_v2_slash", "/patient-api/v2/hospital/"),
+    ("lowest_price_v2", "/patient-api/medical-map/lowest-price/v2"),
+    ("lowest_price_v2_slash", "/patient-api/medical-map/lowest-price/v2/"),
+    ("lowest_price_v1", "/patient-api/medical-map/lowest-price"),
+)
+
+async def audit_source_endpoints_once(app) -> None:
+    """Compare original anonymous HTTP status and expected list-route alternatives.
+
+    Stores status-only diagnostics in application memory (never Postgres).
+    Invoked once after deployment; one request per known code-string variant.
+    """
+    import asyncio
+    app.state.native_path_diagnostics = {"state": "running", "results": {}}
+    results = {}
+    try:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(9, connect=4),
+            follow_redirects=False, trust_env=False,
+        ) as client:
+            for name, path in NATIVE_FAILURE_PROBES:
+                try:
+                    response = await client.get(
+                        ORIGIN + path,
+                        headers={
+                            "accept": "application/json",
+                            "accept-language": "ko-KR,ko;q=0.9",
+                            "user-agent": "MyDoctorNativeStaticPathAudit/0.1",
+                        },
+                    )
+                    item = {
+                        "http_status": response.status_code,
+                        "response_content_type": response.headers.get(
+                            "content-type", ""
+                        ).split(";")[0][:50],
+                        "response_bytes": min(len(response.content), 2000000),
+                        "redirected": response.status_code in (301,302,307,308),
+                    }
+                    if (
+                        response.status_code in (400, 404, 405, 422)
+                        and item["response_content_type"] == "application/json"
+                        and len(response.content) < 15000
+                    ):
+                        try:
+                            body = response.json()
+                            if isinstance(body, dict):
+                                item["error_field_names"] = list(body)[:12]
+                        except ValueError:
+                            pass
+                    results[name] = item
+                except httpx.HTTPError as err:
+                    results[name] = {
+                        "network_exception": type(err).__name__
+                    }
+                LOG.warning("native-path-audit %s %s", name, results[name])
+                await asyncio.sleep(0.15)
+    except Exception as err:
+        LOG.exception("Native static-path audit failed: %s", type(err).__name__)
+    app.state.native_path_diagnostics = {
+        "state": "complete",
+        "source_evidence": "Android 6.50.0 Hermes static paths",
+        "method": "unauthenticated GET; not original call graph",
+        "results": results,
+    }
+
+
 async def save_native_after_response(pool, key: str, resource: str, path: str, query: str, data: Any):
     try:
         await pool.execute(
