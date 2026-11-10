@@ -4452,7 +4452,7 @@
     "tables": [],
     "quality": "verified_public_facts_from_browser",
     "source_evidence": "github-actions-and-live-original-public-facts",
-    "observed_at": "2026-11-10T03:43:08.073Z",
+    "observed_at": "2026-11-10T04:02:00.000Z",
     "review_summary": {
       "provider": "동산의원",
       "kind": "hospital",
@@ -4469,7 +4469,7 @@
         },
         {
           "label": "여성 질환",
-          "count": 43
+          "count": 44
         },
         {
           "label": "호흡기 질환",
