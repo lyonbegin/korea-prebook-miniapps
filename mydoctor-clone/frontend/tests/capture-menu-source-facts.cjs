@@ -14,8 +14,14 @@ async function capture(){
  const previous=fs.existsSync(seed)?JSON.parse(fs.readFileSync(seed,"utf8")):[];
  const byPath=new Map(previous.map(v=>[decode(v.path),v]));
  const already=new Set(known.map(v=>decode(v.path)));
- const targets=[...new Set(menu.roots.flatMap(r=>r.groups.flatMap(g=>g.links.map(l=>l.href))))]
+ const grouped=menu.roots.map(r=>[...new Set(r.groups.flatMap(g=>g.links.map(l=>l.href)))]);
+ const interleaved=[];
+ for(let i=0;i<Math.max(...grouped.map(g=>g.length));i++){
+   for(const group of grouped)if(group[i])interleaved.push(group[i]);
+ }
+ const pending=[...new Set(interleaved)]
    .filter(p=>!already.has(decode(p))&&!byPath.has(decode(p))&&!banned.test(p));
+ const targets=pending.slice(0,Math.max(1,Number(process.env.MD_MENU_CAPTURE_LIMIT||36)));
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  let checked=0,verified=0,blocked=0,unavailable=0;
  const save=()=>fs.writeFileSync(seed,JSON.stringify([...byPath.values()],null,2)+"\n","utf8");
