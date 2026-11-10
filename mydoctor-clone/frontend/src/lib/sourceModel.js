@@ -87,7 +87,7 @@ export function parsePublicFacts(response,path){
   sections:(f.headings||[]).map(h=>({heading:h,level:"h2",links:[]})),
   hours:[],paragraphs:f.address?[f.address]:[],
   hospitalId:new URLSearchParams(path.split("?")[1]||"").get("hospital_id"),
-  summary:"",reviewSummary:f.review_summary||null,pharmacyCards:Array.isArray(f.pharmacy_cards)?f.pharmacy_cards.filter(x=>x&&x.name&&x.address):[],sourceQuality:response.quality||f.quality||"unknown",
+  summary:"",reviewSummary:f.review_summary||null,qnaMetadata:f.qna_card_metadata||{},pharmacyCards:Array.isArray(f.pharmacy_cards)?f.pharmacy_cards.filter(x=>x&&x.name&&x.address):[],sourceQuality:response.quality||f.quality||"unknown",
   sourceEvidence:response.source_evidence||f.source_evidence||"",
   isCompleteOriginalData:false,
   hasSourceData:!!title
