@@ -29,7 +29,8 @@ const timeout=Number(process.env.MD_PROBE_TIMEOUT||16000);
  report.cache={http_status:before.status,
     observed_count:before.body?.observed_count,
     observed_resources:Object.keys(before.body?.observed_resources||{})};
- for(const resource of ["home-menu","doctor-list","hospital-list","lowest-price","health-info"]){
+ for(const resource of ["home-menu","home-banner","doctor-list","hospital-list","health-info",
+ "app-faq","app-promotion","doctor-list-banner","doctor-sorting-filter","pharmacy-list"]){
    const response=await query("/native/catalog/"+resource);
    const body=response.body;
    const valid=response.status===200&&body?.ok===true&&body?.data
