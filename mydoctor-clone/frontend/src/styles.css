@@ -1077,3 +1077,23 @@
 .site-app-native .hermes-v650-home .native-source-paths{
   margin:0;background:#fff;
 }
+
+/* HomeScreenGNB #45644: TopGNBV2 left=logo, rightItems=search,giftbox,bell */
+.site-app-native:has(.hermes-v650-home) .native-app-header,
+.site-app-native:has(.hermes-v650-home) .toprow{
+  height:80px;min-height:80px;background:#f3f4f7;
+}
+.site-app-native:has(.hermes-v650-home) .toprow{
+  padding:24px 12px 0;
+}
+.site-app-native:has(.hermes-v650-home) .native-brand{
+  color:#25282f;font-size:19px;font-weight:750;
+}
+.site-app-native .hermes-home-gnb-tools{
+  display:flex;gap:3px;align-items:center;justify-content:flex-end;min-width:0;
+}
+.site-app-native .hermes-home-gnb-tools button{
+  border:0;background:transparent;color:#262a31;
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:40px;padding:0;touch-action:manipulation;
+}
