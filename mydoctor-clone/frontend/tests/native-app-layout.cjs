@@ -7,6 +7,11 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
 (async()=>{
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ page.setDefaultTimeout(7000);
+ page.setDefaultNavigationTimeout(14000);
+ const browserErrors=[];
+ page.on("pageerror",e=>browserErrors.push("pageerror "+e.message.slice(0,500)));
+ page.on("console",msg=>{if(msg.type()==="error")browserErrors.push("console "+msg.text().slice(0,500))});
  const checks=[];
  async function check(name,fn){
   try{
@@ -14,8 +19,22 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    checks.push({name,status:"PASS",detail});
    console.log("NATIVE 650 PASS",name,detail??"");
   }catch(error){
-   checks.push({name,status:"FAIL",error:String(error.message).slice(0,420)});
-   console.error("NATIVE 650 FAIL",name,error.message);
+   const detail=String(error.message).slice(0,950);
+   const path="qa-artifacts/native-fail-"+checks.length+".png";
+   try{
+     fs.mkdirSync("qa-artifacts",{recursive:true});
+     await page.screenshot({path,fullPage:true,timeout:5000});
+   }catch(_){}
+   const snapshot=await page.evaluate(()=>({
+      location:location.pathname,
+      pageWidth:document.documentElement.scrollWidth,
+      bodyText:document.querySelector("main")?.innerText?.slice(0,700)||"",
+      topElementTag:document.elementFromPoint(innerWidth/2,innerHeight/2)?.outerHTML?.slice(0,450)||""
+     })).catch(()=>({location:"script failed"}));
+   checks.push({name,status:"FAIL",error:detail,screenshot:path,snapshot,
+      browserErrors:browserErrors.slice(-7)});
+   console.error("NATIVE 650 FAIL",name,detail,JSON.stringify(snapshot),
+     "JS_ERRORS",JSON.stringify(browserErrors.slice(-7)));
   }
  }
  try{
@@ -110,7 +129,9 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   });
  }finally{
   fs.mkdirSync("qa-artifacts",{recursive:true});
-  fs.writeFileSync("qa-artifacts/native-app-layout.json",JSON.stringify(checks,null,2));
+  fs.writeFileSync("qa-artifacts/native-app-layout.json",JSON.stringify({
+    viewport:{width:390,height:844},checks,globalJsErrors:browserErrors
+  },null,2));
   await browser.close();
  }
  const pass=checks.filter(x=>x.status==="PASS").length;
