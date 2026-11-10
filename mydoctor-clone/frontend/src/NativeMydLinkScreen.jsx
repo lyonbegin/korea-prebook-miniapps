@@ -47,6 +47,22 @@ export default function NativeMydLinkScreen({route,title,go}){
  const typed=string(link?.link_type)||string(payload?.link_type);
  const doctorList=typed.toLowerCase().includes("doctor")||
    !!(link?.doctor_list_filter_rule||payload?.doctor_list_filter_rule);
+ const originalAppTarget=(()=>{
+  const raw=link?.deeplink_url;
+  if(typeof raw!=="string"||!raw.startsWith("merakiyourdoctor://navigate?"))return null;
+  try{
+   const url=new URL(raw);
+   if(url.searchParams.get("screen")!=="HospitalListScreen")return null;
+   const verticalKey=url.searchParams.get("verticalKey")||"";
+   if(!/^[A-Za-z0-9_-]{1,70}$/.test(verticalKey))return null;
+   return "/hospital?vertical_key="+encodeURIComponent(verticalKey);
+  }catch{return null}
+ })();
+ useEffect(()=>{
+   // Actual 6.50.0 MyD doctor_list links open a list, not a raw JSON facts
+   // inspector requiring an unrelated second click.
+   if(doctorList)setShowDoctors(true);
+ },[doctorList,key]);
  const rawFilters=link?.doctor_list_filter_rule?.search_filters||
     payload?.doctor_list_filter_rule?.search_filters;
  // 6.50.0 useDoctorFilter reads search_filters + default_filters. Only expose
@@ -111,6 +127,9 @@ export default function NativeMydLinkScreen({route,title,go}){
     </section>}
     {!doctorList&&<section className="native-link-doctor">
      <p>원본에서 확인된 연결 유형: {typed||"분석 중"}</p>
+     {originalAppTarget&&<button type="button" onClick={()=>go(originalAppTarget)}>
+        <ChevronRight size={17}/>해당 서비스 병원 목록 열기
+      </button>}
      <button type="button" onClick={()=>go("/")}>
        <ArrowLeft size={17}/>원본 홈 메뉴로 돌아가기
      </button>
