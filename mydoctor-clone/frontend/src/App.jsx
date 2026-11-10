@@ -207,7 +207,7 @@ function DoctorScreen({data,go}){
  const departments=data.links.filter(v=>v.path.startsWith("/telemedicine/")&&/(과|과\)|의학과)$/.test(v.label.trim())&&!/all-department/.test(v.path));
  const realSymptom=item=>data.links.find(v=>v.path.startsWith("/telemedicine/")&&
    (v.label.trim()===item||v.label.includes("("+item+")")))?.path;
- return <><section className="md-intro"><h1>비대면 진료 예약</h1><p>앱 다운로드 없이 비대면 진료를 예약하려면, <a href={ORIGINAL+"/telemedicine/all-department"} target="_blank" rel="noreferrer">나만의닥터</a>에서 증상 선택 &gt; 의사 선택 &gt; 증상/예약 정보 입력을 진행해주세요.</p></section>
+ return <div className="native-doctor-directory"><section className="md-intro"><h1>비대면 진료</h1><p>진료받을 증상이나 진료과를 선택해 주세요.</p></section>
  <div className="md-tabs"><button className={active==="증상"?"current":""} onClick={()=>setActive("증상")}>증상</button><button className={active==="진료과목"?"current":""} onClick={()=>setActive("진료과목")}>진료과목</button></div>
  {active==="증상"?<div className="md-symptoms">{CATEGORIES.map(([name,desc,icon,items])=><div className="symptom-section" key={name}>
    <button className="symptom-group" onClick={()=>setOpened(opened===name?"":name)} aria-expanded={opened===name}>
@@ -216,7 +216,7 @@ function DoctorScreen({data,go}){
    {opened===name&&<div className="symptom-choices">{items.map(item=>{const path=realSymptom(item);return path?<Anchor key={item} go={go} label={item} path={path}/>:<span key={item} className="source-link-pending">{item} · 원본 링크 미확인</span>})}</div>}
   </div>)}</div>:<div className="department-grid">{departments.map(d=><Anchor className="dept-link" go={go} path={d.path} label={d.label} key={d.path}/>)}</div>}
  <details className="md-hidden-links"><summary>전체 증상 · 진료과 링크 보기</summary><SourceRows links={data.links.filter(x=>x.path!=="/")} go={go} kind="telemedicine-directory"/></details>
- </>;
+ </div>;
 }
 function HospitalScreen({data,go}){
  const[region,setRegion]=useState(""),[dept,setDept]=useState(""),[schedule,setSchedule]=useState(""),[message,setMessage]=useState("");
