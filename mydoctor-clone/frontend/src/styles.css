@@ -901,3 +901,15 @@
 .site-app-native .native-faq-item>button[aria-expanded=true] svg{transform:rotate(180deg)}
 .site-app-native .native-faq-answer{white-space:pre-wrap;color:#697589;background:#f8f9fb;border-radius:12px;padding:15px;font-size:13px;line-height:1.75;margin-bottom:14px}
 .site-app-native .native-faq-page>.native-price-source-status{margin:18px 20px}
+
+/* Original Android 6.50.0 doctor banner and sorting filter controls */
+.site-app-native .native-doctor-directory{padding:16px 0}
+.site-app-native .native-doctor-banner-list{display:flex;gap:12px;overflow-x:auto;padding:0 20px 14px}
+.site-app-native .native-doctor-banner-list>a,.site-app-native .native-doctor-banner-list>button{background:#edf3fc;border:0;text-decoration:none;flex-shrink:0;display:flex;flex-direction:column;gap:6px;min-width:190px;max-width:310px;border-radius:13px;padding:10px;text-align:left}
+.site-app-native .native-doctor-banner-list img{max-width:100%;max-height:120px;object-fit:cover;border-radius:8px}
+.site-app-native .native-doctor-banner-list strong{font-size:13px;font-weight:750;color:#313d51}
+.site-app-native .native-doctor-sort{display:flex;gap:8px;overflow-x:auto;padding:4px 20px 16px;scrollbar-width:none}
+.site-app-native .native-doctor-sort button{min-height:37px;white-space:nowrap;border-radius:19px;background:#f3f5f9;border:1px solid #e7eaf0;display:flex;align-items:center;gap:5px;color:#627085;padding:8px 11px;font-size:12px;font-weight:700}
+.site-app-native .native-doctor-sort button.active{background:#e6efff;border-color:#3372ff;color:#2269f5}
+.site-app-native .native-doctor-directory .native-api-section{padding-top:8px;padding-bottom:14px}
+.site-app-native .native-doctor-directory>.native-price-source-status{margin:0 20px 10px}
