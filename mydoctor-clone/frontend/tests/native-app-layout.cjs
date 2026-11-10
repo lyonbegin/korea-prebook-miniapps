@@ -43,7 +43,7 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    await page.locator(".native-home").waitFor({timeout:12000});
    await page.locator('[data-native-menu-count="20"]').waitFor({timeout:18000});
    await page.locator(".native-image-banner img").first().waitFor({timeout:18000});
-   const menu=await page.locator(".native-symptom-item").count();
+   const menu=await page.locator('[data-native-menu-count="20"] .native-symptom-item').count();
    const banners=await page.locator(".native-image-banner").count();
    if(menu!==20)throw Error("Original app source menu count wrong: "+menu);
    if(banners!==8)throw Error("Original native banner count wrong: "+banners);
@@ -65,14 +65,20 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    await page.getByRole("button",{name:"닫기"}).tap();
    return {sourceCards:3,sourceImages:2,labels:labels.map(x=>x.trim())};
   });
-  await check("mobile tap toggles native app telemedicine and booking",async()=>{
+  await check("HBC96 section tabs scroll between both source sections without hiding either",async()=>{
    const booking=page.getByRole("tab",{name:"최저가 병원 예약"});
    await booking.tap();
    if(await booking.getAttribute("aria-selected")!=="true")throw Error("booking tab not selected");
-   if(await page.locator(".native-symptom-item").count()!==6)throw Error("expected 6 observed booking shortcuts");
+   if(await page.locator("#hermes-medical-booking .native-symptom-item").count()!==6)
+      throw Error("expected 6 booking source shortcuts");
+   if(await page.locator("#hermes-medical-telemedicine .native-symptom-item").count()!==20)
+      throw Error("original HBC96 medical appointment sections must remain mounted");
+   const divider=page.locator(".hermes-medical-divider");
+   if(await divider.count()!==1)throw Error("HBC96 1px section divider absent");
    await page.getByRole("tab",{name:"비대면 진료"}).tap();
-   await page.locator('[data-native-menu-count="20"]').waitFor({timeout:9000});
-   return "real 20 native menu items restored";
+   if(await page.locator("#hermes-medical-booking .native-symptom-item").count()!==6)
+      throw Error("source hospital booking section was incorrectly hidden");
+   return "both native HBC96 medical sections remain rendered";
   });
   await check("390x844 layout and fixed bottom bar are valid",async()=>{
    const layout=await page.evaluate(()=>{
