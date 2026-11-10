@@ -28,9 +28,26 @@ const canonical=x=>{try{return decodeURIComponent(new URL(x,"https://my-doctor.i
  await page.locator("main h1").first().waitFor({timeout:15000});
  const search=page.locator('input[aria-label="의약품 이름 검색"],input[aria-label="의약품 검색"],input[placeholder*="검색"]').first();
  const searchCount=await search.count();
- if(searchCount){await search.fill("중외");await page.goto(base+"/qna",{waitUntil:"domcontentloaded",timeout:12000});await page.locator("main h1").first().waitFor({timeout:15000});}
- const state={test:"navigation resets active search filter",status:await page.locator('main [role="alert"]').count()?"FAIL":"PASS",searchFromMedicine:searchCount};
- results.push(state);console.log("INERT ROW GUARD "+JSON.stringify(state));
+ if(searchCount)await search.fill("중외");
+ // Use the actual menu rather than a page.goto(), so the test exercises
+ // the deployed SPA and ensures a same-route menu tap closes its overlay.
+ await page.getByRole("button",{name:"전체 메뉴"}).tap();
+ let section=page.locator(".source-menu-section").filter({hasText:"건강 정보"}).first();
+ await section.locator("button.source-menu-root").tap();
+ await section.locator(".source-menu-links a").filter({hasText:"의료진 Q&A"}).first().tap();
+ await page.locator("main h1").first().waitFor({timeout:15000});
+ const first={test:"actual SPA menu navigation after searching medicine",status:
+   await page.locator(".source-menu").count()===0&&
+   (await page.locator("main h1").first().textContent()).includes("의료진 Q&A")?"PASS":"FAIL",
+   searchFromMedicine:searchCount};
+ results.push(first);console.log("INERT ROW GUARD "+JSON.stringify(first));
+ await page.getByRole("button",{name:"전체 메뉴"}).tap();
+ section=page.locator(".source-menu-section").filter({hasText:"건강 정보"}).first();
+ await section.locator("button.source-menu-root").tap();
+ await section.locator(".source-menu-links a").filter({hasText:"의료진 Q&A"}).first().tap();
+ const second={test:"select active page from menu still closes overlay",status:
+   await page.locator(".source-menu").count()===0?"PASS":"FAIL"};
+ results.push(second);console.log("INERT ROW GUARD "+JSON.stringify(second));
  await browser.close();
  const failures=results.filter(x=>x.status!=="PASS");
  console.log("INERT ROW GUARD SUMMARY "+JSON.stringify({checked:results.length,passed:results.length-failures.length,failed:failures.length}));
