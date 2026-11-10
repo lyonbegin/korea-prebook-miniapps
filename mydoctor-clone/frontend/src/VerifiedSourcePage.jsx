@@ -62,6 +62,37 @@ function getViewType(path){
  if(path.startsWith("/healthLab"))return "health-directory";
  return "public-directory";
 }
+
+/** Original FAQ uses a dedicated search + question list; paths come from DB facts. */
+function FAQIndexPage({data,go}){
+ const [query,setQuery]=useState("");
+ const items=useMemo(()=>verifiedLinks(data.links).filter(x=>x.path.startsWith("/healthLab/FAQ/")&&!/[?&]page=/.test(x.path)),[data.links]);
+ const filtered=items.filter(x=>normalize(x.label).includes(normalize(query)));
+ const pages=data.pagination?.length?data.pagination:data.links.filter(x=>/^[1-9]\d*$/.test(x.label.trim())&&x.path.startsWith("/healthLab/FAQ"));
+ return <section className="original-faq" data-source-view="health-faq">
+   <h1>건강 FAQ</h1>
+   <label className="original-faq-search"><Search size={19} aria-hidden="true"/>
+     <input type="search" placeholder="궁금한 내용 검색하기" aria-label="건강 FAQ 검색"
+       value={query} onChange={e=>setQuery(e.target.value)}/></label>
+   <div className="original-faq-list">{filtered.map(link=>{
+     const end=link.label.indexOf("?");
+     const label=end>=0?link.label.slice(0,end+1):link.label;
+     const tags=end>=0?link.label.slice(end+1).trim():"";
+     return <a href={link.path} key={link.path} className="original-faq-item"
+       onClick={e=>{e.preventDefault();go(link.path)}}>
+       <span className="original-faq-item-text"><strong>{label}</strong>
+         {tags&&<small>{tags}</small>}</span><ChevronRight size={20} aria-hidden="true"/>
+     </a>;
+   })}</div>
+   {!filtered.length&&<p className="observed-empty">일치하는 건강 FAQ 항목이 없습니다.</p>}
+   {!!pages.length&&<nav className="original-faq-pagination" aria-label="건강 FAQ 페이지">
+     {pages.map(x=><a href={x.path} key={x.path}
+       aria-current={decodeURIComponent(x.path)==="/healthLab/FAQ"?"page":undefined}
+       onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+   </nav>}
+ </section>;
+}
+
 export function VerifiedSourcePage({data,go,route}){
  const kind=getViewType(route);
  const [search,setSearch]=useState("");
@@ -91,6 +122,7 @@ export function VerifiedSourcePage({data,go,route}){
     if(tab==="의사"&&!/의사|doctor/.test(label))return false;
     return true;
  });
+ if(route.split("?")[0]==="/healthLab/FAQ")return <FAQIndexPage data={data} go={go}/>;
  if(route.endsWith("/reviews")&&data.reviewSummary)return <ReviewsSummary data={data} go={go}/>;
  return <section className={"observed-page observed-"+kind} data-source-view={kind}>
    <header className="observed-heading">
