@@ -259,3 +259,11 @@
 
 /* Public original Q&A metadata: answer count · specialty · date. */
 .original-qna-card-meta{display:block;font-size:12px;line-height:18px;color:#85919f;margin:7px 0 0 17px}
+
+
+/* Exact 390x844 original-vs-clone registration at 20%:
+   pediatric CTA was 22px below its source location;
+   source first modal sentence uses blue, not muted gray. */
+.original-baby119-phone{height:183px}
+.original-baby119-dialog>p{color:#2e73ff;font-size:15px}
+.original-baby119-hand{left:67px;top:91px}
