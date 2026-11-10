@@ -1,0 +1,39 @@
+name: MyDoctor HBC96 Native HomeNavigationConfig response audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths: [.github/workflows/mydoctor-native-hbc96-home-config-audit.yml]
+permissions:
+  contents: read
+jobs:
+  check-original-home-navigation-config:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Probe exact HBC96 HomeNavigationConfig GET via isolated public Railway API
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error
+          from urllib.parse import urlencode
+          url="https://mydoctor-mobile-api-production.up.railway.app/native/catalog/app-config?"+urlencode({"config_key":"HomeNavigationConfig"})
+          try:
+              with urllib.request.urlopen(urllib.request.Request(url,headers={"accept":"application/json"}),timeout=22) as r:
+                  response=r.read(650000);code=r.status
+          except urllib.error.HTTPError as e:
+              response=e.read(10000);code=e.code
+          except Exception as e:
+              print("NATIVE_HOME_CONFIG_NETWORK_FAILURE",type(e).__name__,str(e)[:150]);raise
+          print("NATIVE_HOME_CONFIG_HTTP",code,"bytes",len(response))
+          data=json.loads(response)
+          if code!=200:
+              print("CONFIG_ERROR",json.dumps({k:v for k,v in data.items() if k in ("error","resource","origin_http_status","detail")},ensure_ascii=False));raise SystemExit(0)
+          src=data.get("data")
+          def shape(node,depth=0):
+              if depth>6:return "<depth>"
+              if isinstance(node,dict):return {str(k):shape(v,depth+1) for k,v in list(node.items())[:20]}
+              if isinstance(node,list):return {"len":len(node),"sample_shape":shape(node[0],depth+1) if node else None}
+              if isinstance(node,str):return {"str_len":len(node),"sample":node[:180] if depth>=2 else "<string>"}
+              return node
+          print("NATIVE_HOME_CONFIG_SHAPE",json.dumps(shape(src),ensure_ascii=False)[:7500])
+          PY
