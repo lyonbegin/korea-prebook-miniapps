@@ -312,6 +312,10 @@ export function VerifiedSourcePage({data,go,route}){
     <h1>{data.title}</h1>
     {data.address&&<p><MapPin size={15}/>{data.address}</p>}
    </header>
+   {kind==="pharmacy-list"&&<div className="observed-route-context">
+     <h2>{(()=>{try{return decodeURIComponent(route.split("?")[0]).split("/").slice(2).filter(Boolean).map(v=>v.replace(/약국$/," 약국")).join(" · ")}catch{return"선택한 약국 목록"}})()}</h2>
+     <p>선택한 약국 목록의 원본 공개 자료입니다.</p>
+   </div>}
    {kind==="health-calculator-bmi"?<BMICalculator/>:null}
    {types.length>1&&<div className="observed-tabs" role="tablist" aria-label="자료 유형">
      {types.map(x=><button key={x} role="tab" aria-selected={tab===x}
