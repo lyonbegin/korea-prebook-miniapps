@@ -1,5 +1,5 @@
 import React,{useEffect,useState}from"react";
-import{ChevronDown,ChevronRight,ChevronLeft,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3,Home,Tags,Hospital,LayoutGrid,Search}from"lucide-react";
+import{ChevronDown,ChevronRight,ChevronLeft,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3,Home,Tags,Hospital,LayoutGrid,Search,Gift,Bell}from"lucide-react";
 import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
@@ -353,7 +353,12 @@ export default function App(){
  {home?<button className="brand" onClick={()=>{setMenu(false);go("/")}} aria-label="홈"><span className="native-brand">나만의닥터</span></button>:
  <button className="native-app-back" type="button" onClick={()=>go(navParent)}
  aria-label="이전 화면"><ChevronLeft size={24}/><span>{routeName}</span></button>}
- <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴" aria-expanded={menu}>{menu?<X size={24}/>:<Menu size={24}/>}</button></div>
+ {home?<div className="hermes-home-gnb-tools" aria-label="원본 홈 검색 및 알림">
+   <button type="button" aria-label="검색" title="검색" onClick={()=>go("/medical-cost")}><Search size={23}/></button>
+   <button type="button" aria-label="혜택 및 전체 서비스" title="혜택" onClick={()=>setMenu(!menu)}><Gift size={23}/></button>
+   <button type="button" aria-label="알림 및 전체 서비스" title="알림" onClick={()=>setMenu(!menu)}><Bell size={23}/></button>
+  </div>:
+  <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴" aria-expanded={menu}>{menu?<X size={24}/>:<Menu size={24}/>}</button>}</div>
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();setMenu(false);go(item.href,{label:item.label})}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
  </header>}{!home&&!companyPage&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>
