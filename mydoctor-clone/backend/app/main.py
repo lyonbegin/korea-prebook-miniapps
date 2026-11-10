@@ -132,7 +132,7 @@ async def catalog_routes(request:Request,section:str="",limit:int=40,offset:int=
                        "clone_verified":r["clone_verified_at"] is not None} for r in rows]}
 
 @app.get("/catalog/page")
-async def catalog_page(request:Request,path:str="/"):
+async def catalog_page(request:Request,background_tasks:BackgroundTasks,path:str="/"):
     """DB first. On MISS collect only allowed public factual metadata from original.
     HTML marked no-store/private is NEVER retained. On origin 403/429, only
     already persisted verified factual data can be returned.
@@ -176,16 +176,16 @@ async def catalog_page(request:Request,path:str="/"):
     facts=extract_public_facts(upstream.content,source_url)
     if not (facts.get("title") or facts.get("headline")):
         raise HTTPException(502,"No factual source metadata extracted")
-    try:
-        await insert_facts(pool,facts,overwrite=True)
-    except Exception:
-        LOG.exception("Public facts could not be persisted to PostgreSQL")
-        raise HTTPException(503,"Database write failed; original facts are uncommitted")
+    # Send source facts to the browser immediately; write to PostgreSQL only
+    # AFTER the HTTP response has been sent. A cache write must never delay
+    # the original first-visit display.
+    background_tasks.add_task(persist_facts_after_response,pool,facts)
     return JSONResponse({"ok":True,"cache":"MISS","from":"original_public_facts",
        "quality":facts["quality"],"source_evidence":facts["source_evidence"],
-       "facts":facts,"complete_original_data":False},
+       "facts":facts,"complete_original_data":False,"cache_write":"queued_after_response"},
+       background=background_tasks,
        headers={"x-cache":"MISS","x-data-source":"origin-public-facts",
-                "x-fact-quality":facts["quality"]})
+                "x-cache-write":"queued","x-fact-quality":facts["quality"]})
 
 @app.get("/catalog/page-cache/status")
 async def public_cache_status(request:Request):
@@ -197,6 +197,13 @@ async def public_cache_status(request:Request):
         "by_quality":{x["quality"]:int(x["n"]) for x in rows},
         "cache_mode":"DB_FIRST_PUBLIC_FACTS","raw_no_store_html_cached":False,
         "full_catalog_imported":False}
+
+async def persist_facts_after_response(pool,facts:dict):
+    """Best-effort asynchronous store, executed after the response body is sent."""
+    try:
+        await insert_facts(pool,facts,overwrite=True)
+    except Exception:
+        LOG.exception("Background original-facts cache write failed: %s",facts.get("path"))
 
 async def ingest(pool,url:str,body:bytes,status:int):
     if pool is None or status!=200 or len(body)>MAX_BYTES:return
