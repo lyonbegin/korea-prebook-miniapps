@@ -223,3 +223,37 @@
 .original-faq-pagination{display:flex;justify-content:center;align-items:center;gap:16px;margin:20px 0 35px}
 .original-faq-pagination a{padding:7px;font-size:14px;color:#8b96a8}
 .original-faq-pagination a[aria-current=page]{color:#2f6eff;font-weight:700}
+
+
+/* Verified from real source /pharmacy/야간약국 2026-11-10:
+   title and description, stacked two selectors, compact map link and
+   50 public pharmacy cards (name, hours, weekly hours, address, tel). */
+.original-pharmacy{background:#fff;padding-bottom:35px}
+.original-pharmacy-heading{padding:20px;display:flex;flex-direction:column;gap:8px}
+.original-pharmacy-heading h1{font-size:24px;line-height:32px;font-weight:700;margin:0;letter-spacing:-.4px}
+.original-pharmacy-heading p{font-size:16px;line-height:24px;color:#596574;margin:0}
+.original-pharmacy-controls{padding:16px 20px;display:flex;flex-direction:column;gap:8px}
+.original-pharmacy-select{width:100%;height:48px;border:1px solid #bcc5ce;background:white;border-radius:8px;
+ display:flex;align-items:center;gap:8px;padding:12px 16px;text-align:left;font-size:14px;color:#68717e}
+.original-pharmacy-select svg:last-child{margin-left:auto;transform:rotate(90deg)}
+.original-pharmacy-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;
+ border:1px solid #e3e8ee;border-radius:8px;background:#fff;padding:8px}
+.original-pharmacy-options a,.original-pharmacy-options span{padding:12px 6px;font-size:14px}
+.original-pharmacy-options [aria-current=true]{font-weight:700;color:#2f6eff}
+.original-pharmacy-map{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;
+ border:1px solid #bdc7d1;border-radius:7px;font-size:13px;font-weight:550;padding:7px 12px;margin-top:4px}
+.original-pharmacy-list{border-top:8px solid #f5f6f8}
+.original-pharmacy-card{padding:20px;border-bottom:1px solid #e9ebee;display:flex;flex-direction:column;gap:5px}
+.original-pharmacy-card h2{font-size:16px;font-weight:650;line-height:24px;margin:0}
+.original-pharmacy-card h2 button{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:#151719}
+.original-pharmacy-cardline{display:flex;align-items:flex-start;gap:6px;color:#5d6571;
+ font-size:14px;line-height:21px;margin:0;word-break:keep-all}
+.original-pharmacy-cardline>span:first-child:not(:last-child),
+.original-pharmacy-cardline>svg{flex-shrink:0;width:16px;margin-top:1px}
+.original-pharmacy-cardline b{font-weight:600}
+.original-pharmacy-cardline a{text-decoration:none;color:inherit}
+.original-pharmacy-cardline .pharmacy-time-icon{color:#2f6eff}
+.original-pharmacy-expanded{margin-top:10px;border-radius:8px;background:#f6f8fb;padding:13px;
+ color:#454c57;font-size:13px}
+.original-pharmacy-expanded p{margin:5px 0}
+.original-pharmacy-expanded a{display:inline-block;color:#2f6eff;padding-top:8px}
