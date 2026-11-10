@@ -252,3 +252,23 @@ jobs:
           name: mydoctor-source-parity
           path: mydoctor-clone/frontend/qa-artifacts/
           if-no-files-found: warn
+
+  native-api-runtime-evidence:
+    name: Observe anonymous Android API compatibility (no simulated results)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe deployed JSON gateway and observe real original app API status
+        working-directory: mydoctor-clone/frontend
+        run: node tests/native-api-live-probe.cjs
+      - name: Publish evidence whether original native API actually returned JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-native-api-runtime-evidence
+          path: mydoctor-clone/frontend/qa-artifacts/native-api-live-probe.json
+          if-no-files-found: warn
