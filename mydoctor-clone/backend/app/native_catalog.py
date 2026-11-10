@@ -36,7 +36,10 @@ NATIVE_RESOURCES = {
     "home-banner": ("patient-api/app/app-banner/", ("expose_place",)),
     "app-config": ("patient-api/app/configure/", ()),
     "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department")),
-    "hospital-list": ("patient-api/hospital/", ("page", "limit", "size", "offset", "region", "department")),
+    # The original getHospitalListV2 uses HOSPITAL_BASE_ROUTE_V2 + '/'.
+    # Runtime verified: GET allowed, but anonymous access returns 401.
+    "hospital-list": ("patient-api/v2/hospital/",
+                      ("offset", "limit", "vertical_key", "ordering", "city_ids", "district_ids")),
     "pharmacy-nearby": ("patient-api/pharmacist/v2/nearby-pharmacy", ("latitude", "longitude", "lat", "lng", "page", "limit")),
     # Verified with Hermes function 27181/27183 and original anonymous GET 200.
     "lowest-price-categories": ("patient-api/medical-map/lowest-price/categories",
@@ -62,7 +65,7 @@ BLOCKED_VALUE = re.compile(
     r"(?<![\w.+-])[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}(?!\w))", re.I
 )
 NUMBER_FIELD = {"page", "limit", "size", "offset", "latitude", "longitude", "lat", "lng", "category_id"}
-TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant"}
+TEXT_FIELD = {"expose_place", "sorting", "symptom", "department", "region", "vertical_key", "variant", "ordering"}
 
 NATIVE_CACHE_SCHEMA = """
 CREATE SCHEMA IF NOT EXISTS mydoctor_clone;
@@ -177,6 +180,8 @@ def safe_parameters(resource: str, args) -> str:
                 raise HTTPException(400, "Invalid pagination")
             if key == "category_id" and (not val.isdecimal() or int(val) < 1 or int(val) > 100000000):
                 raise HTTPException(400, "Invalid price category id")
+        elif key in ("city_ids","district_ids") and not re.fullmatch(r"\d{1,9}(,\d{1,9}){0,10}", val):
+            raise HTTPException(400, "Invalid region code list")
         elif key in TEXT_FIELD and not re.fullmatch(r"[\w가-힣 .:-]{1,80}", val):
             raise HTTPException(400, "Invalid search parameter")
         query.append((key, val))
