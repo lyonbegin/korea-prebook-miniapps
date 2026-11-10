@@ -4516,7 +4516,55 @@
       ],
       "service_stats": [],
       "source_url": "https://my-doctor.io/hospital/10055/reviews",
-      "provenance": "original_public_aggregate_counts_http200_20261110"
+      "provenance": "original_public_aggregate_counts_http200_20261110",
+      "public_review_samples": {
+        "비대면 진료 후기": [
+          {
+            "doctor": "조상제 의사",
+            "rating": "다시 진료받고 싶어요",
+            "condition": "여성 질환",
+            "reviewer": "전**(여성 30대)",
+            "date": "26.10.28",
+            "excerpt": "다시 진료받고 싶어요",
+            "tags": [
+              "시간 준수",
+              "친절한 진료",
+              "자세한 설명"
+            ],
+            "avatar": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9wcm9maWxlX2ltYWdlL2M4MDI4N2JmLTQ1YzEtNDU1My04ZjZkLTBmYjZkOTI1MmVjZC5wbmc.webp"
+          },
+          {
+            "doctor": "조상제 의사",
+            "rating": "다시 진료받고 싶어요",
+            "condition": "여성 질환",
+            "reviewer": "김**(여성 50대)",
+            "date": "26.10.24",
+            "excerpt": "감사합니다",
+            "tags": [
+              "시간 준수",
+              "친절한 진료",
+              "자세한 설명"
+            ],
+            "avatar": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9wcm9maWxlX2ltYWdlL2M4MDI4N2JmLTQ1YzEtNDU1My04ZjZkLTBmYjZkOTI1MmVjZC5wbmc.webp"
+          },
+          {
+            "doctor": "조상제 의사",
+            "rating": "다시 진료받고 싶어요",
+            "condition": "피부 질환",
+            "reviewer": "장**(여성 20대)",
+            "date": "26.10.23",
+            "excerpt": "너무 좋은 선생님이세용",
+            "tags": [
+              "시간 준수",
+              "친절한 진료",
+              "자세한 설명"
+            ],
+            "avatar": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9wcm9maWxlX2ltYWdlL2M4MDI4N2JmLTQ1YzEtNDU1My04ZjZkLTBmYjZkOTI1MmVjZC5wbmc.webp"
+          }
+        ]
+      },
+      "samples_source_url": "https://my-doctor.io/hospital/10055/reviews",
+      "samples_observed_at": "2026-11-10"
     }
   },
   {
