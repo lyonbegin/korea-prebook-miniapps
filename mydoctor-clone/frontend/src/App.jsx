@@ -4,6 +4,7 @@ import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
 import{VerifiedSourcePage,SourceRows}from"./VerifiedSourcePage.jsx";
+import {isCompanyRoute,isOriginalDistinctRoute} from "./OriginalDistinctPages.jsx";
 import OriginalFooter from "./OriginalFooter.jsx";
 import originalPriceCards from "./data/original-medical-cost-cards.json";
 
@@ -265,13 +266,14 @@ export default function App(){
  const[route,go]=useNavigation(),s=useSource(route),[menu,setMenu]=useState(false),[expanded,setExpanded]=useState("");
  useEffect(()=>setMenu(false),[route]);
  const home=route==="/",hospitalDetail=route.startsWith("/hospital/detail");
- return <div className="site"><header className="topbar"><div className="toprow">
+ const companyPage=isCompanyRoute(route),distinctPage=isOriginalDistinctRoute(route),childEmergency=decodeURIComponent(route.split("?")[0])==="/map/baby119";
+ return <div className={"site"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")}>{!companyPage&&<header className="topbar"><div className="toprow">
  <button className="brand" onClick={()=>go("/")} aria-label="홈"><img src={ORIGINAL+"/_next/static/media/logo.0ye495etchd_w.svg"} alt="나만의닥터"/></button>
  <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴">{menu?<X size={25}/>:<Menu size={24}/>}</button></div>
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();go(item.href)}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
- </header>{!home&&<Breadcrumb route={route} go={go}/>}
+ </header>}{!home&&!companyPage&&!childEmergency&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>{s.loading?<p className="loading" role="status">공개 원본 정보를 불러오는 중입니다.</p>:s.error?<div role="alert" className="error-panel"><h2>원본 데이터 검증 필요</h2><p>{s.error}</p><button onClick={s.refresh}>다시 조회</button></div>
  :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:(route==="/telemedicine/all-department"||route==="/telemedicine")?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage data={s.data} go={go} route={route}/>):null}
- </main><OriginalFooter go={go}/>{home&&<a className="fixed-call-to-action" href="https://abr.ge/zskg4p" target="_blank" rel="noreferrer">나만의 닥터 다운로드</a>}
+ </main>{!companyPage&&<OriginalFooter go={go}/>} {home&&<a className="fixed-call-to-action" href="https://abr.ge/zskg4p" target="_blank" rel="noreferrer">나만의 닥터 다운로드</a>}
  </div>;
 }
