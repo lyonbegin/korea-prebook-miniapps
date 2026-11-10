@@ -1,0 +1,80 @@
+name: MyDoctor Android 11 x86_64 exact native SO recovery experiment
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths:
+      - .github/workflows/mydoctor-android11-original-native-so-restore.yml
+permissions:
+  contents: read
+jobs:
+  original-arm64-translated-so:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable KVM acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install screenshot and pixel dependencies
+        run: |
+          cd mydoctor-clone/frontend
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          python3 -m pip install Pillow numpy
+      - name: Boot Android 11 x86_64 ARM native bridge, install original and restore exact native SO
+        id: android
+        uses: reactivecircus/android-emulator-runner@v2
+        continue-on-error: true
+        env:
+          MYDOCTOR_XAPK_ABI: arm64-v8a
+          MYDOCTOR_EMULATOR_EXTRACT_ORIGINAL_SO: '1'
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 6G
+          emulator-boot-timeout: 600
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: bash mydoctor-clone/android-reference/capture_original.sh
+      - name: Capture exact production mobile web views
+        if: always()
+        run: node mydoctor-clone/android-reference/capture_web.cjs
+      - name: Create RGB heatmaps only when actual original app is foreground
+        if: always()
+        continue-on-error: true
+        run: python3 mydoctor-clone/android-reference/compare_pixels.py
+      - name: Upload exact emulator logcat, SO restore diagnostics and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-650-native-so-restore-pixel-evidence
+          path: mydoctor-clone/android-reference/artifacts/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Enforce actual 6.50.0 native screens and <=10 percent pixel errors
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,sys
+          p=pathlib.Path("mydoctor-clone/android-reference/artifacts/pixel_parity_report.json")
+          if not p.exists():sys.exit("NO_NATIVE_PIXEL_REPORT")
+          d=json.loads(p.read_text())
+          print("PIXEL_MEASUREMENT",d["summary"])
+          if d["summary"]["measured"]<1:sys.exit("NO_ORIGINAL_APP_SCREEN")
+          if d["summary"]["failed"] or d["summary"]["missing"]:
+              sys.exit("PIXEL_PARITY_NOT_ACHIEVED")
+          PY
