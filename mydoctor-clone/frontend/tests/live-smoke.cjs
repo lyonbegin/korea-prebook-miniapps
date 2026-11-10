@@ -24,7 +24,7 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
     assert.equal(await page.getByRole("heading",{name:"일요일 진료",exact:true}).count(),1);
     assert.equal(await page.getByRole("heading",{name:"야간 진료",exact:true}).count(),1);
     await goto("/pharmacy/야간약국");
-    assert.equal(await page.locator('nav[aria-label="원본 목록 페이지"] a').count(),4);
+    assert.equal(await page.locator('nav[aria-label="야간 약국 목록 페이지"] a').count(),4);
     await goto("/telemedicine/all-department");
     assert.equal(await page.locator(".symptom-group").count(),13,"Original has 13 real symptom sections");
     const b=page.locator(".symptom-group").first();
