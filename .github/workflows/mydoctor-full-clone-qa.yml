@@ -281,3 +281,42 @@ jobs:
             mydoctor-clone/frontend/qa-artifacts/native-price-api-parity.json
             mydoctor-clone/frontend/qa-artifacts/native-myd-link-probe.json
           if-no-files-found: warn
+
+  native-user-tap-smoke:
+    name: Actual Android-derived mobile user taps (390x844)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test packages
+        working-directory: mydoctor-clone/frontend
+        run: npm install --no-audit --no-fund
+      - name: Launch real clone UI with live native JSON gateway
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_TEST_PROXY_TARGET: https://mydoctor-mobile-api-production.up.railway.app
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5173 >/tmp/mydoctor-native-vite.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl --fail --silent http://127.0.0.1:5173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/mydoctor-native-vite.log
+          exit 1
+      - name: Physically tap original-data home and link, doctor, cost, pharmacy and FAQ
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/native-app-layout.cjs
+      - name: Publish actual tap evidence including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-native-390x844-real-taps
+          path: mydoctor-clone/frontend/qa-artifacts/native-app-layout.json
+          if-no-files-found: warn
