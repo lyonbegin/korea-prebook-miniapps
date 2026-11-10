@@ -4,7 +4,7 @@ export default function ReviewsSummary({data,go}){
  const review=data.reviewSummary;
  const [selected,setSelected]=useState("전체");
  const facets=selected==="전체"?review.facets:review.facets.filter(x=>x.label===selected);
- return <div className="original-review" data-source-view="reviews">
+ return <div className={"original-review"+(review.kind==="hospital"?" original-review-hospital":"")} data-source-view="reviews">
    <section className="review-top">
     <h1>{data.title}</h1>
     <div className="review-metrics">
@@ -37,7 +37,7 @@ export default function ReviewsSummary({data,go}){
          <span className="review-source-positive">{card.rating}</span>
          <div className="review-source-meta"><strong>{card.condition}</strong><span>{card.reviewer}</span><span>{card.date}</span></div>
          <p className="review-source-excerpt">{card.excerpt}</p>
-         <div className="review-source-tags">{card.tags.map(tag=><span key={tag}>{tag}</span>)}</div>
+         <div className="review-source-tags">{card.tags.map(tag=><span key={tag}>{review.tag_icons?.[tag]&&<img alt="" src={review.tag_icons[tag]}/>} {tag}</span>)}</div>
        </li>)}</ol>:<div className="review-summary-note">공개 집계 자료는 원본과 일치합니다. 후기 원문은 원본 서비스에서 확인할 수 있습니다.</div>}
      </section>;
    })}
