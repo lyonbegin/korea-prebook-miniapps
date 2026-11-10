@@ -18,8 +18,14 @@ adb shell settings put global animator_duration_scale 0 || :
 adb shell settings put global transition_animation_scale 0 || :
 adb shell settings put global window_animation_scale 0 || :
 # Source is the same signed original version, downloaded on the CI runner.
-URL="https://d.apkpure.net/b/XAPK/com.merakiplace.mydoctor?nc=arm64-v8a&sv=24&versionCode=1206"
-echo "Downloading signed v6.50.0 Android split package (never using web mockups)"
+XAPK_ABI="${MYDOCTOR_XAPK_ABI:-arm64-v8a}"
+case "$XAPK_ABI" in
+  arm64-v8a|armeabi-v7a) ;;
+  *) echo "INVALID_XAPK_ABI: $XAPK_ABI" >&2; exit 12 ;;
+esac
+echo "APKPURE_ABI=$XAPK_ABI" | tee -a "$OUT/device_metadata.txt"
+URL="https://d.apkpure.net/b/XAPK/com.merakiplace.mydoctor?nc=${XAPK_ABI}&sv=24&versionCode=1206"
+echo "Downloading signed v6.50.0 Android split package ABI=$XAPK_ABI (never using web mockups)"
 curl -fL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 240 \
   --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36' \
   "$URL" -o "$APP_DIR/original.xapk"
@@ -32,6 +38,19 @@ APKS=()
 while IFS= read -r -d '' apk_file; do APKS+=("$apk_file"); done \
   < <(find "$APP_DIR/extracted" -name '*.apk' -type f -print0)
 test "${#APKS[@]}" -gt 1 || { echo "Expected split APKs"; exit 5; }
+# Record native shared-library ABIs from actual downloaded split APKs.
+python3 - "$APP_DIR" "$OUT" <<'PY'
+import pathlib,sys,zipfile
+root,out=map(pathlib.Path,sys.argv[1:])
+abis=set()
+for apk in root.rglob("*.apk"):
+    with zipfile.ZipFile(apk) as z:
+        abis.update(x.split("/")[1] for x in z.namelist()
+                    if x.startswith("lib/") and x.endswith(".so"))
+(out/"apk_native_abis.txt").write_text("\\n".join(sorted(abis)),encoding="utf8")
+print("DOWNLOADED_NATIVE_ABIS:",sorted(abis))
+PY
+
 BASE=""
 for p in "${APKS[@]}"; do
   if [[ "$p" == */base.apk || "$p" == */com.merakiplace.mydoctor.apk ]]; then BASE="$p"; break; fi
