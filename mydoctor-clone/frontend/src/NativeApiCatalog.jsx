@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useState} from "react";
 import {ChevronRight,X,Database,Search} from "lucide-react";
 import {fetchNativeCatalog} from "./lib/originalGateway.js";
 import {localPath} from "./lib/sourceModel.js";
+import {nativeDoctorItems} from "./nativeDataAdapters.js";
 
 /** Display actual anonymous native API fields, never fabricated products or doctors.
  * A GET 200 and a parseable JSON body are required before anything is rendered.
@@ -95,9 +96,15 @@ function DetailPanel({item,onClose}){
     {item.subtitle&&<p>{item.subtitle}</p>}
     {item.price&&<strong className="native-data-price">{item.price}</strong>}
     <h3>원본 API에서 수신한 항목</h3>
-    <dl className="native-data-details">{Object.entries(item.raw).filter(([k,v])=>
-      v!==null&&v!==undefined&&["string","number","boolean"].includes(typeof v)).slice(0,24)
-      .map(([k,v])=><div key={k}><dt>{k}</dt><dd>{String(v)}</dd></div>)}</dl>
+    <dl className="native-data-details">{Object.entries(item.raw).flatMap(([k,v])=>{
+      if(v===null||v===undefined)return [];
+      if(["string","number","boolean"].includes(typeof v))return [[k,v]];
+      if(["profile","hospital"].includes(k)&&v&&typeof v==="object")
+       return Object.entries(v).filter(([field,value])=>
+        value!==null&&value!==undefined&&["string","number","boolean"].includes(typeof value))
+        .map(([field,value])=>[k+"."+field,value]);
+      return [];
+     }).slice(0,30).map(([k,v])=><div key={k}><dt>{k}</dt><dd>{String(v)}</dd></div>)}</dl>
     <p className="native-data-note">상세 API 구조가 확인되기 전에는 수신된 필드만 보여줍니다.</p>
    </section>
   </div>;
@@ -114,18 +121,20 @@ export default function NativeApiCatalog({resource,title,go,compact=false}){
   }).catch(e=>{if(active&&!controller.signal.aborted)setError(e.message)});
   return ()=>{active=false;controller.abort()};
  },[resource]);
- const items=useMemo(()=>normalizeNativeCards(response?.data),[response]);
+ const items=useMemo(()=>resource==="doctor-list"?
+   nativeDoctorItems(response?.data):normalizeNativeCards(response?.data),[response,resource]);
  return <section className={"native-api-section"+(compact?" compact":"")}
     data-native-resource={resource} data-native-state={response?"loaded":error?"unavailable":"loading"}>
   {!!items.length&&<>
    <div className="native-api-heading"><div><Database size={17}/><h2>{title}</h2></div>
     <span>원본 앱 API · {response.cache==="HIT"?"DB":"원본"}</span></div>
-   <div className="native-api-list">{items.slice(0,compact?8:36).map((item,i)=>{
+   <div className="native-api-list">{items.slice(0,resource==="doctor-list"?20:(compact?8:36)).map((item,i)=>{
     const contents=<>
        {item.image&&<img src={item.image} alt="" loading="lazy" className="native-api-row-image"/>}
        <div className="native-api-row-text"><strong>{item.label}</strong>
         {item.subtitle&&<small>{item.subtitle}</small>}
         {item.price&&<b>{item.price}</b>}
+        {Number.isInteger(item.review_count)&&<small>후기 {item.review_count.toLocaleString("ko-KR")}개</small>}
        </div><ChevronRight size={17}/>
       </>;
     return item.path?
