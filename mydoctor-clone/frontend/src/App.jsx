@@ -5,6 +5,7 @@ import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
 import{VerifiedSourcePage,SourceRows}from"./VerifiedSourcePage.jsx";
 import OriginalFooter from "./OriginalFooter.jsx";
+import originalPriceCards from "./data/original-medical-cost-cards.json";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -222,20 +223,17 @@ const ORIGINAL_PRICE_CARD_LABELS={
 };
 function CostScreen({data,go}){
  const[search,setSearch]=useState("");
- const categoryCards=data.categories.filter(x=>decodeURIComponent(x.path).split("?")[0].split("/").filter(Boolean).length===2)
-  .sort((a,b)=>{
-    const key=x=>decodeURIComponent(x.path.split("?")[0]).split("/")[2];
-    const ia=ORIGINAL_PRICE_CARD_ORDER.indexOf(key(a)),ib=ORIGINAL_PRICE_CARD_ORDER.indexOf(key(b));
-    return (ia<0?999:ia)-(ib<0?999:ib);
-  });
- const choices=categoryCards.filter(x=>!search||x.title.includes(search));
- return <><section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1><p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p></section>
- <section className="md-cost-list"><h2>가격 비교 카테고리</h2><div className="md-cost-grid">{choices.map(v=>{const id=decodeURIComponent(v.path.split("?")[0]).split("/")[2];
- const name=ORIGINAL_PRICE_CARD_LABELS[id]||id.replace(/-/g," ");
- const desc=v.title.startsWith(name)?v.title.slice(name.length).trim():v.title;
- return <Anchor key={v.path} className="cost-tile" path={v.path} go={go}><strong>{name}</strong><small>{PRICEDESC[name]||(desc===name?"":desc)}</small></Anchor>})}</div></section>
- <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search} onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
- <section className="md-original-links"><h2>주요 가격 비교</h2><SourceRows links={data.links.filter(x=>!data.categories.some(v=>v.path===x.path)&&x.path!=="/")} go={go}/></section></>;
+ const choices=originalPriceCards.filter(x=>!search||[x.title,x.subtitle].join(" ").includes(search));
+ return <><section className="md-cost-intro"><h1>의료비 가격 비교 | 나만의닥터</h1>
+ <p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p></section>
+ <section className="md-cost-list"><h2>가격 비교 카테고리</h2>
+ <div className="md-cost-grid">{choices.map(v=><Anchor key={v.path} className="cost-tile" path={v.path} go={go}>
+ <strong>{v.title}</strong>{v.subtitle&&<small>{v.subtitle}</small>}</Anchor>)}</div></section>
+ <div className="md-search-quiet"><input aria-label="가격 비교 항목 검색" value={search}
+  onChange={e=>setSearch(e.target.value)} placeholder="가격 비교 항목 검색"/></div>
+ <section className="md-original-links"><h2>주요 가격 비교</h2>
+ <SourceRows links={data.links.filter(x=>!originalPriceCards.some(v=>decodeURIComponent(v.path)===decodeURIComponent(x.path))&&x.path!=="/")} go={go}/></section>
+ </>;
 }
 function HospitalDetail({data,go}){
  const[tab,setTab]=useState("진료비"),[filter,setFilter]=useState("전체");

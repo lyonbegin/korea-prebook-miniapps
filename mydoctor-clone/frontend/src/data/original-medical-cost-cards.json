@@ -1,0 +1,157 @@
+[
+  {
+    "path": "/medical-cost/%EB%A7%88%EC%9A%B4%EC%9E%90%EB%A1%9C",
+    "title": "마운자로",
+    "subtitle": "나만의닥터 마운자로 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EC%9C%84%EA%B3%A0%EB%B9%84",
+    "title": "위고비",
+    "subtitle": "나만의닥터 위고비, 오젬픽 등 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EC%82%AD%EC%84%BC%EB%8B%A4",
+    "title": "삭센다",
+    "subtitle": ""
+  },
+  {
+    "path": "/medical-cost/%EC%97%90%ED%8E%98",
+    "title": "에페",
+    "subtitle": "나만의닥터 에페 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EB%8B%A4%EC%9D%B4%EC%96%B4%ED%8A%B8%EC%95%BD",
+    "title": "다이어트 경구약",
+    "subtitle": ""
+  },
+  {
+    "path": "/medical-cost/%ED%83%88%EB%AA%A8%EC%95%BD",
+    "title": "탈모약",
+    "subtitle": "피나스테리드, 두타스테리드 등 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EC%97%AC%EB%93%9C%EB%A6%84%EC%95%BD",
+    "title": "여드름약",
+    "subtitle": "이소트레티노인, 클린다마이신 등 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EB%8F%85%EA%B0%90%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85",
+    "title": "독감 예방접종",
+    "subtitle": "독감 백신 전국 최저가 가격비교"
+  },
+  {
+    "path": "/medical-cost/%EA%B0%80%EB%8B%A4%EC%8B%A49%EA%B0%80",
+    "title": "가다실 9가",
+    "subtitle": "가다실 9가 전국 최저가 예약"
+  },
+  {
+    "path": "/medical-cost/%EB%8C%80%EC%83%81%ED%8F%AC%EC%A7%84%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85",
+    "title": "대상포진 예방접종",
+    "subtitle": "싱그릭스, 스카이조스터 등 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EC%88%98%EC%95%A1",
+    "title": "수액",
+    "subtitle": "감기 수액, 백옥 주사 등 최저가 비교"
+  },
+  {
+    "path": "/medical-cost/%EC%B9%98%EA%B3%BC",
+    "title": "치과 치료",
+    "subtitle": "임플란트, 크라운, 인레이 등 치과 치료 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%8B%9C%EB%A0%A5%EA%B5%90%EC%A0%95%EC%88%A0",
+    "title": "시력교정술",
+    "subtitle": "라식, 라섹, 스마일라식, 렌즈삽입술 가격과 지역별 병원 비교"
+  },
+  {
+    "path": "/medical-cost/MRI%EA%B2%80%EC%82%AC",
+    "title": "MRI 검사",
+    "subtitle": "뇌, 척추, 관절, 복부 MRI 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%83%81%EA%B8%89%EB%B3%91%EC%8B%A4%EB%A3%8C",
+    "title": "상급병실료",
+    "subtitle": "1인실, 2인실 등 상급병실 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%B4%88%EC%9D%8C%ED%8C%8C-%EA%B2%80%EC%82%AC",
+    "title": "초음파 검사",
+    "subtitle": "부위별 초음파 검사 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%98%88%EB%B0%A9%EC%A0%91%EC%A2%85-%EB%B0%B1%EC%8B%A0",
+    "title": "예방접종 백신",
+    "subtitle": "백신별 예방접종 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%A0%9C%EC%A6%9D%EB%AA%85-%EC%88%98%EC%88%98%EB%A3%8C",
+    "title": "제증명 수수료",
+    "subtitle": "진단서, 확인서 등 제증명 발급 비용"
+  },
+  {
+    "path": "/medical-cost/%ED%95%AD%EC%9B%90-%ED%98%B8%EB%A5%B4%EB%AA%AC-%EC%9C%A0%EC%A0%84%EC%9E%90-%EB%B3%91%EB%A6%AC-%EA%B2%80%EC%82%AC",
+    "title": "항원·호르몬·유전자·병리 검사",
+    "subtitle": "항원, 호르몬, 유전자, 병리 검사 항목별 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%A0%95%EB%B0%80-%EA%B2%80%EC%82%AC",
+    "title": "정밀 검사",
+    "subtitle": "신경, 순환기 등 정밀 검사 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EB%82%B4%EC%8B%9C%EA%B2%BD-%EA%B2%80%EC%82%AC",
+    "title": "내시경 검사",
+    "subtitle": "내시경, 천자, 생검 관련 검사 비용"
+  },
+  {
+    "path": "/medical-cost/MRA-%EA%B2%80%EC%82%AC",
+    "title": "MRA 검사",
+    "subtitle": "자기공명혈관조영술(MRA) 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%A3%BC%EC%82%AC-%EC%B9%98%EB%A3%8C",
+    "title": "주사 치료",
+    "subtitle": "주사 치료 항목별 병원 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EB%AC%BC%EB%A6%AC%EC%B9%98%EB%A3%8C",
+    "title": "물리치료",
+    "subtitle": "물리치료 항목별 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%A0%95%EC%8B%A0%EA%B3%BC-%EC%83%81%EB%8B%B4-%EC%B9%98%EB%A3%8C",
+    "title": "정신과 상담·치료",
+    "subtitle": "정신과 상담과 치료 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%B2%98%EC%B9%98-%EB%B0%8F-%EC%88%98%EC%88%A0",
+    "title": "처치 및 수술",
+    "subtitle": "처치, 수술 항목별 병원 가격"
+  },
+  {
+    "path": "/medical-cost/%EB%AA%A8%EB%B0%9C-%EC%9D%B4%EC%8B%9D",
+    "title": "모발 이식",
+    "subtitle": "모발 이식 시술 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%ED%95%9C%EB%B0%A9",
+    "title": "한방",
+    "subtitle": "한방 시술과 검사 항목별 가격"
+  },
+  {
+    "path": "/medical-cost/%EC%B9%98%EB%A3%8C%EC%9E%AC%EB%A3%8C",
+    "title": "치료재료",
+    "subtitle": "치료재료별 병원 비급여 가격"
+  },
+  {
+    "path": "/medical-cost/%EB%93%9C%EB%A6%BC%EB%A0%8C%EC%A6%88",
+    "title": "드림렌즈",
+    "subtitle": "드림렌즈 등 보장구 항목별 비용"
+  },
+  {
+    "path": "/medical-cost/%EA%B5%90%EC%9C%A1-%EC%83%81%EB%8B%B4",
+    "title": "교육 상담",
+    "subtitle": "교육과 상담 항목별 비급여 가격"
+  }
+]
