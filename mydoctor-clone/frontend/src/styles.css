@@ -1097,3 +1097,18 @@
   display:flex;align-items:center;justify-content:center;
   width:36px;height:40px;padding:0;touch-action:manipulation;
 }
+
+/* HBC96 #46003 remote HomeNavigationConfig card uses imageUrl, title and TouchableOpacity.
+   Exact public API yielded two config entries; first fixed native card + two remote tiles. */
+.site-app-native .hermes-home-nav-card{cursor:pointer}
+.site-app-native .hermes-home-nav-card img{
+  display:block;width:40px;height:40px;max-width:100%;object-fit:contain;flex-shrink:0;
+  pointer-events:none;
+}
+.site-app-native .hermes-source-state{
+  display:block;padding:2px 12px;color:#9299a6;font-size:11px;
+}
+.site-app-native .hermes-native-open-link{
+  display:block;text-align:center;background:#286cfa;color:white;
+  border-radius:10px;padding:12px 16px;margin-top:14px;font-size:14px;font-weight:700;
+}
