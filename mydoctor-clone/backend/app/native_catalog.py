@@ -322,11 +322,24 @@ async def get_native_public_catalog(
                 headers={"cache-control": "no-store", "x-cache": "MISS"},
             )
     if reply.status_code != 200:
+        # Preserve the actual failure reason instead of converting EVERY
+        # upstream 401, 404 and 405 into the same misleading HTTP 503.
+        origin_failure = {
+            400: "NATIVE_API_REQUIRED_PARAMETERS_UNKNOWN",
+            401: "NATIVE_API_AUTHENTICATION_REQUIRED",
+            403: "NATIVE_API_ACCESS_DENIED",
+            404: "NATIVE_API_ENDPOINT_NOT_FOUND",
+            405: "NATIVE_API_REQUEST_METHOD_NOT_ALLOWED",
+            429: "NATIVE_API_RATE_LIMITED",
+        }.get(reply.status_code, "NATIVE_API_UNAVAILABLE")
+        gateway_status = 503 if reply.status_code == 429 or reply.status_code >= 500 else 502
+        LOG.warning("Native API origin rejected %s: source_http=%s classification=%s",
+                    resource, reply.status_code, origin_failure)
         return JSONResponse(
-            status_code=503,
+            status_code=gateway_status,
             content={"ok": False, "resource": resource, "cache": "MISS",
                      "origin_http_status": reply.status_code,
-                     "error": "NATIVE_API_NOT_PUBLICLY_AVAILABLE",
+                     "error": origin_failure,
                      "method_and_schema_verified": False},
             headers={"cache-control": "no-store", "x-cache": "MISS"},
         )
