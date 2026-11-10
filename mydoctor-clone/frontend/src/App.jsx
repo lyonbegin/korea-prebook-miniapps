@@ -37,20 +37,16 @@ function useSource(route){
  const[state,setState]=useState({data:null,loading:true,error:""});
  const[retry,setRetry]=useState(0);
  useEffect(()=>{const c=new AbortController();setState({data:null,loading:true,error:""});
-  // First-visit source collection can take 24s or be blocked by 403/429.
-  // Show a real navigation result after 8s while leaving the DB-first read alive;
-  // a late successful response still replaces this state with actual source facts.
-  const slow=setTimeout(()=>{if(!c.signal.aborted)setState(current=>current.loading?
-    {data:null,loading:false,error:"원본 데이터를 가져오는 데 시간이 걸리고 있습니다. 아래 원본 페이지를 열어 확인할 수 있습니다."}:current)},8000);
+  // Keep the loading view visible until the original response actually arrives.
+  // The API now sends first-visit source facts before asynchronously persisting
+  // them, so a synthetic 8-second timeout would incorrectly hide a valid load.
   fetchPublicFacts(route,c.signal).then(payload=>{
-    clearTimeout(slow);
     const data=parsePublicFacts(payload,route);
     if(!c.signal.aborted)setState({data,loading:false,error:data.hasSourceData?"":"원본 데이터 구조를 확인할 수 없습니다."});
   }).catch(e=>{
-    clearTimeout(slow);
     if(!c.signal.aborted)setState({data:null,loading:false,error:String(e.message||e)});
   });
-  return()=>{clearTimeout(slow);c.abort()};
+  return()=>c.abort();
  },[route,retry]);return{...state,refresh:()=>setRetry(x=>x+1)};
 }
 function Anchor({label,path,go,children,className=""}){return <a href={path} className={className} onClick={e=>{e.preventDefault();go(path)}}>{children||label}</a>}
