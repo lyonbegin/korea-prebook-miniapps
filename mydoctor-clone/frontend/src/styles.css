@@ -835,3 +835,23 @@
 .site-app-native .native-home-banner-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4}
 .site-app-native .native-home-banner.has-native-image strong,
 .site-app-native .native-home-banner.has-native-image span{position:relative;z-index:2;text-shadow:0 1px 4px #0007}
+
+/* Source-verified Android 6.50.0 category -> region cheapest-price UI. */
+.site-app-native .native-price-regions{padding:18px 20px 28px;background:#fff}
+.site-app-native .native-price-regions h2{font-size:19px;font-weight:800;margin:0 0 7px}
+.site-app-native .native-price-subtitle{font-size:12px;line-height:1.6;color:#8992a0;margin:0 0 18px}
+.site-app-native .native-price-categories{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;padding:2px 0 16px}
+.site-app-native .native-price-categories button{background:#f4f6fa;border:1px solid #edf0f5;border-radius:22px;padding:10px 14px;min-height:40px;flex-shrink:0;color:#616d7a;font-size:13px;font-weight:700}
+.site-app-native .native-price-categories button.active{background:#e9f0ff;border-color:#326dff;color:#326dff}
+.site-app-native .native-national-price{border-radius:12px;background:#eff5ff;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 15px;margin:7px 0 15px}
+.site-app-native .native-national-price span{font-weight:650;font-size:13px;color:#5773a2}
+.site-app-native .native-national-price strong{font-weight:850;font-size:20px;color:#286aff}
+.site-app-native .native-region-price-list{border-top:1px solid #f0f2f5}
+.site-app-native .native-region-price-row{display:flex;align-items:center;gap:11px;min-height:61px;width:100%;padding:13px 4px;border:0;border-bottom:1px solid #f0f2f5;background:#fff;text-align:left;color:#343c4b}
+.site-app-native .native-region-price-row svg:first-child{color:#8da9d9}
+.site-app-native .native-region-price-row span{font-weight:650;font-size:14px;flex:1}
+.site-app-native .native-region-price-row strong{font-size:14px;color:#2f69f8;font-weight:750}
+.site-app-native .native-region-price-row svg:last-child{color:#a6b0bc;flex-shrink:0}
+.site-app-native .native-price-source-status{font-size:12px;line-height:1.7;color:#667483;padding:11px 14px;border-radius:10px;background:#f7f8fa}
+.site-app-native .native-price-detail-route>h1{font-size:22px;margin:20px 20px 5px;font-weight:800}
+.site-app-native .native-price-detail-route .native-price-regions{padding-top:13px}
