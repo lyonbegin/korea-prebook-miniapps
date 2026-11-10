@@ -28,8 +28,9 @@ export default function NativeMydLinkScreen({route,title,go}){
  const [error,setError]=useState("");
  const [loading,setLoading]=useState(true);
  const [showDoctors,setShowDoctors]=useState(false);
+ const [activeFilters,setActiveFilters]=useState([]);
  useEffect(()=>{
-   setResult(null);setError("");setLoading(true);setShowDoctors(false);
+   setResult(null);setError("");setLoading(true);setShowDoctors(false);setActiveFilters([]);
    if(!key){setLoading(false);setError("유효한 원본 메뉴 키가 없습니다.");return}
    const controller=new AbortController();
    fetchNativeCatalog("myd-link",{myd_link_key:key},controller.signal)
@@ -45,6 +46,16 @@ export default function NativeMydLinkScreen({route,title,go}){
  const typed=string(link?.link_type)||string(payload?.link_type);
  const doctorList=typed.toLowerCase().includes("doctor")||
    !!(link?.doctor_list_filter_rule||payload?.doctor_list_filter_rule);
+ const rawFilters=link?.doctor_list_filter_rule?.search_filters||
+    payload?.doctor_list_filter_rule?.search_filters;
+ // 6.50.0 useDoctorFilter reads search_filters + default_filters. Only expose
+ // valid identifiers from the original response. Never guess filter values.
+ const searchFilters=(Array.isArray(rawFilters)?rawFilters:[]).map(item=>{
+   const key=item?.key??item?.filter_key??item?.filterKey;
+   return {key:typeof key==="string"?key:null,
+      label:string(item?.name)||string(item?.label)||string(item?.title)||string(key)};
+ }).filter(f=>f.key&&/^[A-Za-z0-9_-]{1,55}$/.test(f.key));
+ const params=activeFilters.length?{search_filter_keys:activeFilters.join(",")}:{};
  return <div className="native-link-screen" data-native-link-key={key||""}>
   <div className="native-link-header">
    <span>나만의닥터 앱 메뉴</span>
@@ -63,13 +74,22 @@ export default function NativeMydLinkScreen({route,title,go}){
     </div>}
     {doctorList&&<section className="native-link-doctor">
       <div><Stethoscope size={19}/><h2>의료진 찾기</h2></div>
-      <p>원본 MyD 링크의 의사 검색 조건을 확인했습니다. 전체 의사 목록은 별도로 조회할 수 있습니다.</p>
+      <p>원본 앱의 의사 검색 조건과 정렬 기준을 읽었습니다. 아래 필터는 실제 응답에 포함된 값만 사용합니다.</p>
+      {!!searchFilters.length&&<div className="native-link-filter-list" role="group" aria-label="원본 앱 의사 필터">
+       {searchFilters.map(f=><button key={f.key} type="button"
+        aria-pressed={activeFilters.includes(f.key)}
+        className={activeFilters.includes(f.key)?"active":""}
+        onClick={()=>setActiveFilters(old=>old.includes(f.key)?
+          old.filter(x=>x!==f.key):[...old,f.key])}>{f.label}</button>)}
+      </div>}
       <button type="button" onClick={()=>setShowDoctors(x=>!x)}
        aria-expanded={showDoctors}>
        <Search size={17}/>{showDoctors?"의료진 목록 닫기":"원본 의사 목록 보기"}<ChevronRight size={17}/>
       </button>
-      {showDoctors&&<NativeApiCatalog resource="doctor-list" title="원본 전체 의료진" go={go}/>}
-      <p className="native-data-note">검색 조건과 원본 목록의 1:1 대응은 추가 검증 중입니다. 필터링된 결과로 표시하지 않습니다.</p>
+      {showDoctors&&<NativeApiCatalog resource="doctor-list"
+        parameters={params}
+        title={activeFilters.length?"선택 조건 의료진":"원본 전체 의료진"} go={go}/>}
+      <p className="native-data-note">목록은 원본 의사 API의 실제 응답으로만 표시합니다. 원본 요청이 거부되는 조건은 오류로 구분합니다.</p>
     </section>}
     {!doctorList&&<section className="native-link-doctor">
      <p>원본에서 확인된 연결 유형: {typed||"분석 중"}</p>
