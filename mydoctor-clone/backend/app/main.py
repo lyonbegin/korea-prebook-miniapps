@@ -13,6 +13,7 @@ from fastapi.responses import Response, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from .catalog_schema import SCHEMA
+from .native_catalog import NATIVE_CACHE_SCHEMA, get_native_public_catalog, public_inventory
 from .source_parser import extract_page, source_key
 from .sitemap_index import sync_public_index,backfill_existing_route_types
 from .public_facts import extract_public_facts,seed_observed_facts,seed_menu_facts,insert_facts,safe_route
@@ -37,7 +38,9 @@ async def lifespan(app: FastAPI):
     if dsn and asyncpg:
         try:
             pool=await asyncpg.create_pool(dsn=dsn,min_size=1,max_size=3,timeout=8)
-            async with pool.acquire() as c: await c.execute(SCHEMA)
+            async with pool.acquire() as c:
+                await c.execute(SCHEMA)
+                await c.execute(NATIVE_CACHE_SCHEMA)
             app.state.pool=pool
             await seed_observed_facts(pool)
             await seed_menu_facts(pool)
@@ -59,7 +62,7 @@ async def lifespan(app: FastAPI):
 
 app=FastAPI(title="Independent MyDoctor public-source clone API",lifespan=lifespan)
 origins=[x.strip() for x in os.getenv("FRONTEND_ORIGINS","http://localhost:5173").split(",") if x.strip()]
-app.add_middleware(CORSMiddleware,allow_origins=origins,allow_methods=["GET"],allow_headers=["*"],expose_headers=["x-cache","x-data-source"])
+app.add_middleware(CORSMiddleware,allow_origins=origins,allow_methods=["GET"],allow_headers=["*"],expose_headers=["x-cache","x-data-source","x-cache-write"])
 
 @app.get("/health")
 async def health(request:Request):
@@ -71,7 +74,7 @@ async def health(request:Request):
 async def catalog_status(request:Request):
     pool=request.app.state.pool
     if not pool: raise HTTPException(503,"Database not connected")
-    tables=("source_records","original_response_cache","departments","symptoms","hospitals","hospital_price_items","medical_cost_categories","source_assets")
+    tables=("source_records","original_response_cache","departments","symptoms","hospitals","hospital_price_items","medical_cost_categories","source_assets","native_public_api_cache")
     counts={}
     for name in tables:
         counts[name]=int(await pool.fetchval(f"SELECT count(*) FROM mydoctor_clone.{name}"))
@@ -130,6 +133,16 @@ async def catalog_routes(request:Request,section:str="",limit:int=40,offset:int=
                        "source_verified":r["source_verified_at"] is not None,
                        "data_verified":r["data_verified_at"] is not None,
                        "clone_verified":r["clone_verified_at"] is not None} for r in rows]}
+
+@app.get("/native/catalog/inventory")
+async def native_inventory():
+    """Literal endpoint paths found in the original 6.50.0 Hermes bundle."""
+    return public_inventory()
+
+@app.get("/native/catalog/{resource}")
+async def native_catalog(resource: str, request: Request, background_tasks: BackgroundTasks):
+    """Strictly allowlisted anonymous GET with PostgreSQL-first asynchronous cache."""
+    return await get_native_public_catalog(request, background_tasks, resource)
 
 @app.get("/catalog/page")
 async def catalog_page(request:Request,background_tasks:BackgroundTasks,path:str="/"):
