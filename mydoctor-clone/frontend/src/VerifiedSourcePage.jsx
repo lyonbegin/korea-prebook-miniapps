@@ -200,10 +200,11 @@ function NightPharmacyPage({data,go}){
    <div className="original-pharmacy-list">{cards.map((card,i)=>{
      const exp=new RegExp("\\("+today+"\\)\\s*([^,]+)");
      const day=card.weekly_hours?.match(exp)?.[1]||card.today_hours?.replace(/^\([^)]+\)\s*/,"");
+     const scheduleOpen=isPharmacyOpenNow(card.weekly_hours,today,minute);
      return <article className="original-pharmacy-card" key={card.name+"-"+i}>
        <h2><button type="button" aria-expanded={selected===i}
          onClick={()=>setSelected(selected===i?null:i)}>{card.name}</button></h2>
-       {day&&<p className="original-pharmacy-cardline"><Clock3 size={16} className="pharmacy-time-icon" aria-hidden="true"/>({today}) {day}</p>}
+       {day&&<p className="original-pharmacy-cardline"><Clock3 size={16} className="pharmacy-time-icon" aria-hidden="true"/><span><strong className="pharmacy-status-label" title="게시된 운영시간 기준">{scheduleOpen?"영업 중":"영업 종료"}</strong> ({today}) {day}</span></p>}
        {card.weekly_hours&&<p className="original-pharmacy-cardline"><CalendarDays size={16} aria-hidden="true"/>
          <span><b>야간 영업</b> {card.weekly_hours}</span></p>}
        {card.address&&<p className="original-pharmacy-cardline"><MapPin size={16}/><span>{card.address}</span></p>}
