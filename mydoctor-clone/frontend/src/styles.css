@@ -686,3 +686,98 @@
  border-top:1px solid #f1f2f4;min-height:42px;
  color:#7b8595;font-size:12px;font-weight:650;
 }
+
+/* Native app-oriented directory layouts (telemedicine, cost, hospital). */
+.site-app-native .native-doctor-directory .md-intro{
+ background:#fff;padding:22px 20px 14px;
+}
+.site-app-native .native-doctor-directory .md-intro h1{
+ font-size:22px;font-weight:800;line-height:1.3;margin-bottom:8px;
+}
+.site-app-native .native-doctor-directory .md-intro p{font-size:13px;color:#78828f;line-height:1.5}
+.site-app-native .native-doctor-directory .md-tabs{
+ border:0;margin:0 20px 18px;padding:4px;height:47px;
+ background:#f3f5f7;border-radius:12px;gap:4px;
+}
+.site-app-native .native-doctor-directory .md-tabs button{
+ border:0;border-radius:9px;color:#8e97a5;
+}
+.site-app-native .native-doctor-directory .md-tabs button.current{
+ background:#fff;box-shadow:0 1px 5px #10182810;color:#286afa;border:0;
+}
+.site-app-native .native-doctor-directory .md-symptoms{padding:0 15px 15px}
+.site-app-native .native-doctor-directory .symptom-section{
+ border:1px solid #eff1f4;border-radius:13px;overflow:hidden;margin:0 0 9px;
+}
+.site-app-native .native-doctor-directory .symptom-group{
+ min-height:76px;height:auto;border:0;padding:13px 16px;
+}
+.site-app-native .native-doctor-directory .symptom-group img{
+ width:43px;height:43px;background:#f4f7ff;padding:9px;border-radius:12px;flex-shrink:0;
+}
+.site-app-native .native-doctor-directory .symptom-group b{font-size:15px;font-weight:750}
+.site-app-native .native-doctor-directory .symptom-group small{font-size:12px;color:#8b95a3}
+.site-app-native .native-doctor-directory .symptom-choices{
+ border-top:1px solid #f0f1f3;background:#fbfcfd;padding:9px 17px;
+}
+.site-app-native .native-doctor-directory .symptom-choices a{
+ min-height:44px;display:flex;align-items:center;font-size:13px;
+}
+.site-app-native .native-doctor-directory .department-grid{
+ padding:0 16px 22px;gap:9px;
+}
+.site-app-native .native-doctor-directory .dept-link{
+ border:1px solid #e9edf3;border-radius:12px;padding:15px 12px;
+ font-size:13px;font-weight:650;min-height:48px;
+}
+.site-app-native .native-doctor-directory .md-hidden-links{padding:17px 20px 25px;border-top:8px solid #f7f8fa}
+.site-app-native .native-doctor-directory .md-hidden-links summary{font-size:12px;font-weight:700}
+.site-app-native .native-price-directory{background:#fff}
+.site-app-native .native-price-directory .md-cost-intro{
+ background:#fff;padding:24px 20px 8px;
+}
+.site-app-native .native-price-directory .md-cost-intro h1{
+ font-size:22px;font-weight:800;line-height:1.35;letter-spacing:-.7px;
+}
+.site-app-native .native-price-directory .md-cost-intro p{
+ font-size:13px;color:#818b98;line-height:1.5;
+}
+.site-app-native .native-price-search{
+ display:flex;align-items:center;gap:10px;margin:15px 20px 5px;padding:0 14px;
+ background:#f5f6f9;border:1px solid #edf0f3;border-radius:12px;height:49px;
+ color:#8b95a3;
+}
+.site-app-native .native-price-search input{
+ min-width:0;flex:1;border:0;outline:none;background:transparent;
+ font-size:13px;color:#252a34;padding:0;height:100%;
+}
+.site-app-native .native-price-search button{display:flex;border:0;background:none;color:#868d96}
+.site-app-native .native-price-directory .md-cost-list{padding:22px 20px 30px}
+.site-app-native .native-price-directory .md-cost-list h2{
+ margin:0 0 16px;font-size:18px;font-weight:750;
+}
+.site-app-native .native-price-directory .md-cost-grid{gap:10px}
+.site-app-native .native-price-directory .cost-tile{
+ position:relative;min-height:103px;gap:8px;padding:17px 15px;
+ background:#fff;border:1px solid #eaeef4;border-radius:13px;
+}
+.site-app-native .native-price-directory .cost-tile strong{
+ font-weight:750;font-size:14px;padding-right:12px;
+}
+.site-app-native .native-price-directory .cost-tile small{
+ font-size:11px;color:#8d98a5;padding-right:15px;line-height:1.45;
+}
+.site-app-native .native-price-arrow{
+ position:absolute;right:11px;bottom:12px;color:#a2aab5;
+}
+.site-app-native .native-price-empty{
+ padding:14px;background:#f6f7fa;border-radius:10px;font-size:13px;color:#7e8796;
+}
+.site-app-native .md-hospital-intro{padding:22px 20px 8px}
+.site-app-native .md-hospital-intro h1{font-size:22px;font-weight:800}
+.site-app-native .md-hospital-intro p{font-size:13px;color:#788392;line-height:1.55}
+.site-app-native .md-lookup{padding:16px 20px 22px}
+.site-app-native .md-lookup label{border:1px solid #edf0f4;background:#f8f9fb;border-radius:12px;min-height:53px}
+.site-app-native .md-lookup .md-blue-button{border-radius:12px}
+.site-app-native .md-dept-list{background:#fff;padding-top:23px}
+.site-app-native .md-dept-list a{display:inline-block;padding:3px 6px;border-radius:6px}
