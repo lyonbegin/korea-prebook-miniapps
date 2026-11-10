@@ -179,12 +179,15 @@ def safe_parameters(resource: str, args) -> str:
 # Do not assume that a path found in the string table is a GET list endpoint.
 # Anonymous GET only; no credentials, no mutations, no source response body logged.
 NATIVE_FAILURE_PROBES = (
-    ("hospital_original_guess", "/patient-api/hospital/"),
-    ("hospital_v2_candidate", "/patient-api/v2/hospital"),
-    ("hospital_v2_slash", "/patient-api/v2/hospital/"),
-    ("lowest_price_v2", "/patient-api/medical-map/lowest-price/v2"),
-    ("lowest_price_v2_slash", "/patient-api/medical-map/lowest-price/v2/"),
-    ("lowest_price_v1", "/patient-api/medical-map/lowest-price"),
+    ("hospital_original_guess", "GET", "/patient-api/hospital/"),
+    ("hospital_v2_candidate", "GET", "/patient-api/v2/hospital"),
+    ("hospital_v2_slash", "GET", "/patient-api/v2/hospital/"),
+    ("lowest_price_v2", "GET", "/patient-api/medical-map/lowest-price/v2"),
+    ("lowest_price_v2_slash", "GET", "/patient-api/medical-map/lowest-price/v2/"),
+    ("lowest_price_v1", "GET", "/patient-api/medical-map/lowest-price"),
+    ("lowest_price_v2_options", "OPTIONS", "/patient-api/medical-map/lowest-price/v2"),
+    ("lowest_price_v2_slash_options", "OPTIONS", "/patient-api/medical-map/lowest-price/v2/"),
+    ("hospital_v2_options", "OPTIONS", "/patient-api/v2/hospital/"),
 )
 
 async def audit_source_endpoints_once(app) -> None:
@@ -201,10 +204,10 @@ async def audit_source_endpoints_once(app) -> None:
             timeout=httpx.Timeout(9, connect=4),
             follow_redirects=False, trust_env=False,
         ) as client:
-            for name, path in NATIVE_FAILURE_PROBES:
+            for name, method, path in NATIVE_FAILURE_PROBES:
                 try:
-                    response = await client.get(
-                        ORIGIN + path,
+                    response = await client.request(
+                        method, ORIGIN + path,
                         headers={
                             "accept": "application/json",
                             "accept-language": "ko-KR,ko;q=0.9",
@@ -218,6 +221,12 @@ async def audit_source_endpoints_once(app) -> None:
                         ).split(";")[0][:50],
                         "response_bytes": min(len(response.content), 2000000),
                         "redirected": response.status_code in (301,302,307,308),
+                        "method": method,
+                        "allow": response.headers.get("allow", "")[:100],
+                        "location_kind": ("trailing_slash" if
+                            response.headers.get("location", "").endswith("/") and
+                            response.status_code in (301,302,307,308)
+                            else None),
                     }
                     if (
                         response.status_code in (400, 404, 405, 422)
