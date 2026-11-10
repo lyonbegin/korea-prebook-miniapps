@@ -71,14 +71,17 @@ function NativeHomeBanner({go}){
   }).catch(()=>{}); // unverified API stays distinct from the static navigation baseline
   return ()=>abort.abort();
  },[]);
- return <NavLink className={"native-home-banner"+(banner?.image?" has-native-image":"")}
-    path={banner?.path||"/telemedicine/all-department"} go={go}
-    label={banner?.label||"비대면 진료"}>
+ const contents=<>
    {banner?.image&&<img className="native-home-banner-image" alt="" src={banner.image}/>}
    <span>{banner?.subtitle||"365일 24시간 전국민 누구나"}</span>
    <strong>{banner?.label||"비대면 진료 받을 수 있어요!"}</strong>
    {!banner?.image&&<Stethoscope aria-hidden="true" size={38}/>}
- </NavLink>;
+ </>;
+ const className="native-home-banner"+(banner?.image?" has-native-image":"");
+ // Never redirect an observed native banner to an unrelated fallback destination.
+ if(banner&&!banner.path)return <div className={className} data-native-link-unverified="true">{contents}</div>;
+ return <NavLink className={className} path={banner?.path||"/telemedicine/all-department"} go={go}
+   label={banner?.label||"비대면 진료"}>{contents}</NavLink>;
 }
 export default function NativeAppHome({data,go}) {
   const [homeMode,setHomeMode]=useState("telemedicine");
