@@ -73,7 +73,7 @@ const targets=[
    await page.locator("main h1").waitFor({timeout:14000});
    await page.route("**/catalog/page?*",async route=>{
      const url=new URL(route.request().url()),requested=url.searchParams.get("path")||"";
-     if(requested.includes("탈모-비대면진료-예약")){
+     if(decodeURIComponent(requested).includes("탈모-비대면진료-예약")){
        await route.fulfill({status:503,contentType:"application/json",
          body:JSON.stringify({ok:false,source_status:429,error:"ORIGINAL_PUBLIC_SOURCE_UNAVAILABLE"})});
      }else await route.continue();
