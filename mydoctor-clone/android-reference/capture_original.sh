@@ -41,6 +41,15 @@ if [ -n "$AAPT" ]; then
   grep -q "name='com.merakiplace.mydoctor'" "$OUT/package_info.txt"
   grep -q "versionName='6.50.0'" "$OUT/package_info.txt"
 fi
+# The downloaded APK must contain the EXACT SAME Hermes UI program as
+# the XAPK provided by the user. Otherwise a 6.50.0 label is insufficient.
+HERMES_EXPECTED="6c99d3d6766668dd29909eb49edb92a004e588b7f49c8f93a54730c31e9a4802"
+HERMES_ACTUAL=$(unzip -p "$BASE" assets/index.android.bundle | sha256sum | awk '{print $1}')
+printf 'Hermes expected user-uploaded SHA256: %s\\nDownloaded Hermes SHA256: %s\\n' "$HERMES_EXPECTED" "$HERMES_ACTUAL" >> "$OUT/device_metadata.txt"
+if [[ "$HERMES_ACTUAL" != "$HERMES_EXPECTED" ]]; then
+  echo 'WRONG_BINARY: downloaded app has different Hermes UI from user-provided v6.50.0 XAPK' | tee "$OUT/installation_blocker.txt"
+  exit 6
+fi
 SHA=$(sha256sum "$BASE" | awk '{print $1}')
 printf 'Source: APKPure original 6.50.0 (1206) ARM64\nXAPK bytes: %s\nbase.apk sha256: %s\n' "$BYTES" "$SHA" >> "$OUT/device_metadata.txt"
 adb install-multiple -r "${APKS[@]}" | tee "$OUT/install_result.txt"
