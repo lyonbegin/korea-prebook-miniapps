@@ -7,6 +7,9 @@ on:
       - mydoctor-clone/**
       - .github/workflows/mydoctor-full-clone-qa.yml
   workflow_dispatch:
+concurrency:
+  group: mydoctor-source-mobile-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
