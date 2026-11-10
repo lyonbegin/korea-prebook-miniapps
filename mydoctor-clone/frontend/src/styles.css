@@ -628,3 +628,61 @@
  .site-app-native .native-tab{font-size:9px}
  .site-app-native .native-home-greeting h1{font-size:23px}
 }
+
+/* Verified 6.50.0-era native homepage composition:
+   promotional header / segmented telemedicine-booking card / 3-column symptoms.
+   Based on React Native app strings and publicly displayed app mockups. */
+.site-app-native:has(.native-home) .native-app-header{background:#edeff4}
+.site-app-native:has(.native-home) .toprow{background:#edeff4}
+.site-app-native:has(.native-home) .native-brand{color:#60636c;font-size:19px;font-weight:850}
+.site-app-native .native-home-top{background:#edeff4;padding:16px 18px 22px}
+.site-app-native .native-home-banner{
+ display:flex;position:relative;flex-direction:column;justify-content:center;
+ background:#1f2127;color:#fff;border-radius:17px;padding:20px 22px;
+ min-height:108px;margin-bottom:19px;overflow:hidden;
+}
+.site-app-native .native-home-banner>span{font-size:12px;font-weight:650;margin-bottom:9px;color:#eee}
+.site-app-native .native-home-banner strong{font-size:19px;line-height:1.35;letter-spacing:-.5px;font-weight:800}
+.site-app-native .native-home-banner svg{position:absolute;right:20px;bottom:20px;color:#91b6ff}
+.site-app-native .native-app-service-box{
+ background:#fff;border-radius:18px;padding:18px 17px 11px;box-shadow:0 2px 12px #20283c0b;
+}
+.site-app-native .native-segment{
+ height:44px;display:grid;grid-template-columns:1fr 1fr;border-radius:11px;
+ padding:3px;background:#f3f4f6;gap:2px;
+}
+.site-app-native .native-segment button{
+ border:0;border-radius:8px;background:transparent;color:#8c939e;
+ font-size:13px;line-height:1.25;font-weight:700;min-width:0;padding:8px 1px;
+}
+.site-app-native .native-segment button.selected{
+ background:#fff;box-shadow:0 1px 4px #10182812;color:#2f6cf6;
+}
+.site-app-native .native-symptom-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ column-gap:8px;row-gap:23px;padding:28px 0 18px;
+}
+.site-app-native .native-symptom-item{
+ min-width:0;min-height:73px;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;
+ color:#414650;font-size:12px;line-height:1.35;text-align:center;font-weight:600;
+ word-break:keep-all;
+}
+.site-app-native .native-symptom-icon{
+ display:flex;justify-content:center;align-items:center;
+ width:42px;height:42px;border-radius:50%;
+}
+.site-app-native .tone-sky{background:#e4f4ff;color:#76b8ff}
+.site-app-native .tone-peach{background:#ffefe6;color:#f6a58c}
+.site-app-native .tone-coral{background:#fff0ed;color:#f7a28f}
+.site-app-native .tone-rose{background:#fff0f0;color:#f5a4a4}
+.site-app-native .tone-orange{background:#fff3e6;color:#ffa77a}
+.site-app-native .tone-pink{background:#ffe9ef;color:#ed83a6}
+.site-app-native .tone-slate{background:#f2f4f8;color:#94a4b8}
+.site-app-native .tone-blue{background:#e9f4ff;color:#8fc5f8}
+.site-app-native .tone-mint{background:#e7f8f4;color:#73c6b5}
+.site-app-native .native-app-all{
+ display:flex;justify-content:center;align-items:center;gap:3px;
+ border-top:1px solid #f1f2f4;min-height:42px;
+ color:#7b8595;font-size:12px;font-weight:650;
+}
