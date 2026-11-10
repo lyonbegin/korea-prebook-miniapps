@@ -340,3 +340,9 @@
 
 /* Measured source screenshot card top is 4px earlier at 390x844. */
 .original-medicine-quick h2{margin-bottom:14px}
+
+
+/* Source hospital facet rows verified: 3 / 2 / 3 / 3 on a 390px viewport. */
+.review-facets.original-hospital-facets{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.review-facet-row{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+.review-facets.original-hospital-facets .review-facet-row{flex-wrap:nowrap}
