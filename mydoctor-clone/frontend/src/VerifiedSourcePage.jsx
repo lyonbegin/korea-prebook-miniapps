@@ -175,6 +175,10 @@ function NightPharmacyPage({data,go}){
    {!!pages.length&&<nav className="observed-pages" aria-label="야간 약국 목록 페이지">
      {pages.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
    </nav>}
+   <details className="md-hidden-links original-pharmacy-directory">
+     <summary>지역별 약국·관련 정보 전체 보기</summary>
+     <SourceRows links={data.links} go={go} kind="pharmacy-directory"/>
+   </details>
  </section>;
 }
 
