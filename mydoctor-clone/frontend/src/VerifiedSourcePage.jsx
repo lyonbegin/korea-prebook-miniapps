@@ -63,6 +63,50 @@ function getViewType(path){
  return "public-directory";
 }
 
+
+/** Original medicine search landing: a two-column search form, quick drug cards,
+    and grouped genuine original links. Full source index remains searchable. */
+function MedicineLandingPage({data,go}){
+ const [query,setQuery]=useState("");
+ const links=useMemo(()=>verifiedLinks(data.links),[data.links]);
+ const filtered=links.filter(x=>!query||normalize(x.label).includes(normalize(query)));
+ const immediate=links.filter(x=>x.path.startsWith("/medicine/")&&!/\/(?:effect|ingredient)\//.test(x.path)).slice(0,8);
+ const featured=immediate.filter(x=>!query||normalize(x.label).includes(normalize(query)));
+ const effects=links.filter(x=>x.path.startsWith("/medicine/effect/"));
+ return <div className="original-medicine" data-source-view="medicine-search">
+  <section className="original-medicine-intro">
+   <h1>의약품 정보 검색</h1>
+   <p>찾는 약의 효능·복용법·주의사항·부작용을 확인하세요.</p>
+   <form className="original-medicine-search" onSubmit={e=>e.preventDefault()}>
+    <input type="search" aria-label="원본 자료 검색" placeholder="약 이름 · 성분으로 검색"
+      value={query} onChange={e=>setQuery(e.target.value)}/>
+    <button type="submit">검색</button>
+   </form>
+   {query&&<button className="original-medicine-clear" type="button" aria-label="검색어 지우기"
+      onClick={()=>setQuery("")}>검색어 지우기</button>}
+  </section>
+  <div className="original-medicine-divider"/>
+  <section className="original-medicine-quick">
+    <h2>지금 바로 볼 수 있어요</h2>
+    <div className="original-medicine-cards">
+      {featured.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+    </div>
+  </section>
+  <section className="original-medicine-categories">
+   <h2>약 상세에서 볼 수 있는 정보</h2>
+   <h2>효능별로 찾기</h2>
+   <div className="original-medicine-effect-links">
+     {effects.slice(0,12).map(x=><a key={x.path} href={x.path}
+       onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
+   </div>
+  </section>
+  <details className="original-medicine-directory">
+   <summary>의약품 원본 공개 목록 전체 보기</summary>
+   <SourceRows links={filtered} go={go} kind="medicine-directory"/>
+  </details>
+ </div>;
+}
+
 /** Original FAQ uses a dedicated search + question list; paths come from DB facts. */
 function FAQIndexPage({data,go}){
  const [query,setQuery]=useState("");
@@ -211,6 +255,7 @@ export function VerifiedSourcePage({data,go,route}){
     if(tab==="의사"&&!/의사|doctor/.test(label))return false;
     return true;
  });
+ if(route.split("?")[0]==="/medicine")return <MedicineLandingPage data={data} go={go}/>;
  if(route.split("?")[0]==="/healthLab/FAQ")return <FAQIndexPage data={data} go={go}/>;
  if(decodeURIComponent(route.split("?")[0])==="/pharmacy/야간약국"&&data.pharmacyCards?.length)return <NightPharmacyPage data={data} go={go}/>;
  if(route.endsWith("/reviews")&&data.reviewSummary)return <ReviewsSummary data={data} go={go}/>;
