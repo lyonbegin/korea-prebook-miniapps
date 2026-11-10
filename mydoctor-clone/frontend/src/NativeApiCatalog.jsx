@@ -109,18 +109,19 @@ function DetailPanel({item,onClose}){
    </section>
   </div>;
 }
-export default function NativeApiCatalog({resource,title,go,compact=false}){
+export default function NativeApiCatalog({resource,title,go,compact=false,parameters={}}){
  const [response,setResponse]=useState(null);
  const [error,setError]=useState("");
  const [detail,setDetail]=useState(null);
+ const paramsKey=JSON.stringify(parameters||{});
  useEffect(()=>{
   let active=true;const controller=new AbortController();
   setError("");setResponse(null);
-  fetchNativeCatalog(resource,{},controller.signal).then(v=>{
+  fetchNativeCatalog(resource,JSON.parse(paramsKey),controller.signal).then(v=>{
    if(active)setResponse(v);
   }).catch(e=>{if(active&&!controller.signal.aborted)setError(e.message)});
   return ()=>{active=false;controller.abort()};
- },[resource]);
+ },[resource,paramsKey]);
  const items=useMemo(()=>resource==="doctor-list"?
    nativeDoctorItems(response?.data):normalizeNativeCards(response?.data),[response,resource]);
  return <section className={"native-api-section"+(compact?" compact":"")}
