@@ -13,17 +13,24 @@ const base=link=>{try{return decodeURIComponent(link.path).replace(/\s+/g," ")}c
 const isPlace=link=>/\/(?:hospital|dept-hub|pharmacy|map)(?:\/|$)/.test(link.path);
 const isMedicine=link=>link.path.startsWith("/medicine/");
 const normalize=x=>String(x||"").toLocaleLowerCase("ko-KR").replace(/\s+/g," ");
+const routeKey=x=>{try{return decodeURIComponent(new URL(x,"https://my-doctor.io").pathname+new URL(x,"https://my-doctor.io").search).replace(/\/$/,"")}catch{return String(x||"")}};
+const currentRouteKey=()=>typeof window!=="undefined"?routeKey(window.location.pathname+window.location.search):"";
+
 function verifiedLinks(links){
  const seen=new Set();
  return (links||[]).filter(x=>x.path&&x.label&&x.path!=="/"&&!seen.has(x.path)&&seen.add(x.path));
 }
 export function SourceRows({links,go,kind="directory",defaultMaxHeight=null}){
  const [expanded,setExpanded]=useState(false);
- const hasMore=defaultMaxHeight!==null&&links.length>20;
+ // Original public HTML can contain links back to itself (5 on multiple pages).
+ // Rendering these as result rows made a user click appear to do nothing.
+ const active=currentRouteKey();
+ const navigable=(links||[]).filter(link=>routeKey(link.path)!==active);
+ const hasMore=defaultMaxHeight!==null&&navigable.length>20;
  return <div className="observed-row-container">
   <div className={"observed-links observed-"+kind+(hasMore&&!expanded?" is-collapsed":"")}
     style={hasMore&&!expanded?{maxHeight:defaultMaxHeight,overflow:"hidden"}:undefined}>
-  {links.map(link=><a key={link.path} href={link.path} className="observed-link"
+  {navigable.map(link=><a key={link.path} href={link.path} className="observed-link"
      onClick={e=>{e.preventDefault();go(link.path)}}>
     <span>{link.label}</span><ChevronRight size={16} aria-hidden="true"/>
   </a>)}
@@ -277,7 +284,7 @@ export function VerifiedSourcePage({data,go,route}){
  const [search,setSearch]=useState("");
  const [region,setRegion]=useState("전체");
  const [tab,setTab]=useState("전체");
- const entries=useMemo(()=>verifiedLinks(data.links),[data.links]);
+ const entries=useMemo(()=>verifiedLinks(data.links).filter(l=>routeKey(l.path)!==routeKey(route)),[data.links,route]);
  const regional=kind==="hospital-list"||kind==="pharmacy-list"||kind==="map-directory"||kind==="health-directory";
  const filterable=entries.length>=3;
  const geos=useMemo(()=>geo.filter(g=>g==="전국"||entries.some(l=>normalize(l.label+" "+base(l)).includes(g))),[entries]);
