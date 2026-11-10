@@ -138,17 +138,78 @@ function NativeHomeMenuGrid({go}){
  *  AdBanner follows the original section flow; not the hero-first placement.
  * Unconfirmed extra public web navigation is collapsed below the native shell.
  */
+function normalizeHomeNavigationConfig(response) {
+  // HBC96: #46013 getConfig({key:"HomeNavigationConfig"}), response.data.value JSON string.
+  const payload=response?.data?.data?.value??response?.data?.value;
+  let entries=payload;
+  if(typeof payload==="string"){
+    try{entries=JSON.parse(payload)}catch{return []}
+  }
+  if(!Array.isArray(entries))return [];
+  return entries.filter(item=>{
+    if(!item||typeof item!=="object"||typeof item.title!=="string")return false;
+    if(!item.title.trim()||typeof item.imageUrl!=="string")return false;
+    return /^https:\/\/img\.my-doctor\.io\//.test(item.imageUrl);
+  }).slice(0,5).map(item=>{
+    const deepLink=typeof item.navigationUrl==="string"&&
+      /^merakiyourdoctor:\/\/navigate\?screen=[A-Za-z0-9_]+$/.test(item.navigationUrl)?
+      item.navigationUrl:null;
+    return {title:item.title,imageUrl:item.imageUrl,deepLink,
+      shouldCheckLogin:item.shouldCheckLogin===true};
+  });
+}
 function HermesHomeNavigation({go}){
-  return <nav className="hermes-home-navigation" aria-label="병원 및 진료 바로가기">
-    <NavLink className="hermes-home-nav-card" path="/hospital" go={go} label="병원/약국 찾기">
-      <Hospital size={40} strokeWidth={1.6} aria-hidden="true"/>
-      <strong>병원/약국<br/>찾기</strong>
-    </NavLink>
-    <NavLink className="hermes-home-nav-card" path="/telemedicine/all-department" go={go} label="비대면 진료">
-      <Stethoscope size={40} strokeWidth={1.6} aria-hidden="true"/>
-      <strong>비대면 진료</strong>
-    </NavLink>
-  </nav>;
+  const [entries,setEntries]=useState([]);
+  const [selected,setSelected]=useState(null);
+  const [sourceState,setSourceState]=useState("loading");
+  useEffect(()=>{
+    const ctrl=new AbortController();
+    fetchNativeCatalog("app-config",{config_key:"HomeNavigationConfig"},ctrl.signal)
+      .then(response=>{
+        if(ctrl.signal.aborted)return;
+        const items=normalizeHomeNavigationConfig(response);
+        setEntries(items);setSourceState(items.length?"source":"missing");
+      })
+      .catch(()=>{if(!ctrl.signal.aborted)setSourceState("unavailable")});
+    return ()=>ctrl.abort();
+  },[]);
+  return <>
+    <nav className="hermes-home-navigation" data-original-nav-count={1+entries.length}
+      aria-label="원본 홈 바로가기">
+      <NavLink className="hermes-home-nav-card" path="/hospital" go={go} label="병원/약국 찾기">
+        <Hospital size={40} strokeWidth={1.6} aria-hidden="true"/>
+        <strong>병원/약국<br/>찾기</strong>
+      </NavLink>
+      {entries.map((item,i)=><button type="button"
+        key={item.deepLink??i} className="hermes-home-nav-card hermes-config-nav-card"
+        aria-label={item.title.replace(/\n/g," ")}
+        onClick={()=>setSelected(item)}>
+        <img src={item.imageUrl} alt="" width="40" height="40" loading="eager"/>
+        <strong>{item.title.split("\n").map((part,j)=>
+          <React.Fragment key={j}>{j>0&&<br/>}{part}</React.Fragment>)}</strong>
+      </button>)}
+    </nav>
+    {sourceState==="unavailable"&&
+      <span className="hermes-source-state" role="status">원본 홈 설정을 불러오지 못했습니다.</span>}
+    {sourceState==="missing"&&
+      <span className="hermes-source-state" role="status">원본 홈 바로가기 설정에 표시할 항목이 없습니다.</span>}
+    {selected&&<div className="native-data-overlay"
+       onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}>
+      <section className="native-data-dialog" role="dialog" aria-modal="true"
+        aria-label={selected.title.replace(/\n/g," ")+" 원본 앱 이동"}>
+        <div className="native-data-dialog-head">
+          <h2>{selected.title.replace(/\n/g," ")}</h2>
+          <button type="button" onClick={()=>setSelected(null)} aria-label="닫기">닫기</button>
+        </div>
+        <p>원본 Android 6.50.0 홈 설정에서 직접 불러온 화면입니다.</p>
+        {selected.shouldCheckLogin&&
+          <p className="native-data-note">원본 앱에서 로그인 확인이 필요한 화면입니다.</p>}
+        {selected.deepLink&&<a href={selected.deepLink}
+          className="hermes-native-open-link">원본 Android 앱에서 해당 화면 열기</a>}
+        <p className="native-data-note">이 화면의 웹 UI는 Hermes 코드 분석 대상입니다.</p>
+      </section>
+    </div>}
+  </>;
 }
 export default function NativeAppHome({data,go}) {
   const [homeMode,setHomeMode]=useState("telemedicine");
