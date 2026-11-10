@@ -379,3 +379,30 @@
 .original-review-hospital .review-facets.original-hospital-facets{gap:6px}
 .original-review-hospital .review-facets.original-hospital-facets button{padding:7px 8px}
 .original-review-hospital .review-top{padding-bottom:22px}
+
+
+/* Original doctor reviews show three service metrics as separate horizontal lines. */
+.original-review-doctor .review-top h1{letter-spacing:.05px;margin-bottom:44px}
+.original-review-doctor .review-service-stats{display:flex;flex-direction:column;gap:6px;align-items:stretch;
+ margin:-8px 0 5px}
+.original-review-doctor .review-service-stats div{display:flex;flex-direction:row;align-items:center;
+ gap:5px;min-height:22px;font-size:12px}
+.original-review-doctor .review-service-stats div>span{min-width:35px;color:#667180}
+.original-review-doctor .review-service-stats b{font-size:13px;color:#161a1f}
+.original-review-doctor .review-service-stats strong{color:#161a1f;font-size:13px;font-weight:650}
+.original-review-doctor .review-facets .review-facet-row{gap:6px 7px}
+.original-review-doctor .review-facets button{padding:7px 8px}
+.original-doctor-review-cards{margin:0;padding:0;list-style:none}
+.review-doctor-source-card{padding:20px;border-bottom:1px solid #e9edf2}
+.review-doctor-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;line-height:20px}
+.review-doctor-meta strong{font-size:14px;font-weight:500;color:#272d35}
+.review-doctor-meta span{border-left:1px solid #cbd0d9;padding-left:8px;color:#8f98a5}
+.review-doctor-positive{display:inline-flex;margin-top:8px;border-radius:4px;padding:5px 8px;
+ color:#2f6eff;background:#edf3ff;font-size:12px;font-weight:600}
+.review-doctor-excerpt{font-size:16px!important;line-height:24px;color:#505966!important;margin:16px 0!important;padding:0!important}
+.review-doctor-feedback{border:1px solid #dee3e9;border-radius:12px;padding:12px;
+ display:flex;flex-direction:column;gap:8px}
+.review-doctor-feedback-row{display:flex;align-items:center;gap:8px;font-size:12px;line-height:18px}
+.review-doctor-feedback-row img{width:16px;height:16px;object-fit:contain}
+.review-doctor-feedback-label{color:#7b8492;width:78px;flex-shrink:0}
+.review-doctor-feedback-row strong{font-size:12px;font-weight:600;color:#4c5662}
