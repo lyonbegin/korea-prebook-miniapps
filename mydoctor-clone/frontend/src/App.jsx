@@ -1,5 +1,5 @@
 import React,{useEffect,useState}from"react";
-import{ChevronDown,ChevronRight,ChevronLeft,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3,Home,Tags,Hospital,LayoutGrid}from"lucide-react";
+import{ChevronDown,ChevronRight,ChevronLeft,Menu,X,MapPin,BriefcaseMedical,Stethoscope,Phone,Navigation,House,Clock3,Home,Tags,Hospital,LayoutGrid,Search}from"lucide-react";
 import{fetchPublicFacts}from"./lib/originalGateway.js";
 import{parsePublicFacts,routeFromLocation}from"./lib/sourceModel.js";
 import sourceMenu from "./data/original-menu-20261109.json";
