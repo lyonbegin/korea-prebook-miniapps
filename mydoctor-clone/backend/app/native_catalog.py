@@ -36,6 +36,13 @@ NATIVE_RESOURCES = {
     # Hermes 31795 getMydLink: concat(base, mydLinkKey), GET
     "myd-link": ("patient-api/app/myd-link/", ("myd_link_key",)),
     "home-banner": ("patient-api/app/app-banner/", ("expose_place",)),
+    # Direct GET calls found in Android Hermes 6.50.0. Runtime responses
+    # remain unverified and fail closed on 401/403/404/empty JSON.
+    "app-faq": ("patient-api/app/faq/", ()),
+    "app-promotion": ("patient-api/app/promotion/", ()),
+    "doctor-list-banner": ("patient-api/app/doctor-list-banner/", ()),
+    "doctor-sorting-filter": ("patient-api/doctor/sorting-filter/", ()),
+    "pharmacy-list": ("patient-api/pharmacist/pharmacy/", ("offset", "limit")),
     "app-config": ("patient-api/app/configure/", ()),
     "doctor-list": ("patient-api/doctor/doctors/", ("page", "limit", "size", "offset", "sorting", "symptom", "department", "search_filter_keys", "city_ids", "district_ids")),
     # The original getHospitalListV2 uses HOSPITAL_BASE_ROUTE_V2 + '/'.
