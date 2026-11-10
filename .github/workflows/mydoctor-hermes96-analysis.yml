@@ -1,0 +1,35 @@
+name: MyDoctor Hermes 96 UI decompiler tool audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths:
+      - .github/workflows/mydoctor-hermes96-analysis.yml
+permissions:
+  contents: read
+jobs:
+  toolchain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch reproducible HBC 96 disassembler wheel
+        run: |
+          mkdir -p hermes-tools
+          python3 -m pip download --no-deps hermes-dec==0.1.8 -d hermes-tools
+          python3 - <<'PY'
+          import hashlib,pathlib
+          w=next(pathlib.Path('hermes-tools').glob('*.whl'))
+          actual=hashlib.sha256(w.read_bytes()).hexdigest()
+          expected='6be7858a11edc3bc27d37abad65c80a36b51683283eed6331cd5c7d3fb399a4c'
+          print('HERMES_DEC_WHEEL',w,actual)
+          assert actual==expected, 'PyPI official sha256 differs'
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hermes-dec-0.1.8-official-wheel-sha256
+          path: hermes-tools/
+          retention-days: 7
