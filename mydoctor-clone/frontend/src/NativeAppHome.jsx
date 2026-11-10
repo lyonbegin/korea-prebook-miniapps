@@ -4,7 +4,8 @@ import {
   Clock3,Search,HeartPulse,Syringe,FileText,MessageCircle,
   Activity,CalendarDays
 } from "lucide-react";
-import NativeApiCatalog,{normalizeNativeCards} from "./NativeApiCatalog.jsx";
+import NativeApiCatalog from "./NativeApiCatalog.jsx";
+import {nativeHomeMenuItems,nativeHomeBanners} from "./nativeDataAdapters.js";
 import {fetchNativeCatalog} from "./lib/originalGateway.js";
 
 /** Mobile-web implementation of the app-oriented service hierarchy.
@@ -62,26 +63,67 @@ function NavLink({path,go,children,className="",label}) {
   return <a href={path} className={className} onClick={e=>{e.preventDefault();go(path,{label:label||undefined})}}>{children}</a>;
 }
 function NativeHomeBanner({go}){
- const [banner,setBanner]=useState(null);
+ const [banners,setBanners]=useState([]);
  useEffect(()=>{
   const abort=new AbortController();
-  fetchNativeCatalog("home-banner",{},abort.signal).then(result=>{
-    const candidates=normalizeNativeCards(result.data);
-    if(candidates.length)setBanner(candidates[0]);
-  }).catch(()=>{}); // unverified API stays distinct from the static navigation baseline
+  fetchNativeCatalog("home-banner",{},abort.signal)
+   .then(result=>setBanners(nativeHomeBanners(result.data)))
+   .catch(()=>{});
   return ()=>abort.abort();
  },[]);
- const contents=<>
-   {banner?.image&&<img className="native-home-banner-image" alt="" src={banner.image}/>}
-   <span>{banner?.subtitle||"365일 24시간 전국민 누구나"}</span>
-   <strong>{banner?.label||"비대면 진료 받을 수 있어요!"}</strong>
-   {!banner?.image&&<Stethoscope aria-hidden="true" size={38}/>}
+ if(!banners.length)return <NavLink className="native-home-banner" path="/telemedicine/all-department"
+   go={go} label="비대면 진료">
+   <span>365일 24시간 전국민 누구나</span><strong>비대면 진료 받을 수 있어요!</strong>
+   <Stethoscope aria-hidden="true" size={38}/>
+  </NavLink>;
+ return <div className="native-app-banner-track" aria-label="원본 앱 배너">
+   {banners.map((banner,i)=>{
+    const picture=<img alt={"원본 앱 배너 "+(i+1)} src={banner.image} loading={i===0?"eager":"lazy"}/>;
+    return banner.path?
+     <NavLink key={banner.id??i} path={banner.path} go={go} className="native-image-banner" label="배너 상세">{picture}</NavLink>:
+     <div key={banner.id??i} className="native-image-banner" style={banner.color?{backgroundColor:banner.color}:undefined}>
+       {picture}</div>;
+   })}
+  </div>;
+}
+function NativeHomeMenuGrid({go}){
+ const [items,setItems]=useState([]);
+ const [status,setStatus]=useState("loading");
+ const [selected,setSelected]=useState(null);
+ useEffect(()=>{
+  const abort=new AbortController();
+  fetchNativeCatalog("home-menu",{},abort.signal).then(result=>{
+    setItems(nativeHomeMenuItems(result.data));setStatus("loaded");
+  }).catch(()=>setStatus("unavailable"));
+  return ()=>abort.abort();
+ },[]);
+ if(status==="loading")return <p role="status" className="native-app-menu-status">원본 앱 진료 메뉴를 불러오고 있습니다.</p>;
+ if(status==="unavailable")return <p role="status" className="native-app-menu-status">원본 앱 진료 메뉴 데이터가 연결되지 않았습니다.</p>;
+ if(!items.length)return <p role="status" className="native-app-menu-status">원본 API에서 진료 메뉴 항목을 찾지 못했습니다.</p>;
+ return <>
+  <div className="native-symptom-grid" data-native-menu-count={items.length}>
+   {items.map((item,i)=>{
+    const body=<><span className={"native-symptom-icon tone-"+["sky","peach","coral","rose","orange","pink","slate","blue","mint"][i%9]}>
+      {item.image?<img src={item.image} alt="" loading="lazy"/>:<Stethoscope size={24} aria-hidden="true"/>}</span>
+      <span>{item.label}</span></>;
+    return item.path?
+      <NavLink key={item.id??i} path={item.path} go={go} className="native-symptom-item" label={item.label}>{body}</NavLink>:
+      <button type="button" key={item.id??i} className="native-symptom-item native-symptom-button" onClick={()=>setSelected(item)} aria-label={item.label+" 원본 메뉴 상세"}>{body}</button>;
+   })}
+  </div>
+  {selected&&<div className="native-data-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}>
+    <section className="native-data-dialog" role="dialog" aria-modal="true" aria-label={selected.label+" 원본 메뉴 정보"}>
+      <div className="native-data-dialog-head"><h2>{selected.label}</h2><button type="button" aria-label="닫기" onClick={()=>setSelected(null)}>닫기</button></div>
+      {selected.subtitle&&<p>{selected.subtitle}</p>}
+      {selected.image&&<img src={selected.image} alt="" className="native-data-detail-image"/>}
+      <div className="native-menu-facts">
+       {selected.raw?.symptom_ids&&<p>증상 코드: {String(selected.raw.symptom_ids)}</p>}
+       {selected.raw?.department_ids&&<p>진료과 코드: {String(selected.raw.department_ids)}</p>}
+      </div>
+      <p className="native-data-note">원본 앱의 메뉴 데이터입니다. 해당 메뉴의 의사 검색 조건은 추가 분석 중입니다.</p>
+    </section>
+   </div>}
  </>;
- const className="native-home-banner"+(banner?.image?" has-native-image":"");
- // Never redirect an observed native banner to an unrelated fallback destination.
- if(banner&&!banner.path)return <div className={className} data-native-link-unverified="true">{contents}</div>;
- return <NavLink className={className} path={banner?.path||"/telemedicine/all-department"} go={go}
-   label={banner?.label||"비대면 진료"}>{contents}</NavLink>;
 }
 export default function NativeAppHome({data,go}) {
   const [homeMode,setHomeMode]=useState("telemedicine");
@@ -99,18 +141,18 @@ export default function NativeAppHome({data,go}) {
             className={homeMode==="booking"?"selected":""}
             onClick={()=>setHomeMode("booking")}>최저가 병원 예약</button>
         </div>
-        <div className="native-symptom-grid">
+        {homeMode==="telemedicine"?<NativeHomeMenuGrid go={go}/>:
+         <div className="native-symptom-grid">
           {appCards.map(({label,path,icon:Icon,tone})=>
            <NavLink key={path} path={path} go={go} className="native-symptom-item" label={label}>
             <span className={"native-symptom-icon tone-"+tone}><Icon aria-hidden="true" size={28} strokeWidth={1.8}/></span>
             <span>{label}</span>
            </NavLink>)}
-        </div>
+         </div>}
         <NavLink className="native-app-all" path={homeMode==="telemedicine"?"/telemedicine/all-department":"/medical-cost"}
             go={go} label="전체 보기">전체 보기 <ChevronRight size={16}/></NavLink>
       </div>
     </section>
-    <NativeApiCatalog resource="home-menu" title="원본 앱에서 불러온 홈 메뉴" go={go}/>
     <section className="native-home-block" aria-label="서비스 바로가기">
       <div className="native-heading"><h2>빠른 서비스</h2></div>
       <div className="native-quick-grid">
