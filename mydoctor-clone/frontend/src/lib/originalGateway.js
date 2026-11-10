@@ -27,7 +27,8 @@ export async function fetchPublicFacts(route,signal){
  * Native requests go through our allowlisted, DB-first Railway API.
  * This never forwards application credentials, cookies or patient data.
  */
-const NATIVE_RESOURCES=new Set(["home-menu","home-banner","app-config","doctor-list",
+const NATIVE_RESOURCES=new Set(["home-menu","myd-link","home-banner","app-faq","app-promotion",
+ "doctor-list-banner","doctor-sorting-filter","pharmacy-list","app-config","doctor-list",
  "hospital-list","pharmacy-nearby","lowest-price-categories","lowest-price","health-info"]);
 export async function fetchNativeCatalog(resource,parameters={},signal){
  if(!NATIVE_RESOURCES.has(resource))throw Error("원본 앱 자원 목록에 없습니다: "+resource);
