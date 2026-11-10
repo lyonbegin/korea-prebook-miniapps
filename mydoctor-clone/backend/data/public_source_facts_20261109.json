@@ -4564,7 +4564,12 @@
         ]
       },
       "samples_source_url": "https://my-doctor.io/hospital/10055/reviews",
-      "samples_observed_at": "2026-11-10"
+      "samples_observed_at": "2026-11-10",
+      "tag_icons": {
+        "시간 준수": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9yZXZpZXcvcXVlc3Rpb25faWNvbi85MmQ3MGZkNC02MzBhLTQxMDUtODJhYy1kMzZjMDM0NGE3Nzgud2VicA.webp",
+        "친절한 진료": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9yZXZpZXcvcXVlc3Rpb25faWNvbi80NWU3MTI0Ny1hZTdjLTQ5YTAtOTJkNy0wNmM4YzAwY2FlMDgucG5n.webp",
+        "자세한 설명": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9yZXZpZXcvcXVlc3Rpb25faWNvbi80MGQ3NzY4Ny03MGM3LTQ0NTItYjQ4Ni05YjkwMzJkNTM0Y2EucG5n.webp"
+      }
     }
   },
   {
