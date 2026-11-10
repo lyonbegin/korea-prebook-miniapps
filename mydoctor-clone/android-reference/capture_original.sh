@@ -57,25 +57,29 @@ adb install-multiple -r "${APKS[@]}" | tee "$OUT/install_result.txt"
 adb shell pm path com.merakiplace.mydoctor | tee -a "$OUT/install_result.txt"
 adb shell pm clear com.merakiplace.mydoctor || :
 adb shell am force-stop com.merakiplace.mydoctor || :
+# Collect ALL startup logcat from before launch. Previous tail-of-3200 cut off
+# the actual crash due excessive fresh Google service log volume.
+adb logcat -G 16M || :
 adb logcat -c || :
-# aapt confirmed launchable-activity is com.userproduct.MainActivity.
-adb shell am start -W -n 'com.merakiplace.mydoctor/com.userproduct.MainActivity' \
+adb shell am start -n 'com.merakiplace.mydoctor/com.userproduct.MainActivity' \
    > "$OUT/launch_result.txt" 2>&1 || :
-sleep 12
+adb exec-out screencap -p > "$OUT/android_launch_early_not_reference.png" || :
+sleep 2
+adb exec-out screencap -p > "$OUT/android_launch_after2s_not_reference.png" || :
+sleep 10
 adb shell dumpsys activity activities | grep -m 9 -E '(mResumedActivity|topResumedActivity|merakiplace|MainActivity)' \
-   >> "$OUT/launch_result.txt" || :
-adb logcat -d -v threadtime -t 3200 > "$OUT/launch_logcat_full.txt" || :
-grep -Ei '(AndroidRuntime|FATAL EXCEPTION|com[.]merakiplace|com[.]userproduct|Fatal signal|SoLoader|UnsatisfiedLinkError|native.bridge|ndk.translation|CRASH|Caused by|libhermes|linker)' \
-  "$OUT/launch_logcat_full.txt" | tail -n 240 > "$OUT/crash_diagnostics.txt" || :
-if ! adb shell pidof com.merakiplace.mydoctor >/dev/null; then
-  echo 'APP_LAUNCH_FAILED: original app process exited; NO native UI pixel baseline' | tee -a "$OUT/launch_result.txt"
+  >> "$OUT/launch_result.txt" || :
+adb logcat -d -v threadtime > "$OUT/launch_logcat_full.txt" || :
+grep -Ei '(AndroidRuntime|FATAL EXCEPTION|com[.]merakiplace|com[.]userproduct|Fatal signal|SoLoader|UnsatisfiedLinkError|native.bridge|ndk.translation|CRASH|Caused by|libhermes|linker|ReactNative|ReactHost|ReactInstance)' \
+  "$OUT/launch_logcat_full.txt" | tail -n 300 > "$OUT/crash_diagnostics.txt" || :
+TOP=$(adb shell dumpsys activity activities | grep 'topResumedActivity=' | tail -1 || :)
+echo "VERIFIED_TOP_ACTIVITY=$TOP" >> "$OUT/launch_result.txt"
+if ! adb shell pidof com.merakiplace.mydoctor >/dev/null || [[ "$TOP" != *com.merakiplace.mydoctor* ]]; then
+  echo 'APP_LAUNCH_FAILED: process exited or original app not foreground; no native UI reference' | tee -a "$OUT/launch_result.txt"
   adb exec-out screencap -p > "$OUT/android_launch_failed_not_a_reference.png" || :
   exit 8
 fi
-if ! grep -q 'com.merakiplace.mydoctor' "$OUT/launch_result.txt"; then
-  echo 'APP_FOREGROUND_UNVERIFIED: refusing to call launcher screen original UI' | tee -a "$OUT/launch_result.txt"
-  exit 8
-fi
+
 # Save real emulator frames, full Android UI hierarchy, and visible screen text.
 capture(){
   local label="$1"
