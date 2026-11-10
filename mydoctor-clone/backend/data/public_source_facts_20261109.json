@@ -3095,7 +3095,81 @@
         }
       ],
       "source_url": "https://my-doctor.io/telemedicine/doctor/탑연합의원-박광규-100/reviews",
-      "provenance": "original_public_aggregate_counts_http200_20261110"
+      "provenance": "original_public_aggregate_counts_http200_20261110",
+      "public_review_samples": {
+        "비대면 진료 후기": [
+          {
+            "condition": "피부 질환 처방",
+            "reviewer": "김**(여성 50대)",
+            "date": "26.10.24",
+            "rating": "다시 진료받고 싶어요",
+            "excerpt": "친절히 상담해주셔서감사드려요",
+            "feedback": [
+              {
+                "label": "시간 준수",
+                "value": "예약시간을 잘 지켜요"
+              },
+              {
+                "label": "친절도",
+                "value": "친절해요"
+              },
+              {
+                "label": "자세한 설명",
+                "value": "자세했어요"
+              }
+            ]
+          },
+          {
+            "condition": "안구 질환 처방",
+            "reviewer": "이**(남성 40대)",
+            "date": "26.10.16",
+            "rating": "다시 진료받고 싶어요",
+            "excerpt": "선생님 항상 감사드립니다",
+            "feedback": [
+              {
+                "label": "시간 준수",
+                "value": "예약시간을 잘 지켜요"
+              },
+              {
+                "label": "친절도",
+                "value": "친절해요"
+              },
+              {
+                "label": "자세한 설명",
+                "value": "자세했어요"
+              }
+            ]
+          },
+          {
+            "condition": "호흡기 질환 처방",
+            "reviewer": "임**(남성 30대)",
+            "date": "26.10.6",
+            "rating": "다시 진료받고 싶어요",
+            "excerpt": "이때까지 받았던 비대면 진료 의사선생님 중 가장 친절하셨어요!",
+            "feedback": [
+              {
+                "label": "시간 준수",
+                "value": "예약시간을 잘 지켜요"
+              },
+              {
+                "label": "친절도",
+                "value": "친절해요"
+              },
+              {
+                "label": "자세한 설명",
+                "value": "자세했어요"
+              }
+            ]
+          }
+        ]
+      },
+      "tag_icons": {
+        "시간 준수": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9yZXZpZXcvcXVlc3Rpb25faWNvbi85MmQ3MGZkNC02MzBhLTQxMDUtODJhYy1kMzZjMDM0NGE3Nzgud2VicA.webp",
+        "친절도": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9yZXZpZXcvcXVlc3Rpb25faWNvbi80NWU3MTI0Ny1hZTdjLTQ5YTAtOTJkNy0wNmM4YzAwY2FlMDgucG5n.webp",
+        "자세한 설명": "https://img.my-doctor.io/_/czM6Ly9teWRvY3Rvci1wdWJsaWMvcHJvZC9yZXZpZXcvcXVlc3Rpb25faWNvbi80MGQ3NzY4Ny03MGM3LTQ0NTItYjQ4Ni05YjkwMzJkNTM0Y2EucG5n.webp"
+      },
+      "samples_source_url": "https://my-doctor.io/telemedicine/doctor/탑연합의원-박광규-100/reviews",
+      "samples_observed_at": "2026-11-10"
     }
   },
   {
