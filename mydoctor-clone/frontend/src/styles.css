@@ -976,3 +976,104 @@
  max-height:none!important;object-fit:contain!important;
  object-position:center;aspect-ratio:auto!important;
 }
+
+
+/* Hermes v96 direct reconstruction (signed native 6.50.0 bundle)
+   HomeScreen #45594: ScrollView gap12 paddingTop12.
+   HomeNavigationSection #45992-45993: horizontal margin12 row gap12;
+   each white card borderRadius16 padding12 gap12, center alignment.
+   MedicalAppointmentSection #45648-45649: horizontal margin12,
+   paddingHorizontal12 paddingVertical12, divider 1px/8px vertical.
+   HOME_SCREEN_HORIZONTAL_MARGIN = 12, function #45633. */
+.site-app-native .hermes-v650-home {
+  background:#f3f4f7;
+  width:100%;max-width:100%;min-width:0;overflow:hidden;
+  display:flex;flex-direction:column;gap:12px;
+}
+.site-app-native .hermes-v650-home .native-home-top{
+  background:transparent;padding:12px 0 0;
+  display:flex;flex-direction:column;gap:12px;
+  overflow:hidden;min-width:0;
+}
+.site-app-native .hermes-home-navigation{
+  display:flex;flex-direction:row;gap:12px;
+  margin:0 12px;min-width:0;
+}
+.site-app-native .hermes-home-nav-card {
+  min-width:0;flex:1;min-height:126px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:#fff;color:#25282e;
+  padding:12px;border-radius:16px;
+  border:0;box-shadow:none;
+  text-align:center;word-break:keep-all;
+  font-family:Pretendard,"Pretendard Variable",system-ui,sans-serif;
+}
+.site-app-native .hermes-home-nav-card svg{flex-shrink:0;color:#3973ee}
+.site-app-native .hermes-home-nav-card strong{
+  font-size:16px;line-height:1.35;font-weight:700;
+}
+.site-app-native .hermes-v650-home .hermes-medical-appointment{
+  margin:0 12px;
+  border-radius:16px;
+  padding:12px;
+  background:#fff;box-shadow:none;
+  isolation:isolate;
+}
+.site-app-native .hermes-v650-home .hermes-appointment-headings{
+  display:grid;grid-template-columns:1fr 1fr;
+  background:transparent;padding:0;
+  border-radius:0;height:auto;min-height:48px;gap:0;
+  border-bottom:1px solid #e9ecef;
+}
+.site-app-native .hermes-v650-home .hermes-appointment-headings button{
+  border:0;border-radius:0;box-shadow:none;
+  color:#4a4f58;background:transparent;
+  font-weight:700;font-size:16px;line-height:1.35;
+  padding:10px 6px;text-align:center;
+}
+.site-app-native .hermes-v650-home .hermes-appointment-headings button.selected{
+  color:#212329;background:transparent;
+  box-shadow:inset 0 -2px 0 #212329;
+}
+.site-app-native .hermes-v650-home .native-symptom-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:10px;row-gap:20px;
+  padding:16px 0;
+}
+.site-app-native .hermes-v650-home .native-symptom-item{
+  min-height:72px;gap:4px;
+  font-size:13px;line-height:1.4;font-weight:500;
+}
+.site-app-native .hermes-v650-home .native-symptom-icon{
+  width:48px;height:48px;
+}
+.site-app-native .hermes-v650-home .hermes-all-symptoms{
+  min-height:42px;border-top:1px solid #eceff2;
+  font-size:13px;font-weight:650;
+}
+.site-app-native .hermes-v650-home .native-app-banner-track{
+  margin:0 12px 0;width:calc(100% - 24px);max-width:calc(100% - 24px);
+  min-height:0;padding:0;
+}
+.site-app-native .hermes-v650-home .native-home-banner{
+  margin:0 12px;min-height:110px;border-radius:16px;
+}
+.site-app-native .hermes-v650-home .hermes-native-legal{
+  padding:20px 12px 28px;
+  color:#9299a6;background:#f3f4f7;
+  font-size:12px;line-height:1.65;
+}
+.site-app-native .hermes-v650-home .hermes-native-legal>div{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;
+}
+.site-app-native .hermes-v650-home .hermes-native-legal strong{color:#626a76;font-weight:600}
+.site-app-native .hermes-v650-home .hermes-native-legal p{margin:8px 0 0}
+.site-app-native .hermes-v650-home .hermes-nonnative-links{
+  background:#fff;padding:12px 0;border-top:1px solid #e6e8ed;
+}
+.site-app-native .hermes-v650-home .hermes-nonnative-links>summary{
+  padding:10px 18px;color:#747e8b;font-size:12px;cursor:pointer;
+}
+.site-app-native .hermes-v650-home .native-source-paths{
+  margin:0;background:#fff;
+}
