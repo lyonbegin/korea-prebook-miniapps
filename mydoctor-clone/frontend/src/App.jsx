@@ -308,7 +308,9 @@ export default function App(){
  const routeName=(history.state?.sourceLabel||sourceMenu.roots.flatMap(group=>group.groups.flatMap(g=>g.links))
    .find(item=>item.href===route)?.label)||(()=>{try{return decodeURIComponent(route.split("?")[0].split("/").filter(Boolean).pop()||"홈").replace(/-/g," ")}catch{return"선택한 항목"}})();
  const originalTarget=ORIGINAL+route;
- const navParent=route.startsWith("/medical-cost")?"/medical-cost":
+ const navParent=["/","/medical-cost","/telemedicine","/telemedicine/all-department",
+  "/hospital","/medicine","/pharmacy","/healthLab","/qna"].includes(route)?"/":
+   route.startsWith("/medical-cost")?"/medical-cost":
    route.startsWith("/telemedicine")?"/telemedicine/all-department":
    route.startsWith("/medicine")?"/medicine":
    route.startsWith("/pharmacy")?"/pharmacy":
