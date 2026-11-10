@@ -330,6 +330,10 @@ export default function App(){
    route.startsWith("/qna")||route.startsWith("/healthLab")?"/healthLab":"/";
 
  const companyPage=isCompanyRoute(route),distinctPage=isOriginalDistinctRoute(route),childEmergency=decodeURIComponent(route.split("?")[0])==="/map/baby119";
+ // App-native core screens never wait for the legacy my-doctor.io HTML gateway.
+ const nativeRoot=home||route==="/hospital"||route==="/medical-cost"||
+   route==="/telemedicine/all-department"||route==="/telemedicine";
+ const appData=s.data||{links:[],tables:[],sections:[],paragraphs:[]};
  return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
  {home?<button className="brand" onClick={()=>{setMenu(false);go("/")}} aria-label="홈"><span className="native-brand">나만의닥터</span></button>:
  <button className="native-app-back" type="button" onClick={()=>go(navParent)}
@@ -337,8 +341,20 @@ export default function App(){
  <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴" aria-expanded={menu}>{menu?<X size={24}/>:<Menu size={24}/>}</button></div>
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();setMenu(false);go(item.href,{label:item.label})}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
  </header>}{!home&&!companyPage&&<Breadcrumb route={route} go={go}/>}
- <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>{s.loading?<div className="source-route-loading" role="status"><div className="source-route-title">{routeName}</div><p>선택한 원본 데이터를 불러오고 있습니다.</p><a href={originalTarget} target="_blank" rel="noreferrer">원본 페이지 바로 열기</a></div>:s.error?<div role="alert" className="error-panel source-route-error"><h1>{routeName}</h1><h2>원본 데이터 조회에 실패했습니다.</h2><p>{s.error}</p><p>저장된 데이터가 없는 경우 원본 사이트의 공개 정보를 확인하실 수 있습니다.</p><div className="source-route-actions"><a href={originalTarget} target="_blank" rel="noreferrer">원본 페이지 열기</a><button onClick={s.refresh}>데이터 다시 불러오기</button></div></div>
- :s.data?(home?<NativeAppHome data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:(route==="/telemedicine/all-department"||route==="/telemedicine")?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage key={route} data={s.data} go={go} route={route}/>):null}
+ <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>
+  {nativeRoot?(home?<NativeAppHome data={appData} go={go}/>:
+     route==="/hospital"?<HospitalScreen data={appData} go={go}/>:
+     route==="/medical-cost"?<CostScreen data={appData} go={go}/>:
+     <DoctorScreen data={appData} go={go}/>):
+    s.loading?<div className="source-route-loading" role="status">
+       <div className="source-route-title">{routeName}</div>
+       <p>선택한 원본 데이터를 불러오고 있습니다.</p></div>:
+    s.error?<div role="alert" className="error-panel source-route-error">
+       <h1>{routeName}</h1><h2>원본 데이터 조회에 실패했습니다.</h2>
+       <p>{s.error}</p><div className="source-route-actions">
+       <button onClick={s.refresh}>데이터 다시 불러오기</button></div></div>:
+    s.data?(hospitalDetail?<HospitalDetail data={s.data} go={go}/>:
+      <VerifiedSourcePage key={route} data={s.data} go={go} route={route}/>):null}
  </main>{!companyPage&&<AppTabBar route={route} go={go} onMenu={()=>setMenu(!menu)} menuOpen={menu}/>}
  </div>;
 }
