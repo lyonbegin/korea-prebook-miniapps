@@ -421,3 +421,13 @@
    are 10px below excerpt and the second review begins 10px lower. */
 .original-review-hospital .review-channel-with-cards{padding-top:20px}
 .original-review-hospital .review-source-tags{margin-top:13px}
+
+
+/* Source text-md-text-secondary measured in verified original screenshots:
+   #393f46 (57,63,70), previously clone #5d6571 (93,101,113).
+   The >20 RGB delta falsely marked every pharmacy schedule glyph changed. */
+.original-pharmacy-heading p,.original-pharmacy-cardline{color:#393f46}
+.original-pharmacy-cardline .pharmacy-status-label{color:#393f46}
+.original-review .review-facets button:not(.active){color:#393f46}
+.original-review .review-source-excerpt{color:#393f46!important}
+.original-review .review-source-tags span{color:#393f46}
