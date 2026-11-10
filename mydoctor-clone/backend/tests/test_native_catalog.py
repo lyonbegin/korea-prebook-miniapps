@@ -125,8 +125,22 @@ class NativeCatalogTest(unittest.TestCase):
         client=FakeClient(FakeHTTPResponse(status=401))
         with patch("app.native_catalog.httpx.AsyncClient", return_value=client):
             result=asyncio.run(get_native_public_catalog(req(pool),tasks,"doctor-list"))
-        self.assertEqual(result.status_code,503)
-        self.assertEqual(json.loads(result.body)["origin_http_status"],401)
+        self.assertEqual(result.status_code,502)
+        body=json.loads(result.body)
+        self.assertEqual(body["origin_http_status"],401)
+        self.assertEqual(body["error"],"NATIVE_API_AUTHENTICATION_REQUIRED")
+        self.assertFalse(tasks.tasks)
+
+    def test_native_404_is_real_path_mismatch_not_fake_503(self):
+        pool=FakePool()
+        tasks=BackgroundTasks()
+        client=FakeClient(FakeHTTPResponse(status=404,headers={"content-type":"text/html"}))
+        with patch("app.native_catalog.httpx.AsyncClient",return_value=client):
+            result=asyncio.run(get_native_public_catalog(req(pool),tasks,"lowest-price"))
+        self.assertEqual(result.status_code,502)
+        body=json.loads(result.body)
+        self.assertEqual(body["origin_http_status"],404)
+        self.assertEqual(body["error"],"NATIVE_API_ENDPOINT_NOT_FOUND")
         self.assertFalse(tasks.tasks)
 
     def test_no_store_original_never_cached(self):
