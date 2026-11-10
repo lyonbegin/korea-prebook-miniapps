@@ -40,6 +40,12 @@ jobs:
           done
           cat /tmp/native-app-vite.log
           exit 1
+      - name: Fail fast if native JSON proxy returns 404 or native SPA route is intercepted
+        run: |
+          curl -fsS -H 'Accept: application/json' http://127.0.0.1:5173/native/catalog/inventory > /tmp/native-inventory.json
+          python3 -c 'import json; d=json.load(open("/tmp/native-inventory.json")); assert len(d["resources"])>=10, d; print("PROXY JSON VERIFIED",len(d["resources"]))'
+          curl -fsS -H 'Accept: text/html' http://127.0.0.1:5173/native/myd-link/symptom-acneOralMedication >/tmp/native-link.html
+          grep -q '<div id="root"></div>' /tmp/native-link.html || { echo 'NATIVE LINK SPA ROUTE BROKEN'; exit 1; }
       - name: Tap source-backed app routes and record failures
         working-directory: mydoctor-clone/frontend
         env:
