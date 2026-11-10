@@ -112,6 +112,7 @@ function DetailPanel({item,onClose}){
 export default function NativeApiCatalog({resource,title,go,compact=false,parameters={}}){
  const [response,setResponse]=useState(null);
  const [error,setError]=useState("");
+ const [retry,setRetry]=useState(0);
  const [detail,setDetail]=useState(null);
  const paramsKey=JSON.stringify(parameters||{});
  useEffect(()=>{
@@ -121,7 +122,7 @@ export default function NativeApiCatalog({resource,title,go,compact=false,parame
    if(active)setResponse(v);
   }).catch(e=>{if(active&&!controller.signal.aborted)setError(e.message)});
   return ()=>{active=false;controller.abort()};
- },[resource,paramsKey]);
+ },[resource,paramsKey,retry]);
  const items=useMemo(()=>resource==="doctor-list"?
    nativeDoctorItems(response?.data):normalizeNativeCards(response?.data),[response,resource]);
  return <section className={"native-api-section"+(compact?" compact":"")}
@@ -148,9 +149,12 @@ export default function NativeApiCatalog({resource,title,go,compact=false,parame
   {response&&!items.length&&<p className="native-api-no-items" role="status">
    원본 API에서 JSON을 받았으나 이 화면에 연결할 목록 필드를 아직 확인하지 못했습니다.
   </p>}
-  {error&&<details className="native-api-error"><summary>원본 앱 데이터 연결 확인</summary>
-   <p>{error}</p><p>기존 공개 웹 데이터와 원본 앱 API의 응답은 구분하여 표시합니다.</p>
-  </details>}
+  {error&&<div role="alert" className="native-api-visible-error">
+    <strong>{/AUTHENTICATION_REQUIRED|ACCESS_DENIED/.test(error)?
+      "원본 앱 로그인 후 조회 가능한 데이터입니다.":"원본 앱 데이터 연결에 실패했습니다."}</strong>
+    <p>{error}</p>
+    <button type="button" onClick={()=>setRetry(n=>n+1)}>다시 조회</button>
+   </div>}
   {detail&&<DetailPanel item={detail} onClose={()=>setDetail(null)}/>}
  </section>;
 }
