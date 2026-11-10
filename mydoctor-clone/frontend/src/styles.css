@@ -282,3 +282,24 @@
 .original-pharmacy-cardline svg{width:16px;height:16px;margin-top:1px;flex-shrink:0}
 .original-pharmacy-cardline svg.pharmacy-time-icon,
 .original-pharmacy-cardline:has(a[href^="tel:"]) svg{color:#2f6eff}
+
+
+/* Review cards observed on the public original hospital review page,
+   sourced from versioned masked aggregate / sample facts in PostgreSQL. */
+.review-channel-with-cards{padding:22px 0 0}
+.review-channel-with-cards>h2,.review-channel-with-cards>p{padding:0 20px}
+.review-card-list{margin:0;padding:0;list-style:none}
+.review-source-card{display:flex;flex-direction:column;gap:8px;border-bottom:1px solid #e8eaed;padding:20px}
+.review-source-doctor{display:flex;gap:8px;align-items:center;color:#292f38;font-size:14px}
+.review-source-doctor img,.review-source-doctor>span:first-child:not(:last-child){width:24px;height:24px;border-radius:50%;object-fit:cover}
+.review-source-doctor>span:first-child:not(:last-child){display:flex;align-items:center;justify-content:center;color:#2f6eff;background:#edf4ff}
+.review-source-positive{align-self:flex-start;padding:5px 8px;background:#ecf2ff;color:#2f6eff;
+ border-radius:4px;font-size:12px;font-weight:600;line-height:15px}
+.review-source-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.review-source-meta strong{font-size:14px;font-weight:500;color:#353c46}
+.review-source-meta span{color:#8993a0;border-left:1px solid #d8dee7;padding-left:8px}
+.review-source-excerpt{margin:0!important;padding:0!important;font-size:16px!important;
+ line-height:24px;color:#59616d!important}
+.review-source-tags{display:flex;gap:7px;flex-wrap:wrap}
+.review-source-tags span{background:#f2f4f6;color:#5b6470;font-size:12px;line-height:16px;
+ border-radius:4px;padding:5px 8px}
