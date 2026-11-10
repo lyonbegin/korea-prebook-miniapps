@@ -363,3 +363,8 @@
 .original-pharmacy-cardline .pharmacy-status-label{color:#626b75;font-weight:600}
 .original-pharmacy-cardline:has(.pharmacy-time-icon){gap:5px}
 .original-pharmacy-cardline>svg:not(.pharmacy-time-icon){stroke-width:2.7}
+
+
+/* Measured original hospital directory at 390px: larger department labels and ~35px line pitch. */
+.md-dept-list div{column-gap:17px;row-gap:10px}
+.md-dept-list a{font-size:14px;line-height:25px;letter-spacing:-.1px}
