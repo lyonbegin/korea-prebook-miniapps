@@ -69,10 +69,10 @@ function PriceCompare({data,go,route}) {
  const [region,setRegion]=useState("전국"),[type,setType]=useState(isAcne?"여드름약":"마운자로/젭바운드 등"),[dose,setDose]=useState(isAcne?"이소트레티노인":"2.5mg"),[amount,setAmount]=useState(isAcne?"1개월":"1팩"),[tab,setTab]=useState("처방 병원");
  const clinic=data.tables?.[0]?.rows||[],pharma=data.tables?.[1]?.rows||[];
  const price=(xs,i,j)=>xs[i]?.[j]||"";
- const first=price(pharma,0,1),avg=price(pharma,1,1),consult=price(clinic,1,1);
+ const first=price(pharma,0,1),avg=price(pharma,1,1),consult=price(clinic,1,1),consultMin=price(clinic,0,1);
  const count=isAcne?"2,390":"2,567";
- const summary=isAcne?"나만의닥터에서 수집한 전국 여드름약(이소티논, 니메겐 등 이소트레티노인) 1개월 가격("+count+"곳 기준, 2026-11-09)은 약국 약제비 평균 "+avg+", 최저 "+first+"이며, 병원 처방비 평균 "+consult+"입니다.":
- "나만의닥터에서 수집한 전국 마운자로 1팩 가격("+count+"곳 기준, 2026-11-09)은 약국 약제비 평균 "+avg+", 최저 "+first+"이며, 병원 처방비 평균 "+consult+"입니다.";
+ const summary=isAcne?"나만의닥터에서 수집한 전국 여드름약(이소티논, 니메겐 등 이소트레티노인) 1개월 가격("+count+"곳 기준, 2026-11-09)은 약국 약제비 평균 "+avg+", 최저 "+first+"이며, 병원 처방비 평균 "+consult+", 최저 "+consultMin+"입니다.":
+ "나만의닥터에서 수집한 전국 마운자로 1팩 가격("+count+"곳 기준, 2026-11-09)은 약국 약제비 평균 "+avg+", 최저 "+first+"이며, 병원 처방비 평균 "+consult+", 최저 "+consultMin+"입니다.";
  const destinations=data.links?.filter(x=>x.path.includes("/hospital/detail"))||[];
  const mapLink=data.links?.find(x=>x.path.startsWith("/map/"))?.path;
  return <div className="original-price-compare" data-source-view="price-comparison">
@@ -135,6 +135,7 @@ function HealthArticle({data,go}) {
   <section id="article-symptoms"><h2>만성 소화기 질환의 초기 증상</h2><img src="https://d15q6xcjx71x0s.cloudfront.net/_ccec3f8536.jpg" alt="복통"/><p>만성 소화기 질환은 다양한 초기 증상을 나타낼 수 있으며, 이를 조기에 인지하는 것이 중요합니다.</p></section>
   <section id="article-care"><h2>만성 소화기 질환 관리 방법</h2><p>만성 소화기 질환은 조기 진단과 관리가 중요하며, 초기 증상을 인지하고 적절한 대처를 통해 소화기 건강을 유지할 수 있습니다.</p></section>
   <Archive data={data} go={go}/>
+  <div className="original-health-fixed-action"><span>지금 비대면 진료로 약 처방 받을 수 있어요!</span>{data.links?.find(x=>x.path.startsWith("/telemedicine/"))? <Anchor path={data.links.find(x=>x.path.startsWith("/telemedicine/")).path} go={go}>기다리지 않고 전화로 진료 받기</Anchor>:null}</div>
  </article>;
 }
 function QnaIndex({data,go}) {
@@ -180,7 +181,7 @@ function CompanyPage({data,go}) {
  const paths=["https://abr.ge/zskg4p",...data.links.map(x=>x.path)];
  const labels=[["앱 설치하고 혜택 받기","신규 가입 시 3,000원 적립금 즉시 지급"],["비대면 진료 바로가기","24시간 전화 한 통으로 진료부터 약 수령까지"],["우리 동네 병원 찾기","야간·주말 진료 병원, 전문의 병원 검색"],["위고비 최저가 병원·약국","다이어트 주사제 가격을 한눈에 비교"],["건강 꿀팁 · 질환백과","전문의가 검수한 신뢰할 수 있는 건강 정보"],["매일 돈 버는 건강 퀴즈","출석하고 적립금도 받아가세요"]];
  return <div className="original-company-landing" data-source-view="company">
-  <div className="original-company-identity"><img src={ORIGINAL+"/logo192.png"} alt="나만의닥터 로고"/><h1>{data.title}</h1><strong>@my_doctor_official</strong><p>대한민국 1위 비대면 진료 앱<br/>안전한 진료부터 최저가 병원/약국까지</p></div>
+  <div className="original-company-identity"><img src={ORIGINAL+"/_next/image?url=%2Flogo192.png&w=256&q=75"} alt="나만의닥터 로고"/><h1>{data.title}</h1><strong>@my_doctor_official</strong><p>대한민국 1위 비대면 진료 앱<br/>안전한 진료부터 최저가 병원/약국까지</p></div>
   <div className="original-company-cards">{labels.map(([title,desc],i)=>{
     const p=paths[i]||"/",external=p.startsWith("https://");
     return external?<a href={p} target="_blank" rel="noreferrer" className={i===0?"primary":""} key={i}><span>{icons[i]}</span><div><b>{title}</b><small>{desc}</small></div><ChevronRight size={17}/></a>:
