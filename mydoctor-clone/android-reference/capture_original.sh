@@ -38,7 +38,15 @@ for p in "${APKS[@]}"; do
 done
 if [[ -z "$BASE" ]]; then BASE="${APKS[0]}"; fi
 # apk metadata and signature MUST be source-derived (not fabricated).
-AAPT="$(find "${ANDROID_HOME:-/opt/android-sdk}" -path '*/build-tools/*/aapt' -type f | sort -V | tail -1)"
+AAPT="$(python3 - <<'PY'
+from pathlib import Path
+import os
+root=Path(os.environ.get("ANDROID_HOME","/opt/android-sdk"))/"build-tools"
+files=list(root.glob("*/aapt"))
+files.sort(key=lambda f:tuple(int(x) for x in f.parent.name.replace("-","\.").split(".") if x.isdigit()))
+print(files[-1] if files else "")
+PY
+)"
 if [ -n "$AAPT" ]; then
   "$AAPT" dump badging "$BASE" > "$OUT/package_badging_all.txt"
   head -n 6 "$OUT/package_badging_all.txt" > "$OUT/package_info.txt"
@@ -100,7 +108,7 @@ fi
 capture(){
   local label="$1"
   adb exec-out screencap -p > "$OUT/android_${label}.png"
-  timeout 28 adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+  adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
   adb pull /sdcard/window.xml "$OUT/android_${label}.xml" >/dev/null 2>&1 || :
   echo "CAPTURED_ANDROID:$label $(file "$OUT/android_${label}.png")"
 }
@@ -140,7 +148,7 @@ for spec in 'medical-cost:최저가|가격 비교|가격비교|최저가 병원|
   adb shell am force-stop com.merakiplace.mydoctor || :
   adb shell monkey -p com.merakiplace.mydoctor -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1 || :
   sleep 6
-  timeout 25 adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+  adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
   adb pull /sdcard/window.xml "$OUT/android_home.xml" >/dev/null 2>&1 || :
   if found=$(find_tap "$label" "$names"); then
     x="$(echo "$found" | cut -d'|' -f1)"
