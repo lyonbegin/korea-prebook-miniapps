@@ -1,5 +1,5 @@
 import React,{useMemo,useState}from "react";
-import{Search,ChevronRight,MapPin}from "lucide-react";
+import{Search,ChevronRight,MapPin,Clock3,CalendarDays,Phone,CheckCircle2}from "lucide-react";
 import ReviewsSummary from "./ReviewsSummary.jsx";
 
 /** Reusable original-fact views, grouped by distinct navigation/interaction type.
@@ -94,19 +94,41 @@ function FAQIndexPage({data,go}){
 }
 
 
+
+const PHARMACY_WEEK=["일","월","화","수","목","금","토"];
+function isPharmacyOpenNow(hours,day,minute){
+ const findRange=dayText=>{
+   const row=hours?.match(new RegExp("\\("+dayText+"\\)\\s*([^,]+)"))?.[1]||"";
+   const m=row.match(/(\d{1,2}):(\d{2})\s*~\s*(익일\s*)?(\d{1,2}):(\d{2})/);
+   if(!m)return null;
+   const start=Number(m[1])*60+Number(m[2]),until=Number(m[4])*60+Number(m[5]);
+   return [start,until+((m[3]||until<start)?1440:0)];
+ };
+ const current=findRange(day);
+ if(current&&minute>=current[0]&&minute<=current[1])return true;
+ const prev=PHARMACY_WEEK[(PHARMACY_WEEK.indexOf(day)+6)%7];
+ const yesterday=findRange(prev);
+ return !!(yesterday&&yesterday[1]>1440&&minute+1440<=yesterday[1]);
+}
+
 const KOREAN_REGIONS=new Set(["전국","강원","경기","경남","경북","대구","대전","부산","서울","세종","울산","인천","전남광주","전북","제주","충남","충북"]);
 /** The original has opening-hour, weekly schedule, address and telephone cards. */
 function NightPharmacyPage({data,go}){
  const [regionOpen,setRegionOpen]=useState(false);
  const [kindOpen,setKindOpen]=useState(false);
  const [selected,setSelected]=useState(null);
+ const [openOnly,setOpenOnly]=useState(false);
  const today=new Intl.DateTimeFormat("ko-KR",{weekday:"short",timeZone:"Asia/Seoul"}).format(new Date()).replace("요일","");
  const regions=verifiedLinks(data.links).filter(x=>KOREAN_REGIONS.has(x.label)&&decodeURIComponent(x.path).startsWith("/pharmacy/야간약국"));
  const mapLink=data.links.find(x=>x.label==="지도 보기")?.path;
  const sundayLink=data.links.find(x=>x.label==="일요일약국")?.path;
  const pages=data.pagination?.length?data.pagination:data.links.filter(x=>/^[2-9]\d*$/.test(x.label.trim())&&/[?&]page=\d+/.test(x.path));
  const count=data.title.match(/([\d,]+)곳/)?.[1]||"";
- const cards=data.pharmacyCards||[];
+ const allCards=data.pharmacyCards||[];
+ const localClock=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date());
+ const clockParts=localClock.match(/\d+/g)||["0","0"];
+ const minute=Number(clockParts[0])*60+Number(clockParts[1]);
+ const cards=openOnly?allCards.filter(c=>isPharmacyOpenNow(c.weekly_hours,today,minute)):allCards;
  const sourceTitle=data.title.includes("목록")?data.title:data.title.replace("전국 야간 약국 ","전국 야간 약국 목록 - ");
  return <section className="original-pharmacy" data-source-view="pharmacy-list">
    <div className="original-pharmacy-heading"><h1>{sourceTitle}</h1>
@@ -124,7 +146,12 @@ function NightPharmacyPage({data,go}){
        {sundayLink&&<a href={sundayLink} onClick={e=>{e.preventDefault();go(sundayLink)}}>일요일약국</a>}
        <span aria-current="true">야간약국</span>
      </div>}
-     {mapLink&&<a className="original-pharmacy-map" href={mapLink} onClick={e=>{e.preventDefault();go(mapLink)}}>지도 보기</a>}
+     <div className="original-pharmacy-actions">
+       <button type="button" className="original-pharmacy-open" aria-pressed={openOnly}
+         onClick={()=>setOpenOnly(!openOnly)}><CheckCircle2 size={16} aria-hidden="true"/>영업 중</button>
+       {mapLink&&<a className="original-pharmacy-map" href={mapLink}
+         onClick={e=>{e.preventDefault();go(mapLink)}}>지도 보기</a>}
+     </div>
    </div>
    <div className="original-pharmacy-list">{cards.map((card,i)=>{
      const exp=new RegExp("\\("+today+"\\)\\s*([^,]+)");
@@ -132,11 +159,11 @@ function NightPharmacyPage({data,go}){
      return <article className="original-pharmacy-card" key={card.name+"-"+i}>
        <h2><button type="button" aria-expanded={selected===i}
          onClick={()=>setSelected(selected===i?null:i)}>{card.name}</button></h2>
-       {day&&<p className="original-pharmacy-cardline"><span className="pharmacy-time-icon">◷</span>({today}) {day}</p>}
-       {card.weekly_hours&&<p className="original-pharmacy-cardline"><span aria-hidden="true">▦</span>
+       {day&&<p className="original-pharmacy-cardline"><Clock3 size={16} className="pharmacy-time-icon" aria-hidden="true"/>({today}) {day}</p>}
+       {card.weekly_hours&&<p className="original-pharmacy-cardline"><CalendarDays size={16} aria-hidden="true"/>
          <span><b>야간 영업</b> {card.weekly_hours}</span></p>}
        {card.address&&<p className="original-pharmacy-cardline"><MapPin size={16}/><span>{card.address}</span></p>}
-       {card.phone&&<p className="original-pharmacy-cardline"><span aria-hidden="true">☎</span>
+       {card.phone&&<p className="original-pharmacy-cardline"><Phone size={16} aria-hidden="true"/>
          <a href={"tel:"+card.phone}>{card.phone}</a></p>}
        {selected===i&&<div className="original-pharmacy-expanded" role="region" aria-label={card.name+" 정보"}>
          <strong>{card.name}</strong><p>{card.address}</p>
@@ -144,6 +171,7 @@ function NightPharmacyPage({data,go}){
        </div>}
      </article>;
    })}</div>
+   {openOnly&&!cards.length&&<p className="observed-empty">현재 영업 중인 것으로 확인되는 약국이 없습니다.</p>}
    {!!pages.length&&<nav className="observed-pages" aria-label="야간 약국 목록 페이지">
      {pages.map(x=><a href={x.path} key={x.path} onClick={e=>{e.preventDefault();go(x.path)}}>{x.label}</a>)}
    </nav>}
