@@ -446,3 +446,21 @@
 .source-route-error p{line-height:1.6;font-size:14px}
 .source-route-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:17px}
 .source-route-actions button{min-height:46px;font-weight:650}
+
+
+/* A selected public Q&A link opens a real detail view, not the index template. */
+.original-public-qna-detail{padding:21px 18px 75px}
+.original-public-qna-detail .observed-heading h1{font-size:18px;margin:0 0 13px}
+.qna-detail-back{margin-bottom:26px}
+.qna-detail-back a{font-size:13px;color:#356fff;display:inline-block;padding:7px 0}
+.qna-detail-body{border-bottom:8px solid #f7f8fb;padding:0 0 35px}
+.qna-detail-mark{color:#326dff;font-weight:800;font-size:20px}
+.qna-detail-body h2{font-size:21px;line-height:1.55;margin:7px 0 17px;color:#1b2230;word-break:keep-all}
+.qna-detail-metadata{color:#8d97a5;font-size:12px;line-height:20px}
+.qna-detail-preview{border-radius:10px;background:#f7f9fc;padding:18px;margin:20px 0}
+.qna-detail-preview h3{font-size:14px;line-height:1.5;margin:0 0 10px}
+.qna-detail-preview p{font-size:14px;line-height:1.8;color:#515b68;margin:0}
+.qna-detail-full-original{display:block;text-align:center;background:#326dff;color:#fff;
+ border-radius:9px;font-weight:700;font-size:14px;padding:15px 10px}
+.qna-detail-related{padding-top:23px}
+.qna-detail-related h2{font-size:17px;margin:0 0 11px}
