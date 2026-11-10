@@ -125,15 +125,40 @@ function NativeHomeMenuGrid({go}){
    </div>}
  </>;
 }
+/**
+ * Strictly evidenced original 6.50.0 layout pieces:
+ *  HomeScreen #45594  ScrollView gap=12 paddingTop=12
+ *  HomeNavigationSection #45993; StyleSheet #45992:
+ *    flexDirection=row, marginHorizontal=12, gap=12;
+ *    white service cards radius=16 padding=12 gap=12
+ *    hospitalLocation SvgIcon size=40, label "병원/약국\\n찾기"
+ *  MedicalAppointmentSection #45649; StyleSheet #45648:
+ *    12dp margin, 12dp padding; headings "비대면 진료" / "최저가 병원 예약";
+ *    footer action "모든 증상 보기"
+ *  AdBanner follows the original section flow; not the hero-first placement.
+ * Unconfirmed extra public web navigation is collapsed below the native shell.
+ */
+function HermesHomeNavigation({go}){
+  return <nav className="hermes-home-navigation" aria-label="병원 및 진료 바로가기">
+    <NavLink className="hermes-home-nav-card" path="/hospital" go={go} label="병원/약국 찾기">
+      <Hospital size={40} strokeWidth={1.6} aria-hidden="true"/>
+      <strong>병원/약국<br/>찾기</strong>
+    </NavLink>
+    <NavLink className="hermes-home-nav-card" path="/telemedicine/all-department" go={go} label="비대면 진료">
+      <Stethoscope size={40} strokeWidth={1.6} aria-hidden="true"/>
+      <strong>비대면 진료</strong>
+    </NavLink>
+  </nav>;
+}
 export default function NativeAppHome({data,go}) {
   const [homeMode,setHomeMode]=useState("telemedicine");
   const observed=(data?.links||[]).filter(x=>x.path&&x.label&&x.path!=="/");
   const appCards=homeMode==="telemedicine"?appSymptoms:appBookings;
-  return <div className="native-home" data-native-reference="mydoctor-6.50.0">
+  return <div className="native-home hermes-v650-home" data-native-reference="mydoctor-6.50.0-hbc96">
     <section className="native-home-top">
-      <NativeHomeBanner go={go}/>
-      <div className="native-app-service-box">
-        <div className="native-segment" role="tablist" aria-label="진료 서비스 선택">
+      <HermesHomeNavigation go={go}/>
+      <div className="native-app-service-box hermes-medical-appointment">
+        <div className="native-segment hermes-appointment-headings" role="tablist" aria-label="진료 서비스 선택">
           <button type="button" role="tab" aria-selected={homeMode==="telemedicine"}
             className={homeMode==="telemedicine"?"selected":""}
             onClick={()=>setHomeMode("telemedicine")}>비대면 진료</button>
@@ -142,61 +167,68 @@ export default function NativeAppHome({data,go}) {
             onClick={()=>setHomeMode("booking")}>최저가 병원 예약</button>
         </div>
         {homeMode==="telemedicine"?<NativeHomeMenuGrid go={go}/>:
-         <div className="native-symptom-grid">
-          {appCards.map(({label,path,icon:Icon,tone})=>
-           <NavLink key={path} path={path} go={go} className="native-symptom-item" label={label}>
-            <span className={"native-symptom-icon tone-"+tone}><Icon aria-hidden="true" size={28} strokeWidth={1.8}/></span>
-            <span>{label}</span>
-           </NavLink>)}
-         </div>}
-        <NavLink className="native-app-all" path={homeMode==="telemedicine"?"/telemedicine/all-department":"/medical-cost"}
-            go={go} label="전체 보기">전체 보기 <ChevronRight size={16}/></NavLink>
+          <div className="native-symptom-grid">
+            {appCards.map(({label,path,icon:Icon,tone})=>
+              <NavLink key={path} path={path} go={go} className="native-symptom-item" label={label}>
+                <span className={"native-symptom-icon tone-"+tone}><Icon aria-hidden="true" size={28} strokeWidth={1.8}/></span>
+                <span>{label}</span>
+              </NavLink>)}
+          </div>}
+        <NavLink className="native-app-all hermes-all-symptoms"
+          path={homeMode==="telemedicine"?"/telemedicine/all-department":"/medical-cost"}
+          go={go} label={homeMode==="telemedicine"?"모든 증상 보기":"전체 보기"}>
+          {homeMode==="telemedicine"?"모든 증상 보기":"전체 보기"} <ChevronRight size={16}/>
+        </NavLink>
       </div>
+      <NativeHomeBanner go={go}/>
     </section>
-    <section className="native-home-block" aria-label="서비스 바로가기">
-      <div className="native-heading"><h2>빠른 서비스</h2></div>
-      <div className="native-quick-grid">
-        {quick.map(({name,sub,path,icon:Icon})=>
-          <NavLink key={path} path={path} go={go} className="native-quick-item" label={name}>
-            <span className="native-quick-icon"><Icon size={25} strokeWidth={1.85}/></span>
-            <strong>{name}</strong><small>{sub}</small>
-          </NavLink>)}
+    <section className="hermes-native-legal" aria-label="원본 앱 정보">
+      <div>
+        <a href="https://my-doctor.io/" target="_blank" rel="noreferrer">이용약관</a>
+        <a href="https://my-doctor.io/" target="_blank" rel="noreferrer"><strong>개인정보처리방침</strong></a>
+        <a href="https://my-doctor.io/" target="_blank" rel="noreferrer">위치기반서비스이용약관</a>
       </div>
+      <p>광고 문의 : sales@merakiplace.kr</p>
     </section>
-    <div className="native-section-break"/>
-    <section className="native-home-block">
-      <div className="native-heading"><h2>가격 비교</h2>
-        <NavLink path="/medical-cost" go={go} className="native-section-more" label="전체 가격 비교">전체 보기 <ChevronRight size={15}/></NavLink>
-      </div>
-      <p className="native-section-desc">약과 진료 항목별 공개 가격을 찾아보세요.</p>
-      <div className="native-topic-grid">
-        {prices.map(p=><NavLink key={p.path} path={p.path} go={go} label={p.name} className="native-topic-item">
-          <span>{p.name}</span><ChevronRight size={15}/></NavLink>)}
-      </div>
-    </section>
-    <div className="native-section-break"/>
-    <section className="native-home-block">
-      <div className="native-heading"><h2>진료과별 병원 찾기</h2>
-        <NavLink path="/hospital" go={go} className="native-section-more" label="병원 전체 보기">전체 보기 <ChevronRight size={15}/></NavLink>
-      </div>
-      <div className="native-dept-grid">
-        {care.map(p=><NavLink key={p.path} path={p.path} go={go} label={p.name} className="native-dept-item">
-          <span>{p.name}</span><ChevronRight size={15}/></NavLink>)}
-      </div>
-      <div className="native-utility-list">
-        {utility.map(({label,path,icon:Icon})=><NavLink key={path} path={path} go={go} className="native-utility-row" label={label}>
-          <Icon size={20}/><span>{label}</span><ChevronRight size={17}/></NavLink>)}
-      </div>
-    </section>
-    <div className="native-section-break"/>
-    <section className="native-home-block">
-      <div className="native-heading"><h2>건강 정보</h2></div>
-      <div className="native-health-links">
-        <NavLink path="/medicine" go={go} className="native-health-link" label="의약품 검색"><Pill size={22}/><strong>의약품 정보</strong><ChevronRight size={16}/></NavLink>
-        <NavLink path="/qna" go={go} className="native-health-link" label="의료진 Q&A"><MessageCircle size={22}/><strong>의료진 Q&A</strong><ChevronRight size={16}/></NavLink>
-        <NavLink path="/healthLab" go={go} className="native-health-link" label="건강 콘텐츠"><HeartPulse size={22}/><strong>건강 콘텐츠</strong><ChevronRight size={16}/></NavLink>
-      </div>
-    </section>
+    <details className="hermes-nonnative-links">
+      <summary>웹에서 확인된 추가 서비스 링크</summary>
+      <section className="native-home-block" aria-label="서비스 바로가기">
+        <div className="native-heading"><h2>빠른 서비스</h2></div>
+        <div className="native-quick-grid">
+          {quick.map(({name,sub,path,icon:Icon})=>
+            <NavLink key={path} path={path} go={go} className="native-quick-item" label={name}>
+              <span className="native-quick-icon"><Icon size={25} strokeWidth={1.85}/></span>
+              <strong>{name}</strong><small>{sub}</small>
+            </NavLink>)}
+        </div>
+      </section>
+      <section className="native-home-block">
+        <div className="native-heading"><h2>가격 비교</h2></div>
+        <div className="native-topic-grid">
+          {prices.map(p=><NavLink key={p.path} path={p.path} go={go} label={p.name} className="native-topic-item">
+            <span>{p.name}</span><ChevronRight size={15}/></NavLink>)}
+        </div>
+      </section>
+      <section className="native-home-block">
+        <div className="native-heading"><h2>진료과별 병원 찾기</h2></div>
+        <div className="native-dept-grid">
+          {care.map(p=><NavLink key={p.path} path={p.path} go={go} label={p.name} className="native-dept-item">
+            <span>{p.name}</span><ChevronRight size={15}/></NavLink>)}
+        </div>
+        <div className="native-utility-list">
+          {utility.map(({label,path,icon:Icon})=><NavLink key={path} path={path} go={go} className="native-utility-row" label={label}>
+            <Icon size={20}/><span>{label}</span><ChevronRight size={17}/></NavLink>)}
+        </div>
+      </section>
+      <section className="native-home-block">
+        <div className="native-heading"><h2>건강 정보</h2></div>
+        <div className="native-health-links">
+          <NavLink path="/medicine" go={go} className="native-health-link" label="의약품 검색"><Pill size={22}/><strong>의약품 정보</strong><ChevronRight size={16}/></NavLink>
+          <NavLink path="/qna" go={go} className="native-health-link" label="의료진 Q&A"><MessageCircle size={22}/><strong>의료진 Q&A</strong><ChevronRight size={16}/></NavLink>
+          <NavLink path="/healthLab" go={go} className="native-health-link" label="건강 콘텐츠"><HeartPulse size={22}/><strong>건강 콘텐츠</strong><ChevronRight size={16}/></NavLink>
+        </div>
+      </section>
+    </details>
     {!!observed.length&&<details className="native-source-paths">
       <summary>원본에서 확인된 상세 경로 <span>({observed.length})</span></summary>
       {observed.slice(0,180).map(x=><NavLink key={x.path} path={x.path} go={go} className="native-observed-row" label={x.label}>
