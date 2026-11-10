@@ -62,9 +62,11 @@ async function observe(page,kind,label,href,index){
           .waitFor({state:"hidden",timeout:7500}).catch(()=>{});
        const e=await page.locator('.source-route-error,main [role="alert"]').count();
        const loaded=await page.locator('.observed-page,main .clinic-head,main .original-price-detail').count();
-       entry.resultPageLoaded=Boolean(loaded&&!e);
+       const faq=await page.locator('.native-faq-page .native-faq-item').count();
+       entry.resultPageLoaded=Boolean((loaded||faq)&&!e);
+       entry.faqRows=faq;
        if(e)entry.status="FAIL_RESULT_DETAIL_API_ERROR";
-       else if(!loaded)entry.status="FAIL_RESULT_DETAIL_UNAVAILABLE";
+       else if(!loaded&&!faq)entry.status="FAIL_RESULT_DETAIL_UNAVAILABLE";
        else entry.status=facts?"PASS_SOURCE_TABLE_AND_RESULT":"PASS_SOURCE_LINKS_AND_RESULT";
      }catch(error){
        entry.status="FAIL_RESULT_LINK_TAP";
@@ -89,7 +91,7 @@ async function observe(page,kind,label,href,index){
    await locator.waitFor({timeout:6500});
    await locator.tap({timeout:3500});
    const entry=await observe(page,kind,label,href,index);
-   if(segment(new URL(page.url()).pathname)===segment(new URL(href||"/",base).pathname)&&!isButton){
+   if(segment(entry.url)===segment(new URL(href||"/",base).pathname)&&!isButton){
      entry.isCorrectRoute=true;
    }else if(!isButton){
      entry.status="FAIL_WRONG_NAVIGATION";
