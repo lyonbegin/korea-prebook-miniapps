@@ -5,6 +5,7 @@ on:
     branches: [feature/mydoctor-full-clone-20261109]
     paths:
       - .github/workflows/mydoctor-native-arm64-original-pixels.yml
+      - mydoctor-clone/android-reference/capture_original.sh
 permissions:
   contents: read
 jobs:
