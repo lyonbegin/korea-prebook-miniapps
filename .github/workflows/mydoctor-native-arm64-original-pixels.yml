@@ -1,0 +1,79 @@
+name: MyDoctor ORIGINAL ARM64 Android 6.50 pixel reference
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths:
+      - .github/workflows/mydoctor-native-arm64-original-pixels.yml
+permissions:
+  contents: read
+jobs:
+  original-android-arm64:
+    name: Apple Silicon ARM64 emulator original app screenshots vs web
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Confirm physical ARM64 host + Android SDK
+        run: |
+          uname -m
+          test "$(uname -m)" = "arm64" || exit 5
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          xcrun --version || true
+      - name: Install Playwright browser and pixel tools
+        run: |
+          cd mydoctor-clone/frontend
+          npm install --no-audit --no-fund
+          npx playwright install chromium
+          cd ../..
+          python3 -m pip install --disable-pip-version-check Pillow numpy
+      - name: Boot native ARM64 Android emulator and install EXACT original APK
+        id: emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        continue-on-error: true
+        with:
+          api-level: 35
+          target: google_apis
+          arch: arm64-v8a
+          profile: pixel_5
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 6G
+          emulator-boot-timeout: 600
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: bash mydoctor-clone/android-reference/capture_original.sh
+      - name: Capture deployed mobile clone at matching CSS resolution
+        if: always()
+        run: node mydoctor-clone/android-reference/capture_web.cjs
+      - name: Generate ORIGINAL-vs-Railway RGB error heatmaps
+        if: always()
+        continue-on-error: true
+        run: python3 mydoctor-clone/android-reference/compare_pixels.py
+      - name: Preserve screenshot + original UI hierarchy + failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-original-arm64-screenshot-and-pixel-diff
+          path: mydoctor-clone/android-reference/artifacts/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Refuse success until original screen is captured and >=90 percent pixels matched
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,sys
+          p=pathlib.Path('mydoctor-clone/android-reference/artifacts/pixel_parity_report.json')
+          if not p.exists():sys.exit("NO_PIXEL_REPORT")
+          r=json.loads(p.read_text())
+          print("PIXEL_MEASUREMENT",r["summary"])
+          if not r["summary"]["measured"]:sys.exit("NO_ORIGINAL_APP_UI")
+          if r["summary"]["failed"] or r["summary"]["missing"]:
+              sys.exit("ORIGINAL_VS_CLONE_NOT_YET_PIXEL_MATCHED")
+          PY
