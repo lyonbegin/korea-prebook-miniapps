@@ -48,7 +48,8 @@ function Breadcrumb({route,go}){
  if(cleanRoute==="/medicine")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><strong>의약품 정보</strong></div>;
  if(cleanRoute==="/healthLab/FAQ")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="건강 정보" path="/healthLab" go={go}/><span>›</span><strong>건강 FAQ</strong></div>;
  if(cleanRoute==="/pharmacy/야간약국")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="약국찾기" path="/pharmacy" go={go}/><span>›</span><strong>전국 야간 약국</strong></div>;
- if(cleanRoute==="/hospital/10055/reviews")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><Anchor label="동산의원" path="/hospital/detail?hospital_id=10055" go={go}/><span>›</span><strong>후기</strong></div>;
+ if(cleanRoute==="/telemedicine/doctor/탑연합의원-박광규-100/reviews")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="비대면진료" path="/telemedicine" go={go}/><span>›</span><Anchor label="박광규 의사" path="/telemedicine/doctor/탑연합의원-박광규-100" go={go}/><span>›</span><strong>후기</strong></div>;
+ if(cleanRoute==="/hospital/10055/reviews")return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><Anchor label="성남시 내과" path="/dept-hub/내과/경기-성남시" go={go}/><span>›</span><Anchor label="동산의원" path="/hospital/detail?hospital_id=10055" go={go}/><span>›</span><strong>후기</strong></div>;
  return <div className="breadcrumb"><Anchor label="홈" path="/" go={go}/><span>›</span>{detailed?<><Anchor label="병원찾기" path="/hospital" go={go}/><span>›</span><span>병원 상세</span></>:<strong>{medical?"가격비교":doctor?"비대면진료":hospital?"병원찾기":"상세정보"}</strong>}</div>;
 }
 function CostTable({tables}){
