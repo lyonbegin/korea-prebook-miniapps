@@ -1,6 +1,7 @@
 import React,{useMemo,useState}from "react";
 import{Search,ChevronRight,MapPin,Clock3,CalendarDays,Phone,CheckCircle2}from "lucide-react";
 import ReviewsSummary from "./ReviewsSummary.jsx";
+import OriginalDistinctPage,{isOriginalDistinctRoute} from "./OriginalDistinctPages.jsx";
 
 /** Reusable original-fact views, grouped by distinct navigation/interaction type.
  * No synthetic doctors, appointments, prices or private records.
@@ -256,6 +257,7 @@ export function VerifiedSourcePage({data,go,route}){
     if(tab==="의사"&&!/의사|doctor/.test(label))return false;
     return true;
  });
+ if(isOriginalDistinctRoute(route))return <OriginalDistinctPage data={data} go={go} route={route}/>;
  if(route.split("?")[0]==="/medicine")return <MedicineLandingPage data={data} go={go}/>;
  if(route.split("?")[0]==="/healthLab/FAQ")return <FAQIndexPage data={data} go={go}/>;
  if(decodeURIComponent(route.split("?")[0])==="/pharmacy/야간약국"&&data.pharmacyCards?.length)return <NightPharmacyPage data={data} go={go}/>;
