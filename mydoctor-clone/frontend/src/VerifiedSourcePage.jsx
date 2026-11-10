@@ -180,7 +180,7 @@ export function VerifiedSourcePage({data,go,route}){
     return true;
  });
  if(route.split("?")[0]==="/healthLab/FAQ")return <FAQIndexPage data={data} go={go}/>;
- if(route.split("?")[0]==="/pharmacy/야간약국"&&data.pharmacyCards?.length)return <NightPharmacyPage data={data} go={go}/>;
+ if(decodeURIComponent(route.split("?")[0])==="/pharmacy/야간약국"&&data.pharmacyCards?.length)return <NightPharmacyPage data={data} go={go}/>;
  if(route.endsWith("/reviews")&&data.reviewSummary)return <ReviewsSummary data={data} go={go}/>;
  return <section className={"observed-page observed-"+kind} data-source-view={kind}>
    <header className="observed-heading">
