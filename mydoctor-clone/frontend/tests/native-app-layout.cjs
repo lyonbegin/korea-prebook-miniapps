@@ -118,14 +118,13 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
   await check("native FAQ accordion screen opens on its route",async()=>{
    await page.goto(base+"/healthLab/FAQ",{waitUntil:"domcontentloaded"});
    await page.locator(".native-faq-page").waitFor({timeout:10000});
-   await page.locator(".native-faq-item,.native-price-source-status").first().waitFor({timeout:15000});
+   await page.locator(".native-faq-item").first().waitFor({timeout:16000});
    const n=await page.locator(".native-faq-item").count();
-   if(n){
-    await page.locator(".native-faq-item button").first().tap();
-    if(await page.locator('.native-faq-item button[aria-expanded="true"]').count()!==1)
-     throw Error("FAQ accordion did not respond to actual tap");
-   }
-   return {actualFaqRows:n,sourceIsPublic:n>0};
+   if(n<1)throw Error("FAQ source API 200 but no real FAQ rows displayed");
+   await page.locator(".native-faq-item button").first().tap();
+   if(await page.locator('.native-faq-item button[aria-expanded="true"]').count()!==1)
+    throw Error("FAQ accordion did not respond to actual tap");
+   return {actualFaqRows:n,sourceIsPublic:true};
   });
  }finally{
   fs.mkdirSync("qa-artifacts",{recursive:true});
