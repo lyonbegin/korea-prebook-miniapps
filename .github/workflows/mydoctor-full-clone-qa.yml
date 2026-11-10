@@ -157,6 +157,11 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/menu-inventory.cjs
+      - name: Physically tap EVERY link on the supplied skin clinic directory and inspect real destination
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/skin-directory-all-clicks.cjs
       - name: Tap all 103 menu entries on 390px mobile and confirm explicit response even on original 429
         if: always()
         working-directory: mydoctor-clone/frontend
