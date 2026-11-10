@@ -177,7 +177,7 @@ function BabyEmergencyMap({data,go}) {
 }
 function CompanyPage({data,go}) {
  const icons=["📱","🩺","🏥","💉","📖","🎁"];
- const paths=["https://abr.ge/zskg4p",...data.links.filter(x=>x.path!=="/").map(x=>x.path)];
+ const paths=["https://abr.ge/zskg4p",...data.links.map(x=>x.path)];
  const labels=[["앱 설치하고 혜택 받기","신규 가입 시 3,000원 적립금 즉시 지급"],["비대면 진료 바로가기","24시간 전화 한 통으로 진료부터 약 수령까지"],["우리 동네 병원 찾기","야간·주말 진료 병원, 전문의 병원 검색"],["위고비 최저가 병원·약국","다이어트 주사제 가격을 한눈에 비교"],["건강 꿀팁 · 질환백과","전문의가 검수한 신뢰할 수 있는 건강 정보"],["매일 돈 버는 건강 퀴즈","출석하고 적립금도 받아가세요"]];
  return <div className="original-company-landing" data-source-view="company">
   <div className="original-company-identity"><img src={ORIGINAL+"/logo192.png"} alt="나만의닥터 로고"/><h1>{data.title}</h1><strong>@my_doctor_official</strong><p>대한민국 1위 비대면 진료 앱<br/>안전한 진료부터 최저가 병원/약국까지</p></div>
@@ -190,6 +190,7 @@ function CompanyPage({data,go}) {
  </div>;
 }
 export const isCompanyRoute=route=>route.split("?")[0]==="/company";
+export const isOriginalDistinctRoute=route=>[ "/telemedicine/doctor/한사랑패밀리의원-허훈-10","/hospital/야간진료","/medical-cost/마운자로","/medical-cost/여드름약/이소티논","/map/baby119","/medicine/0.9-엔에이시엘.케이40주-200710605","/healthLab/info/1268/만성-소화기-질환-관리법","/qna","/company" ].includes(decodeURIComponent(route.split("?")[0]));
 export default function OriginalDistinctPage({data,go,route}) {
  const p=decodeURIComponent(route.split("?")[0]);
  if(p==="/telemedicine/doctor/한사랑패밀리의원-허훈-10")return <DoctorDetail data={data} go={go}/>;
