@@ -268,6 +268,9 @@ jobs:
       - name: Verify original Mounjaro categories and regional price with source-provided ID
         working-directory: mydoctor-clone/frontend
         run: node tests/native-price-api-parity.cjs
+      - name: Check original Android MyD link by source APK key (status and JSON field names only)
+        working-directory: mydoctor-clone/frontend
+        run: node tests/native-myd-link-probe.cjs
       - name: Publish evidence whether original native API actually returned JSON
         if: always()
         uses: actions/upload-artifact@v4
@@ -276,4 +279,5 @@ jobs:
           path: |
             mydoctor-clone/frontend/qa-artifacts/native-api-live-probe.json
             mydoctor-clone/frontend/qa-artifacts/native-price-api-parity.json
+            mydoctor-clone/frontend/qa-artifacts/native-myd-link-probe.json
           if-no-files-found: warn
