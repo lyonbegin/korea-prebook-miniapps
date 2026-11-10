@@ -195,3 +195,6 @@
 /* Match original source card top edge and paragraph glyph spacing. */
 .md-cost-list h2{margin-bottom:15px}
 .md-cost-intro p{letter-spacing:.12px}
+
+/* From 390x844 side-by-side source/clone screenshot: original category rows have 11px gaps; clone 9px. */
+.md-cost-grid{gap:11px}
