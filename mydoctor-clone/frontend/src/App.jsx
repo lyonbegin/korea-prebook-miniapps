@@ -10,6 +10,7 @@ import originalPriceCards from "./data/original-medical-cost-cards.json";
 import NativeAppHome from "./NativeAppHome.jsx";
 import NativeApiCatalog from "./NativeApiCatalog.jsx";
 import NativeMydLinkScreen from "./NativeMydLinkScreen.jsx";
+import NativeDoctorDirectory from "./NativeDoctorDirectory.jsx";
 import {NativePharmacyScreen,NativeFaqScreen} from "./NativeAdditionalScreens.jsx";
 import NativePriceRegions from "./NativePriceRegions.jsx";
 
@@ -217,7 +218,7 @@ function DoctorScreen({data,go}){
  const realSymptom=item=>data.links.find(v=>v.path.startsWith("/telemedicine/")&&
    (v.label.trim()===item||v.label.includes("("+item+")")))?.path;
  return <div className="native-doctor-directory"><section className="md-intro"><h1>비대면 진료</h1><p>진료받을 증상이나 진료과를 선택해 주세요.</p></section>
- <NativeApiCatalog resource="doctor-list" title="원본 앱 의사 목록" go={go} compact/>
+ <NativeDoctorDirectory go={go}/>
  <div className="md-tabs"><button className={active==="증상"?"current":""} onClick={()=>setActive("증상")}>증상</button><button className={active==="진료과목"?"current":""} onClick={()=>setActive("진료과목")}>진료과목</button></div>
  {active==="증상"?<div className="md-symptoms">{CATEGORIES.map(([name,desc,icon,items])=><div className="symptom-section" key={name}>
    <button className="symptom-group" onClick={()=>setOpened(opened===name?"":name)} aria-expanded={opened===name}>
