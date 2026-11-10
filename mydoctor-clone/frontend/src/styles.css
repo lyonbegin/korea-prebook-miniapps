@@ -781,3 +781,57 @@
 .site-app-native .md-lookup .md-blue-button{border-radius:12px}
 .site-app-native .md-dept-list{background:#fff;padding-top:23px}
 .site-app-native .md-dept-list a{display:inline-block;padding:3px 6px;border-radius:6px}
+
+/* Data-bound native app public catalog: only rows returned by original JSON. */
+.site-app-native .native-api-section{padding:0 20px;max-width:100%;background:#fff}
+.site-app-native .native-api-section:has(.native-api-list){padding-top:22px;padding-bottom:22px}
+.site-app-native .native-api-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px
+}
+.site-app-native .native-api-heading>div{display:flex;align-items:center;gap:7px;min-width:0}
+.site-app-native .native-api-heading h2{font-size:17px;font-weight:800;margin:0;letter-spacing:-.45px}
+.site-app-native .native-api-heading svg{color:#326dff;flex-shrink:0}
+.site-app-native .native-api-heading>span{font-size:10px;color:#8390a3;white-space:nowrap}
+.site-app-native .native-api-list{border-top:1px solid #f0f2f4}
+.site-app-native .native-api-row{
+ width:100%;padding:12px 2px;min-height:56px;display:flex;gap:12px;
+ align-items:center;text-align:left;cursor:pointer;border:0;
+ background:#fff;border-bottom:1px solid #eff1f4;
+}
+.site-app-native .native-api-row-image{
+ width:49px;height:49px;flex-shrink:0;object-fit:cover;border-radius:10px;
+ background:#f3f5f9;
+}
+.site-app-native .native-api-row-text{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+.site-app-native .native-api-row-text strong{color:#262c38;font-size:14px;font-weight:750;line-height:1.4}
+.site-app-native .native-api-row-text small{font-size:12px;color:#818c9b;line-height:1.4;overflow-wrap:anywhere}
+.site-app-native .native-api-row-text b{font-size:13px;color:#326dff}
+.site-app-native .native-api-row>svg{color:#a2aab6;flex-shrink:0}
+.site-app-native .native-api-no-items{font-size:12px;color:#768396;line-height:1.6;background:#f7f8fa;border-radius:10px;padding:10px 13px}
+.site-app-native .native-api-error{margin:8px 0 12px;font-size:12px;color:#8994a4}
+.site-app-native .native-api-error summary{cursor:pointer}
+.site-app-native .native-api-error p{font-size:11px;line-height:1.5;word-break:break-word;margin:8px 0}
+.site-app-native .native-data-overlay{
+ position:fixed;inset:0;z-index:100;display:flex;align-items:flex-end;justify-content:center;
+ background:#111a2b70;
+}
+.site-app-native .native-data-dialog{
+ background:#fff;width:100%;max-width:560px;max-height:80dvh;overflow:auto;
+ border-radius:20px 20px 0 0;padding:19px 20px calc(35px + env(safe-area-inset-bottom,0px));
+ box-shadow:0 -4px 28px #0002;
+}
+.site-app-native .native-data-dialog-head{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.site-app-native .native-data-dialog-head h2{margin:0;font-size:19px;line-height:1.4;word-break:keep-all}
+.site-app-native .native-data-dialog-head button{border:0;background:#f4f6fa;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.site-app-native .native-data-dialog>p{font-size:13px;color:#636e7c;line-height:1.5}
+.site-app-native .native-data-dialog h3{font-size:14px;margin:20px 0 12px}
+.site-app-native .native-data-detail-image{max-width:100%;max-height:150px;object-fit:contain;margin-top:12px}
+.site-app-native .native-data-price{display:block;font-size:17px;color:#326dff}
+.site-app-native .native-data-details{display:flex;flex-direction:column;margin:0}
+.site-app-native .native-data-details>div{display:grid;grid-template-columns:115px minmax(0,1fr);gap:10px;padding:9px 2px;border-bottom:1px solid #eff1f4}
+.site-app-native .native-data-details dt{font-size:11px;color:#8390a0;word-break:break-all}
+.site-app-native .native-data-details dd{font-size:12px;margin:0;color:#29313e;overflow-wrap:anywhere;max-height:7em;overflow:hidden}
+.site-app-native .native-data-note{font-size:11px!important;color:#929ba8!important}
+.site-app-native .native-home-banner-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.4}
+.site-app-native .native-home-banner.has-native-image strong,
+.site-app-native .native-home-banner.has-native-image span{position:relative;z-index:2;text-shadow:0 1px 4px #0007}
