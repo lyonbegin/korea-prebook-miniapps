@@ -1,9 +1,11 @@
-import React,{useState} from "react";
+import React,{useEffect,useState} from "react";
 import {
   Stethoscope,Hospital,Tags,Pill,ChevronRight,MapPin,
   Clock3,Search,HeartPulse,Syringe,FileText,MessageCircle,
   Activity,CalendarDays
 } from "lucide-react";
+import NativeApiCatalog,{normalizeNativeCards} from "./NativeApiCatalog.jsx";
+import {fetchNativeCatalog} from "./lib/originalGateway.js";
 
 /** Mobile-web implementation of the app-oriented service hierarchy.
  * Reference build: MyDoctor 6.50.0 XAPK, React Native/Hermes UI resources.
@@ -59,17 +61,32 @@ const utility=[
 function NavLink({path,go,children,className="",label}) {
   return <a href={path} className={className} onClick={e=>{e.preventDefault();go(path,{label:label||undefined})}}>{children}</a>;
 }
+function NativeHomeBanner({go}){
+ const [banner,setBanner]=useState(null);
+ useEffect(()=>{
+  const abort=new AbortController();
+  fetchNativeCatalog("home-banner",{},abort.signal).then(result=>{
+    const candidates=normalizeNativeCards(result.data);
+    if(candidates.length)setBanner(candidates[0]);
+  }).catch(()=>{}); // unverified API stays distinct from the static navigation baseline
+  return ()=>abort.abort();
+ },[]);
+ return <NavLink className={"native-home-banner"+(banner?.image?" has-native-image":"")}
+    path={banner?.path||"/telemedicine/all-department"} go={go}
+    label={banner?.label||"비대면 진료"}>
+   {banner?.image&&<img className="native-home-banner-image" alt="" src={banner.image}/>}
+   <span>{banner?.subtitle||"365일 24시간 전국민 누구나"}</span>
+   <strong>{banner?.label||"비대면 진료 받을 수 있어요!"}</strong>
+   {!banner?.image&&<Stethoscope aria-hidden="true" size={38}/>}
+ </NavLink>;
+}
 export default function NativeAppHome({data,go}) {
   const [homeMode,setHomeMode]=useState("telemedicine");
   const observed=(data?.links||[]).filter(x=>x.path&&x.label&&x.path!=="/");
   const appCards=homeMode==="telemedicine"?appSymptoms:appBookings;
   return <div className="native-home" data-native-reference="mydoctor-6.50.0">
     <section className="native-home-top">
-      <NavLink className="native-home-banner" path="/telemedicine/all-department" go={go} label="비대면 진료">
-        <span>365일 24시간 전국민 누구나</span>
-        <strong>비대면 진료 받을 수 있어요!</strong>
-        <Stethoscope aria-hidden="true" size={38}/>
-      </NavLink>
+      <NativeHomeBanner go={go}/>
       <div className="native-app-service-box">
         <div className="native-segment" role="tablist" aria-label="진료 서비스 선택">
           <button type="button" role="tab" aria-selected={homeMode==="telemedicine"}
@@ -90,6 +107,7 @@ export default function NativeAppHome({data,go}) {
             go={go} label="전체 보기">전체 보기 <ChevronRight size={16}/></NavLink>
       </div>
     </section>
+    <NativeApiCatalog resource="home-menu" title="원본 앱에서 불러온 홈 메뉴" go={go}/>
     <section className="native-home-block" aria-label="서비스 바로가기">
       <div className="native-heading"><h2>빠른 서비스</h2></div>
       <div className="native-quick-grid">
