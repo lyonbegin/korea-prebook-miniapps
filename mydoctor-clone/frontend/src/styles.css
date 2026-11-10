@@ -415,3 +415,9 @@
 .original-review-doctor .review-top{padding-bottom:24px}
 .original-review-doctor .review-channel-with-cards{padding-top:28px}
 .original-review-doctor .review-channel-with-cards>p{margin-bottom:15px}
+
+
+/* Original hospital public review: first heading is 3px lower; feedback tags
+   are 10px below excerpt and the second review begins 10px lower. */
+.original-review-hospital .review-channel-with-cards{padding-top:20px}
+.original-review-hospital .review-source-tags{margin-top:10px}
