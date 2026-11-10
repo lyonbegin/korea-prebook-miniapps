@@ -308,15 +308,23 @@ export default function App(){
  const routeName=(history.state?.sourceLabel||sourceMenu.roots.flatMap(group=>group.groups.flatMap(g=>g.links))
    .find(item=>item.href===route)?.label)||(()=>{try{return decodeURIComponent(route.split("?")[0].split("/").filter(Boolean).pop()||"홈").replace(/-/g," ")}catch{return"선택한 항목"}})();
  const originalTarget=ORIGINAL+route;
+ const navParent=route.startsWith("/medical-cost")?"/medical-cost":
+   route.startsWith("/telemedicine")?"/telemedicine/all-department":
+   route.startsWith("/medicine")?"/medicine":
+   route.startsWith("/pharmacy")?"/pharmacy":
+   route.startsWith("/hospital")||route.startsWith("/dept-hub")||route.startsWith("/map")?"/hospital":
+   route.startsWith("/qna")||route.startsWith("/healthLab")?"/healthLab":"/";
 
  const companyPage=isCompanyRoute(route),distinctPage=isOriginalDistinctRoute(route),childEmergency=decodeURIComponent(route.split("?")[0])==="/map/baby119";
- return <div className={"site"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")}>{!companyPage&&<header className="topbar"><div className="toprow">
- <button className="brand" onClick={()=>{setMenu(false);go("/")}} aria-label="홈"><img src={ORIGINAL+"/_next/static/media/logo.0ye495etchd_w.svg"} alt="나만의닥터"/></button>
- <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴">{menu?<X size={25}/>:<Menu size={24}/>}</button></div>
+ return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
+ {home?<button className="brand" onClick={()=>{setMenu(false);go("/")}} aria-label="홈"><span className="native-brand">나만의닥터</span></button>:
+ <button className="native-app-back" type="button" onClick={()=>go(navParent)}
+ aria-label="이전 화면"><ChevronLeft size={24}/><span>{routeName}</span></button>}
+ <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴" aria-expanded={menu}>{menu?<X size={24}/>:<Menu size={24}/>}</button></div>
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();setMenu(false);go(item.href,{label:item.label})}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
  </header>}{!home&&!companyPage&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>{s.loading?<div className="source-route-loading" role="status"><div className="source-route-title">{routeName}</div><p>선택한 원본 데이터를 불러오고 있습니다.</p><a href={originalTarget} target="_blank" rel="noreferrer">원본 페이지 바로 열기</a></div>:s.error?<div role="alert" className="error-panel source-route-error"><h1>{routeName}</h1><h2>원본 데이터 조회에 실패했습니다.</h2><p>{s.error}</p><p>저장된 데이터가 없는 경우 원본 사이트의 공개 정보를 확인하실 수 있습니다.</p><div className="source-route-actions"><a href={originalTarget} target="_blank" rel="noreferrer">원본 페이지 열기</a><button onClick={s.refresh}>데이터 다시 불러오기</button></div></div>
- :s.data?(home?<HomeScreen data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:(route==="/telemedicine/all-department"||route==="/telemedicine")?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage key={route} data={s.data} go={go} route={route}/>):null}
- </main>{!companyPage&&<OriginalFooter go={go}/>} {home&&<a className="fixed-call-to-action" href="https://abr.ge/zskg4p" target="_blank" rel="noreferrer">나만의 닥터 다운로드</a>}
+ :s.data?(home?<NativeAppHome data={s.data} go={go}/>:route==="/hospital"?<HospitalScreen data={s.data} go={go}/>:route==="/medical-cost"?<CostScreen data={s.data} go={go}/>:(route==="/telemedicine/all-department"||route==="/telemedicine")?<DoctorScreen data={s.data} go={go}/>:hospitalDetail?<HospitalDetail data={s.data} go={go}/>:<VerifiedSourcePage key={route} data={s.data} go={go} route={route}/>):null}
+ </main>{!companyPage&&<AppTabBar route={route} go={go} onMenu={()=>setMenu(!menu)} menuOpen={menu}/>}
  </div>;
 }
