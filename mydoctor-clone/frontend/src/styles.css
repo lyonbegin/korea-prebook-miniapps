@@ -406,3 +406,12 @@
 .review-doctor-feedback-row img{width:16px;height:16px;object-fit:contain}
 .review-doctor-feedback-label{color:#7b8492;width:78px;flex-shrink:0}
 .review-doctor-feedback-row strong{font-size:12px;font-weight:600;color:#4c5662}
+
+
+/* Measured doctor reviews: original service rows 6px higher and first public
+   review starts 16px lower, while facet buttons move 4px down. */
+.original-review-doctor .review-service-stats{margin:-14px 0 11px}
+.original-review-doctor .review-facet-heading{margin-bottom:16px}
+.original-review-doctor .review-top{padding-bottom:24px}
+.original-review-doctor .review-channel-with-cards{padding-top:28px}
+.original-review-doctor .review-channel-with-cards>p{margin-bottom:15px}
