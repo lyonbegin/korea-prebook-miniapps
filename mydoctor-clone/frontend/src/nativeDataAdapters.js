@@ -32,7 +32,11 @@ export function nativeHomeMenuItems(data){
   subtitle:text(x.description),
   image:image(x.icon_image_url)||image(x.image_url),
   icon_name:text(x.icon_name),
-  path:observedWebPath(x.myd_link?.deeplink_url),
+  // GET patient-api/app/myd-link/{mydLinkKey} is confirmed in Hermes fn31795.
+  // Keep the source key; never substitute a fabricated website URL.
+  path:observedWebPath(x.myd_link?.deeplink_url)||
+    (/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(x.myd_link?.key||"")?
+     "/native/myd-link/"+encodeURIComponent(x.myd_link.key):null),
   nativeLink:x.myd_link||null,
   raw:x
  }));
