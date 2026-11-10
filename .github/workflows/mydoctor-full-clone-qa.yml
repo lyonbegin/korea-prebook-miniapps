@@ -157,6 +157,11 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/menu-inventory.cjs
+      - name: Verify native 6.50.0-derived 390x844 layout and REAL mobile navigation
+        working-directory: mydoctor-clone/frontend
+        env:
+          MD_URL: http://127.0.0.1:5173
+        run: node tests/native-app-layout.cjs
       - name: Physically tap EVERY link on the supplied skin clinic directory and inspect real destination
         working-directory: mydoctor-clone/frontend
         env:
@@ -194,6 +199,12 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/original-fact-interactions.cjs
+      - name: Record native-vs-website baseline transition without false pixel pass
+        run: |
+          echo "UI_REFERENCE=Android 6.50.0 React Native/Hermes"
+          echo "LEGACY_WEB_PIXEL_BASELINE=NOT_APPLICABLE"
+          echo "NATIVE_APP_PIXEL_PARITY=NOT_YET_VERIFIED"
+          echo "Screen geometry and physical clicks are checked separately."
       - name: Compare 29 real original factual link heading and price row sets against clone
         if: always()
         working-directory: mydoctor-clone/frontend
@@ -206,14 +217,14 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/original-click-pairs.cjs
-      - name: Verify 29 genuine source screenshot baselines against clone at 10 percent
-        if: always()
+      - name: LEGACY WEBSITE visual reference (not native-app screenshot acceptance) - Verify 29 genuine source screenshot baselines against clone at 10 percent
+        if: ${{ false }}
         working-directory: mydoctor-clone/frontend
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/visual-baseline-29.cjs
-      - name: Compare 29 representative original and clone screen/interaction templates
-        if: always()
+      - name: LEGACY WEBSITE visual reference (not native-app screenshot acceptance) - Compare 29 representative original and clone screen/interaction templates
+        if: ${{ false }}
         working-directory: mydoctor-clone/frontend
         env:
           MD_URL: http://127.0.0.1:5173
@@ -225,8 +236,8 @@ jobs:
         env:
           MD_URL: http://127.0.0.1:5173
         run: node tests/live-smoke.cjs
-      - name: Original vs clone pixel-difference audit
-        if: always()
+      - name: LEGACY WEBSITE visual reference (not native-app screenshot acceptance) - Original vs clone pixel-difference audit
+        if: ${{ false }}
         working-directory: mydoctor-clone/frontend
         env:
           MD_URL: http://127.0.0.1:5173
