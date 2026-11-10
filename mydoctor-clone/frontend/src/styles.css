@@ -264,3 +264,21 @@
    Original question text aligns 20px down from row start. */
 .original-faq-item{min-height:87px;align-items:flex-start}
 .original-faq-item svg{align-self:center}
+
+
+/* Original night-pharmacy screenshot geometry: 52px select rows, two 32px pills,
+   actual clock/calendar/location/telephone icons. */
+.original-pharmacy-controls{padding-top:20px}
+.original-pharmacy-select{height:52px}
+.original-pharmacy-actions{display:flex;gap:8px;align-items:center;margin-top:0}
+.original-pharmacy-open{height:32px;display:inline-flex;align-items:center;gap:5px;
+ padding:0 11px;border-radius:18px;background:#fff;border:1px solid #d7dde5;
+ box-shadow:0 1px 4px #101c2e12;font-size:13px;color:#313c49}
+.original-pharmacy-open svg{color:#12b886;fill:#12b88622}
+.original-pharmacy-open[aria-pressed=true]{color:#2165ee;border-color:#9ac0ff;background:#f1f6ff}
+.original-pharmacy-map{height:32px;display:inline-flex;align-items:center;margin-top:0}
+.original-pharmacy-card{gap:4px}
+.original-pharmacy-card h2{line-height:21px}
+.original-pharmacy-cardline svg{width:16px;height:16px;margin-top:1px;flex-shrink:0}
+.original-pharmacy-cardline svg.pharmacy-time-icon,
+.original-pharmacy-cardline:has(a[href^="tel:"]) svg{color:#2f6eff}
