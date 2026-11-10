@@ -303,3 +303,30 @@
 .review-source-tags{display:flex;gap:7px;flex-wrap:wrap}
 .review-source-tags span{background:#f2f4f6;color:#5b6470;font-size:12px;line-height:16px;
  border-radius:4px;padding:5px 8px}
+
+
+/* Medicine landing source screenshot 42650015118:
+  190px heading/form, 8px separator, 56px bordered quick drug cards. */
+.original-medicine{background:white;padding-bottom:48px}
+.original-medicine-intro{background:#fafbfc;padding:25px 20px 32px}
+.original-medicine-intro h1{font-size:24px;line-height:32px;letter-spacing:-.5px;font-weight:700;margin:0 0 16px}
+.original-medicine-intro p{font-size:14px;line-height:21px;color:#5e6875;margin:0 0 18px}
+.original-medicine-search{display:flex;gap:8px;height:48px}
+.original-medicine-search input{height:48px;flex:1;min-width:0;border-radius:8px;
+ background:white;border:1px solid #e2e7ee;font-size:16px;padding:0 16px;outline-color:#2f6eff}
+.original-medicine-search input::placeholder{color:#8c9aaa}
+.original-medicine-search button{width:66px;flex-shrink:0;border:0;border-radius:8px;
+ background:#2f6eff;color:white;font-size:15px;font-weight:600}
+.original-medicine-clear{padding:6px 0 0;border:0;background:transparent;color:#2f6eff;font-size:12px}
+.original-medicine-divider{height:8px;background:#ecedf1}
+.original-medicine-quick{padding:28px 20px 22px}
+.original-medicine-quick h2{margin:0 0 18px;font-size:20px;font-weight:700;line-height:26px}
+.original-medicine-cards{display:flex;flex-direction:column;gap:10px}
+.original-medicine-cards a{display:flex;align-items:center;min-height:56px;border:1px solid #e0e4e9;
+ border-radius:8px;padding:12px 16px;font-size:15px;line-height:22px;font-weight:550;color:#171e27}
+.original-medicine-categories{padding:18px 20px}
+.original-medicine-categories h2{font-size:18px;font-weight:650;margin:20px 0}
+.original-medicine-effect-links{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.original-medicine-effect-links a{font-size:14px;border:1px solid #e6e9ef;padding:12px;border-radius:8px}
+.original-medicine-directory{margin:18px 20px;padding:14px;border:1px solid #eff1f4;border-radius:8px}
+.original-medicine-directory summary{cursor:pointer;color:#667487;font-size:14px}
