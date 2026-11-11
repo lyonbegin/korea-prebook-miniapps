@@ -24,7 +24,7 @@
 | #22854, #23143 | `GET patient-api/app/configure/{key}/`, 값 `data.value` JSON | 허용 키 1개로 제한한 읽기 전용 원본 API 게이트웨이 |
 | #45648–45649 `MedicalAppointmentSection` | 카드 `borderRadius:16`, `marginHorizontal:12`, `paddingVertical:12`; 구획 `paddingHorizontal:12`; 구분선 `height:1,marginHorizontal:12,marginVertical:8`, `Font type=h3` `비대면 진료`, `최저가 병원 예약`; 원본 버튼 `모든 증상 보기` | 서비스 카드 제목·여백·탭 및 버튼 수정. 세부 행 완전 복원 전 |
 | #45959 `HomeBusinessRegistrationInformation` | 법적 문구 `이용약관`, `개인정보처리방침`, `위치기반서비스이용약관`, `광고 문의 : sales@merakiplace.kr` | 홈 하단 법적 문구 추가 |
-| #48386 `HospitalListScreenComponent` | `TopGNB`, `FlashList`, paging/filter state | 전체 원본 1:1 미구현 |
+| #48386 `HospitalListScreenComponent` | `TopGNB`, `FlashList`, 30건 단위 요청, 상태·정렬·새로고침 | HBC96 목록 셸·원본 API 연결 구현; 원본 인증 필요로 실제 목록 데이터 미확보 |
 
 ## 실제 원본 서버 `HomeNavigationConfig` 응답
 
@@ -55,3 +55,33 @@
 5. 웹 클릭 통과와 원본 Android UI 동일성 통과는 **별개**.
 
 **원칙:** 실제 Hermes 바이트코드/응답에서 확인되지 않은 UI 구성은 `original`이라고 표시하지 않음.
+
+## 2026-11-11 추가: 병원 목록 HBC96 UI 역추적 및 실제 배포
+
+원본 `base.apk/assets/index.android.bundle`을 Hermes HBC 96 파서로 직접 읽어 확인한 값입니다.
+
+| 실제 Hermes 함수 | 코드로 확인된 사실 | 클론 구현 |
+|---|---|---|
+| #48385 `HospitalListScreen` | `HospitalListFilterContextProvider(verticalKey,defaultFilterValues,screenRouteParams)` | 원본 vertical key 전달 |
+| #48386 `HospitalListScreenComponent` | `TopGNB({left:'backButton',center:'title',backgroundColor:white})` | 병원 찾기 상단·뒤로 가기 |
+| #48386 | `useInfiniteHospitalListV2` 초기 `offset:0,limit:30` | 원본 병원 API 30건 단위 요청 |
+| #48386 | `FlashList`, `ListHeaderComponent`, `ListFooterComponent`, `ListEmptyComponent`, `RefreshControl` | 헤더·병원 행·새로고침·에러/빈 상태 분리 |
+| #48386 | `onEndReachedThreshold:0.01`, `estimatedItemSize:50` | 요청 임계값·추정 행 크기 명시 |
+| #48388 `renderListHeader` | `count`, `ordering`, `setOrdering`, `sortingList`, `isFetching`, `verticalKey` 전달 | 실제 정렬 옵션·병원 수 표시; 원본 데이터가 있는 경우만 |
+| #27143 `getHospitalSortingList` | `GET patient-api/v2/hospital/sortings`, `params.vertical_key` | 허용 목록에 API 연결 |
+| #30064 `HospitalListItem` | 행 하단선 `1px #f1f2f4`, 위아래 여백 20, 요소 간격 12; `name,near_subway_name,visiting_hour,badges,image,expense_display` | 원본 반환 필드만 표시하는 목록 행 |
+| #48415 `EmptyHospitalListScreen` | 문구 `조건을 만족하는 병원이 없어요.` | HTTP 200이면서 결과 0건일 때만 |
+| #48414 스타일 | 빈 화면 `paddingTop:120`, 중앙 배치, 이미지 `56×56` | 빈 화면 중앙 배치 및 위치 반영 |
+
+**실제 실행 결과:** GitHub Actions [42948278055](https://github.com/lyonbegin/korea-prebook-miniapps/actions/runs/42948278055), Chromium 모바일 390×844에서 로컬 10/10 및 Railway 10/10 통과. 운영 사이트 직접 홈 원본 메뉴 20/20, 가격 링크 31/31 클릭 통과; 브라우저 JS 오류 0건.
+
+**병원 원본 API 제한:** 익명 요청은 로그인 필요 상태(401)입니다. 모바일 테스트의 병원 목록 행은 **0개**이며, 가짜 병원 자료로 채우지 않습니다. 로그인 필요 상태와 재시도 동작까지 검사했습니다. 실제 병원 목록 카드의 데이터 렌더링과 원본 Android 스크린샷 기반 픽셀 오차는 아직 검증되지 않았습니다.
+
+변경 코드:
+- `frontend/src/NativeHospitalListScreen.jsx` — 30건 원본 페이징, 목록/헤더/새로고침/빈 상태/정렬
+- `frontend/src/App.jsx` — 원본 병원 목록 경로 교체 및 TopGNB 구분
+- `frontend/src/styles.css` — HBC96 행 여백·테두리·빈 상태 스타일
+- `frontend/src/lib/originalGateway.js`, `backend/app/native_catalog.py` — 원본 정렬 API 허용 경로
+- `frontend/tests/native-app-layout.cjs` — 원본 병원 화면 상태·동작·가짜 검색 폼 제거 확인
+
+**완료 판정 범위:** 원본 Hermes 근거를 반영한 레이아웃·기능 구현 및 운영 브라우저 실행 검증. 원본 Android 화면과의 픽셀 동일성은 미검증.
