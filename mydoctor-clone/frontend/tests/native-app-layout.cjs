@@ -132,6 +132,34 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    await page.getByRole("button",{name:"닫기"}).tap();
    return {categories,regionRows:await page.locator('.native-region-price-row').count()};
   });
+  await check("original Hermes HospitalListScreen uses 30-item FlashList, auth-aware empty and refresh",async()=>{
+   await page.goto(base+"/hospital",{waitUntil:"domcontentloaded",timeout:22000});
+   const screen=page.locator('[data-native-hospital-list="hbc96"]');
+   await screen.waitFor({timeout:12000});
+   const list=page.locator('[data-original-component="FlashList"][data-estimated-item-size="50"][data-on-end-reached-threshold="0.01"]');
+   await list.waitFor({timeout:12000});
+   await page.waitForFunction(()=>{
+     const el=document.querySelector('[data-native-hospital-list="hbc96"]');
+     return el&&["auth","loaded","error"].includes(el.getAttribute("data-native-state"));
+   },null,{timeout:24000});
+   const status=await screen.getAttribute("data-native-state");
+   const title=await page.locator(".native-app-back span").innerText();
+   if(!title.includes("병원 찾기"))throw Error("original TopGNB title missing: "+title);
+   if(await page.locator(".md-lookup").count())throw Error("legacy mock lookup remains visible on native hospital list");
+   const rows=await page.locator(".hermes-hospital-row").count();
+   if(status==="auth"){
+     if(!await page.getByText("병원 목록에 로그인이 필요합니다.").count())
+       throw Error("native 401 response hidden");
+     await page.getByRole("button",{name:/다시 조회/}).tap();
+     await page.locator('[data-native-hospital-list="hbc96"]').waitFor({timeout:9000});
+   } else if(status==="loaded"){
+     const label=await page.locator(".hermes-hospital-result-bar strong").innerText();
+     if(!label)throw Error("original hospital list header count missing");
+   } else {
+     throw Error("native hospital source unavailable; cannot accept false success: "+await page.locator(".hermes-hospital-locked").innerText());
+   }
+   return {dataState:status,liveRows:rows,pageSize:30,estimatedItemSize:50,hasNativeTopGNB:true};
+  });
   await check("pharmacy screen is a separate native mobile page",async()=>{
    await page.goto(base+"/pharmacy",{waitUntil:"domcontentloaded"});
    await page.locator(".native-pharmacy-page").waitFor({timeout:10000});
