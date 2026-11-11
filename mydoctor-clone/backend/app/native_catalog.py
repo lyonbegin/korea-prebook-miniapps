@@ -50,6 +50,8 @@ NATIVE_RESOURCES = {
     # Runtime verified: GET allowed, but anonymous access returns 401.
     "hospital-list": ("patient-api/v2/hospital/",
                       ("offset", "limit", "vertical_key", "ordering", "city_ids", "district_ids")),
+    # Hermes #27143 getHospitalSortingList: GET /v2/hospital/sortings?vertical_key=...
+    "hospital-sortings": ("patient-api/v2/hospital/sortings", ("vertical_key",)),
     "pharmacy-nearby": ("patient-api/pharmacist/v2/nearby-pharmacy", ("latitude", "longitude", "lat", "lng", "page", "limit")),
     # Verified with Hermes function 27181/27183 and original anonymous GET 200.
     "lowest-price-categories": ("patient-api/medical-map/lowest-price/categories",
