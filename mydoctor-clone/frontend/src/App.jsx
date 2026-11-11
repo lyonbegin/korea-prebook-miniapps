@@ -13,6 +13,7 @@ import NativeMydLinkScreen from "./NativeMydLinkScreen.jsx";
 import NativeDoctorDirectory from "./NativeDoctorDirectory.jsx";
 import {NativePharmacyScreen,NativeFaqScreen} from "./NativeAdditionalScreens.jsx";
 import NativePriceRegions from "./NativePriceRegions.jsx";
+import NativeHospitalListScreen from "./NativeHospitalListScreen.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -230,39 +231,8 @@ function DoctorScreen({data,go}){
  </div>;
 }
 function HospitalScreen({data,go,verticalKey=""}){
- const[region,setRegion]=useState(""),[dept,setDept]=useState(""),[schedule,setSchedule]=useState(""),[message,setMessage]=useState("");
- const sourceDepts=data.links.filter(v=>v.path.startsWith("/dept-hub/")&&decodeURIComponent(v.path).split("/").filter(Boolean).length===2);
- const availableHours=data.links.filter(v=>v.path.startsWith("/hospital/")&&/야간진료|일요일진료|공휴일진료/.test(decodeURIComponent(v.path)));
- const findRoute=()=>{
-    if(schedule){
-      const existing=availableHours.find(x=>decodeURIComponent(x.path).includes(schedule));
-      return existing?.path+(region?"/"+encodeURIComponent(region):"")||null;
-    }
-    if(dept){
-      const existing=sourceDepts.find(x=>x.label===dept);
-      return existing?.path+(region?"/"+encodeURIComponent(region):"")||null;
-    }
-    if(region)return null;
-    return "/hospital";
- };
- const submitSearch=()=>{
-    const target=findRoute();
-    if(target){setMessage("");go(target)}
-    else setMessage("선택 조건에 해당하는 원본 경로가 아직 확보되지 않았습니다.");
- };
- return <><NativeApiCatalog resource="hospital-list" parameters={verticalKey?{vertical_key:verticalKey}:{}} title="원본 앱 병원 목록" go={go} compact/><section className="md-intro md-hospital-intro"><h1>근처 병원 찾기</h1><p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p></section>
- <section className="md-lookup">
-  <label><MapPin size={19}/><select aria-label="지역" value={region} onChange={e=>setRegion(e.target.value)}><option value="">지역</option>{["서울","경기","인천","부산","대구","광주","대전","울산","세종","경남","경북","전남","전북","강원","충남","충북","제주"].map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
-  <label><BriefcaseMedical size={19}/><select aria-label="진료과" value={dept} onChange={e=>setDept(e.target.value)}><option value="">진료과</option>{DOC_DEPTS.map(x=><option key={x} value={x}>{x}</option>)}</select><ChevronDown size={16}/></label>
-  <label><Stethoscope size={19}/><select aria-label="진료 시간" value={schedule} onChange={e=>setSchedule(e.target.value)}><option value="">모든 진료</option><option value="야간진료">야간진료</option><option value="일요일진료">일요일진료</option><option value="공휴일진료">공휴일진료</option></select><ChevronDown size={16}/></label>
-  <button className="md-blue-button" onClick={submitSearch}>병원 조회하기</button>
-  {message&&<p role="status" className="source-link-pending">{message}</p>}
- </section><section className="md-dept-list"><h2>진료과별 병원</h2><div>{sourceDepts.map(d=><Anchor key={d.path} label={d.label} path={d.path} go={go}/>)}</div></section>
- <section className="md-original-links"><h2>일요일 진료</h2>
- <SourceRows links={data.links.filter(x=>decodeURIComponent(x.path).startsWith("/hospital/일요일진료"))} go={go} kind="hospital-hours"/>
- <h2>야간 진료</h2>
- <SourceRows links={data.links.filter(x=>decodeURIComponent(x.path).startsWith("/hospital/야간진료"))} go={go} kind="hospital-hours"/>
- </section></>;
+ return <NativeHospitalListScreen verticalKey={verticalKey} go={go}
+    legacyLinks={data?.links||[]}/>;
 }
 const ORIGINAL_PRICE_CARD_ORDER=[
 "마운자로","위고비","삭센다","에페","다이어트약","탈모약","여드름약","독감예방접종","가다실9가","대상포진예방접종",
@@ -326,7 +296,7 @@ export default function App(){
  const[route,go]=useNavigation(),s=useSource(route),[menu,setMenu]=useState(false),[expanded,setExpanded]=useState("");
  useEffect(()=>setMenu(false),[route]);
  const home=route==="/",hospitalDetail=route.startsWith("/hospital/detail");
- const routeName=(history.state?.sourceLabel||sourceMenu.roots.flatMap(group=>group.groups.flatMap(g=>g.links))
+ const routeName=(route.split("?")[0]==="/hospital"?"병원 찾기":history.state?.sourceLabel||sourceMenu.roots.flatMap(group=>group.groups.flatMap(g=>g.links))
    .find(item=>item.href===route)?.label)||(()=>{try{return decodeURIComponent(route.split("?")[0].split("/").filter(Boolean).pop()||"홈").replace(/-/g," ")}catch{return"선택한 항목"}})();
  const originalTarget=ORIGINAL+route;
  const navParent=["/","/medical-cost","/telemedicine","/telemedicine/all-department",
@@ -360,7 +330,7 @@ export default function App(){
   </div>:
   <button className="menu-btn" onClick={()=>setMenu(!menu)} aria-label="전체 메뉴" aria-expanded={menu}>{menu?<X size={24}/>:<Menu size={24}/>}</button>}</div>
  {menu&&<nav className="dropdown source-menu" aria-label="원본 전체 메뉴" data-testid="source-menu">{sourceMenu.roots.map(root=><section className="source-menu-section" key={root.key}><button className="source-menu-root" aria-expanded={expanded===root.key} onClick={()=>setExpanded(expanded===root.key?"":root.key)}>{root.label}<ChevronDown size={17}/></button>{expanded===root.key&&root.groups.map(group=><div className="source-menu-group" key={group.title}><h3>{group.title}</h3><div className="source-menu-links">{group.links.map((item,i)=><a key={item.href+"-"+i} href={item.href} data-source-href={item.href} onClick={e=>{e.preventDefault();setMenu(false);go(item.href,{label:item.label})}}>{item.label}<ChevronRight size={14}/></a>)}</div></div>)}</section>)}</nav>}
- </header>}{!home&&!companyPage&&<Breadcrumb route={route} go={go}/>}
+ </header>}{!home&&!companyPage&&!hospitalRoute&&<Breadcrumb route={route} go={go}/>}
  <main className="viewport" data-source-quality={s.data?.sourceQuality||"unavailable"} data-original-complete={s.data?.isCompleteOriginalData?"true":"false"}>
   {nativeRoot?(home?<NativeAppHome data={appData} go={go}/>:
      nativeMydLink?<NativeMydLinkScreen route={route} title={routeName} go={go}/>:
