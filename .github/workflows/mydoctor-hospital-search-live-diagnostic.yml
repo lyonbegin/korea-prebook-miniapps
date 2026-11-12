@@ -43,4 +43,10 @@ jobs:
               if isinstance(x,str):return x[:105]
               return x
             print("PROBE",path,status,json.dumps(shape(data),ensure_ascii=False)[:4000])
+            if path.startswith("/catalog/page?"):
+              links=data.get("facts",{}).get("links",[])
+              print("VERIFIED_PUBLIC_HOSPITAL_LINKS",json.dumps([
+                {"label":x.get("label"),"path":x.get("path"),"evidence":x.get("evidence")}
+                for x in links[:85] if isinstance(x,dict)
+              ],ensure_ascii=False)[:16500])
           PY
