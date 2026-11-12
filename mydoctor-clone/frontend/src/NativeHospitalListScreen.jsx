@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useRef,useState} from "react";
-import {ChevronDown,ChevronRight,MapPin,RefreshCw,Clock3,Hospital} from "lucide-react";
+import {ChevronDown,ChevronRight,MapPin,RefreshCw,Clock3,Hospital,Search,X} from "lucide-react";
 import {fetchNativeCatalog} from "./lib/originalGateway.js";
 
 /**
@@ -45,9 +45,77 @@ function extractSortings(response){
   })).filter(x=>x.key&&x.label);
 }
 function publicHospitalFacts(items){
+  // Cached original /hospital page provides 69 verified public links:
+  // 35 department hubs, 17 Sunday regional links, 17 night regional links.
+  // A directory link is NOT an individual hospital and must be labelled as such.
+  const uniq=new Set();
   return (Array.isArray(items)?items:[])
-    .filter(x=>typeof x?.path==="string"&&x.path.startsWith("/hospital/")&&
-      typeof x?.label==="string").slice(0,100);
+    .filter(x=>typeof x?.path==="string"&&
+      (/^\/hospital\//.test(x.path)||/^\/dept-hub\//.test(x.path))&&
+      typeof x?.label==="string"&&x.label.trim()&&
+      x.evidence!=="synthetic")
+    .filter(x=>{const p=decodeURIComponent(x.path);if(uniq.has(p))return false;uniq.add(p);return true})
+    .slice(0,100);
+}
+function sourceLinkType(item){
+  const p=decodeURIComponent(item.path);
+  if(p.startsWith("/dept-hub/"))return "department";
+  if(p.includes("일요일진료"))return "sunday";
+  if(p.includes("야간진료"))return "night";
+  return "other";
+}
+function SearchHospitalPublicDirectory({links,go}){
+  const [term,setTerm]=useState("");
+  const [category,setCategory]=useState("all");
+  const safeTerm=term.trim().toLocaleLowerCase("ko-KR");
+  const matches=links.filter(item=>{
+    if(category!=="all"&&sourceLinkType(item)!==category)return false;
+    if(!safeTerm)return true;
+    return (item.label+" "+decodeURIComponent(item.path))
+      .toLocaleLowerCase("ko-KR").includes(safeTerm);
+  });
+  const sections=[
+    {key:"all",label:"전체"},
+    {key:"department",label:"진료과"},
+    {key:"night",label:"야간진료"},
+    {key:"sunday",label:"일요일진료"}
+  ];
+  return <section className="hermes-hospital-public-search"
+    data-hospital-public-search={links.length} aria-label="공개 병원 검색">
+    <form className="hermes-hospital-search-form"
+      onSubmit={e=>e.preventDefault()} role="search">
+      <Search size={20} aria-hidden="true"/>
+      <input type="search" aria-label="병원 검색" value={term}
+        onChange={e=>setTerm(e.target.value)}
+        placeholder="진료과 또는 지역으로 병원 찾기"/>
+      {term&&<button type="button" onClick={()=>setTerm("")} aria-label="검색어 지우기"><X size={18}/></button>}
+    </form>
+    <div className="hermes-hospital-public-categories" role="group" aria-label="병원 검색 종류">
+      {sections.map(item=><button key={item.key} type="button"
+        className={category===item.key?"active":""}
+        aria-pressed={category===item.key}
+        onClick={()=>setCategory(item.key)}>{item.label}</button>)}
+    </div>
+    <div className="hermes-hospital-public-summary">
+      <strong>원본 공개 병원 검색 경로 {matches.length}개</strong>
+      <span>원본 사이트에서 확인된 진료과·지역별 연결</span>
+    </div>
+    <div className="hermes-hospital-public-results">
+      {matches.map(item=><a href={item.path} key={item.path}
+        className="hermes-hospital-public-row"
+        onClick={e=>{e.preventDefault();go(item.path,{label:item.label})}}>
+        <span className="hermes-hospital-public-icon"><Hospital size={20} aria-hidden="true"/></span>
+        <span className="hermes-hospital-public-name">{item.label}</span>
+        <ChevronRight size={17} aria-hidden="true"/>
+      </a>)}
+      {!matches.length&&<p role="status" className="hermes-hospital-public-empty">
+        검색어에 해당하는 원본 공개 진료과·지역 링크가 없습니다.
+      </p>}
+    </div>
+    <p className="hermes-hospital-public-caption">
+      검색 결과는 실제 병원 수가 아니라 원본 공개 페이지의 검색 경로 수입니다.
+    </p>
+  </section>;
 }
 function HospitalCard({hospital,onSelect}){
  const image=originalText(hospital.image);
@@ -167,7 +235,8 @@ export default function NativeHospitalListScreen({verticalKey="",go,legacyLinks=
        </div>}
      </div>
    </div>
-   <div ref={listRef} className="hermes-hospital-flash-list"
+   <div ref={listRef}
+     className={"hermes-hospital-flash-list"+(state==="auth"||state==="error"?" hermes-hospital-flash-restricted":"")}
      data-original-component="FlashList" data-estimated-item-size="50"
      data-on-end-reached-threshold="0.01"
      onScroll={onScroll}
@@ -204,13 +273,12 @@ export default function NativeHospitalListScreen({verticalKey="",go,legacyLinks=
      </div>}
      {loadingMore&&<div role="status" className="hermes-hospital-loading-more">추가 병원 목록을 불러오고 있습니다.</div>}
    </div>
-   {sourceLinks.length>0&&<details className="hermes-hospital-secondary-links">
-     <summary>공개 웹사이트의 병원 정보 ({sourceLinks.length})</summary>
-     <div>{sourceLinks.map(link=><a href={link.path} key={link.path}
-       onClick={e=>{e.preventDefault();go(link.path,{label:link.label})}}>
-       {link.label}<ChevronRight size={15} aria-hidden="true"/>
-     </a>)}</div>
-   </details>}
+   {sourceLinks.length>0&&
+     <SearchHospitalPublicDirectory links={sourceLinks} go={go}/>}
+   {!sourceLinks.length&&state==="auth"&&
+     <p role="status" className="hermes-hospital-public-empty">
+       공개 병원 검색 데이터를 불러오고 있습니다.
+     </p>}
    {selected&&<div className="native-data-overlay"
      onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}>
      <section className="native-data-dialog" role="dialog" aria-modal="true"
