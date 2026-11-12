@@ -160,6 +160,39 @@ const base=process.env.MD_URL||"http://127.0.0.1:5173";
    }
    return {dataState:status,liveRows:rows,pageSize:30,estimatedItemSize:50,hasNativeTopGNB:true};
   });
+  await check("recovered hospital search input filters verified public routes and opens skin department by touch",async()=>{
+   await page.goto(base+"/hospital",{waitUntil:"domcontentloaded",timeout:22000});
+   await page.locator('[data-hospital-public-search="69"]').waitFor({timeout:20000});
+   const search=page.getByRole("searchbox",{name:"병원 검색"});
+   await search.fill("피부과");
+   const rows=page.locator(".hermes-hospital-public-row");
+   const matches=await rows.count();
+   if(matches<1)throw Error("verified original skin department must be searchable");
+   const skin=page.locator('.hermes-hospital-public-row[href*="dept-hub/"]').filter({hasText:"피부과"}).first();
+   const path=await skin.getAttribute("href");
+   if(!path)throw Error("skin department result has no original source route");
+   await skin.tap();
+   await page.waitForURL(u=>decodeURIComponent(u.pathname)===decodeURIComponent(path),{timeout:13000});
+   const route=decodeURIComponent(new URL(page.url()).pathname);
+   if(!route.includes("/dept-hub/"))throw Error("skin department not navigated");
+   await page.locator(".viewport").waitFor({timeout:10000});
+   await page.waitForFunction(()=>{
+      const main=document.querySelector("main");
+      return main&&!main.querySelector(".source-route-loading");
+   },null,{timeout:16000});
+   if(await page.locator(".source-route-error").count())
+      throw Error("source department route rejected original data after real touch");
+   await page.goto(base+"/hospital",{waitUntil:"domcontentloaded",timeout:22000});
+   await page.locator('[data-hospital-public-search="69"]').waitFor({timeout:20000});
+   await page.getByRole("searchbox",{name:"병원 검색"}).fill("서울");
+   const cityRows=page.locator(".hermes-hospital-public-row");
+   if(await cityRows.count()<2)throw Error("original Seoul night/Sunday location links not searchable");
+   await page.getByRole("button",{name:"진료과",exact:true}).tap();
+   if(await cityRows.count()!==0)throw Error("search kind filter failed");
+   await search.fill("피부과");
+   if(await cityRows.count()<1)throw Error("department filter failed after term update");
+   return {publicOriginalLinks:69,skinMatches:matches,skinRoute:route,cityMatches:2};
+  });
   await check("pharmacy screen is a separate native mobile page",async()=>{
    await page.goto(base+"/pharmacy",{waitUntil:"domcontentloaded"});
    await page.locator(".native-pharmacy-page").waitFor({timeout:10000});
