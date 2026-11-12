@@ -1,0 +1,46 @@
+name: MyDoctor hospital search LIVE data diagnostics
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths: [.github/workflows/mydoctor-hospital-search-live-diagnostic.yml]
+permissions:
+  contents: read
+jobs:
+  live:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Real production API health, DB coverage, public hospital paths and native failures
+        run: |
+          python3 - <<'PY'
+          import json,urllib.parse,urllib.request,urllib.error
+          base="https://mydoctor-mobile-api-production.up.railway.app"
+          paths=[
+           "/health",
+           "/catalog/status",
+           "/catalog/page?"+urllib.parse.urlencode({"path":"/hospital"}),
+           "/catalog/routes?"+urllib.parse.urlencode({"section":"hospital","limit":20}),
+           "/catalog/routes?"+urllib.parse.urlencode({"section":"dept-hub","limit":10}),
+           "/native/catalog/hospital-sortings",
+           "/native/catalog/hospital-list?offset=0&limit=30"
+          ]
+          for path in paths:
+            req=urllib.request.Request(base+path,headers={"Accept":"application/json"})
+            try:
+              with urllib.request.urlopen(req,timeout=25) as r: status,raw=r.status,r.read(450000)
+            except urllib.error.HTTPError as e: status,raw=e.code,e.read(20000)
+            except Exception as e:
+              print("PROBE",path,"TRANSPORT_ERROR",type(e).__name__,str(e)[:180]);continue
+            try: data=json.loads(raw)
+            except Exception:
+              print("PROBE",path,status,"NON_JSON",len(raw));continue
+            def shape(x,depth=0):
+              if depth>3:return "nested"
+              if isinstance(x,list):return {"length":len(x),"sample":shape(x[0],depth+1) if x else None}
+              if isinstance(x,dict):
+                return {k:shape(v,depth+1) for k,v in list(x.items())[:22]}
+              if isinstance(x,str):return x[:105]
+              return x
+            print("PROBE",path,status,json.dumps(shape(data),ensure_ascii=False)[:4000])
+          PY
