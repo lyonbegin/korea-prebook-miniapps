@@ -8,11 +8,15 @@ mkdir -p "$REPORT"
 adb devices -l | tee "$REPORT/adb_devices.txt"
 adb shell getprop ro.product.cpu.abilist | tee "$REPORT/abi.txt"
 adb shell getprop ro.dalvik.vm.native.bridge | tee "$REPORT/native_bridge.txt"
-adb install-multiple -r "$OUT_DIR/base.apk" "$OUT_DIR"/split_*.apk | tee "$REPORT/install.txt"
+# Keep package files on a normal writable /data/app mount rather than IncFS.
+adb install-multiple --no-incremental -r "$OUT_DIR/base.apk" "$OUT_DIR"/split_*.apk | tee "$REPORT/install.txt"
 adb shell pm path "$PKG" | tee "$REPORT/installed_path.txt"
 # Emulator ARM native bridge may fail to extract an otherwise intact ARM split.
 if adb root >/dev/null 2>&1; then
   adb wait-for-device
+  adb shell setenforce 0 || :
+  adb shell id | tee "$REPORT/root_user.txt"
+  adb shell getenforce | tee "$REPORT/selinux_mode.txt"
   BASE_LINE="$(adb shell pm path "$PKG" | tr -d '\r' | grep '/base.apk' | head -n1 || :)"
   APK_BASE="${BASE_LINE#package:}"
   if [ -n "$APK_BASE" ]; then
@@ -22,11 +26,23 @@ if adb root >/dev/null 2>&1; then
       unzip -joq "$split" 'lib/arm64-v8a/*.so' -d "$REPORT/unmodified_so" || :
     done
     if [ -f "$REPORT/unmodified_so/libreactnative.so" ]; then
-      adb shell "mkdir -p '$PKG_DIR/lib/arm64' && chmod 755 '$PKG_DIR/lib/arm64'"
-      adb push "$REPORT/unmodified_so/." "$PKG_DIR/lib/arm64/" || :
-      adb shell "chmod 644 '$PKG_DIR/lib/arm64/'*.so" || :
-      adb shell "restorecon -RF '$PKG_DIR/lib/arm64'" || :
-      echo "ORIGINAL_NATIVE_SO_RESTORED=1" | tee "$REPORT/so_restore.txt"
+      TARGET="$PKG_DIR/lib/arm64"
+      adb shell "mkdir -p '$TARGET' && chmod 777 '$TARGET'" || :
+      # First try a direct root-ADB copy.
+      if ! adb push "$REPORT/unmodified_so/." "$TARGET/"; then
+        echo "DIRECT_PUSH_FAILED_RETRY_USING_ROOT_SHELL_COPY" | tee "$REPORT/so_restore.txt"
+        adb shell mkdir -p /data/local/tmp/mydoctor_rehost_libs
+        adb push "$REPORT/unmodified_so/." /data/local/tmp/mydoctor_rehost_libs/
+        adb shell "cp -f /data/local/tmp/mydoctor_rehost_libs/*.so '$TARGET/'"
+      fi
+      adb shell "chmod 755 '$TARGET' && chmod 644 '$TARGET/'*.so" || :
+      adb shell "restorecon -RF '$TARGET'" || :
+      adb shell "ls -la '$TARGET/' | head -n 60" | tee "$REPORT/native_so_ls.txt"
+      if adb shell "test -s '$TARGET/libreactnative.so'"; then
+        echo "ORIGINAL_NATIVE_SO_RESTORED=1" | tee "$REPORT/so_restore.txt"
+      else
+        echo "ORIGINAL_NATIVE_SO_RESTORED=0" | tee "$REPORT/so_restore.txt"
+      fi
     fi
   fi
 fi
