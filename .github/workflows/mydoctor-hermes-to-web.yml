@@ -7,6 +7,9 @@ on:
     paths:
       - .github/workflows/mydoctor-hermes-to-web.yml
       - mydoctor-clone/hermes-web/**
+      - mydoctor-clone/frontend/package.json
+      - mydoctor-clone/frontend/vite.config.js
+      - mydoctor-clone/frontend/tests/hermes-web-verification.cjs
 permissions:
   contents: read
 jobs:
@@ -48,6 +51,16 @@ jobs:
             --xapk /tmp/mydoctor-private/original.xapk \
             --out mydoctor-clone/hermes-web/audit \
             --decompiler "$HERMES_DECOMP"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify native component renderer works within React web
+        run: |
+          set -Eeuo pipefail
+          cd mydoctor-clone/frontend
+          npm install --no-audit --no-fund
+          npm run test:hermes-web
+          npm run build
       - name: Publish structural audit only, not proprietary bytecode
         if: always()
         uses: actions/upload-artifact@v4
