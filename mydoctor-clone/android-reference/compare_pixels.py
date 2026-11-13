@@ -33,6 +33,21 @@ def metrics(orig, web, key):
                 mae=round(mae,3),rmse=round(rms,3),
                 tolerance_rgb=THRESHOLD,
                 diff=f"pixel_diff_{key}.png",overlay=f"overlay_{key}.png")
+def is_original_branded_splash(image):
+    """Distinctive exact original blue startup overlay is not a scrollable home page.
+    The 6.50.0 source splash has >=4 of 5 sampling points RGB near (47,110,255).
+    Do not compare splash to web HomeScreen, even with correct foreground activity."""
+    rgb=image.convert("RGB")
+    w,h=rgb.size
+    pts=[(w//2,h//5),(w//2,h//2),(w//2,h*4//5),
+         (w//4,h//3),(w*3//4,h*2//3)]
+    count=0
+    for x,y in pts:
+        r,g,b=rgb.getpixel((x,y))
+        if 36<=r<=62 and 90<=g<=132 and 220<=b<=255:
+            count+=1
+    return count>=4
+
 def verified_original_launch():
     """Reject launcher/splash captures, even when someone saved android_home.png."""
     log=BASE/"launch_result.txt"
@@ -42,6 +57,7 @@ def verified_original_launch():
     launch=log.read_text(encoding="utf-8",errors="replace")
     metadata=meta.read_text(encoding="utf-8",errors="replace")
     if ("APP_LAUNCH_FAILED" in launch
+        or "ORIGINAL_BRANDED_SPLASH_ONLY" in launch
         or "VERIFIED_TOP_ACTIVITY=" not in launch
         or not any("com.merakiplace.mydoctor" in line
                    for line in launch.splitlines()
@@ -62,6 +78,10 @@ def compare(label):
         return dict(name=label,state="MISSING_REFERENCE",
                     android_exists=a.exists(),web_exists=b.exists())
     original=Image.open(a).convert("RGB")
+    if label=="home" and is_original_branded_splash(original):
+        return dict(name=label,state="ORIGINAL_SPLASH_ONLY",original_pixels=list(original.size),
+                    reason="Running original Android app displayed only blue branded startup overlay; cannot compare with true HomeScreen",
+                    android_exists=True,web_exists=True)
     clone=Image.open(b).convert("RGB")
     # Keep screenshot aspect ratio and label scaling explicitly.
     native_scaled=original.resize((WIDTH,HEIGHT),Image.Resampling.LANCZOS)
