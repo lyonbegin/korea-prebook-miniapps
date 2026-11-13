@@ -164,7 +164,21 @@ capture(){
   adb pull /sdcard/window.xml "$OUT/android_${label}.xml" >/dev/null 2>&1 || :
   echo "CAPTURED_ANDROID:$label $(file "$OUT/android_${label}.png")"
 }
+# Each real Android scroll position is archived as a separate 1080x2340
+# screenshot and UI tree. Never synthesize a "full native screenshot".
+capture_scroll_sequence(){
+  local name="$1"; local pages="${2:-7}"
+  local n
+  for ((n=0;n<pages;n++)); do
+    capture "${name}_scroll_$(printf '%02d' "$n")"
+    adb shell input swipe 535 1960 535 550 450 || :
+    sleep 1
+  done
+  echo "NATIVE_SCROLL_SEQUENCE:${name}:${pages}" | tee -a "$OUT/navigation_actions.txt"
+}
 capture home
+capture_scroll_sequence home 9
+# Original screenshot provenance: top activity MUST be the target package.
 # Native React UI labels are extracted from uiautomator when accessibility permits.
 # Each scenario restarts original home and taps only a discovered, displayed element.
 find_tap(){
@@ -209,10 +223,76 @@ for spec in 'medical-cost:최저가|가격 비교|가격비교|최저가 병원|
     adb shell input tap "$x" "$y"
     sleep 5
     capture "$label"
+    capture_scroll_sequence "$label" 6
   else
     echo "$label: NOT_FOUND_IN_ORIGINAL_UI_TREE (not pretending navigated)" | tee -a "$OUT/navigation_actions.txt"
   fi
 done
+# Walk the genuine Android UI toward the tuberculosis-department page.
+# This may require multiple screens; capture each step and never claim the
+# department is reached without an accessible "결핵과" target.
+adb shell am force-stop com.merakiplace.mydoctor || :
+adb shell monkey -p com.merakiplace.mydoctor -c android.intent.category.LAUNCHER 1 > /dev/null 2>&1 || :
+sleep 6
+adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+adb pull /sdcard/window.xml "$OUT/android_home.xml" >/dev/null 2>&1 || :
+if found=$(find_tap "hospital" "병원/약국|병원 찾기|병원찾기|주변 병원"); then
+  x=$(echo "$found" | cut -d'|' -f1); y=$(echo "$found" | cut -d'|' -f2)
+  adb shell input tap "$x" "$y"; sleep 6
+  capture hospital_navigation_from_home
+  capture_scroll_sequence hospital_navigation 5
+  # Return to top of the real hospital screen before testing its filters.
+  for n in 1 2 3 4 5; do adb shell input swipe 540 550 540 1900 200; done
+  sleep 2
+  FOUND_TB=0
+  for stage in 1 2 3 4 5 6 7 8 9 10; do
+    adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+    adb pull /sdcard/window.xml "$OUT/android_live_nav.xml" >/dev/null 2>&1 || :
+    cp "$OUT/android_live_nav.xml" "$OUT/android_tb_probe_$(printf '%02d' "$stage").xml" || :
+    if found=$(python3 - "$OUT/android_live_nav.xml" <<'PY'
+import sys,xml.etree.ElementTree as E,re
+try: root=E.parse(sys.argv[1]).getroot()
+except Exception: sys.exit(2)
+for node in root.iter("node"):
+  text=" ".join([node.get("text",""),node.get("content-desc","")])
+  b=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',node.get("bounds",""))
+  if "결핵과" in text and b:
+    x1,y1,x2,y2=map(int,b.groups())
+    print((x1+x2)//2,(y1+y2)//2,sep="|");sys.exit(0)
+sys.exit(2)
+PY
+); then
+      echo "FOUND_VERIFIED_TB_UI_ELEMENT=$found" | tee -a "$OUT/navigation_actions.txt"
+      x=$(echo "$found" | cut -d'|' -f1); y=$(echo "$found" | cut -d'|' -f2)
+      adb shell input tap "$x" "$y"; sleep 6
+      capture tb_department_candidate
+      capture_scroll_sequence tb_department 12
+      FOUND_TB=1
+      break
+    fi
+    # Native search/filter may be another screen: tap the genuine
+    # "진료과" category control only if visible and not already expanded.
+    if [[ "$stage" == 1 ]]; then
+      cp "$OUT/android_live_nav.xml" "$OUT/android_home.xml"
+      if found=$(find_tap "departments" "진료과|진료 과목|진료과목"); then
+        x=$(echo "$found" | cut -d'|' -f1)
+        y=$(echo "$found" | cut -d'|' -f2)
+        adb shell input tap "$x" "$y"; sleep 3
+        capture hospital_department_filter_open
+      fi
+    fi
+    capture "tb_search_stage_$(printf '%02d' "$stage")"
+    adb shell input swipe 535 1880 535 540 425
+    sleep 1
+  done
+  if [[ "$FOUND_TB" == 0 ]]; then
+    echo "ORIGINAL_TB_DEPARTMENT_NOT_REACHED: UI evidence preserved, no fake screenshot" \
+      | tee -a "$OUT/navigation_actions.txt"
+  fi
+else
+  echo "ORIGINAL_HOSPITAL_HOME_TARGET_NOT_FOUND: UI evidence preserved" \
+    | tee -a "$OUT/navigation_actions.txt"
+fi
 # Original app and overlay are not successful merely because files were created.
 test -s "$OUT/android_home.png"
 echo 'ANDROID_EMULATOR_CAPTURE_COMPLETED'
