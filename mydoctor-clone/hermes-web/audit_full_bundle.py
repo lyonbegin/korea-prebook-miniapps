@@ -44,6 +44,22 @@ def main():
                     text=True,capture_output=True,timeout=100)
                 syntax=(check.returncode==0)
             except subprocess.TimeoutExpired:syntax=False
+        # Run in an isolated short-lived VM to test entrypoint behavior;
+        # a valid JS syntax tree alone does not imply a runnable React web app.
+        isolated_status="not_tested"
+        if exists and syntax:
+            vm = (
+              "const fs=require('fs'),vm=require('vm');"
+              "try{vm.runInNewContext(fs.readFileSync(process.argv[1],'utf8'),"
+              "{console:{log(){},warn(){},error(){}}},{timeout:1800});"
+              "process.stdout.write('completed')}catch(e){process.stdout.write(e.name||'Error')}"
+            )
+            try:
+                outcome=subprocess.run(["node","-e",vm,str(recovered)],
+                                       capture_output=True,text=True,timeout=12)
+                isolated_status=outcome.stdout.strip()[:60] or "no_result"
+            except subprocess.TimeoutExpired:
+                isolated_status="timeout"
         # The source is not output; only coarse structure & module dependencies.
         head=recovered.open("r",encoding="utf-8",errors="replace").read(1024*1024) if exists else ""
         report={
@@ -52,6 +68,7 @@ def main():
             "decompiler_exit":p.returncode,
             "decompiled_js_bytes":size,
             "whole_bundle_syntax_valid":syntax,
+            "isolated_vm_result":isolated_status,
             "has_metro_modules":bool(re.search(r"\\b(__d|__r|metroRequire)\\b",head)),
             "has_native_modules":bool(re.search(r"\\b(NativeModules|TurboModule|ReactNative)\\b",head)),
             "full_web_executable":False,
