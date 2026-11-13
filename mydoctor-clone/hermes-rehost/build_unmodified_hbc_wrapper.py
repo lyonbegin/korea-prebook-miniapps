@@ -73,6 +73,22 @@ def rewrite_manifest_only(blob: bytes) -> tuple[bytes,int]:
         raise RuntimeError("Original APK manifest does not reference source package")
     return blob,replacements
 
+def rewrite_resources_package(blob: bytes) -> tuple[bytes,int]:
+    """Keep resource IDs, split asset paths and entry indexes identical.
+
+    The package string in compiled resources.arsc is stored as UTF16LE
+    (often padded to a 256-byte field). Change only same-length bytes.
+    """
+    count=0
+    for encoding in ("utf-16le","utf-8"):
+        old=SOURCE_PACKAGE.encode(encoding)
+        new=TEST_PACKAGE.encode(encoding)
+        found=blob.count(old)
+        if found:
+            blob=blob.replace(old,new)
+            count+=found
+    return blob,count
+
 def is_old_signature(name: str) -> bool:
     up=name.upper()
     return (up.startswith("META-INF/") and
@@ -82,6 +98,7 @@ def is_old_signature(name: str) -> bool:
 
 def clone_apk(original: Path, dst: Path) -> dict:
     manifest_hits=0
+    resource_hits=0
     total=0
     with zipfile.ZipFile(original) as src, zipfile.ZipFile(dst,"w") as out:
         for item in src.infolist():
@@ -90,11 +107,14 @@ def clone_apk(original: Path, dst: Path) -> dict:
             payload=src.read(item.filename)
             if item.filename=="AndroidManifest.xml":
                 payload,manifest_hits=rewrite_manifest_only(payload)
+            elif item.filename=="resources.arsc":
+                payload,resource_hits=rewrite_resources_package(payload)
             out.writestr(item,payload)
             total+=1
     if manifest_hits<1:
         raise RuntimeError(f"Missing AndroidManifest.xml in {original.name}")
     return {"input":original.name,"manifest_string_replacements":manifest_hits,
+            "resource_package_replacements":resource_hits,
             "copied_entries":total}
 
 def build(xapk: Path, keystore: Path, out: Path):
