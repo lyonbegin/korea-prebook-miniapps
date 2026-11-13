@@ -30,7 +30,7 @@ jobs:
           test -n "$TOOL"
           chmod +x "$TOOL"
           echo "HERMES_DECOMP=$TOOL" >> "$GITHUB_ENV"
-          "$TOOL" --version
+          "$TOOL" --help >/dev/null
       - name: Obtain original app and validate user-supplied HBC hash
         run: |
           set -Eeuo pipefail
