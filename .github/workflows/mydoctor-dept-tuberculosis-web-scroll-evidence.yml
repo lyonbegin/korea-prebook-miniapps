@@ -1,0 +1,47 @@
+name: MyDoctor 결핵과 deployed web entire scroll evidence
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-full-clone-20261109]
+    paths:
+      - .github/workflows/mydoctor-dept-tuberculosis-web-scroll-evidence.yml
+      - mydoctor-clone/android-reference/capture_web.cjs
+permissions:
+  contents: read
+jobs:
+  real-deployed-web-scroll:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install real Chrome screenshot dependencies
+        run: |
+          cd mydoctor-clone/frontend
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Capture real deployed tuberculosis page complete scroll
+        run: node mydoctor-clone/android-reference/capture_web.cjs
+      - name: Require original website geometry and full-scroll screenshots
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,sys
+          root=Path("mydoctor-clone/android-reference/artifacts")
+          p=root/"web_dept_tuberculosis_scroll_manifest.json"
+          assert p.exists(),"NO_LIVE_WEB_SCROLL_EVIDENCE"
+          d=json.loads(p.read_text())
+          print("WEB_SCROLL_EVIDENCE",d["geometry"],"frames",len(d["locations"]))
+          assert d["geometry"]["pageHeight"]>=844
+          assert len(d["locations"])>=1
+          assert (root/"web_dept-tuberculosis_full.png").stat().st_size>10000
+          PY
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-deployed-web-tuberculosis-full-scroll-390x844
+          path: mydoctor-clone/android-reference/artifacts/
+          retention-days: 30
+          if-no-files-found: warn
