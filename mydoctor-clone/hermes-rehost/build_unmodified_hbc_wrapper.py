@@ -1,155 +1,157 @@
 #!/usr/bin/env python3
-"""Byte-for-byte Hermes HBC rehost experiment.
+"""Rehost the ORIGINAL Hermes HBC96 and native runtime without recompilation.
 
-Makes a separately installable Android test package from the original split APK
-runtime. It does NOT decompile, recompile or alter index.android.bundle.
-Use only with an APK that you are entitled to inspect and run.
+Re-signs all original APK splits with a different, same-length package ID.
+The binary AndroidManifest.xml strings are patched in-place to preserve
+Android resource tables, DEX, JS bytecode and all native shared libraries.
+This is a private inspection tool, NOT a production or redistributable app.
 """
 from __future__ import annotations
+
 import argparse
 import hashlib
 import json
-import re
-import shutil
 import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
 
 SOURCE_PACKAGE = "com.merakiplace.mydoctor"
-TEST_PACKAGE = "com.hitel.mydoctor.hermes"
+TEST_PACKAGE = "com.hitelrehost.mydoctor"
 EXPECTED_HBC_SHA256 = "6c99d3d6766668dd29909eb49edb92a004e588b7f49c8f93a54730c31e9a4802"
 BUNDLE_PATH = "assets/index.android.bundle"
+assert len(SOURCE_PACKAGE) == len(TEST_PACKAGE)
 
 def sha256(blob: bytes) -> str:
     return hashlib.sha256(blob).hexdigest()
 
 def command(*args):
-    print("RUN", " ".join(map(str, args)), flush=True)
-    subprocess.run(list(map(str, args)), check=True)
+    cmd = [str(a) for a in args]
+    print("RUN", " ".join(cmd), flush=True)
+    subprocess.run(cmd, check=True)
 
-def bundle_sha(apk: Path) -> str:
+def hbc_sha(apk: Path) -> str:
     with zipfile.ZipFile(apk) as z:
         return sha256(z.read(BUNDLE_PATH))
 
-def check_original(apks: list[Path]) -> tuple[Path, dict]:
-    bases = []
+def find_bundle_base(apks: list[Path]) -> Path:
+    bases=[]
     for apk in apks:
-        with zipfile.ZipFile(apk) as archive:
-            if BUNDLE_PATH in archive.namelist():
+        with zipfile.ZipFile(apk) as z:
+            if BUNDLE_PATH in z.namelist():
                 bases.append(apk)
-    if len(bases) != 1:
-        raise RuntimeError(f"Need exactly one APK with the Hermes bundle, found {bases}; input APKs: {[p.name for p in apks]}")
-    base = bases[0]
-    actual = bundle_sha(base)
-    if actual != EXPECTED_HBC_SHA256:
-        raise RuntimeError(f"Wrong ORIGINAL bundle. Expected {EXPECTED_HBC_SHA256}, got {actual}")
-    so = {}
-    for path in apks:
-        with zipfile.ZipFile(path) as z:
-            for item in z.namelist():
-                if item.startswith("lib/") and item.endswith(".so"):
-                    so[item] = sha256(z.read(item))
-    if "lib/arm64-v8a/libreactnative.so" not in so:
-        raise RuntimeError("Original ARM64 React Native runtime missing from XAPK")
-    return base, so
+    if len(bases)!=1:
+        raise RuntimeError(f"Need one original HBC APK, found {bases}; APKs: {[p.name for p in apks]}")
+    actual=hbc_sha(bases[0])
+    if actual!=EXPECTED_HBC_SHA256:
+        raise RuntimeError(f"Unrecognized HBC: {actual}, expected {EXPECTED_HBC_SHA256}")
+    return bases[0]
 
-def change_manifest(decoded_dir: Path):
-    manifest = decoded_dir / "AndroidManifest.xml"
-    s = manifest.read_text(encoding="utf-8")
-    # Preserve original component class names: merely changing the package
-    # would redirect relative component names to missing Java/Kotlin classes.
-    for attr in ("android:name", "android:targetActivity"):
-        s = re.sub(
-            rf'({attr}=")(\.[A-Za-z_][A-Za-z0-9_.$]*")',
-            lambda m: m.group(1) + SOURCE_PACKAGE + m.group(2)[0:],
-            s,
-        )
-    match = re.search(r'(<manifest\b[^>]*\bpackage=")([^"]+)(")', s, re.S)
-    if match is None or match.group(2) != SOURCE_PACKAGE:
-        raise RuntimeError("Manifest package not recognized; refusing blind rewrite")
-    start, end = match.span(2)
-    s = s[:start] + TEST_PACKAGE + s[end:]
-    # Provider authorities must be unique for side-by-side installation.
-    s = re.sub(
-        r'(android:(?:authorities|taskAffinity|permission|readPermission|writePermission)=")([^"]+)(")',
-        lambda m: m.group(1) + m.group(2).replace(SOURCE_PACKAGE, TEST_PACKAGE) + m.group(3),
-        s,
-    )
-    manifest.write_text(s, encoding="utf-8")
+def native_hashes(apks: list[Path]) -> dict[str,str]:
+    native={}
+    for apk in apks:
+        with zipfile.ZipFile(apk) as z:
+            for name in z.namelist():
+                if name.startswith("lib/") and name.endswith(".so"):
+                    native[name]=sha256(z.read(name))
+    return native
 
-def build(xapk: Path, apktool: Path, keystore: Path, out: Path):
-    if not xapk.is_file():
-        raise RuntimeError(f"Missing XAPK: {xapk}")
-    if not apktool.is_file():
-        raise RuntimeError(f"Missing apktool.jar: {apktool}")
-    out.mkdir(parents=True, exist_ok=True)
-    report = {
-        "source_xapk": xapk.name,
-        "source_package": SOURCE_PACKAGE,
-        "test_package": TEST_PACKAGE,
-        "expected_hbc_sha256": EXPECTED_HBC_SHA256,
-        "app_files": [],
-        "native_libraries": 0,
-        "HBC_UNMODIFIED": False,
-        "SIGNED": False,
-        "RUNTIME_UI_VERIFIED": False,
-    }
-    with tempfile.TemporaryDirectory(prefix="hbc-rehost-") as temp:
-        temp = Path(temp)
-        with zipfile.ZipFile(xapk) as archive:
-            apk_members = [n for n in archive.namelist() if n.lower().endswith(".apk")]
-            if len(apk_members) < 2:
-                raise RuntimeError("Expected Android split XAPK, not a single APK")
-            for member in apk_members:
-                if ".." in Path(member).parts:
-                    raise RuntimeError("Unsafe zip member path")
-                archive.extract(member, temp / "source")
-        apks = sorted((temp / "source").rglob("*.apk"))
-        base, so_before = check_original(apks)
-        report["native_libraries"] = len(so_before)
-        split_idx = 0
-        for i, apk in enumerate(apks):
-            dest = temp / f"decoded_{i}"
-            command("java", "-jar", apktool, "d", "-f", "-s", "-o", dest, apk)
-            change_manifest(dest)
-            unsigned = temp / f"unsigned_{i}.apk"
-            command("java", "-jar", apktool, "b", "-o", unsigned, dest)
-            aligned = temp / f"aligned_{i}.apk"
-            command("zipalign", "-f", "-p", "4", unsigned, aligned)
-            if apk == base:
-                target = out / "base.apk"
-            else:
-                target = out / f"split_{split_idx}.apk"
-                split_idx += 1
-            command("apksigner", "sign", "--ks", keystore,
-                    "--ks-key-alias", "rehost",
-                    "--ks-pass", "pass:android",
-                    "--key-pass", "pass:android",
-                    "--out", target, aligned)
-            command("apksigner", "verify", "--verbose", target)
-            report["app_files"].append(target.name)
-        rebound = out / "base.apk"
-        report["actual_hbc_sha256"] = bundle_sha(rebound)
-        report["HBC_UNMODIFIED"] = report["actual_hbc_sha256"] == EXPECTED_HBC_SHA256
-        so_after = {}
-        for signed in out.glob("*.apk"):
-            with zipfile.ZipFile(signed) as z:
-                for name in z.namelist():
-                    if name.startswith("lib/") and name.endswith(".so"):
-                        so_after[name] = sha256(z.read(name))
-        report["NATIVE_LIBRARIES_UNMODIFIED"] = so_before == so_after
+def rewrite_manifest_only(blob: bytes) -> tuple[bytes,int]:
+    # This is length-neutral for both Android binary XML UTF-8 and UTF-16
+    # string tables; unlike APKTool rebuild it leaves every XML chunk intact.
+    original_len=len(blob)
+    replacements=0
+    for encoding in ("utf-16le","utf-8"):
+        old=SOURCE_PACKAGE.encode(encoding)
+        new=TEST_PACKAGE.encode(encoding)
+        if len(old)!=len(new):
+            raise RuntimeError("Unsafe binary XML string length change")
+        occurrences=blob.count(old)
+        blob=blob.replace(old,new)
+        replacements+=occurrences
+    if len(blob)!=original_len or replacements<1:
+        raise RuntimeError("Original APK manifest does not reference source package")
+    return blob,replacements
+
+def is_old_signature(name: str) -> bool:
+    up=name.upper()
+    return (up.startswith("META-INF/") and
+            (up.endswith(".SF") or up.endswith(".RSA") or
+             up.endswith(".DSA") or up.endswith(".EC") or
+             up.endswith("MANIFEST.MF")))
+
+def clone_apk(original: Path, dst: Path) -> dict:
+    manifest_hits=0
+    total=0
+    with zipfile.ZipFile(original) as src, zipfile.ZipFile(dst,"w") as out:
+        for item in src.infolist():
+            if is_old_signature(item.filename):
+                continue
+            payload=src.read(item.filename)
+            if item.filename=="AndroidManifest.xml":
+                payload,manifest_hits=rewrite_manifest_only(payload)
+            out.writestr(item,payload)
+            total+=1
+    if manifest_hits<1:
+        raise RuntimeError(f"Missing AndroidManifest.xml in {original.name}")
+    return {"input":original.name,"manifest_string_replacements":manifest_hits,
+            "copied_entries":total}
+
+def build(xapk: Path, keystore: Path, out: Path):
+    if not xapk.exists(): raise RuntimeError(f"Original XAPK absent: {xapk}")
+    out.mkdir(parents=True,exist_ok=True)
+    report={"original":xapk.name,"original_package":SOURCE_PACKAGE,
+            "rehost_package":TEST_PACKAGE,
+            "expected_hbc_sha256":EXPECTED_HBC_SHA256,
+            "splits":[],"SIGNED":False,"HBC_UNMODIFIED":False,
+            "NATIVE_LIBRARIES_UNMODIFIED":False,
+            "RUNTIME_UI_VERIFIED":False}
+    with tempfile.TemporaryDirectory(prefix="mydoctor-native-hbc-") as tmp:
+        temp=Path(tmp)
+        with zipfile.ZipFile(xapk) as z:
+            apknames=[name for name in z.namelist() if name.lower().endswith(".apk")]
+            if len(apknames)<2: raise RuntimeError("Expected split XAPK")
+            for name in apknames:
+                if ".." in Path(name).parts: raise RuntimeError("Unsafe XAPK entry")
+                z.extract(name,temp/"source")
+        source=sorted((temp/"source").rglob("*.apk"))
+        base=find_bundle_base(source)
+        original_native=native_hashes(source)
+        if "lib/arm64-v8a/libreactnative.so" not in original_native:
+            raise RuntimeError("Missing original ARM64 React Native library")
+        split_number=0
+        for apk in source:
+            output_name="base.apk" if apk==base else f"split_{split_number}.apk"
+            if apk!=base:split_number+=1
+            repacked=temp/("tmp_"+output_name)
+            entry=clone_apk(apk,repacked)
+            aligned=temp/("aligned_"+output_name)
+            command("zipalign","-f","-P","16","4",repacked,aligned)
+            signed=out/output_name
+            command("apksigner","sign","--min-sdk-version","24",
+                    "--ks",keystore,"--ks-key-alias","rehost",
+                    "--ks-pass","pass:android","--key-pass","pass:android",
+                    "--out",signed,aligned)
+            command("apksigner","verify","--min-sdk-version","24",
+                    "--verbose",signed)
+            entry["output"]=output_name
+            report["splits"].append(entry)
+        report["actual_hbc_sha256"]=hbc_sha(out/"base.apk")
+        report["HBC_UNMODIFIED"]=report["actual_hbc_sha256"]==EXPECTED_HBC_SHA256
+        report["native_libraries"]=len(original_native)
+        report["NATIVE_LIBRARIES_UNMODIFIED"]=(original_native==native_hashes(list(out.glob("*.apk"))))
+        report["SIGNED"]=True
+        (out/"build_report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+        print("BUILD_RESULT",json.dumps(report,ensure_ascii=False),flush=True)
         if not report["HBC_UNMODIFIED"] or not report["NATIVE_LIBRARIES_UNMODIFIED"]:
-            raise RuntimeError("Bytecode or native libraries changed during packaging")
-        report["SIGNED"] = True
-    (out / "build_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2))
-    print("BUILD_RESULT", json.dumps(report, ensure_ascii=False), flush=True)
+            raise RuntimeError("Hermes bytecode or original native .so bytes changed")
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument("--xapk", type=Path, required=True)
-    p.add_argument("--apktool", type=Path, required=True)
-    p.add_argument("--keystore", type=Path, required=True)
-    p.add_argument("--out", type=Path, required=True)
-    a = p.parse_args()
-    build(a.xapk, a.apktool, a.keystore, a.out)
+if __name__=="__main__":
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--xapk",type=Path,required=True)
+    parser.add_argument("--apktool",type=Path,required=False,
+                        help="Unused compatibility switch; binary XML is preserved directly")
+    parser.add_argument("--keystore",type=Path,required=True)
+    parser.add_argument("--out",type=Path,required=True)
+    args=parser.parse_args()
+    build(args.xapk,args.keystore,args.out)
