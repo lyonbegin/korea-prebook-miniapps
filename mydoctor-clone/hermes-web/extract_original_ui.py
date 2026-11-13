@@ -11,7 +11,6 @@ import argparse
 import hashlib
 import json
 import re
-import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -54,8 +53,8 @@ def bundle_from_xapk(xapk: Path) -> tuple[bytes, dict]:
                     if BUNDLE in apk.namelist():
                         found.append((name, apk.read(BUNDLE)))
                     for f in apk.infolist():
-                        if f.filename.startswith(("assets/", "res/")) and
-                           f.filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".svg", ".ttf", ".otf")):
+                        if (f.filename.startswith(("assets/", "res/")) and
+                            f.filename.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".svg", ".ttf", ".otf"))):
                             assets.append({"apk": name, "name": f.filename, "size": f.file_size})
         if len(found) != 1:
             raise ValueError(f"Expected exactly one Hermes bundle; found {len(found)}")
