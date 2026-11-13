@@ -33,7 +33,7 @@ jobs:
           echo '66cf4524a4a45a7f56567d08b2c9b6ec237bcdd78cee69fd4a59c8a0243aeafa  mydoctor-clone/hermes-rehost/tools/apktool.jar' | sha256sum -c
           SDK_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
           echo "$SDK_TOOLS" >> "$GITHUB_PATH"
-          "$SDK_TOOLS/zipalign" -h >/dev/null
+          test -x "$SDK_TOOLS/zipalign"
           "$SDK_TOOLS/apksigner" version
           keytool -genkeypair -noprompt -keystore mydoctor-clone/hermes-rehost/tools/rehost.keystore \
             -alias rehost -keyalg RSA -keysize 2048 -validity 7 \
