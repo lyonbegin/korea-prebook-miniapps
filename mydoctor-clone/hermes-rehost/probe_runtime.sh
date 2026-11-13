@@ -79,14 +79,17 @@ except Exception:pass
 dialog=any(("isn't responding" in t or "Close app" in t or
             "System UI isn't responding" in t) for t in labels)
 if dialog:
-    button=next((n for n in nodes if n.get("text","")=="Wait"),None)
+    launcher_anr=any("Pixel Launcher isn't responding" in t for t in labels)
+    # Close ONLY the crashed system launcher, never the original MyDoctor app.
+    action="Close app" if launcher_anr else "Wait"
+    button=next((n for n in nodes if n.get("text","")==action),None)
     if button is not None:
         box=re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]",button.get("bounds",""))
         if box:
             a,b,c,d=map(int,box.groups())
-            print(f"DIALOG|{(a+c)//2}|{(b+d)//2}|system_anr")
+            print(f"DIALOG|{(a+c)//2}|{(b+d)//2}|action_{action.replace(' ','_')}")
             sys.exit(0)
-    print("DIALOG|||system_anr_no_wait_button")
+    print("DIALOG|||system_anr_no_action_button")
 elif foreground and len(labels)>=2 and any(
     word in t for t in labels
     for word in ("비대면","진료","병원","의사","약국","로그인","최저가",
@@ -106,7 +109,7 @@ PY
     break
   fi
   if [ "$STATUS" = "DIALOG" ] && [ -n "$TAP_X" ] && [ -n "$TAP_Y" ]; then
-    echo "DISMISSING_ONLY_SYSTEM_ANR_WITH_WAIT=$TAP_X,$TAP_Y" | tee -a "$REPORT/ui_probe_history.txt"
+    echo "DISMISSING_SYSTEM_ANR=$REASON:$TAP_X,$TAP_Y" | tee -a "$REPORT/ui_probe_history.txt"
     adb shell input tap "$TAP_X" "$TAP_Y" || :
   fi
 done
