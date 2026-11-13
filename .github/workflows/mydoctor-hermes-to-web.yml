@@ -51,6 +51,13 @@ jobs:
             --xapk /tmp/mydoctor-private/original.xapk \
             --out mydoctor-clone/hermes-web/audit \
             --decompiler "$HERMES_DECOMP"
+      - name: Test full Hermes bundle JavaScript recovery without exporting source
+        run: |
+          set -Eeuo pipefail
+          python3 mydoctor-clone/hermes-web/audit_full_bundle.py \
+            --xapk /tmp/mydoctor-private/original.xapk \
+            --out mydoctor-clone/hermes-web/audit \
+            --decompiler "$HERMES_DECOMP"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -66,6 +73,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mydoctor-hermes-web-structural-audit
-          path: mydoctor-clone/hermes-web/audit/structural_audit.json
+          path: mydoctor-clone/hermes-web/audit/*.json
           if-no-files-found: warn
           retention-days: 7
