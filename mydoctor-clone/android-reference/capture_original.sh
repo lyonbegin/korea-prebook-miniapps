@@ -156,6 +156,59 @@ if ! adb shell pidof com.merakiplace.mydoctor >/dev/null || [[ "$TOP" != *com.me
   exit 8
 fi
 
+# A resumed MainActivity is NOT the app home. The actual 6.50.0 splash is
+# uniform RGB approximately (47,110,255), with NO navigable accessibility nodes.
+# Do not call a splash screenshot 'original home' or run pixel parity on it.
+REAL_HOME_VISIBLE=0
+for boot_probe in $(seq 1 24); do
+  adb exec-out screencap -p > "$OUT/android_boot_probe.png" || :
+  if [[ "$boot_probe" == 1 || "$boot_probe" == 8 || "$boot_probe" == 16 || "$boot_probe" == 24 ]]; then
+    cp "$OUT/android_boot_probe.png" "$OUT/android_boot_probe_$(printf '%02d' "$boot_probe").png" || :
+  fi
+  if python3 - "$OUT/android_boot_probe.png" <<'PY'
+import sys
+from PIL import Image
+try:
+  im=Image.open(sys.argv[1]).convert("RGB")
+  w,h=im.size
+  points=[(w//2,h//5),(w//2,h//2),(w//2,h*4//5),(w//4,h//3),(w*3//4,h*2//3)]
+  matches=sum(36<=im.getpixel((x,y))[0]<=62 and
+              90<=im.getpixel((x,y))[1]<=132 and
+              220<=im.getpixel((x,y))[2]<=255 for x,y in points)
+  if matches>=4:sys.exit(1)
+except Exception:
+  sys.exit(2)
+PY
+  then
+    adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+    adb pull /sdcard/window.xml "$OUT/android_boot_probe.xml" >/dev/null 2>&1 || :
+    if python3 - "$OUT/android_boot_probe.xml" <<'PY'
+import sys,xml.etree.ElementTree as ET
+try:
+ root=ET.parse(sys.argv[1]).getroot()
+ labels=[(node.get("text","")+" "+node.get("content-desc","")).strip()
+         for node in root.iter("node")]
+ sys.exit(0 if any(x for x in labels) else 1)
+except Exception:sys.exit(2)
+PY
+    then
+      REAL_HOME_VISIBLE=1
+      echo "ORIGINAL_CONTENT_READY_AFTER_SPLASH_PROBE=$boot_probe" | tee -a "$OUT/launch_result.txt"
+      break
+    fi
+  fi
+  if ! adb shell pidof com.merakiplace.mydoctor >/dev/null; then
+    echo "ORIGINAL_PROCESS_EXITED_BEFORE_CONTENT_READY" | tee -a "$OUT/launch_result.txt"
+    break
+  fi
+  sleep 5
+done
+if [[ "$REAL_HOME_VISIBLE" != 1 ]]; then
+  echo "ORIGINAL_BRANDED_SPLASH_ONLY: no real visible navigable UI, pixel comparison forbidden" \
+    | tee -a "$OUT/launch_result.txt"
+  adb logcat -d -v threadtime > "$OUT/native_after_splash_logcat.txt" || :
+  exit 9
+fi
 # Save real emulator frames, full Android UI hierarchy, and visible screen text.
 capture(){
   local label="$1"
@@ -295,4 +348,6 @@ else
 fi
 # Original app and overlay are not successful merely because files were created.
 test -s "$OUT/android_home.png"
+adb logcat -d -v threadtime > "$OUT/native_after_navigation_logcat.txt" || :
+# All screenshot rows are physical swipes on the actual original activity.
 echo 'ANDROID_EMULATOR_CAPTURE_COMPLETED'
