@@ -76,7 +76,10 @@ def decompile_functions(decompiler: str, hbc_file: Path, private_dir: Path) -> d
                                  "--function", str(number)],
                                 text=True, capture_output=True, timeout=90)
         output = result.stdout
-        (private_dir / f"{number}.js.txt").write_text(output, encoding="utf-8")
+        js_path = private_dir / f"{number}.js"
+        js_path.write_text(output, encoding="utf-8")
+        parse = subprocess.run(["node", "--check", str(js_path)],
+                               text=True, capture_output=True, timeout=20) if output else None
         audit[label] = {
             "function_id": number,
             "exit_code": result.returncode,
@@ -85,6 +88,7 @@ def decompile_functions(decompiler: str, hbc_file: Path, private_dir: Path) -> d
             "ui_tokens": [p for p in UI_PRIMITIVES if re.search(r"\b"+re.escape(p)+r"\b",output)],
             "style_tokens": [p for p in STYLE_PROPERTIES if re.search(r"\b"+re.escape(p)+r"\b",output)],
             "has_decompilation": result.returncode == 0 and len(output.strip()) > 20,
+            "js_syntax_valid": bool(parse and parse.returncode == 0),
             "direct_web_js_verified": False
         }
     return audit
@@ -120,7 +124,8 @@ def main():
         print("HBC_VERIFIED", origin["sha256"], "ASSETS", origin["assets_total"])
         for name, item in audit.items():
             print("FUNCTION", name, item["function_id"], "decoded", item["has_decompilation"],
-                  "primitives", ",".join(item["ui_tokens"]))
+                  "primitives", ",".join(item["ui_tokens"]),
+                  "js_syntax_valid",item["js_syntax_valid"])
         if not all(x["has_decompilation"] for x in audit.values()):
             raise SystemExit("Selected Hermes functions were not all decompiled")
         print("STRUCTURAL_AUDIT_READY", args.out / "structural_audit.json")
