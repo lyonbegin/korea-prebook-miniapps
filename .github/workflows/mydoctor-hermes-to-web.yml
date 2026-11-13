@@ -1,0 +1,58 @@
+name: MyDoctor original Hermes to React web extraction proof
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/mydoctor-hermes-to-react-web-20261114
+    paths:
+      - .github/workflows/mydoctor-hermes-to-web.yml
+      - mydoctor-clone/hermes-web/**
+permissions:
+  contents: read
+jobs:
+  extract-original-hbc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install verified Hermes decompiler
+        run: |
+          set -Eeuo pipefail
+          mkdir -p /tmp/mydoctor-tool
+          curl -fLsS --retry 3 https://github.com/SymbioticSec/hermes-decomp/releases/download/v0.2.4/hermes-decomp-v0.2.4-linux-x86_64.tar.gz -o /tmp/mydoctor-tool/compiler.tar.gz
+          curl -fLsS --retry 3 https://github.com/SymbioticSec/hermes-decomp/releases/download/v0.2.4/SHA256SUMS -o /tmp/mydoctor-tool/SHA256SUMS
+          (cd /tmp/mydoctor-tool && grep 'hermes-decomp-v0.2.4-linux-x86_64.tar.gz' SHA256SUMS | sed 's/hermes-decomp-v0.2.4-linux-x86_64.tar.gz/compiler.tar.gz/' | sha256sum -c -)
+          tar -xzf /tmp/mydoctor-tool/compiler.tar.gz -C /tmp/mydoctor-tool
+          TOOL="$(find /tmp/mydoctor-tool -type f -name hermes-decomp | head -n1)"
+          test -n "$TOOL"
+          chmod +x "$TOOL"
+          echo "HERMES_DECOMP=$TOOL" >> "$GITHUB_ENV"
+          "$TOOL" --version
+      - name: Obtain original app and validate user-supplied HBC hash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p /tmp/mydoctor-private
+          curl -fL --retry 3 --connect-timeout 20 --max-time 280 \
+            --user-agent 'Mozilla/5.0 Chrome/124.0.0.0 Safari/537.36' \
+            'https://d.apkpure.net/b/XAPK/com.merakiplace.mydoctor?nc=arm64-v8a&sv=24&versionCode=1206' \
+            -o /tmp/mydoctor-private/original.xapk
+          unzip -tqq /tmp/mydoctor-private/original.xapk
+      - name: Recover original UI function structures without publishing code
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile mydoctor-clone/hermes-web/extract_original_ui.py
+          python3 mydoctor-clone/hermes-web/extract_original_ui.py \
+            --xapk /tmp/mydoctor-private/original.xapk \
+            --out mydoctor-clone/hermes-web/audit \
+            --decompiler "$HERMES_DECOMP"
+      - name: Publish structural audit only, not proprietary bytecode
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-hermes-web-structural-audit
+          path: mydoctor-clone/hermes-web/audit/structural_audit.json
+          if-no-files-found: warn
+          retention-days: 7
