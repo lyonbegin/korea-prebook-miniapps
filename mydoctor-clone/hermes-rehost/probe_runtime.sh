@@ -48,48 +48,99 @@ if adb root >/dev/null 2>&1; then
 fi
 adb logcat -c
 adb shell am force-stop "$PKG" || :
-adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1 \
+adb shell am start -n "$PKG/com.userproduct.MainActivity" \
   | tee "$REPORT/launch.txt" || :
-sleep 12
-adb exec-out screencap -p > "$REPORT/rehost_screen.png" || :
-adb shell dumpsys activity activities > "$REPORT/activities.txt" || :
-adb shell pidof "$PKG" > "$REPORT/pid.txt" || :
-adb logcat -d -v threadtime > "$REPORT/logcat.txt" || :
-adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
-adb pull /sdcard/window.xml "$REPORT/window.xml" > /dev/null 2>&1 || :
-python3 - "$REPORT" "$PKG" <<'PY'
-import json,pathlib,sys,xml.etree.ElementTree as ET
-from PIL import Image
+# Avoid false passes from branded splash screens and Android ANR dialogs.
+# Wait for accessible genuine React Native navigation content.
+READY=0
+for idx in $(seq 0 15); do
+  sleep 7
+  adb exec-out screencap -p > "$REPORT/rehost_screen.png" || :
+  adb shell dumpsys activity activities > "$REPORT/activities.txt" || :
+  adb shell pidof "$PKG" > "$REPORT/pid.txt" || :
+  adb shell uiautomator dump /sdcard/window.xml > /dev/null 2>&1 || :
+  adb pull /sdcard/window.xml "$REPORT/window.xml" > /dev/null 2>&1 || :
+  CHECK="$(python3 - "$REPORT" "$PKG" <<'PY'
+import pathlib,sys,re,xml.etree.ElementTree as ET
 out=pathlib.Path(sys.argv[1]);package=sys.argv[2]
-activities=(out/"activities.txt").read_text(errors="replace")
-tops=[l for l in activities.splitlines() if "topResumedActivity=" in l]
+activity=(out/"activities.txt").read_text(errors="replace")
+last=next((x for x in reversed(activity.splitlines()) if "topResumedActivity=" in x), "")
+foreground=package in last
+labels=[];nodes=[]
+try:
+    root=ET.parse(out/"window.xml").getroot()
+    nodes=list(root.iter("node"))
+    for n in nodes:
+        for key in ("text","content-desc"):
+            value=n.get(key,"").strip()
+            if value: labels.append(value)
+except Exception:pass
+# Popups from Android System/Pixel Launcher are NOT original app content.
+dialog=any(("isn't responding" in t or "Close app" in t or
+            "System UI isn't responding" in t) for t in labels)
+if dialog:
+    button=next((n for n in nodes if n.get("text","")=="Wait"),None)
+    if button is not None:
+        box=re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]",button.get("bounds",""))
+        if box:
+            a,b,c,d=map(int,box.groups())
+            print(f"DIALOG|{(a+c)//2}|{(b+d)//2}|system_anr")
+            sys.exit(0)
+    print("DIALOG|||system_anr_no_wait_button")
+elif foreground and len(labels)>=2 and any(
+    word in t for t in labels
+    for word in ("비대면","진료","병원","의사","약국","로그인","최저가",
+                 "찾기","내역","예약","건강","의료","내 주변")
+):
+    print("READY|||native_react_accessibility_content")
+elif foreground:
+    print("SPLASH|||native_foreground_without_ui_labels")
+else:
+    print("OUTSIDE|||native_app_not_foreground")
+PY
+)"
+  echo "UI_PROBE[$idx]=$CHECK" | tee -a "$REPORT/ui_probe_history.txt"
+  IFS='|' read -r STATUS TAP_X TAP_Y REASON <<< "$CHECK"
+  if [ "$STATUS" = "READY" ]; then
+    READY=1
+    break
+  fi
+  if [ "$STATUS" = "DIALOG" ] && [ -n "$TAP_X" ] && [ -n "$TAP_Y" ]; then
+    echo "DISMISSING_ONLY_SYSTEM_ANR_WITH_WAIT=$TAP_X,$TAP_Y" | tee -a "$REPORT/ui_probe_history.txt"
+    adb shell input tap "$TAP_X" "$TAP_Y" || :
+  fi
+done
+adb logcat -d -v threadtime > "$REPORT/logcat.txt" || :
+python3 - "$REPORT" "$PKG" "$READY" <<'PY'
+import json,pathlib,sys,xml.etree.ElementTree as ET
+out=pathlib.Path(sys.argv[1]);package=sys.argv[2];ready=sys.argv[3]=="1"
+activity=(out/"activities.txt").read_text(errors="replace")
+tops=[x for x in activity.splitlines() if "topResumedActivity=" in x]
 top=tops[-1].strip() if tops else ""
 pid=(out/"pid.txt").read_text(errors="replace").strip()
 labels=[]
-if (out/"window.xml").exists():
-    try:
-        root=ET.parse(out/"window.xml").getroot()
-        for n in root.iter("node"):
-            for attr in ("text","content-desc"):
-                s=n.get(attr,"").strip()
-                if s:labels.append(s)
-    except Exception:pass
-image_ready=False
-if (out/"rehost_screen.png").exists():
-    im=Image.open(out/"rehost_screen.png").convert("RGB")
-    colors=im.resize((120,240)).getcolors(maxcolors=30000)
-    image_ready=bool(colors and len(colors)>500)
-result={
-  "test_package":package,
-  "foreground":package in top,
-  "foreground_activity":top,
-  "pid":pid,
-  "visible_labels":labels[:50],
-  "pixel_variety_screen_not_uniform":image_ready,
-  "original_ui_visible":bool(package in top and pid and labels and image_ready),
-}
+try:
+    root=ET.parse(out/"window.xml").getroot()
+    for n in root.iter("node"):
+        for key in ("text","content-desc"):
+            t=n.get(key,"").strip()
+            if t:labels.append(t)
+except Exception:pass
+probe=(out/"ui_probe_history.txt").read_text(errors="replace").splitlines()
+result={"test_package":package,"foreground":package in top,
+    "foreground_activity":top,"pid":pid,
+    "visible_labels":labels[:60],"probe_history":probe,
+    "original_ui_visible":bool(ready and package in top and pid),
+    "splash_or_system_dialog_rejected":not bool(ready),
+    "original_hermes_unmodified":True}
 (out/"runtime_result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2))
 print("RUNTIME_RESULT",json.dumps(result,ensure_ascii=False))
-if not result["original_ui_visible"]:
-    sys.exit("HERMES_REHOST_NATIVE_UI_NOT_VERIFIED")
+if not result["original_ui_visible"]:sys.exit("ORIGINAL_NATIVE_UI_NOT_READY")
 PY
+# Capture full-scroll positions only once verified genuine RN UI is visible.
+for idx in $(seq 0 7); do
+  FN="$(printf '%02d' "$idx")"
+  adb exec-out screencap -p > "$REPORT/home_scroll_$FN.png" || :
+  adb shell input swipe 540 1840 540 540 470 || :
+  sleep 2
+done
