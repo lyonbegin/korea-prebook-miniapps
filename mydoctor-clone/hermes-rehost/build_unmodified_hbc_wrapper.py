@@ -33,9 +33,13 @@ def bundle_sha(apk: Path) -> str:
         return sha256(z.read(BUNDLE_PATH))
 
 def check_original(apks: list[Path]) -> tuple[Path, dict]:
-    bases = [p for p in apks if p.name == "base.apk"]
+    bases = []
+    for apk in apks:
+        with zipfile.ZipFile(apk) as archive:
+            if BUNDLE_PATH in archive.namelist():
+                bases.append(apk)
     if len(bases) != 1:
-        raise RuntimeError(f"Need exactly one base.apk, found {bases}")
+        raise RuntimeError(f"Need exactly one APK with the Hermes bundle, found {bases}; input APKs: {[p.name for p in apks]}")
     base = bases[0]
     actual = bundle_sha(base)
     if actual != EXPECTED_HBC_SHA256:
@@ -104,6 +108,7 @@ def build(xapk: Path, apktool: Path, keystore: Path, out: Path):
         apks = sorted((temp / "source").rglob("*.apk"))
         base, so_before = check_original(apks)
         report["native_libraries"] = len(so_before)
+        split_idx = 0
         for i, apk in enumerate(apks):
             dest = temp / f"decoded_{i}"
             command("java", "-jar", apktool, "d", "-f", "-s", "-o", dest, apk)
@@ -112,7 +117,11 @@ def build(xapk: Path, apktool: Path, keystore: Path, out: Path):
             command("java", "-jar", apktool, "b", "-o", unsigned, dest)
             aligned = temp / f"aligned_{i}.apk"
             command("zipalign", "-f", "-p", "4", unsigned, aligned)
-            target = out / apk.name
+            if apk == base:
+                target = out / "base.apk"
+            else:
+                target = out / f"split_{split_idx}.apk"
+                split_idx += 1
             command("apksigner", "sign", "--ks", keystore,
                     "--ks-key-alias", "rehost",
                     "--ks-pass", "pass:android",
