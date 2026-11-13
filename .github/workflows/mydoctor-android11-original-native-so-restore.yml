@@ -1,4 +1,4 @@
-name: MyDoctor Android 11 x86_64 exact native SO recovery experiment
+name: MyDoctor Android 14 ARM64 translation and full scroll original
 on:
   workflow_dispatch:
   push:
@@ -34,7 +34,7 @@ jobs:
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
           python3 -m pip install Pillow numpy
-      - name: Boot Android 11 x86_64 ARM native bridge, install original and restore exact native SO
+      - name: Boot Android 14 x86_64 ARM native bridge, install original and restore exact native SO
         id: android
         uses: reactivecircus/android-emulator-runner@v2
         continue-on-error: true
@@ -42,7 +42,7 @@ jobs:
           MYDOCTOR_XAPK_ABI: arm64-v8a
           MYDOCTOR_EMULATOR_EXTRACT_ORIGINAL_SO: '1'
         with:
-          api-level: 30
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_5
@@ -64,7 +64,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mydoctor-650-native-so-restore-pixel-evidence
+          name: mydoctor-650-api34-actual-native-scroll-evidence
           path: mydoctor-clone/android-reference/artifacts/
           retention-days: 30
           if-no-files-found: warn
