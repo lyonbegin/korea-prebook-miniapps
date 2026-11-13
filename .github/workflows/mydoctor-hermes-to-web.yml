@@ -10,6 +10,7 @@ on:
       - mydoctor-clone/frontend/package.json
       - mydoctor-clone/frontend/vite.config.js
       - mydoctor-clone/frontend/tests/hermes-web-verification.cjs
+      - mydoctor-clone/frontend/src/RecoveredHermesWebScreen.jsx
 permissions:
   contents: read
 jobs:
@@ -67,6 +68,7 @@ jobs:
           cd mydoctor-clone/frontend
           npm install --no-audit --no-fund
           npm run test:hermes-web
+          ./node_modules/.bin/esbuild src/RecoveredHermesWebScreen.jsx --bundle --platform=browser --format=esm --external:react --external:react-native-web --outfile=/tmp/verified-hermes-react-web-host.js
           npm run build
       - name: Publish structural audit only, not proprietary bytecode
         if: always()
