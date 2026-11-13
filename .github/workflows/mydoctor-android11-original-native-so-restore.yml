@@ -5,12 +5,13 @@ on:
     branches: [feature/mydoctor-full-clone-20261109]
     paths:
       - .github/workflows/mydoctor-android11-original-native-so-restore.yml
+      - mydoctor-clone/android-reference/capture_original.sh
 permissions:
   contents: read
 jobs:
   original-arm64-translated-so:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - name: Enable KVM acceleration
@@ -25,6 +26,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Check original emulator capture script syntax (no false emulator success)
+        run: bash -n mydoctor-clone/android-reference/capture_original.sh
       - name: Install screenshot and pixel dependencies
         run: |
           cd mydoctor-clone/frontend
