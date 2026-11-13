@@ -82,8 +82,8 @@ def decompile_functions(decompiler: str, hbc_file: Path, private_dir: Path) -> d
             "exit_code": result.returncode,
             "output_bytes": len(output.encode("utf-8")),
             "output_sha256": digest(output.encode("utf-8")),
-            "ui_tokens": [p for p in UI_PRIMITIVES if re.search(r"\\b"+re.escape(p)+r"\\b",output)],
-            "style_tokens": [p for p in STYLE_PROPERTIES if re.search(r"\\b"+re.escape(p)+r"\\b",output)],
+            "ui_tokens": [p for p in UI_PRIMITIVES if re.search(r"\b"+re.escape(p)+r"\b",output)],
+            "style_tokens": [p for p in STYLE_PROPERTIES if re.search(r"\b"+re.escape(p)+r"\b",output)],
             "has_decompilation": result.returncode == 0 and len(output.strip()) > 20,
             "direct_web_js_verified": False
         }
