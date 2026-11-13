@@ -61,12 +61,12 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Install and actually run independent Hermes rehost on Android 11
+      - name: Install and actually run independent Hermes rehost on Android 14
         id: run_android
         uses: reactivecircus/android-emulator-runner@v2
         continue-on-error: true
         with:
-          api-level: 30
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_5
