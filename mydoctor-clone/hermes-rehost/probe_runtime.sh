@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 OUT_DIR="$PWD/mydoctor-clone/hermes-rehost/out"
 REPORT="$PWD/mydoctor-clone/hermes-rehost/runtime-report"
-PKG="com.hitel.mydoctor.hermes"
+PKG="com.hitelrehost.mydoctor"
 mkdir -p "$REPORT"
 adb devices -l | tee "$REPORT/adb_devices.txt"
 adb shell getprop ro.product.cpu.abilist | tee "$REPORT/abi.txt"
