@@ -46,6 +46,13 @@ if adb root >/dev/null 2>&1; then
     fi
   fi
 fi
+# Isolate the exact embedded original Hermes v6.50.0 bundle: prevent CodePush
+# from downloading and replacing the JS runtime with a different OTA revision.
+adb shell svc wifi disable || :
+adb shell svc data disable || :
+adb shell settings put global airplane_mode_on 1 || :
+adb shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true || :
+echo 'ORIGINAL_JS_OFFLINE_MODE=1' | tee "$REPORT/original_js_offline.txt"
 adb logcat -c
 adb shell am force-stop "$PKG" || :
 adb shell am start -n "$PKG/com.userproduct.MainActivity" \
@@ -130,10 +137,14 @@ try:
             if t:labels.append(t)
 except Exception:pass
 probe=(out/"ui_probe_history.txt").read_text(errors="replace").splitlines()
+log=(out/"logcat.txt").read_text(errors="replace")
+remote_codepush=('Loading JS bundle from "/data/user/0/' in log and
+                 "/files/CodePush/" in log)
 result={"test_package":package,"foreground":package in top,
     "foreground_activity":top,"pid":pid,
     "visible_labels":labels[:60],"probe_history":probe,
-    "original_ui_visible":bool(ready and package in top and pid),
+    "original_ui_visible":bool(ready and package in top and pid and not remote_codepush),
+    "runtime_using_original_hbc_only":not remote_codepush,
     "splash_or_system_dialog_rejected":not bool(ready),
     "original_hermes_unmodified":True}
 (out/"runtime_result.json").write_text(json.dumps(result,ensure_ascii=False,indent=2))
