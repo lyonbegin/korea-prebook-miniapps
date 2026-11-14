@@ -47,14 +47,31 @@ fs.mkdirSync(OUT,{recursive:true});
   if(await buttons.count()<1)throw Error("Static hospital menu search did not produce result");
   await page.screenshot({path:path.join(OUT,"pages-hospital-search.png"),fullPage:true});
   await buttons.first().click();
-  await page.getByTestId("pages-static-detail").waitFor();
-  if(!page.url().includes("screen=detail"))throw Error("Internal GitHub Pages detail navigation failed");
-  if(await page.locator("text=원본 공개 페이지 열기").count())throw Error("Old external placeholder has not been removed");
-  if(await page.locator('[data-detail-type="department"]').count()!==1)throw Error("Department page did not render");
-  await page.getByRole("button",{name:"주말",exact:true}).click();
+  await page.getByTestId("verified-specialty-screen").waitFor();
+  if(!page.url().includes("screen=detail"))throw Error("Specialty navigation did not enter detail");
+  if(await page.locator("text=원본 공개 페이지 열기").count())throw Error("Old external placeholder still displayed");
+  if(await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count()<10)
+    throw Error("Dermatology Seoul hospital records missing");
+  await page.getByRole("button",{name:"일요일진료",exact:true}).click();
+  const sundayCount=await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count();
+  if(sundayCount<1)throw Error("Dermatology actual Sunday filter missing");
+  await page.getByRole("button",{name:"경기",exact:true}).click();
+  await page.getByTestId("verified-hospital-list").waitFor();
+  if(await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count()<10)
+    throw Error("Gyeonggi dermatology hospitals did not load");
   await page.screenshot({path:path.join(OUT,"pages-dermatology-department.png"),fullPage:true});
-  data.steps.push({screen:"hospital-list",search:"피부과",detail:"department",tabs:true});
+  await page.getByTestId("verified-hospital-list").locator(".gh-h-card").first().click();
+  await page.getByTestId("verified-hospital-profile").waitFor();
+  if(!(await page.getByTestId("verified-hospital-profile").innerText()).includes("닥터스피부과의원"))
+    throw Error("Real Gyeonggi dermatology hospital profile is absent");
+  await page.getByRole("button",{name:"진료 조건",exact:true}).click();
+  if(!(await page.getByTestId("verified-hospital-profile").innerText()).includes("야간"))
+    throw Error("Original hospital hours label not shown in detail");
+  await page.screenshot({path:path.join(OUT,"pages-hospital-detail.png"),fullPage:true});
+  data.steps.push({screen:"hospital-list",search:"피부과",seoulHospitals:10,gyeonggiHospitals:10,sundayCount,profile:true});
   await page.goBack({waitUntil:"domcontentloaded"});
+  await page.getByTestId("verified-specialty-screen").waitFor();
+  await page.getByRole("button",{name:"병원 찾기로 뒤로"}).click();
   await page.getByTestId("pages-static-directory").waitFor();
   await page.getByRole("link",{name:"가격 비교"}).last().click();
   await page.getByTestId("pages-static-directory").waitFor();
@@ -90,6 +107,13 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.locator(".gh-d-pharmacy-card>button").first().click();
   if(!await page.locator(".gh-d-pharmacy-expanded").count())throw Error("Pharmacy detail expansion failed");
   data.steps.push({screen:"night-pharmacy",count:pharmacies,expanded:true});
+  for(const specialty of ["피부과","내과","이비인후과","정형외과","안과","소아청소년과","산부인과","성형외과"]){
+    await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/dept-hub/"+specialty),{waitUntil:"domcontentloaded"});
+    await page.getByTestId("verified-specialty-screen").waitFor();
+    const n=await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count();
+    if(n<5)throw Error(specialty+" must show actual, source-verified hospital cards: "+n);
+    data.steps.push({specialty,verifiedHospitals:n});
+  }
   if(requests.length)throw Error("Static GitHub Pages attempted to call runtime API: "+JSON.stringify(requests));
   if(errors.length)throw Error("Browser JS errors: "+errors.join("; "));
   data.passed=true;
