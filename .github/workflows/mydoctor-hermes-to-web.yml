@@ -13,6 +13,9 @@ on:
       - mydoctor-clone/frontend/src/RecoveredHermesWebScreen.jsx
       - mydoctor-clone/frontend/src/HermesGptPreview.jsx
       - mydoctor-clone/frontend/src/App.jsx
+concurrency:
+  group: hermes-web-port-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
