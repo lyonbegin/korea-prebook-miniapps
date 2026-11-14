@@ -1,0 +1,35 @@
+/* GitHub Pages only. Self-contained 390px-mobile-first UI, no backend. */
+:root{color-scheme:light}
+body{margin:0;background:#eff1f5}
+.gh-hermes-site{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Pretendard,Arial,sans-serif;max-width:520px;min-height:100dvh;background:#f6f7fa;margin:0 auto;color:#171a21;box-shadow:0 0 28px rgba(25,35,60,.055)}
+.gh-hermes-main{min-height:calc(100dvh - 66px);padding-bottom:67px}
+.gh-bottom-tabs{max-width:520px;position:fixed;z-index:20;bottom:0;left:50%;width:100%;transform:translateX(-50%);height:65px;display:flex;background:#fff;border-top:1px solid #e9edf2;box-shadow:0 -3px 14px #0000000c;padding-bottom:env(safe-area-inset-bottom)}
+.gh-tab{display:flex;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:5px;color:#858b97;font-size:11px;font-weight:600;text-decoration:none;min-width:0}
+.gh-tab.active{color:#326dff}
+.gh-tab span{white-space:nowrap}
+.gh-hermes-header{display:flex;align-items:center;gap:9px;padding:11px 14px;background:white;min-height:59px;border-bottom:1px solid #eef0f4}
+.gh-hermes-header button{border:0;background:transparent;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;color:#1b2028}
+.gh-hermes-header div{display:flex;flex-direction:column;gap:3px}
+.gh-hermes-header strong{font-size:18px;font-weight:750}
+.gh-hermes-header small{font-size:11px;color:#8b93a0}
+.gh-directory{min-height:calc(100dvh - 110px);background:#f7f8fb}
+.gh-evidence-note{margin:12px 12px 0;padding:11px 12px;background:#fff;border-radius:10px;color:#67707f;font-size:12px;line-height:1.6}
+.gh-directory-search{margin:14px 12px 10px;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e5e8ef;border-radius:12px;padding:0 13px;min-height:47px;color:#818a99}
+.gh-directory-search input{font:inherit;font-size:14px;color:#171a21;flex:1;min-width:0;border:0;background:transparent;outline:0}
+.gh-directory-search button{border:0;background:transparent;padding:3px;color:#6f7787}
+.gh-directory-count{font-size:12px;padding:0 16px 10px;color:#7c8592;margin:0}
+.gh-directory-section{padding:13px 0 2px;background:#fff;margin:0 12px 12px;border-radius:13px;overflow:hidden}
+.gh-directory-section h2{font-size:16px;font-weight:750;margin:0 15px 8px}
+.gh-directory-row{width:100%;padding:14px 15px;border:0;border-bottom:1px solid #f1f3f6;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;font-family:inherit;color:#272c35;font-size:14px}
+.gh-directory-row:last-child{border-bottom:0}
+.gh-directory-row svg{color:#b2b9c4;flex-shrink:0}
+.gh-directory-row:active{background:#f3f6fb}
+.gh-directory-empty{text-align:center;color:#848d9a;padding:30px 16px}
+.gh-detail-body{padding:23px 18px;display:flex;flex-direction:column;gap:13px;background:white;margin:12px;border-radius:13px}
+.gh-detail-body h2{font-size:20px;margin:0}
+.gh-detail-body p{font-size:14px;line-height:1.65;color:#616c7d;margin:0}
+.gh-detail-link{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;background:#326dff;color:#fff;border-radius:10px;font-size:14px;font-weight:700}
+.gh-detail-back{border:1px solid #dce1ea;background:#fff;border-radius:10px;padding:13px;font-size:14px;color:#394356}
+.gh-pages-source-footer{display:flex;align-items:center;gap:7px;margin:18px 14px;color:#8b94a3;font-size:11px;line-height:1.5;padding:0 0 12px}
+@media(min-width:560px){.gh-hermes-site{border-left:1px solid #e1e3ea;border-right:1px solid #e1e3ea}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
