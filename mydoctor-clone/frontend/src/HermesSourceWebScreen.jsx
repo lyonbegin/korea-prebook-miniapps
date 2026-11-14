@@ -102,7 +102,7 @@ function HermesGnb({go}){
 }
 function HermesHomeNavigation({cards,go}){
  const [pending,setPending]=useState(null);
- return <View style={{gap:8}}><View style={S.nav} data-testid="hermes-source-home-nav">
+ return <View style={{gap:8}}><View style={S.nav} testID="hermes-source-home-nav">
    <NativeButton style={S.card} onPress={()=>go("/hospital")} accessibilityLabel="병원 약국 찾기">
      <Hospital size={40} strokeWidth={1.6} color="#222a36" />
      <Text style={S.navLabel}>병원/약국{"\n"}찾기</Text>
@@ -129,7 +129,7 @@ function MedicalSection({data,go}){
    if(item.path)go(item.path);
    else setPending(item.label);
  };
- return <View style={S.appointment} data-testid="hermes-source-medical">
+ return <View style={S.appointment} testID="hermes-source-medical">
    <View style={S.headings}>
      {[
        {key:"telemedicine",title:"비대면 진료"},
@@ -187,7 +187,7 @@ export default function HermesSourceWebScreen({screen="home",go,staticMode=false
    </View>
    <NativeHospitalListScreen go={go} legacyLinks={[]} />
  </View>;
- return <View style={S.screen} data-testid="hermes-source-web-home">
+ return <View style={S.screen} testID="hermes-source-web-home">
    <HermesGnb go={go}/>
    <ScrollView contentContainerStyle={{gap:12,paddingTop:12,paddingBottom:25}}>
      <HermesHomeNavigation cards={data.cards} go={go}/>
