@@ -1,16 +1,6 @@
 name: MyDoctor Hermes React mobile web live browser QA
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feature/mydoctor-hermes-to-react-web-20261114
-    paths:
-      - .github/workflows/mydoctor-hermes-web-live-qa.yml
-      - mydoctor-clone/frontend/tests/hermes-preview-live.cjs
-      - mydoctor-clone/frontend/src/HermesSourceWebScreen.jsx
-      - mydoctor-clone/frontend/src/HermesGptPreview.jsx
-      - mydoctor-clone/frontend/src/App.jsx
-      - mydoctor-clone/frontend/vite.config.js
 permissions:
   contents: read
 concurrency:
