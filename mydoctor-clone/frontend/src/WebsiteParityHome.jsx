@@ -46,8 +46,8 @@ export default function WebsiteParityHome({go}){
      <h1>대한민국 1위<br/>비대면 진료 앱<br/>나만의닥터</h1>
      <div className="owh-awards">
        {awards.map((award,i)=><div key={i} className="owh-award">
-         <span className="owh-laurel" aria-hidden="true">❧</span>
-         <span>{award}</span><span className="owh-laurel right" aria-hidden="true">❧</span>
+         <img className="owh-laurel" src={(import.meta.env.BASE_URL||"/")+"website-laurel-left.png"} alt="" aria-hidden="true"/>
+         <span>{award}</span><img className="owh-laurel right" src={(import.meta.env.BASE_URL||"/")+"website-laurel-right.png"} alt="" aria-hidden="true"/>
        </div>)}
      </div>
      <div className="owh-stat-panel">
