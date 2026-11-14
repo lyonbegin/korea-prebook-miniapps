@@ -4,6 +4,7 @@ import {Hospital,Search,Gift,Bell,ChevronRight,ArrowLeft,RefreshCw} from "lucide
 import {fetchNativeCatalog} from "./lib/originalGateway.js";
 import {nativeHomeBanners,nativeHomeMenuItems} from "./nativeDataAdapters.js";
 import NativeHospitalListScreen from "./NativeHospitalListScreen.jsx";
+import {staticHomeData} from "./HermesPagesStaticData.js";
 
 /* HBC96 source-derived WEB renderer, not an Android Hermes bytecode runtime.
  * Verified function references:
@@ -56,10 +57,11 @@ function unwrapConfig(payload){
     typeof x.imageUrl==="string"&&/^https:\/\/img\.my-doctor\.io\//.test(x.imageUrl))
     .slice(0,5);
 }
-function useOriginalHomeData(){
- const [data,setData]=useState({menu:[],cards:[],banners:[],loading:true,errors:[]});
+function useOriginalHomeData(staticMode=false){
+ const [data,setData]=useState(()=>staticMode?staticHomeData:{menu:[],cards:[],banners:[],loading:true,errors:[]});
  const [retry,setRetry]=useState(0);
  useEffect(()=>{
+   if(staticMode){setData(staticHomeData);return;}
    const abort=new AbortController();
    const jobs=[
      fetchNativeCatalog("app-config",{config_key:"HomeNavigationConfig"},abort.signal)
@@ -79,8 +81,8 @@ function useOriginalHomeData(){
      setData(next);
    });
    return ()=>abort.abort();
- },[retry]);
- return {...data,refresh:()=>{setData(v=>({...v,loading:true}));setRetry(x=>x+1)}};
+ },[retry,staticMode]);
+ return {...data,refresh:()=>{if(staticMode)return;setData(v=>({...v,loading:true}));setRetry(x=>x+1)}};
 }
 function NativeButton({children,onPress,style,accessibilityLabel}){
  return <Pressable onPress={onPress} accessibilityRole="button"
@@ -111,7 +113,8 @@ function HermesHomeNavigation({cards,go}){
        if(dest)go(dest);
        else setPending(item.title.replace(/\n/g," "));
      }} accessibilityLabel={item.title.replace(/\n/g," ")}>
-     <Image source={{uri:item.imageUrl}} style={{width:40,height:40}} resizeMode="contain"/>
+     {item.imageUrl?<Image source={{uri:item.imageUrl}} style={{width:40,height:40}} resizeMode="contain"/>:
+      <View style={{width:40,height:40,alignItems:"center",justifyContent:"center"}}><Hospital color="#8997a8" size={28}/></View>}
      <Text style={S.navLabel}>{item.title}</Text>
    </NativeButton>)}
  </View>{pending&&<View style={{marginHorizontal:12,padding:12,borderRadius:12,backgroundColor:"#fff"}}>
@@ -175,8 +178,8 @@ function OriginalBanner({banners,go}){
    </NativeButton>)}
  </View>;
 }
-export default function HermesSourceWebScreen({screen="home",go}){
- const data=useOriginalHomeData();
+export default function HermesSourceWebScreen({screen="home",go,staticMode=false}){
+ const data=useOriginalHomeData(staticMode);
  if(screen==="hospital-list")return <View style={{backgroundColor:"#fff",minHeight:"100vh"}}>
    <View style={{...S.gnb,justifyContent:"flex-start",gap:14}}>
      <NativeButton onPress={()=>go("/native/hermes-preview?screen=home")} accessibilityLabel="뒤로"><ArrowLeft size={23} color="#222"/></NativeButton>
