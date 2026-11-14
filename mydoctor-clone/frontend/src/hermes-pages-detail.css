@@ -1,0 +1,78 @@
+.gh-d-page{background:#f6f7fa;min-height:calc(100dvh - 125px);padding-bottom:14px;color:#222a35}
+.gh-d-head{height:59px;background:#fff;display:flex;gap:11px;align-items:center;padding:0 14px;border-bottom:1px solid #f0f1f4}
+.gh-d-head>button{display:grid;place-items:center;width:32px;height:40px;border:0;background:transparent;color:#222a35;cursor:pointer;padding:0}
+.gh-d-head>span{display:flex;flex-direction:column;gap:3px;min-width:0;overflow:hidden}
+.gh-d-head strong{font-weight:750;font-size:17px;line-height:1.35;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.gh-d-head small{font-size:11px;color:#8d96a3;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.gh-d-hero{padding:25px 17px 21px;background:#fff;margin-bottom:9px}
+.gh-d-eyebrow{color:#326dff;font-size:12px;font-weight:700;letter-spacing:.01em;margin:9px 0 5px!important}
+.gh-d-hero h1{color:#141a23;letter-spacing:-.04em;font-size:25px;line-height:1.4;margin:0 0 7px;font-weight:800}
+.gh-d-hero>p:not(.gh-d-eyebrow):not(.gh-d-source){color:#667180;font-size:13px;line-height:1.55;margin:0}
+.gh-d-hero-icon{width:51px;height:51px;border-radius:14px;background:#eff4ff;color:#326dff;display:flex;align-items:center;justify-content:center}
+.gh-d-source{font-size:11px;line-height:1.5;color:#919aa8;margin:14px 0 0}
+.gh-d-segments{display:flex;align-items:center;gap:4px;background:white;padding:0 10px;margin-bottom:9px;border-bottom:1px solid #eef0f4}
+.gh-d-segments button{flex:1;background:white;color:#777f8b;border:0;border-bottom:2px solid transparent;min-height:49px;font-size:14px;font-weight:700;padding:0 8px;cursor:pointer}
+.gh-d-segments button.active{color:#326dff;border-bottom-color:#326dff}
+.gh-d-section{background:#fff;margin:0 0 9px;padding:17px 14px 20px}
+.gh-d-section-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:14px}
+.gh-d-section-title h2{font-size:18px;letter-spacing:-.02em;line-height:1.3;margin:0;color:#191e27;font-weight:790}
+.gh-d-section-title small{color:#8992a0;font-size:11px;white-space:nowrap}
+.gh-d-section h3{font-size:14px;font-weight:750;margin:16px 0 10px;color:#373e4a}
+.gh-d-section h3:first-child{margin-top:0}
+.gh-d-table-scroll{width:100%;overflow:auto;border:1px solid #e6eaf0;border-radius:10px;background:#fff;overscroll-behavior-x:contain}
+.gh-d-table{border-collapse:collapse;width:100%;min-width:340px;font-size:12px;line-height:1.6;text-align:left}
+.gh-d-table th{background:#f6f8fc;color:#536075;white-space:nowrap;padding:11px 10px;font-weight:700;border-bottom:1px solid #e9edf2}
+.gh-d-table td{padding:12px 10px;color:#373f4f;min-width:68px;border-bottom:1px solid #eef1f5;white-space:nowrap}
+.gh-d-table tr:last-child td{border-bottom:none}
+.gh-d-table td:first-child{font-weight:700}
+.gh-d-table-section+.gh-d-table-section{margin-top:23px}
+.gh-d-data-empty{border-radius:12px;background:#f7f9fc;display:flex;align-items:center;text-align:center;flex-direction:column;gap:9px;padding:24px 14px;color:#818da1;font-size:13px;line-height:1.6}
+.gh-d-data-empty strong{font-size:14px;color:#4f5a6c}
+.gh-d-data-empty p{padding:0;margin:0;max-width:300px}
+.gh-d-chip{font-size:12px;line-height:1.5;display:inline-flex;padding:7px 9px;border:1px solid #ecf0f6;border-radius:8px;background:#fafbfe;color:#535e70}
+.gh-d-tags{display:flex;flex-wrap:wrap;gap:7px}
+.gh-d-link-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:49px;width:100%;border:0;border-bottom:1px solid #f0f2f5;background:#fff;padding:11px 0;cursor:pointer;font:inherit;color:#2e3745;font-size:13px;text-align:left;line-height:1.5}
+.gh-d-link-row:last-child{border-bottom:0}
+.gh-d-link-row span{flex:1;overflow-wrap:anywhere}
+.gh-d-link-row svg{color:#b4becd;flex-shrink:0}
+.gh-d-link-row:active{color:#326dff}
+.gh-d-rows.compact{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.gh-d-rows.compact .gh-d-link-row{min-width:0}
+.gh-d-search{border:1px solid #e4e8f0;background:#f8fafc;border-radius:11px;display:flex;align-items:center;gap:8px;height:46px;padding:0 12px;margin-bottom:12px;color:#858e9d}
+.gh-d-search input{font:inherit;font-size:13px;color:#263344;background:transparent;outline:0;border:0;min-width:0;flex:1}
+.gh-d-search button{background:none;border:0;padding:3px;color:#7b8493}
+.gh-d-filter{border:1px solid #e0e5ed;color:#536070;background:white;border-radius:20px;padding:8px 11px;display:inline-flex;gap:6px;align-items:center;font:inherit;font-size:12px;margin:0 0 13px}
+.gh-d-filter.active{background:#eaf1ff;border-color:#b9ceff;color:#326dff}
+.gh-d-pill-links,.gh-d-filters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 7px}
+.gh-d-pill-links button,.gh-d-filters button{background:white;border:1px solid #e6e9ef;color:#485362;padding:8px 11px;font-size:12px;font-weight:600;border-radius:18px;cursor:pointer}
+.gh-d-filters{margin:0 0 13px}
+.gh-d-filters button.active{background:#326dff;border-color:#326dff;color:white}
+.gh-d-doctor-row{display:flex;align-items:center;gap:11px;width:100%;background:white;border:0;border-bottom:1px solid #f0f2f6;text-align:left;padding:14px 0;cursor:pointer}
+.gh-d-doctor-row svg:last-child{color:#afbac8;flex-shrink:0}
+.gh-d-doctor-avatar{height:45px;width:45px;border-radius:14px;background:#eff4ff;color:#4879e4;display:grid;place-items:center}
+.gh-d-doctor-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.gh-d-doctor-copy strong{font-size:13px;color:#29313e;line-height:1.5;word-break:keep-all}
+.gh-d-doctor-copy small{font-size:11px;color:#7a8695}
+.gh-d-hospital-card{width:100%;display:flex;align-items:flex-start;gap:11px;padding:14px 0;border:0;border-bottom:1px solid #ecf0f5;background:white;text-align:left;cursor:pointer}
+.gh-d-hospital-card>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:5px}
+.gh-d-hospital-card strong{font-size:14px;color:#202936}
+.gh-d-hospital-card small{color:#748090;font-size:12px;line-height:1.6}
+.gh-d-hospital-card>svg{color:#b2bece;flex-shrink:0}
+.gh-d-hospital-icon{background:#f1f5fc;color:#6681a9;border-radius:12px;width:43px;height:43px;display:grid;place-items:center;flex-shrink:0}
+.gh-d-profile{background:#fff;padding:20px 17px 23px}
+.gh-d-profile h1{font-size:23px;margin:14px 0 8px;font-weight:800;line-height:1.4}
+.gh-d-profile p:not(.gh-d-source){font-size:12px;color:#6c7788;line-height:1.6;margin:0}
+.gh-d-profile-symbol{display:grid;place-items:center;width:64px;height:64px;border-radius:17px;background:#edf3fd;color:#6682aa}
+.gh-d-facts{display:flex;flex-direction:column;gap:11px}
+.gh-d-facts>div{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.6;color:#535f6d}
+.gh-d-facts svg{flex-shrink:0;margin-top:2px;color:#6482b3}
+.gh-d-pharmacy-card{border-bottom:1px solid #edf0f3;padding:12px 0}
+.gh-d-pharmacy-card>button{width:100%;text-align:left;border:0;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0;cursor:pointer}
+.gh-d-pharmacy-card>button>span{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.gh-d-pharmacy-card strong{font-size:14px;color:#253143}
+.gh-d-pharmacy-card small{font-size:12px;color:#788597;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+.gh-d-pharmacy-card small svg{flex-shrink:0}
+.gh-d-pharmacy-card>button>svg{color:#9cabbc}
+.gh-d-pharmacy-expanded{margin-top:13px;padding:13px;background:#f6f9fd;border-radius:10px}
+.gh-d-pharmacy-expanded p{font-size:12px;color:#5d6878;line-height:1.7;margin:0 0 9px}
+.gh-d-pharmacy-expanded a{color:#2a67db;text-decoration:none;font-size:13px;display:flex;gap:5px;align-items:center}
