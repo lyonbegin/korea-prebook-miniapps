@@ -99,7 +99,8 @@ function HermesGnb({go}){
  </View>;
 }
 function HermesHomeNavigation({cards,go}){
- return <View style={S.nav} data-testid="hermes-source-home-nav">
+ const [pending,setPending]=useState(null);
+ return <View style={{gap:8}}><View style={S.nav} data-testid="hermes-source-home-nav">
    <NativeButton style={S.card} onPress={()=>go("/hospital")} accessibilityLabel="병원 약국 찾기">
      <Hospital size={40} strokeWidth={1.6} color="#222a36" />
      <Text style={S.navLabel}>병원/약국{"\n"}찾기</Text>
@@ -108,18 +109,22 @@ function HermesHomeNavigation({cards,go}){
      onPress={()=>{
        const dest=supportedLink(item.navigationUrl);
        if(dest)go(dest);
-       else go(item.title.includes("수액")?"/medical-cost":"/telemedicine/all-department");
+       else setPending(item.title.replace(/\n/g," "));
      }} accessibilityLabel={item.title.replace(/\n/g," ")}>
      <Image source={{uri:item.imageUrl}} style={{width:40,height:40}} resizeMode="contain"/>
      <Text style={S.navLabel}>{item.title}</Text>
    </NativeButton>)}
- </View>;
+ </View>{pending&&<View style={{marginHorizontal:12,padding:12,borderRadius:12,backgroundColor:"#fff"}}>
+   <Text style={S.status}>{pending}: 원본 앱 전용 화면입니다. 웹 경로가 확인되면 연결됩니다.</Text>
+   <NativeButton style={{paddingTop:8}} onPress={()=>setPending(null)}><Text style={S.actionText}>닫기</Text></NativeButton>
+ </View>}</View>;
 }
 function MedicalSection({data,go}){
  const [tab,setTab]=useState("telemedicine");
+ const [pending,setPending]=useState(null);
  const navigateTo=(item)=>{
    if(item.path)go(item.path);
-   else go("/telemedicine/all-department");
+   else setPending(item.label);
  };
  return <View style={S.appointment} data-testid="hermes-source-medical">
    <View style={S.headings}>
@@ -153,6 +158,7 @@ function MedicalSection({data,go}){
         </NativeButton>
       </View>}
    </View>
+   {pending&&<Text style={{...S.status,marginHorizontal:12,paddingVertical:8}}>{pending}: 원본 메뉴 데이터는 확인됐으며 웹 이동 경로는 아직 확인되지 않았습니다.</Text>}
    <View style={S.divider}/>
    <NativeButton style={S.action} onPress={()=>go("/telemedicine/all-department")}>
      <Text style={S.actionText}>모든 증상 보기  ›</Text>
