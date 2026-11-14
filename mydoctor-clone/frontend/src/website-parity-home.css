@@ -34,7 +34,7 @@
 .owh-service-overview-secondary{background:#f9faff}
 .owh-price-categories{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .owh-price-categories button{display:flex;justify-content:space-between;gap:5px;align-items:center;text-align:left;padding:14px 9px;border:1px solid #e7ebf4;border-radius:10px;background:#fff;font-size:13px;font-weight:700}
-.owh-cta-spacer{height:64px}.owh-fixed-download{position:fixed;bottom:0;left:50%;transform:translateX(-50%);height:62px;width:100%;max-width:520px;border:0;background:#326dff;z-index:30;color:#fff;font-size:17px;letter-spacing:-.3px;font-weight:800;cursor:pointer}
+.owh-cta-spacer{height:64px}.owh-fixed-download{position:fixed;bottom:0;left:50%;transform:translateX(-50%);height:62px;width:100%;max-width:520px;border:0;background:#326dff;z-index:30;color:#fff;font-size:18px;letter-spacing:-.3px;font-weight:800;cursor:pointer}
 .gh-hermes-main:has(.original-website-home){padding-bottom:0}
 .gh-hermes-main:has(.original-website-home)>.gh-pages-source-footer{display:none}
 @media(max-width:389px){.owh-marketing-hero h1{font-size:calc(59.5px * (100vw / 390px))}}
