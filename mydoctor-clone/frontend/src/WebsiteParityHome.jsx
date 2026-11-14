@@ -13,6 +13,21 @@ const awards=[
  "2024 중앙일보 올해의 우수브랜드대상 · 비대면진료 부문 1위",
  "2022 대한민국소비자브랜드 대상 · 서비스만족도 1위",
 ];
+const symptoms=[
+ ["👂","귀/코/목 질환","비염, 중이염, 인후염 등","/telemedicine/이비인후과-비대면진료-예약"],
+ ["🩸","만성질환","고지혈증, 고혈압, 당뇨병 등","/telemedicine/고혈압-비대면진료-예약"],
+ ["🫁","비뇨기 질환","방광염, 전립선염, 요실금 등","/telemedicine/방광염-비대면진료-예약"],
+ ["🩷","소화기 질환","속쓰림, 장염, 위염 등","/telemedicine/과민성대장증후군-비대면진료-예약"],
+ ["🧠","신경 질환","두통, 편두통, 안면경련 등","/telemedicine/all-department"],
+ ["👁️","안구 질환","안구건조증, 결막염, 다래끼 등","/telemedicine/안과-비대면진료-예약"],
+ ["♀️","여성 질환","질염, 생리통, 생리불순 등","/telemedicine/질염-비대면진료-예약"],
+ ["🌐","정신 질환","우울증, 강박장애, 공황장애 등","/telemedicine/공황장애-비대면진료-예약"],
+ ["🦴","정형외과 질환","근육통, 근육경련, 관절염 등","/telemedicine/정형외과-비대면진료-예약"],
+ ["🦷","치과 질환","치통, 충치, 치주염 등","/telemedicine/치과-비대면진료-예약"],
+ ["💇","탈모","탈모, 여성 탈모 등","/telemedicine/탈모-비대면진료-예약"],
+ ["🩹","피부 질환","여드름, 무좀, 땀띠 등","/telemedicine/피부과-비대면진료-예약"],
+ ["🩺","호흡기 질환","감기, 독감, 코로나 등","/telemedicine/감기-비대면진료-예약"]
+];
 export default function WebsiteParityHome({go}){
  const [opened,setOpened]=useState(false);
  return <div className="original-website-home" data-testid="website-parity-home">
@@ -61,8 +76,16 @@ export default function WebsiteParityHome({go}){
             <span><small>{step}</small><strong>{title}</strong><em>{subtitle}</em></span>
           </button>)}
      </div>
-     <button type="button" className="owh-secondary-action" onClick={()=>go("/telemedicine")}>
-       비대면 진료 시작하기 <ChevronRight size={16}/>
+     <h3 className="owh-conditions-heading">이런 증상들 모두<br/>전화로 진료볼 수 있어요</h3>
+     <div className="owh-conditions-grid" data-testid="source-marketing-conditions">
+       {symptoms.map(([symbol,title,desc,path])=><button type="button"
+         key={title} className="owh-condition" onClick={()=>go(path)}>
+         <span className="owh-condition-illustration">{symbol}</span>
+         <strong>{title}</strong><small>{desc}</small>
+       </button>)}
+     </div>
+     <button type="button" className="owh-primary-action" onClick={()=>go("/telemedicine")}>
+       비대면 진료 시작하기
      </button>
    </section>
    <section className="owh-service-overview owh-service-overview-secondary">
