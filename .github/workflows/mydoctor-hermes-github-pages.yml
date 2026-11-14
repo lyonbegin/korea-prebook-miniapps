@@ -66,6 +66,14 @@ jobs:
       - name: Compare original website screenshot pixel-by-pixel in strict page order
         working-directory: mydoctor-clone/frontend
         run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/github-pages-static > /tmp/hermes-pixel-preview.log 2>&1 &
+          pixel_server_pid=$!
+          trap 'kill "$pixel_server_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 25); do
+            if curl -fsS http://127.0.0.1:4173/korea-prebook-miniapps/ -o /dev/null; then break; fi
+            sleep 1
+          done
           # Keep the incomplete screen as FAIL in the report; publishing a
           # preview must not be interpreted as a visual parity PASS.
           node tests/website-pixel-gate.cjs || echo "SOURCE_WEBSITE_PIXEL_PARITY_NOT_YET_PASSED"
