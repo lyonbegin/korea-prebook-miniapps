@@ -31,3 +31,22 @@ for(let y=0;y<height;y++){
 fs.mkdirSync(path.dirname(dest),{recursive:true});
 fs.writeFileSync(dest,PNG.sync.write(img));
 console.log("SOURCE_OBSERVED_PHONE_ASSET",JSON.stringify({origin:"source-full-home.png",asset:"website-original-phone.png",size:[img.width,img.height],sourceRows:["525-781","845-959"],status:"decorative public snapshot crop"}));
+
+/* Copy only the small decorative laurel pictograms from the browser-verified
+ * public screenshot. Text and all interactive elements remain React DOM. */
+const homepagePng=PNG.sync.read(fs.readFileSync(path.join(root,"qa-original","origin-home.png")));
+function saveOriginalLaurel(name,rect){
+ const [left,top,right,bottom]=rect;
+ const png=new PNG({width:right-left,height:bottom-top});
+ for(let y=0;y<png.height;y++)for(let x=0;x<png.width;x++){
+  const ii=((top+y)*homepagePng.width+left+x)*4;
+  const oi=(y*png.width+x)*4;
+  const red=homepagePng.data[ii],green=homepagePng.data[ii+1],blue=homepagePng.data[ii+2];
+  png.data[oi]=red;png.data[oi+1]=green;png.data[oi+2]=blue;
+  png.data[oi+3]=blue>red+22&&blue>green+10?255:0;
+ }
+ fs.writeFileSync(path.join(root,"public","website-laurel-"+name+".png"),PNG.sync.write(png));
+}
+saveOriginalLaurel("left",[66,291,81,315]);
+saveOriginalLaurel("right",[312,291,327,315]);
+console.log("SOURCE_OBSERVED_LAUREL_ASSETS_READY");
