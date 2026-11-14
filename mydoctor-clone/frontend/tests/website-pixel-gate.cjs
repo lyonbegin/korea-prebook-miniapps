@@ -44,12 +44,32 @@ function renderMetrics(source,target,label){
   total_pixels:total,original:[source.width,source.height],
   clone:[target.width,target.height],threshold_rgb:THRESHOLD};
 }
+function meaningfulOriginalScrollEnd(png){
+  // Original browser's fullPage screenshot was captured without scrolling.
+  // The sections below ~2,365px are pure white because lazy content did not
+  // render. Never treat these blank rows as pixel ground truth.
+  let last=0;
+  for(let y=0;y<png.height;y++){
+    let nonwhite=0;
+    for(let x=0;x<png.width;x++){
+      const i=(y*png.width+x)*4;
+      if(Math.min(png.data[i],png.data[i+1],png.data[i+2])<242)nonwhite++;
+    }
+    if(nonwhite/png.width>.05)last=y;
+  }
+  return last+1;
+}
+function topRows(src,height){
+  const out=new PNG({width:src.width,height});
+  src.data.copy(out.data,0,0,src.width*height*4);
+  return out;
+}
 function comparisonPanel(source,target,label){
  const w=source.width,h=source.height,panel=new PNG({width:w*3,height:h});
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
   const si=(y*w+x)*4;const clonePixel=y<target.height;
   const ti=(y*target.width+x)*4;
-  const before=si,after=(y*panel.width+x+w)*4,diff=(y*panel.width+x+w*2)*4;
+  const before=(y*panel.width+x)*4,after=(y*panel.width+x+w)*4,diff=(y*panel.width+x+w*2)*4;
   for(let k=0;k<3;k++){
    panel.data[before+k]=source.data[si+k];
    panel.data[after+k]=clonePixel?target.data[ti+k]:255;
@@ -98,11 +118,24 @@ function comparisonPanel(source,target,label){
       throw Error("Viewport mismatch "+sourcePng.width+"x"+sourcePng.height+" vs "+clonePng.width+"x"+clonePng.height);
     rec.viewport=renderMetrics(sourcePng,clonePng,c.id);
     comparisonPanel(sourcePng,clonePng,c.id);
-    rec.full_page={original_pixels:[origFullPng.width,origFullPng.height],
+    const meaningfulRows=meaningfulOriginalScrollEnd(origFullPng);
+    const fullReferenceQuality=meaningfulRows/origFullPng.height>.85?
+      "FULL_PAGE_CONTENT_VALID":"INCOMPLETE_LAZY_RENDERED_BLANK_REFERENCE";
+    rec.full_page={
+      original_pixels:[origFullPng.width,origFullPng.height],
       clone_pixels:[clFullPng.width,clFullPng.height],
-      height_error_pct:+(100*Math.abs(origFullPng.height-clFullPng.height)/origFullPng.height).toFixed(3)};
-    rec.status=rec.viewport.mismatch_pct<=MAX_MISMATCH&&rec.full_page.height_error_pct<=10?
-      "PASS":"FAIL";
+      meaningful_source_height:meaningfulRows,
+      reference_quality:fullReferenceQuality,
+      height_error_pct:+(100*Math.abs(origFullPng.height-clFullPng.height)/origFullPng.height).toFixed(3),
+    };
+    if(meaningfulRows>844){
+      rec.scroll_verified_prefix=renderMetrics(
+        topRows(origFullPng,meaningfulRows),clFullPng,c.id+"-scroll-prefix");
+    }
+    rec.status=rec.viewport.mismatch_pct>MAX_MISMATCH?"FAIL":
+      fullReferenceQuality!=="FULL_PAGE_CONTENT_VALID"?"FIRST_VIEWPORT_PASS_SCROLL_UNVERIFIED":
+      rec.scroll_verified_prefix?.mismatch_pct>MAX_MISMATCH?"FAIL":
+      rec.full_page.height_error_pct>10?"FAIL":"PASS";
     console.log("SOURCE_WEB_PIXEL_RESULT",JSON.stringify(rec));
    }catch(err){
     rec.status="UNVERIFIED";rec.reason=String(err.stack||err);
