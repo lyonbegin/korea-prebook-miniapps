@@ -79,6 +79,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check whether GPT API credential is available
+        run: |
+          if [ -n "$OPENAI_API_KEY" ]; then
+            echo "GPT_API_CREDENTIAL_CONFIGURED=true"
+          else
+            echo "GPT_API_CREDENTIAL_CONFIGURED=false"
+          fi
+      - name: GPT automatic conversion of original Hermes screens (when API key configured)
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        run: |
+          set -Eeuo pipefail
+          python3 mydoctor-clone/hermes-web/gpt_ui_port.py \
+            --xapk /tmp/mydoctor-private/original.xapk \
+            --out mydoctor-clone/hermes-web/audit/gpt-generated \
+            --decompiler "$HERMES_DECOMP" \
+            --screen all \
+            --generate
       - name: Copy original GPT trees into Vite preview when generated
         run: |
           set -Eeuo pipefail
@@ -97,16 +114,6 @@ jobs:
           npm run test:hermes-web
           ./node_modules/.bin/esbuild src/RecoveredHermesWebScreen.jsx --bundle --platform=browser --format=esm --external:react --external:react-native-web --outfile=/tmp/verified-hermes-react-web-host.js
           npm run build
-      - name: GPT automatic conversion of original Hermes screens (when API key configured)
-        if: ${{ env.OPENAI_API_KEY != '' }}
-        run: |
-          set -Eeuo pipefail
-          python3 mydoctor-clone/hermes-web/gpt_ui_port.py \
-            --xapk /tmp/mydoctor-private/original.xapk \
-            --out mydoctor-clone/hermes-web/audit/gpt-generated \
-            --decompiler "$HERMES_DECOMP" \
-            --screen all \
-            --generate
       - name: Publish GPT-converted tree JSON (review required)
         if: always()
         uses: actions/upload-artifact@v4
