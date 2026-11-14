@@ -16,7 +16,9 @@ permissions:
 jobs:
   extract-original-hbc:
     runs-on: ubuntu-24.04
-    timeout-minutes: 22
+    timeout-minutes: 32
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,6 +54,15 @@ jobs:
             --xapk /tmp/mydoctor-private/original.xapk \
             --out mydoctor-clone/hermes-web/audit \
             --decompiler "$HERMES_DECOMP"
+      - name: Validate GPT UI conversion code and source-bound output checks
+        run: |
+          set -Eeuo pipefail
+          python3 -m py_compile mydoctor-clone/hermes-web/gpt_ui_port.py
+          python3 -m unittest discover -s mydoctor-clone/hermes-web/tests -p 'test_*.py' -v
+          python3 mydoctor-clone/hermes-web/gpt_ui_port.py \
+            --xapk /tmp/mydoctor-private/original.xapk \
+            --out mydoctor-clone/hermes-web/audit/gpt-plan \
+            --screen all
       - name: Test full Hermes bundle JavaScript recovery without exporting source
         run: |
           set -Eeuo pipefail
@@ -70,6 +81,26 @@ jobs:
           npm run test:hermes-web
           ./node_modules/.bin/esbuild src/RecoveredHermesWebScreen.jsx --bundle --platform=browser --format=esm --external:react --external:react-native-web --outfile=/tmp/verified-hermes-react-web-host.js
           npm run build
+      - name: GPT automatic conversion of original Hermes screens (when API key configured)
+        if: ${{ env.OPENAI_API_KEY != '' }}
+        run: |
+          set -Eeuo pipefail
+          python3 mydoctor-clone/hermes-web/gpt_ui_port.py \
+            --xapk /tmp/mydoctor-private/original.xapk \
+            --out mydoctor-clone/hermes-web/audit/gpt-generated \
+            --decompiler "$HERMES_DECOMP" \
+            --screen all \
+            --generate
+      - name: Publish GPT-converted tree JSON (review required)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-hermes-gpt-web-tree-preview
+          path: |
+            mydoctor-clone/hermes-web/audit/gpt-generated/*.json
+            mydoctor-clone/hermes-web/audit/gpt-plan/plan.json
+          if-no-files-found: warn
+          retention-days: 7
       - name: Publish structural audit only, not proprietary bytecode
         if: always()
         uses: actions/upload-artifact@v4
