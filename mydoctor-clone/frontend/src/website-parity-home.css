@@ -1,0 +1,41 @@
+/* 2026-11-09 original PUBLIC WEBSITE snapshot, not Android-native app UI.
+   Pixel parity target: first viewport 390x844; separate controls remain interactive. */
+.original-website-home{min-height:100dvh;position:relative;background:#fff;color:#17191d;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;letter-spacing:-.3px}
+.owh-header{height:58px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 19px;position:relative;z-index:11}
+.owh-header button{border:0;background:none;cursor:pointer}
+.owh-brand{color:#326dff;font-size:20px;font-weight:950;letter-spacing:-1.6px;line-height:1.2;padding:0}
+.owh-menu-btn{height:36px;width:28px;display:flex;align-items:center;justify-content:center;color:#242931;padding:0}
+.owh-dropdown{position:absolute;left:10px;right:10px;top:53px;background:white;box-shadow:0 4px 25px #071c3c2c;border-radius:10px;border:1px solid #e9ebef;z-index:12;padding:8px}
+.owh-dropdown button{display:flex;align-items:center;gap:11px;padding:15px 12px;width:100%;text-align:left;font-size:14px;font-weight:700;color:#303b4d;border-bottom:1px solid #eff1f3}
+.owh-dropdown button:last-child{border-bottom:0}.owh-dropdown button svg:last-child{margin-left:auto;color:#98a0ac}
+.owh-marketing-hero{background:linear-gradient(180deg,#fff 0%,#fbfcff 63%,#f3f5fc 100%);text-align:center;padding-top:18px;overflow:hidden}
+.owh-marketing-hero h1{margin:0 auto 23px;font-size:54px;line-height:1.195;font-weight:950;color:#17191c;letter-spacing:-2.3px;-webkit-text-stroke:1.1px currentColor;word-break:keep-all}
+.owh-awards{display:flex;flex-direction:column;align-items:center;gap:0;color:#326dff}
+.owh-award{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;font-size:9.9px;line-height:22px;letter-spacing:-.15px;font-weight:600}
+.owh-laurel{display:inline-block;color:#326dff;font-size:17px;line-height:10px;transform:rotate(-65deg);font-weight:400}
+.owh-laurel.right{transform:rotate(115deg)}
+.owh-stat-panel{height:61px;max-width:350px;border-radius:15px;margin:15px auto 0;background:#f7f8fa;display:grid;grid-template-columns:1fr 1fr;align-items:center;font-size:12px;line-height:1.96}
+.owh-stat-panel>div:first-child{border-right:1px solid #e4e7ee}
+.owh-stat-panel b{color:#326dff;font-weight:850;padding-left:5px}.owh-stat-panel sup{font-size:8px;vertical-align:super}
+.owh-fineprint{text-align:left;font-size:10px;font-weight:450;line-height:1.45;color:#9aa9c2;max-width:275px;margin:10px auto 0}
+.owh-fineprint p{margin:0 0 5px}
+.owh-phone-illustration{position:relative;margin-top:29px;width:100%;min-height:360px;overflow:hidden;background:#f3f5fc}
+.owh-phone-illustration img{display:block;width:390px;max-width:none;height:auto;position:relative;left:50%;transform:translateX(-50%)}
+.owh-service-overview{background:#fff;padding:30px 20px 45px}
+.owh-section-chip{display:inline-flex;background:#edf4ff;border-radius:20px;padding:5px 8px;color:#3972fb;font-size:12px;font-weight:800}
+.owh-service-overview h2{font-size:20px;line-height:1.35;letter-spacing:-.5px;margin:12px 0 11px;font-weight:850}
+.owh-service-overview p{font-size:15px;line-height:1.7;margin:0;color:#313944}
+.owh-steps{display:flex;flex-direction:column;gap:20px;margin-top:35px}
+.owh-step{display:flex;gap:16px;align-items:center;border:0;background:#fff;text-align:left;padding:0}
+.owh-step-image{border-radius:14px;background:#f3f5f8;width:50px;height:50px;font-size:24px;display:grid;place-items:center}
+.owh-step>span:last-child{display:flex;flex-direction:column;gap:3px}.owh-step small{color:#326dff;font-size:11px}.owh-step strong{font-size:14px;color:#1a2029}
+.owh-step em{font-style:normal;font-size:13px;color:#3e4652;line-height:1.45}
+.owh-secondary-action{margin-top:25px;border-radius:10px;border:0;background:#edf4ff;color:#306bff;font-weight:800;padding:15px 16px;display:flex;justify-content:center;gap:6px;width:100%;align-items:center}
+.owh-service-overview-secondary{background:#f9faff}
+.owh-price-categories{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.owh-price-categories button{display:flex;justify-content:space-between;gap:5px;align-items:center;text-align:left;padding:14px 9px;border:1px solid #e7ebf4;border-radius:10px;background:#fff;font-size:13px;font-weight:700}
+.owh-cta-spacer{height:64px}.owh-fixed-download{position:fixed;bottom:0;left:50%;transform:translateX(-50%);height:62px;width:100%;max-width:520px;border:0;background:#326dff;z-index:30;color:#fff;font-size:15px;letter-spacing:-.3px;font-weight:800;cursor:pointer}
+.gh-hermes-main:has(.original-website-home){padding-bottom:0}
+.gh-hermes-main:has(.original-website-home)>.gh-pages-source-footer{display:none}
+@media(max-width:389px){.owh-marketing-hero h1{font-size:calc(54px * (100vw / 390px))}}
+@media(min-width:520px){.owh-marketing-hero h1{font-size:57px}}
