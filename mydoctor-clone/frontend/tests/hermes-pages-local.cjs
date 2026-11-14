@@ -29,7 +29,7 @@ fs.mkdirSync(OUT,{recursive:true});
     throw Error("Original browser website marketing hero not displayed");
   if(!(await page.locator(".owh-phone-illustration img").evaluate(img=>img.complete&&img.naturalWidth>0)))
     throw Error("Original website phone illustration is missing");
-  if(!await page.getByRole("button",{name:"나만의 닥터 다운로드"}).count())
+  if(!await page.getByRole("button",{name:"나만의닥터 다운로드"}).count())
     throw Error("Source website fixed download control missing");
   await page.screenshot({path:path.join(OUT,"pages-home.png"),fullPage:true});
   const height=await page.evaluate(()=>document.scrollingElement.scrollHeight);
