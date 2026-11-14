@@ -44,7 +44,10 @@ jobs:
         working-directory: mydoctor-clone/frontend
         run: |
           set -euo pipefail
-          npm run start > /tmp/hermes-pages-preview.log 2>&1 &
+          # Reproduce GitHub Pages' repository-prefixed static directory layout
+          mkdir -p /tmp/github-pages-static/korea-prebook-miniapps
+          cp -a dist/. /tmp/github-pages-static/korea-prebook-miniapps/
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/github-pages-static > /tmp/hermes-pages-preview.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for i in $(seq 1 35); do
