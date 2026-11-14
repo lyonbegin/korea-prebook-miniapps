@@ -1,5 +1,6 @@
 import React,{useEffect,useState} from "react";
 import RecoveredHermesWebScreen from "./RecoveredHermesWebScreen.jsx";
+import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
 
 const SCREENS = Object.freeze(["home","hospital-list"]);
 const LABELS = Object.freeze({
@@ -34,18 +35,19 @@ export default function HermesGptPreview({go}){
   },[screen]);
   return <div style={{maxWidth:560,minHeight:"100vh",margin:"auto",background:"#fff",paddingBottom:20}}>
     <header style={{padding:"16px 12px",borderBottom:"1px solid #e5e7eb"}}>
-      <h1 style={{fontSize:18,margin:0}}>{LABELS[screen]} · React 웹 변환 검증</h1>
+      <h1 style={{fontSize:18,margin:0}}>{LABELS[screen]} · 모바일 웹</h1>
       <nav aria-label="원본 Hermes 화면 선택" style={{display:"flex",gap:12,marginTop:10}}>
         {SCREENS.map(id=><a key={id} href={"/native/hermes-preview?screen="+id}
            style={{fontSize:13,textDecoration:"underline"}}>{LABELS[id]}</a>)}
       </nav>
     </header>
-    {state.loading&&<p role="status" style={{padding:16}}>원본 Hermes 변환 결과를 확인하고 있습니다.</p>}
-    {state.error&&<section role="alert" style={{padding:16}}>
-      <strong>원본 UI 웹 실행 미검증</strong>
-      <p>{state.error}</p>
-      <p>기존 웹 복제 화면이나 가상 화면으로 대체하지 않습니다.</p>
-    </section>}
+    {!state.generated&&<React.Fragment>
+      <p style={{fontSize:12,padding:"9px 12px",margin:0,color:"#5e6776",background:"#f5f7fa"}}>
+        Hermes HBC 96 화면 함수와 공개 원본 API를 기준으로 복원한 React 모바일 웹입니다.
+        원본 Android 바이트코드를 브라우저에서 직접 실행한 화면은 아닙니다.
+      </p>
+      <HermesSourceWebScreen screen={screen} go={go}/>
+    </React.Fragment>}
     {state.generated&&<React.Fragment>
       <p style={{fontSize:12,padding:"8px 12px",color:"#667085"}}>
         확인된 원본 함수: {state.generated.source_function_ids.join(", ")}
