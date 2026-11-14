@@ -9,14 +9,20 @@ fs.mkdirSync(OUT,{recursive:true});
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,
    isMobile:true,hasTouch:true,locale:"ko-KR"});
  const page=await context.newPage();
- const errors=[];const requests=[];
+ const errors=[];const requests=[];const consoleErrors=[];const httpErrors=[];
+ page.on("console",m=>{if(m.type()==="error")consoleErrors.push(m.text())});
+ page.on("requestfailed",r=>httpErrors.push({url:r.url(),reason:r.failure()?.errorText}));
+ page.on("response",r=>{if(r.status()>=400)httpErrors.push({url:r.url(),status:r.status()})});
  page.on("pageerror",e=>errors.push(e.message));
  page.on("request",req=>{if(/\/native\/catalog\//.test(req.url()))requests.push(req.url())});
- const data={base:BASE,errors,apiRequests:requests,steps:[],passed:false};
+ const data={base:BASE,errors,consoleErrors,httpErrors,apiRequests:requests,steps:[],passed:false};
  try{
   const response=await page.goto(BASE,{waitUntil:"networkidle",timeout:35000});
   if(response.status()!==200)throw Error("GitHub Pages home HTTP "+response.status());
-  await page.getByTestId("github-pages-hermes-app").waitFor({timeout:20000});
+  await page.waitForTimeout(1400);
+  data.initialPage={title:await page.title(),html:(await page.content()).slice(0,1100),scripts:await page.locator("script[src]").evaluateAll(nodes=>nodes.map(n=>n.src))};
+  console.log("GITHUB_PAGES_BOOT_DIAGNOSTIC",JSON.stringify({...data.initialPage,consoleErrors,httpErrors}));
+  await page.getByTestId("github-pages-hermes-app").waitFor({timeout:10000});
   await page.getByTestId("hermes-source-home-nav").waitFor();
   await page.getByTestId("hermes-source-medical").waitFor();
   const card=page.getByTestId("hermes-source-home-nav");
