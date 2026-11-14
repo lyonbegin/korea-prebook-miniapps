@@ -39,3 +39,11 @@
 .gh-hermes-main:has(.original-website-home)>.gh-pages-source-footer{display:none}
 @media(max-width:389px){.owh-marketing-hero h1{font-size:calc(59.5px * (100vw / 390px))}}
 @media(min-width:520px){.owh-marketing-hero h1{font-size:57px}}
+
+.owh-conditions-heading{font-size:17px;line-height:1.46;color:#181f29;font-weight:850;letter-spacing:-.5px;margin:37px 0 24px;text-align:left}
+.owh-conditions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:22px}
+.owh-condition{display:flex;flex-direction:column;align-items:flex-start;min-width:0;min-height:108px;border:1px solid #e1e5eb;border-radius:8px;padding:10px 12px 12px;text-align:left;background:#fff;font-family:inherit}
+.owh-condition-illustration{font-size:24px;height:32px;line-height:28px;filter:saturate(.68);margin-bottom:4px}
+.owh-condition strong{font-size:14px;line-height:1.45;font-weight:760;color:#181c22}
+.owh-condition small{font-size:11px;line-height:1.6;color:#7e8ba0;margin-top:4px;word-break:keep-all}
+.owh-primary-action{width:100%;height:48px;display:flex;justify-content:center;align-items:center;border:0;border-radius:7px;color:#fff;background:#363d45;font-family:inherit;font-size:14px;font-weight:800;box-shadow:0 2px 6px #0001}
