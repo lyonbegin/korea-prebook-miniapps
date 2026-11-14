@@ -1,0 +1,27 @@
+name: MyDoctor original public department hospital DOM diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mydoctor-hermes-to-react-web-20261114]
+    paths:
+      - .github/workflows/mydoctor-public-dept-dom-diagnostic.yml
+      - mydoctor-clone/frontend/tests/diagnose-original-dept.cjs
+permissions:
+  contents: read
+jobs:
+  inspect-original:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        working-directory: mydoctor-clone/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Inspect public original department listing tables
+        working-directory: mydoctor-clone/frontend
+        run: node tests/diagnose-original-dept.cjs
