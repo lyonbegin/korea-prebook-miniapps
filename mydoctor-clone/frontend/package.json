@@ -7,7 +7,9 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "start": "vite preview --host 0.0.0.0 --port ${PORT:-4173}",
-    "test:hermes-web": "node tests/hermes-web-verification.cjs"
+    "test:hermes-web": "node tests/hermes-web-verification.cjs",
+    "build:pages": "VITE_GITHUB_PAGES=1 vite build",
+    "test:pages": "node tests/hermes-pages-local.cjs"
   },
   "dependencies": {
     "react": "^18.3.1",
