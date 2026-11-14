@@ -1,0 +1,45 @@
+name: MyDoctor Hermes React mobile web live browser QA
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/mydoctor-hermes-to-react-web-20261114
+    paths:
+      - .github/workflows/mydoctor-hermes-web-live-qa.yml
+      - mydoctor-clone/frontend/tests/hermes-preview-live.cjs
+      - mydoctor-clone/frontend/src/HermesSourceWebScreen.jsx
+      - mydoctor-clone/frontend/src/HermesGptPreview.jsx
+      - mydoctor-clone/frontend/src/App.jsx
+      - mydoctor-clone/frontend/vite.config.js
+permissions:
+  contents: read
+concurrency:
+  group: mydoctor-hermes-live-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser-mobile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          cd mydoctor-clone/frontend
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Validate deployed source-based mobile web
+        run: |
+          cd mydoctor-clone/frontend
+          node tests/hermes-preview-live.cjs
+        env:
+          HERMES_PREVIEW_URL: https://mydoctor-hermes-web-preview-production.up.railway.app
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hermes-source-web-live-chromium-evidence
+          path: mydoctor-clone/frontend/hermes-preview-evidence/
+          if-no-files-found: warn
+          retention-days: 14
