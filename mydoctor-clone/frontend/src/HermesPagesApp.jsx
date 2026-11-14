@@ -1,7 +1,8 @@
 import React,{useEffect,useMemo,useState} from "react";
-import {Home,Hospital,Stethoscope,Tags,ChevronLeft,ChevronRight,Search,X,ExternalLink,FileText} from "lucide-react";
+import {Home,Hospital,Stethoscope,Tags,ChevronLeft,ChevronRight,Search,X,FileText} from "lucide-react";
 import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
-import {publicMenuGroups,publicLinks,findObservedPublicLink} from "./HermesPagesStaticData.js";
+import HermesPagesDetail from "./HermesPagesDetail.jsx";
+import {publicMenuGroups,publicLinks} from "./HermesPagesStaticData.js";
 import "./hermes-pages.css";
 
 const ROOT=import.meta.env.BASE_URL||"/";
@@ -31,7 +32,7 @@ function resolveRoute(raw){
   if(raw==="/pharmacy")return {screen:"pharmacy",target:""};
   if(raw==="/healthLab"||raw==="/qna"||raw==="/medicine")
     return {screen:"health",target:""};
-  if(raw.startsWith("/pharmacy/")||raw.startsWith("/healthLab/")||raw.startsWith("/medicine/"))
+  if(raw.startsWith("/pharmacy/")||raw.startsWith("/healthLab/")||raw.startsWith("/medicine/")||raw.startsWith("/qna/"))
     return {screen:"detail",target:raw};
   return {screen:"home",target:""};
 }
@@ -57,7 +58,7 @@ function Directory({groupKey,title,go}){
   })).filter(g=>g.links.length),[grouped,needle]);
   const all=publicLinks(groupKey);
   return <div className="gh-directory" data-testid="pages-static-directory">
-    <Header title={title} subTitle="원본 공개 사이트의 관찰된 메뉴" onBack={()=>go("/")}/>
+    <Header title={title} subTitle="진료·가격·병원 메뉴" onBack={()=>go("/")}/>
     {groupKey==="hospital"&&
       <div className="gh-evidence-note">Hermes #48385·#48386 병원 목록: 실제 병원 명단은 로그인 필요(원본 API 401). 아래는 수집된 공개 진료과·지역 탐색 링크입니다.</div>}
     <form role="search" className="gh-directory-search" onSubmit={e=>e.preventDefault()}>
@@ -76,26 +77,9 @@ function Directory({groupKey,title,go}){
     {!rows.length&&<p className="gh-directory-empty">해당하는 공개 메뉴가 없습니다.</p>}
   </div>;
 }
-function Detail({target,go}){
-  const found=findObservedPublicLink(target);
-  const category=target.startsWith("/dept-hub/")?"진료과별 병원":
-                 target.startsWith("/medical-cost/")?"가격 비교":
-                 target.startsWith("/telemedicine/")?"비대면 진료":"공개 상세";
-  const safeTarget=typeof target==="string"&&/^\/(telemedicine|dept-hub|medical-cost|hospital|pharmacy|healthLab|medicine|map)(\/|$)/.test(target);
-  return <div className="gh-directory" data-testid="pages-static-detail">
-    <Header title={found?.label||"상세 화면"} subTitle={category}
-      onBack={()=>go(category==="가격 비교"?"/medical-cost":category==="비대면 진료"?"/telemedicine":"/hospital")}/>
-    <div className="gh-detail-body">
-      <h2>{found?.label||"선택한 경로"}</h2>
-      <p>2026년 11월 9일 관찰된 원본 공개 웹 링크입니다. Hermes의 상세 화면 구성은 아직 복원되지 않았습니다.</p>
-      {found&&safeTarget&&<a className="gh-detail-link" href={"https://my-doctor.io"+target}
-       target="_blank" rel="noopener noreferrer">원본 공개 페이지 열기 <ExternalLink size={16}/></a>}
-      <button type="button" className="gh-detail-back" onClick={()=>go("/hospital")}>병원 메뉴로 돌아가기</button>
-    </div>
-  </div>;
-}
-function BottomTabs({screen,go}){
-  const selected=screen==="detail"?"hospital-list":screen;
+function BottomTabs({screen,target,go}){
+  const selected=screen==="detail"?(target.startsWith("/medical-cost/")?"medical-cost":
+     target.startsWith("/telemedicine/")?"telemedicine":"hospital-list"):screen;
   return <nav className="gh-bottom-tabs" aria-label="모바일 웹 하단 메뉴">
     {MENU.map(({screen:id,label,Icon})=><a href={pageUrl(id)} key={id}
         aria-current={selected===id?"page":undefined}
@@ -127,11 +111,11 @@ export default function HermesPagesApp(){
       {page.screen==="medical-cost"&&<Directory key="price" groupKey="price" title="최저가 병원 예약 · 가격 비교" go={go}/>}
       {page.screen==="pharmacy"&&<Directory key="pharmacy" groupKey="pharmacy" title="약국 찾기" go={go}/>}
       {page.screen==="health"&&<Directory key="health" groupKey="health" title="건강 정보" go={go}/>}
-      {page.screen==="detail"&&<Detail target={page.target} go={go}/>}
+      {page.screen==="detail"&&<HermesPagesDetail target={page.target} go={go} back={()=>history.length>1?history.back():go("/")}/>}
       <footer className="gh-pages-source-footer">
         <FileText size={15}/> Android 6.50.0 Hermes 확인 레이아웃 + 공개 메뉴 정적 자료 · GitHub Pages
       </footer>
     </main>
-    <BottomTabs screen={page.screen} go={go}/>
+    <BottomTabs screen={page.screen} target={page.target} go={go}/>
   </div>;
 }
