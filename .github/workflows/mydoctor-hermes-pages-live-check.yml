@@ -22,7 +22,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
-      - name: Open the actual GitHub Pages domain and test real mobile navigation
+      - name: Open actual GitHub Pages Home → hospital search → skin → provider details (17 specialties)
         working-directory: mydoctor-clone/frontend
         env:
           PAGES_TEST_URL: https://lyonbegin.github.io/korea-prebook-miniapps/
