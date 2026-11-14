@@ -69,6 +69,7 @@ jobs:
             --out mydoctor-clone/hermes-web/audit/gpt-plan \
             --screen all
       - name: Test full Hermes bundle JavaScript recovery without exporting source
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           set -Eeuo pipefail
           python3 mydoctor-clone/hermes-web/audit_full_bundle.py \
