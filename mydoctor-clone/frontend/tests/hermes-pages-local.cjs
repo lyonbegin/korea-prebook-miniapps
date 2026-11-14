@@ -23,25 +23,24 @@ fs.mkdirSync(OUT,{recursive:true});
   data.initialPage={title:await page.title(),html:(await page.content()).slice(0,1100),scripts:await page.locator("script[src]").evaluateAll(nodes=>nodes.map(n=>n.src))};
   console.log("GITHUB_PAGES_BOOT_DIAGNOSTIC",JSON.stringify({...data.initialPage,consoleErrors,httpErrors}));
   await page.getByTestId("github-pages-hermes-app").waitFor({timeout:10000});
-  await page.getByTestId("hermes-source-home-nav").waitFor();
-  await page.getByTestId("hermes-source-medical").waitFor();
-  const card=page.getByTestId("hermes-source-home-nav");
-  for(const text of ["병원/약국","다이어트","수액"]){
-    if(!(await card.innerText()).includes(text))throw Error("Missing source-derived card "+text);
-  }
-  if(!(await page.getByTestId("hermes-source-medical").innerText()).includes("비대면 진료"))
-    throw Error("Native medical section missing");
-  if(await page.locator('text=연결되지 않은 원본 데이터').count())
-    throw Error("GitHub Pages unexpectedly depends on the live API");
+  await page.getByTestId("website-parity-home").waitFor();
+  const hero=await page.getByTestId("website-parity-home").innerText();
+  if(!hero.includes("대한민국 1위")||!hero.includes("비대면 진료 앱"))
+    throw Error("Original browser website marketing hero not displayed");
+  if(!(await page.locator(".owh-phone-illustration img").evaluate(img=>img.complete&&img.naturalWidth>0)))
+    throw Error("Original website phone illustration is missing");
+  if(!await page.getByRole("button",{name:"나만의 닥터 다운로드"}).count())
+    throw Error("Source website fixed download control missing");
   await page.screenshot({path:path.join(OUT,"pages-home.png"),fullPage:true});
   const height=await page.evaluate(()=>document.scrollingElement.scrollHeight);
   await page.evaluate(()=>window.scrollTo(0,document.scrollingElement.scrollHeight));
   await page.waitForTimeout(300);
   if(height<=844 || await page.evaluate(()=>window.scrollY)<200)
     throw Error("Mobile source home is not scrollable");
-  data.steps.push({screen:"home",sourceCards:3,scrollable:true,scrollHeight:height});
+  data.steps.push({screen:"home",websiteMarketingHero:true,scrollable:true,scrollHeight:height});
   // Verify the actual user journey from the home navigation card, not just bottom tabs.
-  await page.getByRole("button",{name:"병원 약국 찾기"}).click();
+  await page.getByRole("button",{name:"메뉴 열기"}).click();
+  await page.getByRole("button",{name:"병원찾기",exact:true}).click();
   await page.getByTestId("pages-static-directory").waitFor();
   await page.getByRole("searchbox",{name:"병원 찾기 검색"}).fill("피부과");
   const buttons=page.locator(".gh-directory-row");
