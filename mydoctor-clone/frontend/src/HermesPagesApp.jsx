@@ -1,6 +1,7 @@
 import React,{useEffect,useMemo,useState} from "react";
 import {Home,Hospital,Stethoscope,Tags,ChevronLeft,ChevronRight,Search,X,FileText} from "lucide-react";
 import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
+import WebsiteParityHome from "./WebsiteParityHome.jsx";
 import HermesPagesDetail from "./HermesPagesDetail.jsx";
 import {publicMenuGroups,publicLinks} from "./HermesPagesStaticData.js";
 import "./hermes-pages.css";
@@ -10,7 +11,7 @@ const pageUrl=(screen="home",target="")=>ROOT+"?screen="+encodeURIComponent(scre
 const parsePage=()=>{
   const q=new URLSearchParams(window.location.search);
   const screen=q.get("screen")||"home";
-  const valid=["home","hospital-list","telemedicine","medical-cost","pharmacy","health","detail"];
+  const valid=["home","native-home","hospital-list","telemedicine","medical-cost","pharmacy","health","detail"];
   return {screen:valid.includes(screen)?screen:"home",target:q.get("target")||""};
 };
 function resolveRoute(raw){
@@ -108,7 +109,8 @@ export default function HermesPagesApp(){
   };
   return <div className="gh-hermes-site" data-testid="github-pages-hermes-app">
     <main className="gh-hermes-main" id="main">
-      {page.screen==="home"&&<HermesSourceWebScreen screen="home" staticMode go={go}/>}
+      {page.screen==="home"&&<WebsiteParityHome go={go}/>}
+      {page.screen==="native-home"&&<HermesSourceWebScreen screen="home" staticMode go={go}/>}
       {page.screen==="hospital-list"&&<Directory key="hospital" groupKey="hospital" title="병원 찾기" go={go}/>}
       {page.screen==="telemedicine"&&<Directory key="telemedicine" groupKey="telemedicine" title="비대면 진료" go={go}/>}
       {page.screen==="medical-cost"&&<Directory key="price" groupKey="price" title="최저가 병원 예약 · 가격 비교" go={go}/>}
@@ -119,6 +121,6 @@ export default function HermesPagesApp(){
         <FileText size={15}/> Android 6.50.0 Hermes 확인 레이아웃 + 공개 메뉴 정적 자료 · GitHub Pages
       </footer>
     </main>
-    <BottomTabs screen={page.screen} target={page.target} go={go}/>
+    {page.screen!=="home"&&<BottomTabs screen={page.screen} target={page.target} go={go}/>}
   </div>;
 }
