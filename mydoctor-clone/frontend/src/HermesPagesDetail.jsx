@@ -5,6 +5,7 @@ import {
   Phone,ShieldCheck,Star,ArrowRight
 } from "lucide-react";
 import facts from "./data/verified-public-page-facts-29.json";
+import {DepartmentHospitalBrowser,VerifiedHospitalProfile} from "./HermesDepartmentHospitals.jsx";
 import medicalCostCards from "./data/original-medical-cost-cards.json";
 import {allObservedPublicLinks,publicLinks} from "./HermesPagesStaticData.js";
 import "./hermes-pages-detail.css";
@@ -355,6 +356,7 @@ export default function HermesPagesDetail({target,go,back}){
     target.startsWith("/telemedicine/doctor/")?"doctor":
     target.startsWith("/telemedicine/")?"telemedicine":
     target.startsWith("/dept-hub/")?"department":
+    target.startsWith("/hospital/verified?")?"verified-hospital":
     target.startsWith("/hospital/detail?")||/^\/hospital\/\d+/.test(target)?"hospital":
     target.startsWith("/hospital/")?"hospital-collection":
     target.startsWith("/pharmacy/")?"pharmacy":
@@ -365,12 +367,13 @@ export default function HermesPagesDetail({target,go,back}){
     type==="department"?"병원 찾기":type==="pharmacy"?"약국 찾기":
     type==="doctor"?"의사 정보":type==="hospital-collection"?"진료 병원":"상세 정보";
   return <div className="gh-d-page" data-testid="pages-static-detail" data-detail-type={type} data-detail-target={target}>
-    <DetailHead title={title} subtitle={known?.label||undefined} back={back}/>
+    {type!=="department"&&type!=="verified-hospital"&&<DetailHead title={title} subtitle={known?.label||undefined} back={back}/>}
     {type==="price"&&<PriceDetail target={target} doc={doc} go={go}/>}
     {type==="telemedicine"&&<TelemedicineDetail target={target} doc={doc} go={go}/>}
-    {type==="department"&&<DepartmentDetail target={target} doc={doc} go={go}/>}
+    {type==="department"&&<DepartmentHospitalBrowser target={target} go={go}/>}
     {type==="hospital-collection"&&<HospitalCollection target={target} doc={doc} go={go}/>}
     {type==="hospital"&&<HospitalProfile target={target} doc={doc} go={go}/>}
+    {type==="verified-hospital"&&<VerifiedHospitalProfile target={target} go={go}/>}
     {type==="pharmacy"&&<PharmacyDetail target={target} doc={doc} go={go}/>}
     {type==="map"&&<MapDetail target={target} doc={doc} go={go}/>}
     {(type==="knowledge"||type==="doctor")&&<KnowledgeDetail target={target} doc={doc} go={go}/>}
