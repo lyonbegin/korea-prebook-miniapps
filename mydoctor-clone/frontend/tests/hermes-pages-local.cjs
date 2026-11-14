@@ -40,7 +40,8 @@ fs.mkdirSync(OUT,{recursive:true});
   if(height<=844 || await page.evaluate(()=>window.scrollY)<200)
     throw Error("Mobile source home is not scrollable");
   data.steps.push({screen:"home",sourceCards:3,scrollable:true,scrollHeight:height});
-  await page.getByRole("link",{name:"병원 찾기"}).last().click();
+  // Verify the actual user journey from the home navigation card, not just bottom tabs.
+  await page.getByRole("button",{name:"병원 약국 찾기"}).click();
   await page.getByTestId("pages-static-directory").waitFor();
   await page.getByRole("searchbox",{name:"병원 찾기 검색"}).fill("피부과");
   const buttons=page.locator(".gh-directory-row");
