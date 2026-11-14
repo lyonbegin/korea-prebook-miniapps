@@ -107,7 +107,7 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.locator(".gh-d-pharmacy-card>button").first().click();
   if(!await page.locator(".gh-d-pharmacy-expanded").count())throw Error("Pharmacy detail expansion failed");
   data.steps.push({screen:"night-pharmacy",count:pharmacies,expanded:true});
-  for(const specialty of ["피부과","내과","이비인후과","정형외과","안과","소아청소년과","산부인과","성형외과"]){
+  for(const specialty of ["피부과","내과","이비인후과","정형외과","안과","소아청소년과","산부인과","성형외과","치과","비뇨의학과","정신건강의학과","신경과","신경외과","외과","재활의학과","마취통증의학과","가정의학과"]){
     await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/dept-hub/"+specialty),{waitUntil:"domcontentloaded"});
     await page.getByTestId("verified-specialty-screen").waitFor();
     const n=await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count();
