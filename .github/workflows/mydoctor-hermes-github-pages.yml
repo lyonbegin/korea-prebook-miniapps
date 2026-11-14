@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: "pages-mydoctor-hermes"
@@ -25,10 +26,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Download verified 2026-11-09 original website screenshot baseline
+        uses: actions/download-artifact@v4
+        with:
+          name: mydoctor-source-parity
+          run-id: 42650015118
+          repository: lyonbegin/korea-prebook-miniapps
+          github-token: ${{ github.token }}
+          path: mydoctor-clone/frontend/qa-original
       - name: Install dependencies and build static site
         working-directory: mydoctor-clone/frontend
         run: |
           npm install --no-audit --no-fund
+          node tests/extract-verified-home-phone.cjs
           npm run build:pages
           test -s dist/index.html
           if grep -q 'src="/src/main.jsx"' dist/index.html; then
