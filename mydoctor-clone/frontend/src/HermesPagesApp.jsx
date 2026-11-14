@@ -34,6 +34,9 @@ function resolveRoute(raw){
     return {screen:"health",target:""};
   if(raw.startsWith("/pharmacy/")||raw.startsWith("/healthLab/")||raw.startsWith("/medicine/")||raw.startsWith("/qna/"))
     return {screen:"detail",target:raw};
+  // Keep unsupported observed public links inside the mobile web instead of silently
+  // jumping back to Home. These use the factual detail view's internal renderer.
+  if(raw.startsWith("/")&&!raw.startsWith("//"))return {screen:"detail",target:raw};
   return {screen:"home",target:""};
 }
 const MENU=[
