@@ -63,12 +63,20 @@ jobs:
             sleep 1
           done
           node tests/hermes-pages-local.cjs
+      - name: Compare original website screenshot pixel-by-pixel in strict page order
+        working-directory: mydoctor-clone/frontend
+        run: |
+          # Keep the incomplete screen as FAIL in the report; publishing a
+          # preview must not be interpreted as a visual parity PASS.
+          node tests/website-pixel-gate.cjs || echo "SOURCE_WEBSITE_PIXEL_PARITY_NOT_YET_PASSED"
       - name: Save screenshot and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mydoctor-hermes-github-pages-mobile-evidence
-          path: mydoctor-clone/frontend/hermes-pages-evidence/
+          path: |
+            mydoctor-clone/frontend/hermes-pages-evidence/
+            mydoctor-clone/frontend/website-pixel-evidence/
           if-no-files-found: warn
           retention-days: 14
       - name: Publish static website to gh-pages branch
