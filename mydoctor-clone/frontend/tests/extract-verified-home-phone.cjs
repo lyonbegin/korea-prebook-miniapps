@@ -14,23 +14,37 @@ if(!fs.existsSync(src))throw new Error("Verified original website phone source s
 const original=PNG.sync.read(fs.readFileSync(src));
 if(original.width!==390||original.height<1100)
  throw new Error("Unexpected original marketing screenshot dimensions "+original.width+"x"+original.height);
-const start=525, overlayTop=782, overlayEnd=845, bottom=960;
-const height=(overlayTop-start)+(bottom-overlayEnd);
+const start=525, overlayTop=782, overlayEnd=845, bottom=900;
+/* The fixed original CTA hides 63 rows from 782–844. Stitch the
+ * phone illustration without borrowing the NEXT SECTION's text from
+ * y>900, and preserve source photo's true 375px occupied height.
+ * Interpolated pixels are an explicit non-verified artwork gap, not
+ * evidence that the phone's covered content is pixel-matched.
+ */
+const height=bottom-start;
 const img=new PNG({width:390,height});
 for(let y=0;y<height;y++){
- const sy=y<overlayTop-start?start+y:overlayEnd+y-(overlayTop-start);
+ const sy=start+y;
  for(let x=0;x<390;x++){
-  const inIdx=(sy*original.width+x)*4;
   const outIdx=(y*390+x)*4;
-  img.data[outIdx]=original.data[inIdx];
-  img.data[outIdx+1]=original.data[inIdx+1];
-  img.data[outIdx+2]=original.data[inIdx+2];
+  if(sy>=overlayTop&&sy<overlayEnd){
+    const a=((overlayTop-1)*original.width+x)*4;
+    const b=(overlayEnd*original.width+x)*4;
+    const t=(sy-overlayTop+1)/(overlayEnd-overlayTop+1);
+    for(let k=0;k<3;k++)
+      img.data[outIdx+k]=Math.round((1-t)*original.data[a+k]+t*original.data[b+k]);
+  }else{
+    const inIdx=(sy*original.width+x)*4;
+    img.data[outIdx]=original.data[inIdx];
+    img.data[outIdx+1]=original.data[inIdx+1];
+    img.data[outIdx+2]=original.data[inIdx+2];
+  }
   img.data[outIdx+3]=255;
  }
 }
 fs.mkdirSync(path.dirname(dest),{recursive:true});
 fs.writeFileSync(dest,PNG.sync.write(img));
-console.log("SOURCE_OBSERVED_PHONE_ASSET",JSON.stringify({origin:"source-full-home.png",asset:"website-original-phone.png",size:[img.width,img.height],sourceRows:["525-781","845-959"],status:"decorative public snapshot crop"}));
+console.log("SOURCE_OBSERVED_PHONE_ASSET",JSON.stringify({origin:"source-full-home.png",asset:"website-original-phone.png",size:[img.width,img.height],sourceRows:["525-781","845-899"],maskedCTA:"782-844 interpolated",status:"decorative public snapshot crop"}));
 
 /* Copy only the small decorative laurel pictograms from the browser-verified
  * public screenshot. Text and all interactive elements remain React DOM. */
