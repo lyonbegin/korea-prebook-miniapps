@@ -5,6 +5,7 @@ import {
   Phone,ShieldCheck,Star,ArrowRight
 } from "lucide-react";
 import facts from "./data/verified-public-page-facts-29.json";
+import menuFacts from "./data/verified-public-menu-facts-72.json";
 import {DepartmentHospitalBrowser,VerifiedHospitalProfile} from "./HermesDepartmentHospitals.jsx";
 import medicalCostCards from "./data/original-medical-cost-cards.json";
 import {allObservedPublicLinks,publicLinks} from "./HermesPagesStaticData.js";
@@ -14,10 +15,10 @@ const norm=(p)=>{
   if(typeof p!=="string")return "";
   try{return decodeURIComponent(p).replace(/\/$/,"")||"/"}catch{return p}
 };
-const pathIndex=new Map(facts.map(x=>[norm(x.path),x]));
+const pathIndex=new Map([...menuFacts,...facts].map(x=>[norm(x.path),x]));
 const observedLinks=[
   ...allObservedPublicLinks,
-  ...facts.flatMap(f=>f.links||[]),
+  ...[...menuFacts,...facts].flatMap(f=>f.links||[]),
   ...medicalCostCards.map(x=>({path:x.path,label:x.title}))
 ];
 const getEvidence=(target)=>{
