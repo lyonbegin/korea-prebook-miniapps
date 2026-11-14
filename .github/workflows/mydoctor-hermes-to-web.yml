@@ -11,6 +11,8 @@ on:
       - mydoctor-clone/frontend/vite.config.js
       - mydoctor-clone/frontend/tests/hermes-web-verification.cjs
       - mydoctor-clone/frontend/src/RecoveredHermesWebScreen.jsx
+      - mydoctor-clone/frontend/src/HermesGptPreview.jsx
+      - mydoctor-clone/frontend/src/App.jsx
 permissions:
   contents: read
 jobs:
@@ -73,6 +75,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Copy original GPT trees into Vite preview when generated
+        run: |
+          set -Eeuo pipefail
+          if [ -f mydoctor-clone/hermes-web/audit/gpt-generated/home.json ]; then
+            mkdir -p mydoctor-clone/frontend/public/hermes-generated
+            cp mydoctor-clone/hermes-web/audit/gpt-generated/*.json mydoctor-clone/frontend/public/hermes-generated/
+            echo "SOURCE_VERIFIED_GPT_SCREENS_INSTALLED=1"
+          else
+            echo "NO_GPT_KEY_OR_CONVERTED_UI_AVAILABLE=1"
+          fi
       - name: Verify native component renderer works within React web
         run: |
           set -Eeuo pipefail
@@ -99,6 +111,14 @@ jobs:
           path: |
             mydoctor-clone/hermes-web/audit/gpt-generated/*.json
             mydoctor-clone/hermes-web/audit/gpt-plan/plan.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Publish experimental React web preview build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-hermes-gpt-preview-dist
+          path: mydoctor-clone/frontend/dist/
           if-no-files-found: warn
           retention-days: 7
       - name: Publish structural audit only, not proprietary bytecode
