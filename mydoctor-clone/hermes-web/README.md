@@ -36,3 +36,14 @@ RN 네이티브 TurboModules/Android JSI, Metro 모듈 로더, 네트워크/스�
 
 최종 합격 조건은 복원된 **원본 화면 내용**이 브라우저의 DOM으로 실제 표시되고
 하단까지 스크롤·터치·화면 이동·데이터 바인딩을 통과하는 것이다.
+
+
+## GPT 화면 변환 자동화 (2026-11-14)
+
+- `gpt_ui_port.py`: 실제 HBC96 원본 SHA256 확인 후 홈/병원 목록 화면별 Hermes 함수 추출, GPT-6.1 Sol Responses API로 부분 UI 트리 변환.
+- `--generate`는 `OPENAI_API_KEY`가 있는 경우에만 모델을 호출. `--screen all`로 두 화면을 변환하며, `--generate` 없이 실행하면 원본 검증된 작업 계획만 생성.
+- `tests/test_gpt_ui_port.py`: 가짜/근거 없는 완성 판정, 잘못된 UI 타입, 위험한 딥링크를 거절하는 단위 테스트.
+- `frontend/src/HermesGptPreview.jsx`: 별도 경로 `/native/hermes-preview?screen=home`에서 변환 결과를 보여줌. 결과가 없으면 의도적으로 원본 UI 실행 미검증으로 표시.
+- GH Actions의 `mydoctor-hermes-to-web.yml`은 환경에 API 키가 있는 경우 GPT 결과를 `audit/gpt-generated/*.json`으로 만든 뒤 별도의 Vite preview build에 복사함. 운영 Railway 서비스에는 반영하지 않음.
+
+**현재 기준:** 변환기와 미리보기 수용 구조가 추가되었으며, GPT를 통한 실제 원본 화면 변환·브라우저 실행 성공 여부는 CI 결과 및 생성 결과에 따라 별도 검증해야 함.
