@@ -1,0 +1,37 @@
+name: MyDoctor GitHub Pages — live mobile browser verification
+on:
+  push:
+    branches:
+      - feature/mydoctor-hermes-to-react-web-20261114
+    paths:
+      - .github/workflows/mydoctor-hermes-pages-live-check.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-chromium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependencies
+        working-directory: mydoctor-clone/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Open the actual GitHub Pages domain and test real mobile navigation
+        working-directory: mydoctor-clone/frontend
+        env:
+          PAGES_TEST_URL: https://lyonbegin.github.io/korea-prebook-miniapps/
+        run: node tests/hermes-pages-local.cjs
+      - name: Preserve actual public website screenshots and browser results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-github-pages-live-site-evidence
+          path: mydoctor-clone/frontend/hermes-pages-evidence/
+          if-no-files-found: warn
+          retention-days: 14
