@@ -11,9 +11,9 @@
 .owh-marketing-hero{background:linear-gradient(180deg,#fff 0%,#fbfcff 63%,#f3f5fc 100%);text-align:center;padding-top:18px;overflow:hidden}
 .owh-marketing-hero h1{margin:0 auto 23px;font-size:59.5px;line-height:1.08;font-weight:950;color:#17191c;letter-spacing:-2.3px;-webkit-text-stroke:1.1px currentColor;word-break:keep-all}
 .owh-awards{display:flex;flex-direction:column;align-items:center;gap:0;color:#326dff}
-.owh-award{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;font-size:9.9px;line-height:22px;letter-spacing:-.15px;font-weight:600}
-.owh-laurel{display:inline-block;color:#326dff;font-size:17px;line-height:10px;transform:rotate(-65deg);font-weight:400}
-.owh-laurel.right{transform:rotate(115deg)}
+.owh-award{display:flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap;font-size:11.5px;line-height:22px;letter-spacing:-.15px;font-weight:600}
+.owh-laurel{display:block;width:15px;height:23px;object-fit:contain;flex-shrink:0}
+.owh-laurel.right{transform:none}
 .owh-stat-panel{height:61px;max-width:350px;border-radius:15px;margin:15px auto 0;background:#f7f8fa;display:grid;grid-template-columns:1fr 1fr;align-items:center;font-size:12px;line-height:1.96}
 .owh-stat-panel>div:first-child{border-right:1px solid #e4e7ee}
 .owh-stat-panel b{color:#326dff;font-weight:850;padding-left:5px}.owh-stat-panel sup{font-size:8px;vertical-align:super}
@@ -34,7 +34,7 @@
 .owh-service-overview-secondary{background:#f9faff}
 .owh-price-categories{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .owh-price-categories button{display:flex;justify-content:space-between;gap:5px;align-items:center;text-align:left;padding:14px 9px;border:1px solid #e7ebf4;border-radius:10px;background:#fff;font-size:13px;font-weight:700}
-.owh-cta-spacer{height:64px}.owh-fixed-download{position:fixed;bottom:0;left:50%;transform:translateX(-50%);height:62px;width:100%;max-width:520px;border:0;background:#326dff;z-index:30;color:#fff;font-size:18px;letter-spacing:-.3px;font-weight:800;cursor:pointer}
+.owh-cta-spacer{height:64px}.owh-fixed-download{position:fixed;bottom:0;left:50%;transform:translateX(-50%);height:62px;width:100%;max-width:520px;border:0;background:#326dff;z-index:30;color:#fff;font-size:17px;letter-spacing:-.3px;font-weight:800;cursor:pointer}
 .gh-hermes-main:has(.original-website-home){padding-bottom:0}
 .gh-hermes-main:has(.original-website-home)>.gh-pages-source-footer{display:none}
 @media(max-width:389px){.owh-marketing-hero h1{font-size:calc(59.5px * (100vw / 390px))}}
