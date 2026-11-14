@@ -10,9 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: "pages-mydoctor-hermes"
@@ -63,22 +61,21 @@ jobs:
           path: mydoctor-clone/frontend/hermes-pages-evidence/
           if-no-files-found: warn
           retention-days: 14
-      - name: Prepare GitHub Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - name: Upload static website
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: mydoctor-clone/frontend/dist/
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-24.04
-    needs: build
-    steps:
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish static website to gh-pages branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/hermes-gh-pages
+          cp -a mydoctor-clone/frontend/dist/. /tmp/hermes-gh-pages/
+          touch /tmp/hermes-gh-pages/.nojekyll
+          cd /tmp/hermes-gh-pages
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish MyDoctor Hermes UI static GitHub Pages"
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $auth_header" push --force \
+            "https://github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/gh-pages
+          echo "GITHUB_PAGES_BRANCH_PUBLISHED=gh-pages"
