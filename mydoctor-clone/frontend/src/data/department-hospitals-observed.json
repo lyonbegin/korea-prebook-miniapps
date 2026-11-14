@@ -1,0 +1,839 @@
+{
+  "version": 1,
+  "observed_at": "2026-11-14",
+  "description": "Subset of publicly visible hospital name, locality, specialist count, hours label, station from my-doctor.io department/region public tables; not real-time opening availability, not all hospitals",
+  "departments": {
+    "피부과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "은평우태하피부과의원",
+            "address": "서울 은평구 불광제1동",
+            "specialists": 6,
+            "hours": "야간/일요일 진료",
+            "station": "연신내역"
+          },
+          {
+            "name": "오가나셀피부과의원",
+            "address": "서울 강남구 청담동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "압구정로데오역"
+          },
+          {
+            "name": "우태하한승경피부과의원",
+            "address": "서울 용산구 남영동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "숙대입구역"
+          },
+          {
+            "name": "임이석테마피부과의원",
+            "address": "서울 서초구 잠원동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "잠원역"
+          },
+          {
+            "name": "연세스타피부과의원",
+            "address": "서울 서대문구 신촌동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "신촌역"
+          },
+          {
+            "name": "더힐피부과의원",
+            "address": "서울 동작구 흑석동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "흑석역"
+          },
+          {
+            "name": "더힐피부과의원",
+            "address": "서울 강남구 신사동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "잠원역"
+          },
+          {
+            "name": "리뉴미피부과의원",
+            "address": "서울 중구 광희동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "동대문역사문화공원역"
+          },
+          {
+            "name": "스토리피부과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "역삼역"
+          },
+          {
+            "name": "국홍일국정표피부과의원",
+            "address": "서울 서초구 양재1동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "양재역"
+          }
+        ]
+      },
+      "경기": {
+        "source_url": "https://my-doctor.io/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC/%EA%B2%BD%EA%B8%B0",
+        "rows": [
+          {
+            "name": "닥터스피부과의원",
+            "address": "경기 수원시 광교1동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "광교중앙역"
+          },
+          {
+            "name": "리뉴미피부과의원",
+            "address": "경기 성남시 정자동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "정자역"
+          },
+          {
+            "name": "바라봄피부과의원",
+            "address": "경기 성남시 위례동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "남위례역"
+          },
+          {
+            "name": "새하얀 피부과의원",
+            "address": "경기 광명시 철산3동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "철산역"
+          },
+          {
+            "name": "오킴스피부과의원",
+            "address": "경기 고양시 마두2동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "마두역"
+          },
+          {
+            "name": "닥터스피부과의원",
+            "address": "경기 안산시 고잔동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "중앙역"
+          },
+          {
+            "name": "더바른피부과의원",
+            "address": "경기 시흥시 능곡동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "시흥능곡역"
+          },
+          {
+            "name": "리멤버피부과의원 양주옥정",
+            "address": "경기 양주시 옥정2동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": ""
+          },
+          {
+            "name": "소사벌휴먼피부과의원",
+            "address": "경기 평택시 비전1동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": ""
+          },
+          {
+            "name": "수피부과의원",
+            "address": "경기 파주시 운정3동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "야당역"
+          }
+        ]
+      },
+      "인천": {
+        "source_url": "https://my-doctor.io/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC/%EC%9D%B8%EC%B2%9C",
+        "rows": [
+          {
+            "name": "휴먼피부과의원",
+            "address": "인천 연수구 송도2동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "센트럴파크역"
+          },
+          {
+            "name": "장피부과의원",
+            "address": "인천 남동구 간석2동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "간석오거리역"
+          },
+          {
+            "name": "구월동 오라클피부과의원",
+            "address": "인천 남동구 구월3동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "문학경기장역"
+          },
+          {
+            "name": "메트로피부과의원",
+            "address": "인천 남동구 구월3동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "문학경기장역"
+          },
+          {
+            "name": "메트로피부과의원",
+            "address": "인천 부평구 부평1동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "부평역"
+          },
+          {
+            "name": "의료법인 정강의료재단 JK위드미의원",
+            "address": "인천 연수구 송도1동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "인천대입구역"
+          },
+          {
+            "name": "비엘클리피부과의원",
+            "address": "인천 부평구 부평1동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": "부평역"
+          },
+          {
+            "name": "삼성더봄피부과의원",
+            "address": "인천 남동구 서창2동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": "운연역"
+          },
+          {
+            "name": "서울더본피부과의원",
+            "address": "인천 서해구 청라1동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": ""
+          },
+          {
+            "name": "서울수피부과의원",
+            "address": "인천 남동구 구월3동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": "예술회관역"
+          }
+        ]
+      },
+      "부산": {
+        "source_url": "https://my-doctor.io/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC/%EB%B6%80%EC%82%B0",
+        "rows": [
+          {
+            "name": "셀렉트피부과의원",
+            "address": "부산 사하구 하단제1동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "하단역"
+          },
+          {
+            "name": "더퍼스트피부과의원 부산본점",
+            "address": "부산 북구 화명제3동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "화명역"
+          },
+          {
+            "name": "케이피부과의원",
+            "address": "부산 수영구 수영동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "수영역"
+          },
+          {
+            "name": "벧엘피부과의원",
+            "address": "부산 동래구 온천제3동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "동래역"
+          },
+          {
+            "name": "더큰한의원",
+            "address": "부산 북구 만덕제1동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": "만덕역"
+          },
+          {
+            "name": "디엘의원",
+            "address": "부산 해운대구 우제2동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": "센텀시티역"
+          },
+          {
+            "name": "크리스탈피부과의원",
+            "address": "부산 부산진구 당감제1동",
+            "specialists": 1,
+            "hours": "야간 진료",
+            "station": "가야역"
+          }
+        ]
+      },
+      "대구": {
+        "source_url": "https://my-doctor.io/dept-hub/%ED%94%BC%EB%B6%80%EA%B3%BC/%EB%8C%80%EA%B5%AC",
+        "rows": [
+          {
+            "name": "애플피부과의원",
+            "address": "대구 수성구 범어1동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "범어역"
+          },
+          {
+            "name": "황금피부과의원",
+            "address": "대구 수성구 황금2동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "황금역"
+          },
+          {
+            "name": "고운미피부과의원",
+            "address": "대구 중구 성내1동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "반월당역"
+          },
+          {
+            "name": "올포스킨피부과의원",
+            "address": "대구 중구 삼덕동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "중앙로역"
+          },
+          {
+            "name": "신피부과의원",
+            "address": "대구 중구 성내1동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "중앙로역"
+          }
+        ]
+      }
+    },
+    "내과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EB%82%B4%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "한솔병원",
+            "address": "서울 송파구 석촌동",
+            "specialists": 8,
+            "hours": "야간 진료",
+            "station": "석촌역"
+          },
+          {
+            "name": "구로성심병원",
+            "address": "서울 구로구 고척제1동",
+            "specialists": 6,
+            "hours": "야간/일요일 진료",
+            "station": "구일역"
+          },
+          {
+            "name": "메트로내과의원",
+            "address": "서울 강북구 미아동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "미아사거리역"
+          },
+          {
+            "name": "사랑플러스병원",
+            "address": "서울 강동구 명일제1동",
+            "specialists": 5,
+            "hours": "야간/일요일 진료",
+            "station": "굽은다리역"
+          },
+          {
+            "name": "서울베스트의료의원",
+            "address": "서울 중구 신당동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "신당역"
+          },
+          {
+            "name": "사랑의병원",
+            "address": "서울 관악구 낙성대동",
+            "specialists": 4,
+            "hours": "야간/일요일 진료",
+            "station": ""
+          },
+          {
+            "name": "365류마고내과의원",
+            "address": "서울 광진구 구의제3동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "강변역"
+          },
+          {
+            "name": "민내과의원",
+            "address": "서울 관악구 보라매동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "보라매병원역"
+          },
+          {
+            "name": "메디힐병원",
+            "address": "서울 양천구 신월5동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "화곡역"
+          },
+          {
+            "name": "미래아이산부인과의원",
+            "address": "서울 강서구 등촌제1동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "증미역"
+          }
+        ]
+      }
+    },
+    "이비인후과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EC%9D%B4%EB%B9%84%EC%9D%B8%ED%9B%84%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "신도림하나이비인후과의원",
+            "address": "서울 구로구 구로제5동",
+            "specialists": 4,
+            "hours": "야간/일요일 진료",
+            "station": "신도림역"
+          },
+          {
+            "name": "디에이성형외과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "언제나열린이비인후과의원",
+            "address": "서울 관악구 신림동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "신림역"
+          },
+          {
+            "name": "원센트럴이비인후과의원",
+            "address": "서울 양천구 목2동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "신목동역"
+          },
+          {
+            "name": "365코이의원",
+            "address": "서울 강남구 논현1동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "사평역"
+          },
+          {
+            "name": "고운이비인후과의원",
+            "address": "서울 영등포구 영등포동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "영등포역"
+          },
+          {
+            "name": "문래코아이비인후과의원",
+            "address": "서울 영등포구 문래동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "문래역"
+          },
+          {
+            "name": "연세어울림이비인후과의원",
+            "address": "서울 광진구 화양동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "건대입구역"
+          },
+          {
+            "name": "연세코앤이비인후과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "다나아의원",
+            "address": "서울 강남구 논현2동",
+            "specialists": 1,
+            "hours": "야간/일요일 진료",
+            "station": "강남구청역"
+          }
+        ]
+      }
+    },
+    "정형외과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EC%A0%95%ED%98%95%EC%99%B8%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "신세계서울병원",
+            "address": "서울 영등포구 영등포동",
+            "specialists": 5,
+            "hours": "야간/일요일 진료",
+            "station": "영등포역"
+          },
+          {
+            "name": "사랑플러스병원",
+            "address": "서울 강동구 명일제1동",
+            "specialists": 4,
+            "hours": "야간/일요일 진료",
+            "station": "굽은다리역"
+          },
+          {
+            "name": "서울바른병원",
+            "address": "서울 영등포구 신길제6동",
+            "specialists": 4,
+            "hours": "야간/일요일 진료",
+            "station": "보라매역"
+          },
+          {
+            "name": "서울프라임병원",
+            "address": "서울 광진구 자양제4동",
+            "specialists": 4,
+            "hours": "야간/일요일 진료",
+            "station": "건대입구역"
+          },
+          {
+            "name": "강북으뜸병원",
+            "address": "서울 강북구 미아동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "미아역"
+          },
+          {
+            "name": "더드림병원",
+            "address": "서울 강남구 대치4동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "선릉역"
+          },
+          {
+            "name": "마포바로본정형외과의원",
+            "address": "서울 마포구 용강동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "공덕역"
+          },
+          {
+            "name": "구로성심병원",
+            "address": "서울 구로구 고척제1동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "구일역"
+          }
+        ]
+      }
+    },
+    "안과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EC%95%88%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "강남스마일안과의원",
+            "address": "서울 서초구 서초4동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "잠실삼성안과의원",
+            "address": "서울 송파구 잠실본동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "잠실새내역"
+          },
+          {
+            "name": "제이씨빛소망안과의원",
+            "address": "서울 영등포구 여의동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "여의도역"
+          },
+          {
+            "name": "강남서울밝은안과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "글로리서울안과의원",
+            "address": "서울 서초구 서초2동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "드림성모안과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "압구정에스앤비안과의원",
+            "address": "서울 강남구 압구정동",
+            "specialists": 3,
+            "hours": "야간 진료",
+            "station": "압구정역"
+          },
+          {
+            "name": "잠실서울밝은안과의원",
+            "address": "서울 송파구 송파1동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "석촌역"
+          },
+          {
+            "name": "강남조은눈안과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "엘리트안과의원",
+            "address": "서울 서대문구 신촌동",
+            "specialists": 2,
+            "hours": "야간 진료",
+            "station": "신촌역"
+          }
+        ]
+      }
+    },
+    "소아청소년과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EC%86%8C%EC%95%84%EC%B2%AD%EC%86%8C%EB%85%84%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "성북우리아이들병원",
+            "address": "서울 성북구 길음제2동",
+            "specialists": 12,
+            "hours": "야간/일요일 진료",
+            "station": "길음역"
+          },
+          {
+            "name": "장스소아청소년과의원",
+            "address": "서울 중랑구 망우본동",
+            "specialists": 5,
+            "hours": "야간/일요일 진료",
+            "station": "망우역"
+          },
+          {
+            "name": "미래소아청소년과의원",
+            "address": "서울 강북구 미아동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "삼양역"
+          },
+          {
+            "name": "삼성드림소아청소년과의원",
+            "address": "서울 노원구 월계3동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "광운대역"
+          },
+          {
+            "name": "아이랑소아청소년과의원",
+            "address": "서울 관악구 신림동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "서울대벤처타운역"
+          },
+          {
+            "name": "퀸스메디소아청소년과의원",
+            "address": "서울 노원구 공릉1동",
+            "specialists": 3,
+            "hours": "야간/일요일 진료",
+            "station": "공릉역"
+          },
+          {
+            "name": "명소아청소년과의원",
+            "address": "서울 관악구 중앙동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "봉천역"
+          },
+          {
+            "name": "미즈아이프라자산부인과의원",
+            "address": "서울 노원구 상계1동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "수락산역"
+          },
+          {
+            "name": "연세365소아청소년과의원",
+            "address": "서울 양천구 신정3동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "신정네거리역"
+          },
+          {
+            "name": "연세곰돌이소아청소년과의원",
+            "address": "서울 서초구 방배본동",
+            "specialists": 2,
+            "hours": "야간/일요일 진료",
+            "station": "내방역"
+          }
+        ]
+      }
+    },
+    "산부인과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EC%82%B0%EB%B6%80%EC%9D%B8%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "미래아이산부인과의원",
+            "address": "서울 강서구 등촌제1동",
+            "specialists": 12,
+            "hours": "야간 진료",
+            "station": "증미역"
+          },
+          {
+            "name": "고은빛여성병원",
+            "address": "서울 강동구 길동",
+            "specialists": 10,
+            "hours": "야간/일요일 진료",
+            "station": "길동역"
+          },
+          {
+            "name": "포유문산부인과의원",
+            "address": "서울 송파구 가락본동",
+            "specialists": 8,
+            "hours": "야간/일요일 진료",
+            "station": "송파역"
+          },
+          {
+            "name": "포미즈여성병원",
+            "address": "서울 양천구 목2동",
+            "specialists": 6,
+            "hours": "야간/일요일 진료",
+            "station": "신목동역"
+          },
+          {
+            "name": "유광사여성병원",
+            "address": "서울 강서구 우장산동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "화곡역"
+          },
+          {
+            "name": "고은빛산부인과의원",
+            "address": "서울 송파구 방이2동",
+            "specialists": 5,
+            "hours": "야간/일요일 진료",
+            "station": "송파나루역"
+          },
+          {
+            "name": "SC제일산부인과의원",
+            "address": "서울 광진구 구의제1동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "구의역"
+          },
+          {
+            "name": "헤스티아여성의원",
+            "address": "서울 강남구 신사동",
+            "specialists": 5,
+            "hours": "야간 진료",
+            "station": "잠원역"
+          },
+          {
+            "name": "엠제이산부인과의원",
+            "address": "서울 금천구 독산제1동",
+            "specialists": 4,
+            "hours": "야간/일요일 진료",
+            "station": "독산역"
+          },
+          {
+            "name": "로앤산부인과의원",
+            "address": "서울 종로구 종로1.2.3.4가동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "종각역"
+          }
+        ]
+      }
+    },
+    "성형외과": {
+      "서울": {
+        "source_url": "https://my-doctor.io/dept-hub/%EC%84%B1%ED%98%95%EC%99%B8%EA%B3%BC/%EC%84%9C%EC%9A%B8",
+        "rows": [
+          {
+            "name": "디에이성형외과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 24,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "아이디병원",
+            "address": "서울 강남구 논현1동",
+            "specialists": 23,
+            "hours": "야간 진료",
+            "station": "잠원역"
+          },
+          {
+            "name": "기린성형외과의원",
+            "address": "서울 서초구 서초4동",
+            "specialists": 8,
+            "hours": "야간/일요일 진료",
+            "station": "신논현역"
+          },
+          {
+            "name": "빌리프성형외과의원",
+            "address": "서울 서초구 반포1동",
+            "specialists": 6,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "케이성형외과의원",
+            "address": "서울 서초구 서초4동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "압구정역"
+          },
+          {
+            "name": "오브제성형외과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "탑클래스성형외과의원",
+            "address": "서울 강남구 역삼1동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "강남역"
+          },
+          {
+            "name": "유앤유성형외과의원",
+            "address": "서울 강남구 신사동",
+            "specialists": 4,
+            "hours": "야간 진료",
+            "station": "압구정역"
+          }
+        ]
+      }
+    }
+  }
+}
