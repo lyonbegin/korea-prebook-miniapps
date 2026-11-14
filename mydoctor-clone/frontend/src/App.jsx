@@ -14,6 +14,7 @@ import NativeDoctorDirectory from "./NativeDoctorDirectory.jsx";
 import {NativePharmacyScreen,NativeFaqScreen} from "./NativeAdditionalScreens.jsx";
 import NativePriceRegions from "./NativePriceRegions.jsx";
 import NativeHospitalListScreen from "./NativeHospitalListScreen.jsx";
+import HermesGptPreview from "./HermesGptPreview.jsx";
 
 const ORIGINAL="https://my-doctor.io";
 const NAV=[["홈","/"],["비대면 진료","/telemedicine/all-department"],["병원 찾기","/hospital"],["가격 비교","/medical-cost"],["약국 찾기","/pharmacy"],["의약품 정보","/medicine"],["건강연구소","/healthLab"]];
@@ -45,7 +46,7 @@ function useSource(route){
  const[retry,setRetry]=useState(0);
  useEffect(()=>{const c=new AbortController();setState({data:null,loading:true,error:""});
   // Our native MyD-link route has no legacy website HTML source.
-  if(route.startsWith("/native/myd-link/")){
+  if(route.startsWith("/native/myd-link/")||route.startsWith("/native/hermes-preview")){
     setState({data:null,loading:false,error:""});
     return()=>c.abort();
   }
@@ -319,6 +320,7 @@ export default function App(){
  const nativeRoot=home||nativeMydLink||nativePharmacy||nativeFaq||nativePriceDetail||hospitalRoute||route==="/medical-cost"||
    route==="/telemedicine/all-department"||route==="/telemedicine";
  const appData=s.data||{links:[],tables:[],sections:[],paragraphs:[]};
+ if(route.startsWith("/native/hermes-preview"))return <HermesGptPreview go={go}/>;
  return <div className={"site site-app-native"+(companyPage?" site-company":"")+(distinctPage?" site-original-nine":"")} data-app-reference="mydoctor-6.50.0">{!companyPage&&<header className="topbar native-app-header"><div className="toprow">
  {home?<button className="brand" onClick={()=>{setMenu(false);go("/")}} aria-label="홈"><span className="native-brand">나만의닥터</span></button>:
  <button className="native-app-back" type="button" onClick={()=>go(navParent)}
