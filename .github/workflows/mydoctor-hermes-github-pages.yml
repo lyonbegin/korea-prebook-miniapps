@@ -1,0 +1,81 @@
+name: MyDoctor Hermes UI — GitHub Pages
+
+on:
+  push:
+    branches:
+      - feature/mydoctor-hermes-to-react-web-20261114
+    paths:
+      - ".github/workflows/mydoctor-hermes-github-pages.yml"
+      - "mydoctor-clone/frontend/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-mydoctor-hermes"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies and build static site
+        working-directory: mydoctor-clone/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:pages
+          test -s dist/index.html
+          if grep -q 'src="/src/main.jsx"' dist/index.html; then
+            echo "Vite did not transform entrypoint" >&2
+            exit 1
+          fi
+      - name: Install Chromium browser
+        working-directory: mydoctor-clone/frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start static preview, test real mobile interactions
+        working-directory: mydoctor-clone/frontend
+        run: |
+          set -euo pipefail
+          npm run start > /tmp/hermes-pages-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 35); do
+            if curl -fsS http://127.0.0.1:4173/korea-prebook-miniapps/ -o /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/hermes-pages-local.cjs
+      - name: Save screenshot and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-hermes-github-pages-mobile-evidence
+          path: mydoctor-clone/frontend/hermes-pages-evidence/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Prepare GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload static website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: mydoctor-clone/frontend/dist/
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
