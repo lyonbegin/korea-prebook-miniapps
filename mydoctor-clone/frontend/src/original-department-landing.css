@@ -32,3 +32,18 @@
 
 .original-dept-source-icon{width:18px;height:18px;display:block;object-fit:contain;flex-shrink:0}
 .original-dept-hero p{letter-spacing:.25px}
+
+/* Source-verified 390x844 department screenshot calibration:
+ * Actions 43763552773; original captured 2026-11-09 HTTP200.
+ * Overrides reproduce the best measured result from 168 source pixel trials.
+ */
+.original-dept-hero h1{font-size:25px}
+.original-dept-hero p{font-size:15.5px;letter-spacing:.2px;font-weight:350}
+.original-dept-regional{padding-top:12px}
+.original-dept-regional h2{font-size:20.5px;margin-bottom:12px}
+.original-dept-main-region{padding-top:8px;padding-bottom:8px;font-weight:400}
+.original-dept-region-options{column-gap:11px}
+.original-dept-region-options button{font-size:12.5px;padding-top:2px;padding-bottom:2px;line-height:24px;letter-spacing:-.25px}
+.original-dept-region{padding-bottom:7px}
+.original-dept-source-icon{transform:scale(1.4);transform-origin:center}
+.original-dept-near button{color:#343b46;font-weight:400}
