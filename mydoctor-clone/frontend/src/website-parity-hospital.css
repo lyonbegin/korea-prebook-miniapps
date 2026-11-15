@@ -64,3 +64,10 @@
    but first department text row in clone starts ~9px lower than original.
    Previous margin-bottom 12px => original matching ~3px. */
 .ow-hospital-departments h2{margin-bottom:3px}
+
+/* Paired original/clone 390x844 glyph inspection, source HTTP200 run 42650015118:
+ * Clone department labels were ~6% too narrow; original is 15px, not 14px.
+ * Original paragraph also fits one fewer Hangul glyph on the second row. */
+.ow-hospital-link-row button{font-size:15px}
+.ow-hospital-intro p{letter-spacing:.35px}
+.ow-hospital-intro h1{font-size:25px}
