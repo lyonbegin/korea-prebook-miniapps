@@ -1,0 +1,74 @@
+name: MyDoctor original browser vs GitHub Pages pixel parity (sequential)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/mydoctor-hermes-to-react-web-20261114
+    paths:
+      - ".github/workflows/mydoctor-page-pixel-parity.yml"
+      - "mydoctor-clone/frontend/tests/website-pixel-gate.cjs"
+      - "mydoctor-clone/frontend/src/WebsiteParityHome.jsx"
+      - "mydoctor-clone/frontend/src/WebsiteParityHospital.jsx"
+      - "mydoctor-clone/frontend/src/website-parity-home.css"
+      - "mydoctor-clone/frontend/src/website-parity-hospital.css"
+      - "mydoctor-clone/frontend/src/OriginalDepartmentLanding.jsx"
+      - "mydoctor-clone/frontend/src/original-department-landing.css"
+
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: mydoctor-original-web-pixel-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  original-vs-pages:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retrieve original source browser screenshots (HTTP 200, 2026-11-09)
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 42650015118
+          github-token: ${{ github.token }}
+          name: mydoctor-source-parity
+          path: mydoctor-clone/frontend/qa-original
+      - name: Verify untouched original screenshot baselines
+        run: |
+          set -euo pipefail
+          for file in source-home.png source-full-home.png source-hospital-search.png source-full-hospital-search.png; do
+            test -s "mydoctor-clone/frontend/qa-original/$file"
+          done
+      - name: Install React build and headless Chrome
+        working-directory: mydoctor-clone/frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:pages
+          npx playwright install --with-deps chromium
+      - name: Strict sequential original pixel audit
+        working-directory: mydoctor-clone/frontend
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mydoctor-parity-static/korea-prebook-miniapps
+          cp -a dist/. /tmp/mydoctor-parity-static/korea-prebook-miniapps/
+          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/mydoctor-parity-static > /tmp/mydoctor-parity-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 35); do
+            if curl -fsS http://127.0.0.1:4173/korea-prebook-miniapps/ -o /dev/null; then break; fi
+            sleep 1
+          done
+          node tests/website-pixel-gate.cjs
+      - name: Keep source-vs-clone, overlays, heatmaps and exact metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mydoctor-original-website-pixel-comparison
+          path: |
+            mydoctor-clone/frontend/website-pixel-evidence/
+          if-no-files-found: warn
+          retention-days: 30
