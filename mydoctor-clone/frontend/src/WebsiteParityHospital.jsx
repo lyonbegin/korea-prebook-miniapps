@@ -1,10 +1,42 @@
 import React,{useState} from "react";
 import {Menu,X,ChevronDown,ChevronRight,MapPin,BriefcaseMedical,Stethoscope,Hospital} from "lucide-react";
 import sources from "./data/verified-public-page-facts-29.json";
+import originalFooter from "./data/original-footer-nav.json";
 import "./website-parity-hospital.css";
 const hospitalSource=sources.find(x=>x.path==="/hospital");
 const specialties=(hospitalSource?.links||[]).filter(x=>x.path.startsWith("/dept-hub/"));
 const regions=["서울","경기","인천","부산","대구","대전","광주","울산","세종","제주"];
+const sunday=(hospitalSource?.links||[]).filter(x=>/\/(%EC%9D%BC%EC%9A%94%EC%9D%BC%EC%A7%84%EB%A3%8C|일요일진료)/.test(x.path));
+const night=(hospitalSource?.links||[]).filter(x=>/\/(%EC%95%BC%EA%B0%84%EC%A7%84%EB%A3%8C|야간진료)/.test(x.path));
+function AvailabilitySection({heading,items,go}){
+ return <section className="ow-hospital-availability">
+  <h2>{heading}</h2>
+  {items.map(x=><button type="button" key={x.path} onClick={()=>go(x.path)}>{x.label}</button>)}
+ </section>;
+}
+function WebsiteFooter({go}){
+ return <footer className="ow-hospital-footer">
+  {originalFooter.groups.map(group=><section className="ow-hospital-footer-group" key={group.title}>
+   <h3>{group.title}</h3>
+   <div>{group.links.map(x=>x.href.startsWith("/")?
+     <button type="button" key={x.href} onClick={()=>go(x.href)}>{x.label}</button>:
+     <a key={x.href} href={x.href} target="_blank" rel="noopener noreferrer">{x.label}</a>)}</div>
+  </section>)}
+  <section className="ow-hospital-company">
+   <h3>(주)메라키플레이스</h3>
+   <strong>비즈니스/광고 제휴 문의: sales@merakiplace.kr</strong>
+   <p>대표: 선재원, 손웅래 | 사업자등록번호: 554-86-02396</p>
+   <p>통신판매업신고: 2026-서울강남-02884</p>
+   <p>서울특별시 강남구 테헤란로 242, 4층 (역삼동)</p>
+   <p>이메일: help@merakiplace.kr | 전화번호: 1544-6172</p>
+   <p>고객센터 운영시간: 평일 오전 10시 ~ 오후 7시</p>
+   <p>(점심시간: 오후 12시 ~ 오후 1시)</p>
+   <p className="ow-hospital-social">◎  ▣  ▶</p>
+   <nav>사이트맵　 이용약관　 개인정보처리방침　 위치기반서비스이용약관</nav>
+   <small>Copyright 2026 Merakiplace Inc. All rights reserved.</small>
+  </section>
+ </footer>;
+}
 function Selector({Icon,value,onChange,options,label}){
  return <label className="ow-hospital-select">
   <Icon size={19} strokeWidth={2.2} aria-hidden="true"/>
@@ -57,5 +89,8 @@ export default function WebsiteParityHospital({go}){
          onClick={()=>go(item.path)}>{item.label}</button>)}
      </div>
    </section>
+   <AvailabilitySection heading="일요일 진료" items={sunday} go={go}/>
+   <AvailabilitySection heading="야간 진료" items={night} go={go}/>
+   <WebsiteFooter go={go}/>
  </div>;
 }
