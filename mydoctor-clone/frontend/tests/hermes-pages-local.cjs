@@ -41,12 +41,10 @@ fs.mkdirSync(OUT,{recursive:true});
   // Verify the actual user journey from the home navigation card, not just bottom tabs.
   await page.getByRole("button",{name:"메뉴 열기"}).click();
   await page.getByRole("button",{name:"병원찾기",exact:true}).click();
-  await page.getByTestId("pages-static-directory").waitFor();
-  await page.getByRole("searchbox",{name:"병원 찾기 검색"}).fill("피부과");
-  const buttons=page.locator(".gh-directory-row");
-  if(await buttons.count()<1)throw Error("Static hospital menu search did not produce result");
+  await page.getByTestId("website-parity-hospital").waitFor();
+  if(!await page.getByRole("heading",{name:"근처 병원 찾기"}).count())throw Error("Original website hospital search UI missing");
   await page.screenshot({path:path.join(OUT,"pages-hospital-search.png"),fullPage:true});
-  await buttons.first().click();
+  await page.getByRole("button",{name:"피부과",exact:true}).click();
   await page.getByTestId("verified-specialty-screen").waitFor();
   if(!page.url().includes("screen=detail"))throw Error("Specialty navigation did not enter detail");
   if(await page.locator("text=원본 공개 페이지 열기").count())throw Error("Old external placeholder still displayed");
@@ -72,8 +70,8 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.goBack({waitUntil:"domcontentloaded"});
   await page.getByTestId("verified-specialty-screen").waitFor();
   await page.getByRole("button",{name:"병원 찾기로 뒤로"}).click();
-  await page.getByTestId("pages-static-directory").waitFor();
-  await page.getByRole("link",{name:"가격 비교"}).last().click();
+  await page.getByTestId("website-parity-hospital").waitFor();
+  await page.goto(BASE+"?screen=medical-cost",{waitUntil:"domcontentloaded"});
   await page.getByTestId("pages-static-directory").waitFor();
   if(!(await page.getByTestId("pages-static-directory").innerText()).includes("마운자로"))
     throw Error("Verified public price navigation is missing");
