@@ -47,3 +47,7 @@
 .original-dept-region{padding-bottom:7px}
 .original-dept-source-icon{transform:scale(1.4);transform-origin:center}
 .original-dept-near button{color:#343b46;font-weight:400}
+
+/* Original 390px capture: three naturally observed paragraph lines. */
+@media (min-width:380px) and (max-width:420px){.original-dept-source-line{display:block;white-space:nowrap}}
+@media (max-width:379px){.original-dept-source-line:not(:last-child)::after{content:" "}}
