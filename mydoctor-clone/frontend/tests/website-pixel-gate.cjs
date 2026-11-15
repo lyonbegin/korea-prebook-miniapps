@@ -16,7 +16,10 @@ const cases=[
  {id:"home",source:"origin-home.png",full:"source-full-home.png",url:"?screen=home",selector:"[data-testid='website-parity-home']"},
  {id:"hospital-search",source:"origin-hospital-search.png",full:"source-full-hospital-search.png",
    url:"?screen=hospital-list",selector:"[data-testid='website-parity-hospital']"},
- /* Add the next page only after the prior verified capture region passes */
+ {id:"hospital-by-department",source:"origin-hospital-by-department.png",full:null,
+   url:"?screen=detail&target="+encodeURIComponent("/dept-hub/내과"),
+   selector:"[data-testid='original-department-landing']"},
+ /* Add further pages only after this one passes */
 ];
 fs.mkdirSync(DEST,{recursive:true});
 function renderMetrics(source,target,label){
@@ -93,8 +96,8 @@ function comparisonPanel(source,target,label){
   for(const c of cases){
    const rec={id:c.id,source_site:"https://my-doctor.io",clone_site:SITE,original_capture_run:42650015118,
     original_captured_date:"2026-11-09",comparison_date:new Date().toISOString(),status:"UNVERIFIED"};
-   const sourceFile=path.join(ORIGINAL,c.source),sourceFull=path.join(ORIGINAL,c.full);
-   if(!fs.existsSync(sourceFile)||!fs.existsSync(sourceFull)){
+   const sourceFile=path.join(ORIGINAL,c.source),sourceFull=c.full?path.join(ORIGINAL,c.full):null;
+   if(!fs.existsSync(sourceFile)||(sourceFull&&!fs.existsSync(sourceFull))){
     rec.reason="SOURCE_SCREENSHOTS_MISSING";records.push(rec);break;
    }
    const page=await context.newPage();
@@ -125,37 +128,43 @@ function comparisonPanel(source,target,label){
     fs.writeFileSync(path.join(DEST,"clone-"+c.id+".png"),viewport);
     fs.writeFileSync(path.join(DEST,"clone-full-"+c.id+".png"),full);
     const sourcePng=PNG.sync.read(fs.readFileSync(sourceFile)),clonePng=PNG.sync.read(viewport);
-    const origFullPng=PNG.sync.read(fs.readFileSync(sourceFull)),clFullPng=PNG.sync.read(full);
+    const origFullPng=sourceFull?PNG.sync.read(fs.readFileSync(sourceFull)):null,clFullPng=PNG.sync.read(full);
     if(sourcePng.width!==clonePng.width||sourcePng.height!==clonePng.height)
       throw Error("Viewport mismatch "+sourcePng.width+"x"+sourcePng.height+" vs "+clonePng.width+"x"+clonePng.height);
     rec.viewport=renderMetrics(sourcePng,clonePng,c.id);
     comparisonPanel(sourcePng,clonePng,c.id);
-    const meaningfulRows=meaningfulOriginalScrollEnd(origFullPng);
-    const fullReferenceQuality=meaningfulRows/origFullPng.height>.85?
-      "FULL_PAGE_CONTENT_VALID":"INCOMPLETE_LAZY_RENDERED_BLANK_REFERENCE";
-    rec.full_page={
-      original_pixels:[origFullPng.width,origFullPng.height],
-      clone_pixels:[clFullPng.width,clFullPng.height],
-      meaningful_source_height:meaningfulRows,
-      reference_quality:fullReferenceQuality,
-      height_error_pct:+(100*Math.abs(origFullPng.height-clFullPng.height)/origFullPng.height).toFixed(3),
-    };
-    if(meaningfulRows>844){
-      rec.scroll_verified_prefix=renderMetrics(
-        topRows(origFullPng,meaningfulRows),clFullPng,c.id+"-scroll-prefix");
+    if(origFullPng){
+      const meaningfulRows=meaningfulOriginalScrollEnd(origFullPng);
+      const fullReferenceQuality=meaningfulRows/origFullPng.height>.85?
+        "FULL_PAGE_CONTENT_VALID":"INCOMPLETE_LAZY_RENDERED_BLANK_REFERENCE";
+      rec.full_page={
+        original_pixels:[origFullPng.width,origFullPng.height],
+        clone_pixels:[clFullPng.width,clFullPng.height],
+        meaningful_source_height:meaningfulRows,
+        reference_quality:fullReferenceQuality,
+        height_error_pct:+(100*Math.abs(origFullPng.height-clFullPng.height)/origFullPng.height).toFixed(3),
+      };
+      if(meaningfulRows>844){
+        rec.scroll_verified_prefix=renderMetrics(
+          topRows(origFullPng,meaningfulRows),clFullPng,c.id+"-scroll-prefix");
+      }
+      rec.status=rec.viewport.mismatch_pct>MAX_MISMATCH?"FAIL":
+        rec.scroll_verified_prefix?.mismatch_pct>MAX_MISMATCH?"FAIL":
+        fullReferenceQuality!=="FULL_PAGE_CONTENT_VALID"?"PASS_VERIFIED_PREFIX":
+        rec.full_page.height_error_pct>10?"FAIL":"PASS";
+      if(rec.status==="PASS_VERIFIED_PREFIX")rec.limitation=
+        "Original lazy-loaded below verified prefix; full-page equality not claimed";
+    }else{
+      rec.status=rec.viewport.mismatch_pct>MAX_MISMATCH?"FAIL":"PASS_VIEWPORT_ONLY";
+      rec.limitation="Original full-page PNG not available; pass is only first 390x844 pixels";
     }
-    rec.status=rec.viewport.mismatch_pct>MAX_MISMATCH?"FAIL":
-      rec.scroll_verified_prefix?.mismatch_pct>MAX_MISMATCH?"FAIL":
-      fullReferenceQuality!=="FULL_PAGE_CONTENT_VALID"?"PASS_VERIFIED_PREFIX":
-      rec.full_page.height_error_pct>10?"FAIL":"PASS";
-    if(rec.status==="PASS_VERIFIED_PREFIX")rec.limitation="Verified visible reference prefix only; original screenshot lazy-loaded lower page is blank, full-page equality not claimed";
     console.log("SOURCE_WEB_PIXEL_RESULT",JSON.stringify(rec));
    }catch(err){
     rec.status="UNVERIFIED";rec.reason=String(err.stack||err);
     console.log("SOURCE_WEB_PIXEL_BLOCKED",JSON.stringify({id:c.id,error:rec.reason.slice(0,450)}));
    }finally{await page.close()}
    records.push(rec);
-   if(!["PASS","PASS_VERIFIED_PREFIX"].includes(rec.status))break;
+   if(!["PASS","PASS_VERIFIED_PREFIX","PASS_VIEWPORT_ONLY"].includes(rec.status))break;
   }
  }finally{await browser.close()}
  const report={source:"REAL_BROWSER_SCREENSHOTS_2026_11_09_HTTP200",
@@ -165,7 +174,7 @@ function comparisonPanel(source,target,label){
    full_height_threshold_percent:10,
    rgb_threshold:THRESHOLD,
    compare_order:"STRICT_SEQUENTIAL_STOP_ON_FIRST_NON_PASS",
-   pages_planned:cases.length,pages_passed:records.filter(r=>["PASS","PASS_VERIFIED_PREFIX"].includes(r.status)).length,
+   pages_planned:cases.length,pages_passed:records.filter(r=>["PASS","PASS_VERIFIED_PREFIX","PASS_VIEWPORT_ONLY"].includes(r.status)).length,
    pages_failed:records.filter(r=>r.status==="FAIL").length,records};
  fs.writeFileSync(path.join(DEST,"pixel-report.json"),JSON.stringify(report,null,2));
  console.log("SOURCE_WEB_PIXEL_SUMMARY",JSON.stringify({passed:report.pages_passed,
