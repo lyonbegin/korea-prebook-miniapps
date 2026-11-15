@@ -1,12 +1,12 @@
 import React,{useState} from "react";
-import {Menu,X,ChevronDown,ChevronRight,Ear,Hand,Bean,Stethoscope,Brain,Eye,Venus,HeartPulse} from "lucide-react";
+import {Menu,X,ChevronDown,ChevronRight,Ear,Hand,Droplets,Stethoscope,Brain,Eye,CircleDot,HeartPulse} from "lucide-react";
 import "./original-telemedicine-landing.css";
 const sourceSymptoms=[
  {name:"귀/코/목 질환",subtitle:"비염, 중이염, 인후염 등",Icon:Ear,color:"#f7c6b8",
    links:[["비염","/telemedicine/감기-비대면진료-예약"],["인후염","/telemedicine/이비인후과-비대면진료-예약"]]},
  {name:"만성질환",subtitle:"고지혈증, 고혈압, 당뇨병 등",Icon:Hand,color:"#ffb6a9",
    links:[["고지혈증","/telemedicine/고지혈증-비대면진료-예약"],["고혈압","/telemedicine/고혈압-비대면진료-예약"]]},
- {name:"비뇨기 질환",subtitle:"방광염, 전립선염, 요실금 등",Icon:Bean,color:"#ffa8b0",
+ {name:"비뇨기 질환",subtitle:"방광염, 전립선염, 요실금 등",Icon:Droplets,color:"#ffa8b0",
    links:[["방광염","/telemedicine/방광염-비대면진료-예약"],["비뇨의학과","/telemedicine/비뇨기과-비뇨의학과-비대면진료-예약"]]},
  {name:"소화기 질환",subtitle:"속쓰림, 장염, 위염 등",Icon:Stethoscope,color:"#fa9298",
    links:[["과민성대장증후군","/telemedicine/과민성대장증후군-비대면진료-예약"],["내과","/telemedicine/내과-비대면진료-예약"]]},
@@ -14,7 +14,7 @@ const sourceSymptoms=[
    links:[["신경과","/telemedicine/신경과-비대면진료-예약"],["두통","/telemedicine/신경과-비대면진료-예약"]]},
  {name:"안구 질환",subtitle:"안구건조증, 결막염, 다래끼 등",Icon:Eye,color:"#c4ccd5",
    links:[["녹내장","/telemedicine/녹내장-비대면진료-예약"],["안과","/telemedicine/안과-비대면진료-예약"]]},
- {name:"여성 질환",subtitle:"질염, 생리통, 생리불순 등",Icon:Venus,color:"#fc8c95",
+ {name:"여성 질환",subtitle:"질염, 생리통, 생리불순 등",Icon:CircleDot,color:"#fc8c95",
    links:[["질염","/telemedicine/질염-비대면진료-예약"],["산부인과","/telemedicine/산부인과-비대면진료-예약"]]},
  {name:"피부 질환",subtitle:"여드름, 두드러기, 대상포진 등",Icon:HeartPulse,color:"#ff9da8",
    links:[["여드름","/telemedicine/여드름-비대면진료-예약"],["대상포진","/telemedicine/대상포진-비대면진료-예약"]]}
