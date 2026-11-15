@@ -55,3 +55,10 @@
 .owh-steps{margin-top:27px;gap:31px}
 .owh-condition:nth-child(5),.owh-condition:nth-child(6),
 .owh-condition:nth-child(7),.owh-condition:nth-child(8){min-height:128px}
+
+/* The source pictograms are real decorative crops; preserve glyph dimensions
+   inside the interactive React-native HTML controls (no screenshot UI embed). */
+.owh-step-image{overflow:hidden;flex-shrink:0}
+.owh-step-image img{display:block;width:52px;height:52px;max-width:none;object-fit:cover}
+.owh-condition-illustration img{display:block;width:36px;height:34px;max-width:none;object-fit:cover}
+.owh-condition-illustration{width:36px;height:34px;line-height:normal;overflow:hidden;display:block;margin-bottom:2px}
