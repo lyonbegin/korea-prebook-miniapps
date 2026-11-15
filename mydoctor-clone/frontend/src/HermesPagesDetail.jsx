@@ -7,6 +7,7 @@ import {
 import facts from "./data/verified-public-page-facts-29.json";
 import menuFacts from "./data/verified-public-menu-facts-72.json";
 import {DepartmentHospitalBrowser,VerifiedHospitalProfile} from "./HermesDepartmentHospitals.jsx";
+import OriginalDepartmentLanding from "./OriginalDepartmentLanding.jsx";
 import medicalCostCards from "./data/original-medical-cost-cards.json";
 import {allObservedPublicLinks,publicLinks} from "./HermesPagesStaticData.js";
 import "./hermes-pages-detail.css";
@@ -371,7 +372,9 @@ export default function HermesPagesDetail({target,go,back}){
     {type!=="department"&&type!=="verified-hospital"&&<DetailHead title={title} subtitle={known?.label||undefined} back={back}/>}
     {type==="price"&&<PriceDetail target={target} doc={doc} go={go}/>}
     {type==="telemedicine"&&<TelemedicineDetail target={target} doc={doc} go={go}/>}
-    {type==="department"&&<DepartmentHospitalBrowser target={target} go={go}/>}
+    {type==="department"&&(/^(?:\/dept-hub\/[^/?]+)\/?$/.test(target.split("?")[0])?
+      <OriginalDepartmentLanding department={decodeURIComponent(target.split("?")[0].split("/")[2])} go={go}/>:
+      <DepartmentHospitalBrowser target={target} go={go}/>)}
     {type==="hospital-collection"&&<HospitalCollection target={target} doc={doc} go={go}/>}
     {type==="hospital"&&<HospitalProfile target={target} doc={doc} go={go}/>}
     {type==="verified-hospital"&&<VerifiedHospitalProfile target={target} go={go}/>}
