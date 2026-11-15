@@ -71,19 +71,18 @@ export default function OriginalDepartmentLanding({department,go}){
      내 주변 {department} 보기 <ChevronRight size={18}/></button></div>
    <section className="original-dept-regional">
      <h2>지역별 {department} 병원 찾기</h2>
-     {otherRegions.map(({region,sourceLinks})=><div key={region} className="original-dept-region">
+     {otherRegions.map(({region})=><div key={region} className="original-dept-region">
        <button type="button" className="original-dept-main-region"
          onClick={()=>viewList(region)} aria-label={region+" "+department+" 병원"}>
-         <span>{region} {department} 병원</span><ChevronRight size={17}/></button>
+         <span>{region} <strong>{department} 병원</strong></span></button>
        <div className="original-dept-region-options">
          {[
-           ["specialist","전문의 병원"],
-           ["sunday","일요일 진료 "+department+" 병원"],
-           ["weekend","주말(토요일·일요일) 진료 "+department+" 병원"],
-           ["night","야간 진료 "+department+" 병원"]
+           ["specialist",region+" "+department+" 전문의 병원"],
+           ["sunday",region+" 일요일 진료 "+department+" 병원"],
+           ["weekend",region+" 주말(토요일·일요일) 진료 "+department+" 병원"],
+           ["night",region+" 야간 진료 "+department+" 병원"]
          ].map(([key,label])=><button key={key} type="button"
-             onClick={()=>viewList(region,key)}>{region} {department==="피부과"&&key==="specialist"?"피부과 ": ""}
-               {label}<ChevronRight size={14}/></button>)}
+             onClick={()=>viewList(region,key)}>{label}</button>)}
        </div>
      </div>)}
    </section>
