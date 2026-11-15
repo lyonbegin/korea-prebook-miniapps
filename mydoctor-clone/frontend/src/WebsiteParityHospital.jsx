@@ -4,7 +4,7 @@ import sources from "./data/verified-public-page-facts-29.json";
 import originalFooter from "./data/original-footer-nav.json";
 import "./website-parity-hospital.css";
 const hospitalSource=sources.find(x=>x.path==="/hospital");
-const specialties=(hospitalSource?.links||[]).filter(x=>x.path.startsWith("/dept-hub/"));
+const specialties=(hospitalSource?.links||[]).filter(x=>x.path.startsWith("/dept-hub/")).filter((x,i,a)=>a.findIndex(y=>y.path===x.path)===i);
 const regions=["서울","경기","인천","부산","대구","대전","광주","울산","세종","제주"];
 const sunday=(hospitalSource?.links||[]).filter(x=>/\/(%EC%9D%BC%EC%9A%94%EC%9D%BC%EC%A7%84%EB%A3%8C|일요일진료)/.test(x.path));
 const night=(hospitalSource?.links||[]).filter(x=>/\/(%EC%95%BC%EA%B0%84%EC%A7%84%EB%A3%8C|야간진료)/.test(x.path));
