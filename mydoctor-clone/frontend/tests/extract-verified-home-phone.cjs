@@ -64,3 +64,28 @@ function saveOriginalLaurel(name,rect){
 saveOriginalLaurel("left",[66,291,81,315]);
 saveOriginalLaurel("right",[312,291,327,315]);
 console.log("SOURCE_OBSERVED_LAUREL_ASSETS_READY");
+
+
+/* Decorative symptom/step pictograms cropped from the original 2026-11-09
+ * HTTP-200 public browser screenshot, never a synthetic emoji substitute.
+ * Source provenance is retained by QA artifact 42650015118.
+ * Functional text, cards and click handlers remain live React DOM elements. */
+const fullSource=PNG.sync.read(fs.readFileSync(src));
+function captureIcon(file,x,y,w,h){
+ const asset=new PNG({width:w,height:h});
+ for(let row=0;row<h;row++){
+  const begin=((y+row)*fullSource.width+x)*4;
+  fullSource.data.copy(asset.data,row*w*4,begin,begin+w*4);
+ }
+ fs.writeFileSync(path.join(root,"public",file),PNG.sync.write(asset));
+}
+const observedRows=[1453,1569,1685,1821,1957,2073,2189];
+for(let i=0;i<13;i++){
+ const row=Math.floor(i/2), left=i%2===0?33:212;
+ captureIcon("website-source-condition-"+i+".png",left,observedRows[row]+12,36,34);
+}
+for(const [i,y] of [1109,1200,1282].entries())
+ captureIcon("website-source-step-"+i+".png",20,y,52,52);
+console.log("SOURCE_OBSERVED_PUBLIC_PICTOGRAMS",JSON.stringify({
+  base:"source-full-home.png",symptoms:13,steps:3,
+  assetPurpose:"decorative icons only, no fake UI"}));
