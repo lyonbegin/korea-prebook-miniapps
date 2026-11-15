@@ -9,11 +9,12 @@ const DIR=path.join(__dirname,"../website-pixel-calibration");
 fs.mkdirSync(DIR,{recursive:true});
 const configs={
  font:'"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif',h1Size:25,h1Weight:700,h1Track:-.8,
- pSize:16.5,pTrack:.5,pLine:25,pWeight:400,pFont:'inherit',
- rowSize:15,rowTrack:0,rowGap:15,rowHeight:35,rowMargin:0,rowWeight:400,rowFont:'inherit',
+ pSize:16.75,pTrack:.5,pLine:25,pWeight:400,pFont:'inherit',
+ rowSize:14.95,rowTrack:0,rowGap:15.25,rowHeight:35,rowMargin:2,rowWeight:400,rowFont:'inherit',
  headingSize:20,formFont:14,crumbFont:11,formTrack:0
 };
 const candidates={
+ rowLayout:[0,1,2],
  font:['"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif','Arial, sans-serif','Noto Sans KR, sans-serif','Apple SD Gothic Neo, sans-serif','Pretendard, sans-serif'],
  h1Track:[-1,-.8,-.6,-.4,-.2,0],
  headingSize:[19,19.5,20,20.5,21],
@@ -28,8 +29,8 @@ const candidates={
  rowSize:[14.75,14.85,14.95,15,15.05,15.15,15.25],
  rowTrack:[-.2,-.15,-.1,-.05,0,.05,.1,.15,.2],
  rowGap:[14,14.25,14.5,14.75,15,15.25,15.5,15.75,16],
- rowHeight:[34,35,36,37],
- rowMargin:[-3,0,2,3,4,5,7],
+ rowHeight:[33,33.5,34,34.5,35,35.5,36],
+ rowMargin:[0,1,2,3,4,5,6,7,8],
  rowWeight:[350,375,400,425,450,475,500],
  rowFont:['inherit','Arial, sans-serif','Noto Sans KR, sans-serif','Pretendard, sans-serif'],
  pFont:['inherit','Arial, sans-serif','Noto Sans KR, sans-serif','Pretendard, sans-serif'],
@@ -79,7 +80,20 @@ function metric(pngbytes){
   }
   let state={...configs},best=await test(state);
   fs.writeFileSync(path.join(DIR,"starting.png"),best.png);
-  for(let iteration=0;iteration<3;iteration++){
+  // Coupled row-height and heading-gap calibration. Source row ink starts
+  // at y588,622,656,690,724 (34px); current clone y583,618,653,688 (35px).
+  // Changing only one variable is an incorrect local optimum.
+  for(const rowHeight of [33,33.5,34,34.5,35,35.5]){
+    for(const rowMargin of [0,1,2,3,4,5,6,7,8,9,10]){
+      const trial=await test({...state,rowHeight,rowMargin});
+      if(trial.pct<best.pct || (trial.pct===best.pct&&trial.mae<best.mae)){
+        state.rowHeight=rowHeight;state.rowMargin=rowMargin;best=trial;
+        steps.push({phase:"coupled-row-geometry",rowHeight,rowMargin,pct:trial.pct});
+        console.log("PIXEL_CALIBRATION_IMPROVED",JSON.stringify(steps[steps.length-1]));
+      }
+    }
+  }
+  for(let iteration=0;iteration<2;iteration++){
    for(const [name,values] of Object.entries(candidates)){
     let winning={value:state[name],result:best};
     for(const value of values){
