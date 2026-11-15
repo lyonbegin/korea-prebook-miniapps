@@ -51,3 +51,11 @@
 .ow-hospital-links button{font-size:15.5px}
 .ow-hospital-original-icon{display:block;width:26px;height:26px;object-fit:cover;flex-shrink:0}
 .ow-hospital-page .owh-brand img{display:block;width:100px;height:37px;object-fit:contain;max-width:none}
+
+/* Original responsive 390px screenshot has explicit visual rows; font is
+   14px with source-observed line grouping, not inferred flex wrapping. */
+.ow-hospital-link-rows{display:flex;flex-direction:column;gap:0}
+.ow-hospital-link-row{display:flex;align-items:center;gap:15px;height:36px;white-space:nowrap}
+.ow-hospital-link-row button{border:0;background:transparent;flex:0 0 auto;font-size:14px;
+  padding:0;margin:0;color:#252b36;font-weight:500;text-align:left;cursor:pointer}
+.ow-hospital-link-row button:focus-visible{outline:2px solid #326dff}
