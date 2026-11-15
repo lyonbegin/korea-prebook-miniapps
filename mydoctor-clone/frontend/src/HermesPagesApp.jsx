@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useState} from "react";
 import {Home,Hospital,Stethoscope,Tags,ChevronLeft,ChevronRight,Search,X,FileText} from "lucide-react";
 import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
 import WebsiteParityHome from "./WebsiteParityHome.jsx";
+import WebsiteParityHospital from "./WebsiteParityHospital.jsx";
 import HermesPagesDetail from "./HermesPagesDetail.jsx";
 import {publicMenuGroups,publicLinks} from "./HermesPagesStaticData.js";
 import "./hermes-pages.css";
@@ -111,7 +112,7 @@ export default function HermesPagesApp(){
     <main className="gh-hermes-main" id="main">
       {page.screen==="home"&&<WebsiteParityHome go={go}/>}
       {page.screen==="native-home"&&<HermesSourceWebScreen screen="home" staticMode go={go}/>}
-      {page.screen==="hospital-list"&&<Directory key="hospital" groupKey="hospital" title="병원 찾기" go={go}/>}
+      {page.screen==="hospital-list"&&<WebsiteParityHospital go={go}/>}
       {page.screen==="telemedicine"&&<Directory key="telemedicine" groupKey="telemedicine" title="비대면 진료" go={go}/>}
       {page.screen==="medical-cost"&&<Directory key="price" groupKey="price" title="최저가 병원 예약 · 가격 비교" go={go}/>}
       {page.screen==="pharmacy"&&<Directory key="pharmacy" groupKey="pharmacy" title="약국 찾기" go={go}/>}
