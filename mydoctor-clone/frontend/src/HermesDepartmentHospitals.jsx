@@ -10,9 +10,12 @@ const entry=(target)=>{
  const parts=safeDecode(target.split("?")[0]).split("/").filter(Boolean);
  const dept=parts[1]||"피부과";
  const regions=Object.keys(data[dept]||{});
- const requested=parts[2]||"서울";
+ const requested=parts.length>=3?parts[parts.length-1]:"서울";
+ const care=parts.includes("전문의")?"specialist":
+   parts.includes("일요일진료")?"sunday":parts.includes("야간진료")?"night":
+   parts.includes("주말진료")?"sunday":"all";
  const region=regions.includes(requested)?requested:regions[0]||"서울";
- return {dept,region,regions,requested,record:data[dept]?.[region]};
+ return {dept,region,regions,requested,care,record:data[dept]?.[region]};
 };
 const filters=[
  ["all","전체"],["night","야간진료"],["sunday","일요일진료"],["specialist","전문의"]
@@ -39,11 +42,11 @@ function HospitalCard({hospital,dept,region,go,index}){
  </button>
 }
 export function DepartmentHospitalBrowser({target,go}){
- const {dept,region,regions,requested,record}=entry(target);
+ const {dept,region,regions,requested,care,record}=entry(target);
  const [search,setSearch]=useState("");
- const [condition,setCondition]=useState("all");
+ const [condition,setCondition]=useState(care);
  const [sort,setSort]=useState("original");
- useEffect(()=>{setSearch("");setCondition("all");setSort("original")},[target]);
+ useEffect(()=>{setSearch("");setCondition(care);setSort("original")},[target,care]);
  const rows=(record?.rows||[]).map((h,index)=>({...h,index}));
  const results=rows.filter(h=>{
     if(condition==="night"&&!h.hours.includes("야간"))return false;
