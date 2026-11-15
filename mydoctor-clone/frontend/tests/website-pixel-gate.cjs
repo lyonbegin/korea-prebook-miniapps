@@ -19,7 +19,9 @@ const cases=[
  {id:"hospital-by-department",source:"origin-hospital-by-department.png",full:null,
    url:"?screen=detail&target="+encodeURIComponent("/dept-hub/내과"),
    selector:"[data-testid='original-department-landing']"},
- /* Add further pages only after this one passes */
+ {id:"telemedicine-index",source:"origin-telemedicine-index.png",full:null,
+   url:"?screen=telemedicine",selector:"[data-testid='original-telemedicine-landing']"},
+ /* Advance only once the preceding original pixel gate passes */
 ];
 fs.mkdirSync(DEST,{recursive:true});
 function renderMetrics(source,target,label){
