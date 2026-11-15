@@ -75,3 +75,11 @@
 /* Source wraps the final Hangul syllable "서" onto line 3. The clone's
    inherited keep-all forced the entire word onto line 3 instead. */
 .ow-hospital-intro p{word-break:normal}
+
+/* Strict 390x844 original-browser calibration run 43723426289:
+   measured 13.042% -> 11.122% different RGB>25 pixels; still FAIL until <=10. */
+.ow-hospital-intro h1{font-size:25px;font-weight:700}
+.ow-hospital-intro p{font-size:16.5px;letter-spacing:.5px;line-height:25px;word-break:normal}
+.ow-hospital-link-row{height:35px;gap:15px}
+.ow-hospital-link-row button{font-size:15px;font-weight:400;letter-spacing:0}
+.ow-hospital-departments h2{margin-bottom:0}
