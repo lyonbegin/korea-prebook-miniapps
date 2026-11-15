@@ -89,3 +89,23 @@ for(const [i,y] of [1109,1200,1282].entries())
 console.log("SOURCE_OBSERVED_PUBLIC_PICTOGRAMS",JSON.stringify({
   base:"source-full-home.png",symptoms:13,steps:3,
   assetPurpose:"decorative icons only, no fake UI"}));
+
+
+/* Source hospital-page brand and form pictograms, captured by the same
+ * public original browser run. Extract images ONLY; text/input behavior
+ * remains separately rendered and interactive, never baked into pixels. */
+const hospitalOriginal=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-hospital-search.png")));
+function saveHospitalDecorativeAsset(name,x,y,width,height){
+ const im=new PNG({width,height});
+ for(let row=0;row<height;row++){
+   const start=((row+y)*hospitalOriginal.width+x)*4;
+   hospitalOriginal.data.copy(im.data,row*width*4,start,start+width*4);
+ }
+ fs.writeFileSync(path.join(root,"public","website-source-hospital-"+name+".png"),PNG.sync.write(im));
+}
+saveHospitalDecorativeAsset("brand",18,9,100,37);
+saveHospitalDecorativeAsset("region",35,276,26,26);
+saveHospitalDecorativeAsset("specialty",35,337,26,26);
+saveHospitalDecorativeAsset("care",35,397,26,26);
+console.log("SOURCE_HOSPITAL_PICTOGRAMS_READY");
