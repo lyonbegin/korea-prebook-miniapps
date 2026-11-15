@@ -112,11 +112,11 @@ function comparisonPanel(source,target,label){
     // A prior run differed by 14.288% because the 390px hero phone image was blank.
     if(c.id==="home"){
       await page.waitForFunction(()=>document.querySelector(".owh-phone-illustration img")?.naturalWidth>0,
-        {timeout:15000});
+        null,{timeout:15000});
     }
     if(c.id==="hospital-search"){
       await page.waitForFunction(()=>document.querySelector(".ow-hospital-page .owh-brand img")?.naturalWidth>0,
-        {timeout:15000});
+        null,{timeout:15000});
     }
     await page.waitForTimeout(350);
     if(pageErrors.length)throw Error("Page JavaScript errors: "+pageErrors.join("; "));
