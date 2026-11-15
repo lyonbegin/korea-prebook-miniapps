@@ -1,0 +1,19 @@
+.ow-hospital-page{background:#fff;min-height:100vh;color:#17191d;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif;font-size:14px}
+.ow-hospital-breadcrumb{height:42px;border-bottom:1px solid #e7e8ec;display:flex;align-items:center;padding:0 16px;gap:7px;font-size:12px;color:#8c95a3}
+.ow-hospital-breadcrumb button{font-size:12px;background:none;border:0;padding:0;color:#8994a3}
+.ow-hospital-breadcrumb strong{color:#252a32;font-size:12px;font-weight:650}
+.ow-hospital-intro{padding:19px 20px 0}
+.ow-hospital-intro h1{font-size:24px;font-weight:780;line-height:32px;letter-spacing:-.6px;margin:0 0 10px;color:#1a1d22}
+.ow-hospital-intro p{font-size:15.5px;line-height:25px;font-weight:400;color:#343c46;margin:0;letter-spacing:-.45px;word-break:keep-all}
+.ow-hospital-form{display:flex;flex-direction:column;gap:8px;padding:27px 20px 21px}
+.ow-hospital-select{display:flex;align-items:center;gap:10px;height:52px;border:1px solid #cfd6e1;border-radius:8px;background:#fff;padding:0 16px;color:#4c5561}
+.ow-hospital-select select{flex:1;min-width:0;appearance:none;-webkit-appearance:none;background:transparent;border:0;outline:0;color:#8c97a9;font-size:15px;line-height:1.5}
+.ow-hospital-select select:has(option:checked:not([value=""])){color:#333d4d}
+.ow-hospital-submit{height:56px;border:0;background:#326dff;color:white;border-radius:11px;font-weight:700;font-size:15px;cursor:pointer}
+.ow-hospital-departments{border-top:8px solid #f7f8fa;background:#fff;padding:18px 20px 45px}
+.ow-hospital-departments h2{font-size:20px;font-weight:700;line-height:26px;letter-spacing:-.5px;margin:0 0 12px}
+.ow-hospital-links{display:flex;flex-wrap:wrap;gap:0 15px;align-content:flex-start}
+.ow-hospital-links button{border:0;background:none;padding:0;min-height:36px;text-align:left;color:#242b36;font-weight:500;font-size:13px;white-space:nowrap;cursor:pointer}
+.ow-hospital-links button:focus-visible{outline:2px solid #326dff}
+.gh-hermes-main:has(.ow-hospital-page){padding-bottom:0}
+.gh-hermes-site:has(.ow-hospital-page) .gh-bottom-tabs{display:none}
