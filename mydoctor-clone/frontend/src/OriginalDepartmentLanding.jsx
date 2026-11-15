@@ -50,7 +50,11 @@ export default function OriginalDepartmentLanding({department,go}){
    </nav>
    <section className="original-dept-hero">
      <h1>근처 {department} 찾기</h1>
-     <p>내 주변 {department}를 지역별로 찾아보세요. 야간·일요일·주말 진료, 전문의 병원과 영업시간, 후기 정보를 나만의닥터에서 확인할 수 있어요.</p>
+     <p className="original-dept-description">
+       <span className="original-dept-source-line">내 주변 {department}를 지역별로 찾아보세요. 야간·일요일·</span>
+       <span className="original-dept-source-line">주말 진료, 전문의 병원과 영업시간, 후기 정보를</span>
+       <span className="original-dept-source-line">나만의닥터에서 확인할 수 있어요.</span>
+     </p>
    </section>
    <form className="original-dept-lookup" onSubmit={e=>{e.preventDefault();viewList()}}>
      <label><img className="original-dept-source-icon" src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-region.png"} alt="" aria-hidden="true"/>
