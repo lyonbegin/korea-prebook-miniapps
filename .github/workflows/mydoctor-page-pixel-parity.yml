@@ -13,6 +13,8 @@ on:
       - "mydoctor-clone/frontend/src/website-parity-home.css"
       - "mydoctor-clone/frontend/src/website-parity-hospital.css"
       - "mydoctor-clone/frontend/src/OriginalDepartmentLanding.jsx"
+      - "mydoctor-clone/frontend/src/OriginalTelemedicineLanding.jsx"
+      - "mydoctor-clone/frontend/src/original-telemedicine-landing.css"
       - "mydoctor-clone/frontend/src/original-department-landing.css"
 
 permissions:
