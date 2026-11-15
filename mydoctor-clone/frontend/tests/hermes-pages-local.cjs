@@ -44,7 +44,7 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.getByTestId("website-parity-hospital").waitFor();
   if(!await page.getByRole("heading",{name:"근처 병원 찾기"}).count())throw Error("Original website hospital search UI missing");
   await page.screenshot({path:path.join(OUT,"pages-hospital-search.png"),fullPage:true});
-  await page.getByRole("button",{name:"피부과",exact:true}).click();
+  await page.locator(".ow-hospital-links").getByRole("button",{name:"피부과",exact:true}).first().click();
   await page.getByTestId("verified-specialty-screen").waitFor();
   if(!page.url().includes("screen=detail"))throw Error("Specialty navigation did not enter detail");
   if(await page.locator("text=원본 공개 페이지 열기").count())throw Error("Old external placeholder still displayed");
