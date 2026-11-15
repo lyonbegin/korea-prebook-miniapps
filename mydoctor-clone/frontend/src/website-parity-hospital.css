@@ -59,3 +59,8 @@
 .ow-hospital-link-row button{border:0;background:transparent;flex:0 0 auto;font-size:14px;
   padding:0;margin:0;color:#252b36;font-weight:500;text-align:left;cursor:pointer}
 .ow-hospital-link-row button:focus-visible{outline:2px solid #326dff}
+
+/* Original HTTP200 390x844 screenshot pixel audit: section header baseline is correct,
+   but first department text row in clone starts ~9px lower than original.
+   Previous margin-bottom 12px => original matching ~3px. */
+.ow-hospital-departments h2{margin-bottom:3px}
