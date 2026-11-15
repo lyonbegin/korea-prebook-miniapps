@@ -17,3 +17,21 @@
 .ow-hospital-links button:focus-visible{outline:2px solid #326dff}
 .gh-hermes-main:has(.ow-hospital-page){padding-bottom:0}
 .gh-hermes-site:has(.ow-hospital-page) .gh-bottom-tabs{display:none}
+
+/* Screen-level layout from source-full-hospital-search.png at 390px;
+   headings/links remain selectable React controls, not one screenshot. */
+.ow-hospital-availability{border-top:8px solid #f7f8fa;padding:19px 20px 18px;background:white}
+.ow-hospital-availability h2{font-size:20px;font-weight:700;line-height:27px;margin:0 0 9px;color:#1b1e24}
+.ow-hospital-availability button{border:0;background:none;display:block;padding:0;min-height:34px;font-size:14px;line-height:34px;text-align:left;color:#252b36;white-space:nowrap;cursor:pointer}
+.ow-hospital-footer{background:#f5f6f7;padding:22px 20px 33px;color:#708096}
+.ow-hospital-footer-group{margin-bottom:26px}
+.ow-hospital-footer-group h3{font-size:14px;font-weight:700;color:#263444;margin:0 0 14px}
+.ow-hospital-footer-group>div{display:grid;grid-template-columns:1fr 1fr;row-gap:0;column-gap:8px}
+.ow-hospital-footer-group button,.ow-hospital-footer-group a{height:31px;display:flex;align-items:center;text-align:left;border:0;background:none;padding:0;font-size:12px;font-weight:400;color:#718398;line-height:1.5;cursor:pointer}
+.ow-hospital-company{padding:6px 0 0}
+.ow-hospital-company h3{font-size:15px;color:#253344;margin:0 0 12px;font-weight:750}
+.ow-hospital-company strong{font-size:12px;color:#24374f;font-weight:750;display:block;margin-bottom:13px}
+.ow-hospital-company p{color:#7386a2;font-size:12px;line-height:1.55;margin:0 0 3px}
+.ow-hospital-company .ow-hospital-social{font-size:24px;margin:10px 0;color:#a0a5ad;letter-spacing:12px}
+.ow-hospital-company nav{font-size:12px;font-weight:650;color:#3e4958;margin:9px 0 15px;white-space:nowrap}
+.ow-hospital-company small{color:#788ca8;font-size:12px;display:block}
