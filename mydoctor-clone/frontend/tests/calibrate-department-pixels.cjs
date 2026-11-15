@@ -27,11 +27,11 @@ function compare(png){
  return {pct:+(100*mismatch/(390*844)).toFixed(3),mae:+(sum/(390*844)).toFixed(3)};
 }
 const params={
-  headerFont:24,heroFont:16.5,heroTracking:.25,
-  regionTop:12,regionHeadingFont:20,regionHeadingMargin:12,
-  regionTitlePad:5,regionOptionFont:14,regionOptionPad:2,
-  regionOptionLine:22,regionGap:11,regionBlockBottom:8,
-  regionTitleWeight:400,regionLinkTracking:0,
+  headerFont:25,heroFont:15.5,heroTracking:.2,
+  regionTop:12,regionHeadingFont:20.5,regionHeadingMargin:12,
+  regionTitlePad:8,regionOptionFont:12.5,regionOptionPad:2,
+  regionOptionLine:24,regionGap:11,regionBlockBottom:7,
+  regionTitleWeight:400,regionLinkTracking:-.25,
   heroWeight:350,
   heroFamily:"inherit",heroLineHeight:25,
   regionFamily:"inherit",regionOptionWeight:400,
