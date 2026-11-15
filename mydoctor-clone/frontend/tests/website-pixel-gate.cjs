@@ -108,7 +108,17 @@ function comparisonPanel(source,target,label){
       [...document.images].map(img=>img.complete?Promise.resolve():new Promise(r=>{
         img.addEventListener("load",r,{once:true});img.addEventListener("error",r,{once:true});setTimeout(r,3000);
       })))});
-    await page.waitForTimeout(250);
+    // Do not compare an unloaded original website illustration to its real source.
+    // A prior run differed by 14.288% because the 390px hero phone image was blank.
+    if(c.id==="home"){
+      await page.waitForFunction(()=>document.querySelector(".owh-phone-illustration img")?.naturalWidth>0,
+        {timeout:15000});
+    }
+    if(c.id==="hospital-search"){
+      await page.waitForFunction(()=>document.querySelector(".ow-hospital-page .owh-brand img")?.naturalWidth>0,
+        {timeout:15000});
+    }
+    await page.waitForTimeout(350);
     if(pageErrors.length)throw Error("Page JavaScript errors: "+pageErrors.join("; "));
     const viewport=await page.screenshot({fullPage:false});
     const full=await page.screenshot({fullPage:true});
