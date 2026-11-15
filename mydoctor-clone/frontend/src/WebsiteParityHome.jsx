@@ -72,15 +72,15 @@ export default function WebsiteParityHome({go}){
          ["STEP 3","약 수령","가까운 약국에서 약 받으면 끝!"]]
           .map(([step,title,subtitle],i)=><button key={step} type="button"
             onClick={()=>go("/telemedicine")} className="owh-step">
-            <span className="owh-step-image">{i===0?"🏥":i===1?"📞":"💊"}</span>
+            <span className="owh-step-image"><img src={(import.meta.env.BASE_URL||"/")+"website-source-step-"+i+".png"} alt="" aria-hidden="true"/></span>
             <span><small>{step}</small><strong>{title}</strong><em>{subtitle}</em></span>
           </button>)}
      </div>
      <h3 className="owh-conditions-heading">이런 증상들 모두<br/>전화로 진료볼 수 있어요</h3>
      <div className="owh-conditions-grid" data-testid="source-marketing-conditions">
-       {symptoms.map(([symbol,title,desc,path])=><button type="button"
+       {symptoms.map(([symbol,title,desc,path],i)=><button type="button"
          key={title} className="owh-condition" onClick={()=>go(path)}>
-         <span className="owh-condition-illustration">{symbol}</span>
+         <span className="owh-condition-illustration"><img src={(import.meta.env.BASE_URL||"/")+"website-source-condition-"+i+".png"} alt="" aria-hidden="true"/></span>
          <strong>{title}</strong><small>{desc}</small>
        </button>)}
      </div>
