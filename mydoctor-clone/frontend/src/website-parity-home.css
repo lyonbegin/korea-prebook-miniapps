@@ -62,3 +62,8 @@
 .owh-step-image img{display:block;width:52px;height:52px;max-width:none;object-fit:cover}
 .owh-condition-illustration img{display:block;width:36px;height:34px;max-width:none;object-fit:cover}
 .owh-condition-illustration{width:36px;height:34px;line-height:normal;overflow:hidden;display:block;margin-bottom:2px}
+
+/* The second verified screenshot comparison: first symptom card top y=1443
+   clone vs y=1450 source, and CTA y=2309 vs y=2316. Move the entire
+   interactive symptom grid down 7px without touching the passing hero. */
+.owh-conditions-heading{margin-top:44px}
