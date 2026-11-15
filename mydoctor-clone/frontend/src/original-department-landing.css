@@ -51,3 +51,19 @@
 /* Original 390px capture: three naturally observed paragraph lines. */
 @media (min-width:380px) and (max-width:420px){.original-dept-source-line{display:block;white-space:nowrap}}
 @media (max-width:379px){.original-dept-source-line:not(:last-child)::after{content:" "}}
+
+
+/* Measured 390×844 baseline: 9.016% mismatched pixels / 274 candidates,
+ * real original source PNG from 2026-11-09; Actions 43764404922.
+ * Place last so calibration values dominate preceding design defaults.
+ */
+.original-dept-hero h1{font-size:25px!important}
+.original-dept-hero{padding-top:21px!important}
+.original-dept-hero p{font-size:15.25px!important;letter-spacing:.45px!important;font-weight:350!important;line-height:25px!important;font-family:inherit!important}
+.original-dept-regional{padding-top:10px!important}
+.original-dept-regional h2{font-size:19.5px!important;margin-bottom:10px!important}
+.original-dept-main-region{padding-top:8px!important;padding-bottom:8px!important;font-weight:550!important;font-size:14.5px!important;letter-spacing:0!important}
+.original-dept-region-options{column-gap:17px!important}
+.original-dept-region-options button{font-size:15px!important;padding-top:2px!important;padding-bottom:2px!important;line-height:24px!important;letter-spacing:-.25px!important;font-weight:400!important;font-family:inherit!important}
+.original-dept-near button{font-size:14.5px!important;font-weight:350!important}
+.original-dept-region{padding-bottom:10px!important}
