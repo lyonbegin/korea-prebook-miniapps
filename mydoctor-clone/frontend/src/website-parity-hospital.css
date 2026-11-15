@@ -35,3 +35,9 @@
 .ow-hospital-company .ow-hospital-social{font-size:24px;margin:10px 0;color:#a0a5ad;letter-spacing:12px}
 .ow-hospital-company nav{font-size:12px;font-weight:650;color:#3e4958;margin:9px 0 15px;white-space:nowrap}
 .ow-hospital-company small{color:#788ca8;font-size:12px;display:block}
+
+/* Original/clone 390x844 side-by-side audit: source 16px paragraph has
+   natural tracking; source department labels are 14px, not 12-13px.
+   Restore glyph widths so line breaks and department rows line up. */
+.ow-hospital-intro p{font-size:16px;letter-spacing:0;line-height:25px}
+.ow-hospital-links button{font-size:14px;letter-spacing:0}
