@@ -93,3 +93,9 @@
 .ow-hospital-link-row{gap:15.25px;height:35px}
 .ow-hospital-link-row button{font-size:14.95px;font-weight:400;letter-spacing:0}
 .ow-hospital-departments h2{margin-bottom:2px}
+
+/* True source screenshot 390x844, Actions baseline 42650015118; validated
+   coupled row geometry via 43724601251: 7.716% RGB>25 viewport difference. */
+.ow-hospital-link-row{height:34px;gap:15.25px}
+.ow-hospital-link-row button{font-size:15px;font-weight:400}
+.ow-hospital-departments h2{margin-bottom:6px}
