@@ -83,3 +83,13 @@
 .ow-hospital-link-row{height:35px;gap:15px}
 .ow-hospital-link-row button{font-size:15px;font-weight:400;letter-spacing:0}
 .ow-hospital-departments h2{margin-bottom:0}
+
+/* Third strict source-pixel run 43724105173: 11.122% -> 10.731%.
+ * Still an honest pixel FAIL until this value reaches <=10. */
+.ow-hospital-intro h1{letter-spacing:-.8px}
+.ow-hospital-intro p{font-size:16.75px;letter-spacing:.5px}
+.ow-hospital-select select{font-size:14px}
+.ow-hospital-breadcrumb,.ow-hospital-breadcrumb button,.ow-hospital-breadcrumb strong{font-size:11px}
+.ow-hospital-link-row{gap:15.25px;height:35px}
+.ow-hospital-link-row button{font-size:14.95px;font-weight:400;letter-spacing:0}
+.ow-hospital-departments h2{margin-bottom:2px}
