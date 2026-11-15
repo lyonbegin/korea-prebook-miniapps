@@ -8,11 +8,17 @@ const SITE=process.env.PAGES_TEST_URL||"http://127.0.0.1:4173/korea-prebook-mini
 const DIR=path.join(__dirname,"../website-pixel-calibration");
 fs.mkdirSync(DIR,{recursive:true});
 const configs={
- h1Size:25,h1Weight:780,
- pSize:16,pTrack:.35,pLine:25,pWeight:400,
- rowSize:15,rowTrack:0,rowGap:15,rowHeight:36,rowMargin:3,rowWeight:500
+ font:'inherit',h1Size:25,h1Weight:700,h1Track:-.6,
+ pSize:16.5,pTrack:.5,pLine:25,pWeight:400,
+ rowSize:15,rowTrack:0,rowGap:15,rowHeight:35,rowMargin:0,rowWeight:400,
+ headingSize:20,formFont:15,crumbFont:12
 };
 const candidates={
+ font:['inherit','Arial, sans-serif','Noto Sans KR, sans-serif','Apple SD Gothic Neo, sans-serif','Pretendard, sans-serif'],
+ h1Track:[-1,-.8,-.6,-.4,-.2,0],
+ headingSize:[19,19.5,20,20.5,21],
+ formFont:[14,14.5,15,15.5,16],
+ crumbFont:[11,11.5,12,12.5,13],
  h1Size:[24,24.5,25,25.5,26],
  h1Weight:[700,750,780,800],
  pSize:[15.5,15.75,16,16.25,16.5],
@@ -27,7 +33,11 @@ const candidates={
  rowWeight:[400,500,600]
 };
 function css(x){
- return ".ow-hospital-intro h1{font-size:"+x.h1Size+"px!important;font-weight:"+x.h1Weight+"!important}"+
+ return ".ow-hospital-page{font-family:"+x.font+"!important}"+
+ ".ow-hospital-intro h1{font-size:"+x.h1Size+"px!important;font-weight:"+x.h1Weight+"!important;letter-spacing:"+x.h1Track+"px!important}"+
+ ".ow-hospital-departments h2{font-size:"+x.headingSize+"px!important}"+
+ ".ow-hospital-select select{font-size:"+x.formFont+"px!important}"+
+ ".ow-hospital-breadcrumb,.ow-hospital-breadcrumb button,.ow-hospital-breadcrumb strong{font-size:"+x.crumbFont+"px!important}"+
  ".ow-hospital-intro p{font-size:"+x.pSize+"px!important;letter-spacing:"+x.pTrack+"px!important;line-height:"+x.pLine+"px!important;font-weight:"+x.pWeight+"!important;word-break:normal!important}"+
  ".ow-hospital-link-row button{font-size:"+x.rowSize+"px!important;letter-spacing:"+x.rowTrack+"px!important;font-weight:"+x.rowWeight+"!important}"+
  ".ow-hospital-link-row{gap:"+x.rowGap+"px!important;height:"+x.rowHeight+"px!important}"+
