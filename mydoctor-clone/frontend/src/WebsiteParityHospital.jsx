@@ -6,6 +6,23 @@ import "./website-parity-hospital.css";
 const hospitalSource=sources.find(x=>x.path==="/hospital");
 const specialties=(hospitalSource?.links||[]).filter(x=>x.path.startsWith("/dept-hub/")).filter((x,i,a)=>a.findIndex(y=>y.path===x.path)===i);
 const regions=["서울","경기","인천","부산","대구","대전","광주","울산","세종","제주"];
+
+/* These are the actual observed 390px original public website link ROWS.
+ * The source has intentional per-row wrapping, unlike CSS flex auto-wrap
+ * which previously shuffled hospitals into the wrong visual lines. */
+const originalDepartmentRows=[
+ ["가정의학과","결핵과","내과","마취통증의학과"],
+ ["방사선종양학과","병리과","비뇨의학과","사상체질과"],
+ ["산부인과","성형외과","소아청소년과","신경과","신경외과"],
+ ["안과","영상의학과","예방의학과","외과","응급의학과"],
+ ["이비인후과","재활의학과","정신건강의학과","정형외과"],
+ ["직업환경의학과","진단검사의학과","치과","침구과","피부과"],
+ ["한방내과","한방부인과","한방소아과","한방신경정신과"],
+ ["한방안·이비인후·피부과","한방재활의학과","핵의학과"],
+ ["흉부외과"]
+];
+const originalDepartmentMap=new Map(specialties.map(item=>[item.label,item.path]));
+
 const sunday=(hospitalSource?.links||[]).filter(x=>/\/(%EC%9D%BC%EC%9A%94%EC%9D%BC%EC%A7%84%EB%A3%8C|일요일진료)/.test(x.path));
 const night=(hospitalSource?.links||[]).filter(x=>/\/(%EC%95%BC%EA%B0%84%EC%A7%84%EB%A3%8C|야간진료)/.test(x.path));
 function AvailabilitySection({heading,items,go}){
@@ -84,9 +101,12 @@ export default function WebsiteParityHospital({go}){
    </form>
    <section className="ow-hospital-departments">
      <h2>진료과별 병원</h2>
-     <div className="ow-hospital-links">
-       {specialties.map(item=><button type="button" key={item.path}
-         onClick={()=>go(item.path)}>{item.label}</button>)}
+     <div className="ow-hospital-link-rows">
+       {originalDepartmentRows.map((row,i)=><div className="ow-hospital-link-row" key={i}>
+         {row.map(label=><button type="button" key={label} onClick={()=>go(
+           originalDepartmentMap.get(label)||"/dept-hub/"+encodeURIComponent(label)
+         )}>{label}</button>)}
+       </div>)}
      </div>
    </section>
    <AvailabilitySection heading="일요일 진료" items={sunday} go={go}/>
