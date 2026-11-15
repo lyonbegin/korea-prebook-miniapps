@@ -41,3 +41,6 @@
    Restore glyph widths so line breaks and department rows line up. */
 .ow-hospital-intro p{font-size:16px;letter-spacing:0;line-height:25px}
 .ow-hospital-links button{font-size:14px;letter-spacing:0}
+
+/* Original footer fills its left column before its right column. */
+.ow-hospital-footer-group>div{grid-auto-flow:column}
