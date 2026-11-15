@@ -8,13 +8,13 @@ const SITE=process.env.PAGES_TEST_URL||"http://127.0.0.1:4173/korea-prebook-mini
 const DIR=path.join(__dirname,"../website-pixel-calibration");
 fs.mkdirSync(DIR,{recursive:true});
 const configs={
- font:'inherit',h1Size:25,h1Weight:700,h1Track:-.6,
+ font:'"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif',h1Size:25,h1Weight:700,h1Track:-.6,
  pSize:16.5,pTrack:.5,pLine:25,pWeight:400,
  rowSize:15,rowTrack:0,rowGap:15,rowHeight:35,rowMargin:0,rowWeight:400,
  headingSize:20,formFont:15,crumbFont:12
 };
 const candidates={
- font:['inherit','Arial, sans-serif','Noto Sans KR, sans-serif','Apple SD Gothic Neo, sans-serif','Pretendard, sans-serif'],
+ font:['"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif','Arial, sans-serif','Noto Sans KR, sans-serif','Apple SD Gothic Neo, sans-serif','Pretendard, sans-serif'],
  h1Track:[-1,-.8,-.6,-.4,-.2,0],
  headingSize:[19,19.5,20,20.5,21],
  formFont:[14,14.5,15,15.5,16],
