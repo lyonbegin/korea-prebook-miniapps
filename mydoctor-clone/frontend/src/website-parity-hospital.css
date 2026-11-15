@@ -44,3 +44,10 @@
 
 /* Original footer fills its left column before its right column. */
 .ow-hospital-footer-group>div{grid-auto-flow:column}
+
+/* Restore original visible specialty groupings (source fits four items in
+   the first row, previous clone incorrectly fitted five), and use only
+   original public hospital form icons. */
+.ow-hospital-links button{font-size:15.5px}
+.ow-hospital-original-icon{display:block;width:26px;height:26px;object-fit:cover;flex-shrink:0}
+.ow-hospital-page .owh-brand img{display:block;width:100px;height:37px;object-fit:contain;max-width:none}
