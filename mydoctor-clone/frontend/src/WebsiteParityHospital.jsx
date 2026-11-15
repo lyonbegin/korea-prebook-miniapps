@@ -18,7 +18,7 @@ function WebsiteFooter({go}){
  return <footer className="ow-hospital-footer">
   {originalFooter.groups.map(group=><section className="ow-hospital-footer-group" key={group.title}>
    <h3>{group.title}</h3>
-   <div>{group.links.map(x=>x.href.startsWith("/")?
+   <div style={{gridTemplateRows:`repeat(${Math.ceil(group.links.length/2)},31px)`}}>{group.links.map(x=>x.href.startsWith("/")?
      <button type="button" key={x.href} onClick={()=>go(x.href)}>{x.label}</button>:
      <a key={x.href} href={x.href} target="_blank" rel="noopener noreferrer">{x.label}</a>)}</div>
   </section>)}
