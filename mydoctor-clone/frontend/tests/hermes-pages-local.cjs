@@ -44,12 +44,21 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.getByTestId("website-parity-hospital").waitFor();
   if(!await page.getByRole("heading",{name:"근처 병원 찾기"}).count())throw Error("Original website hospital search UI missing");
   await page.screenshot({path:path.join(OUT,"pages-hospital-search.png"),fullPage:true});
-  await page.locator(".ow-hospital-links").getByRole("button",{name:"피부과",exact:true}).first().click();
-  await page.getByTestId("verified-specialty-screen").waitFor();
+  await page.locator(".ow-hospital-link-rows").getByRole("button",{name:"피부과",exact:true}).first().click();
+  await page.getByTestId("original-department-landing").waitFor();
   if(!page.url().includes("screen=detail"))throw Error("Specialty navigation did not enter detail");
   if(await page.locator("text=원본 공개 페이지 열기").count())throw Error("Old external placeholder still displayed");
+  if(!await page.getByRole("heading",{name:"근처 피부과 찾기"}).count())
+    throw Error("Original source specialty landing heading missing");
+  if(!await page.getByRole("button",{name:"병원 조회하기"}).count())
+    throw Error("Original specialty region/condition lookup missing");
+  if(await page.getByTestId("verified-hospital-list").count())
+    throw Error("Root specialty incorrectly shows hospital cards before selection");
+  await page.screenshot({path:path.join(OUT,"pages-dermatology-landing.png"),fullPage:true});
+  await page.getByRole("button",{name:"서울 피부과 병원",exact:true}).first().click();
+  await page.getByTestId("verified-specialty-screen").waitFor();
   if(await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count()<10)
-    throw Error("Dermatology Seoul hospital records missing");
+    throw Error("Dermatology Seoul hospital records missing after original first page");
   await page.getByRole("button",{name:"일요일진료",exact:true}).click();
   const sundayCount=await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count();
   if(sundayCount<1)throw Error("Dermatology actual Sunday filter missing");
@@ -107,10 +116,12 @@ fs.mkdirSync(OUT,{recursive:true});
   data.steps.push({screen:"night-pharmacy",count:pharmacies,expanded:true});
   for(const specialty of ["피부과","내과","이비인후과","정형외과","안과","소아청소년과","산부인과","성형외과","치과","비뇨의학과","정신건강의학과","신경과","신경외과","외과","재활의학과","마취통증의학과","가정의학과"]){
     await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/dept-hub/"+specialty),{waitUntil:"domcontentloaded"});
+    await page.getByTestId("original-department-landing").waitFor();
+    await page.getByRole("button",{name:"병원 조회하기"}).click();
     await page.getByTestId("verified-specialty-screen").waitFor();
     const n=await page.getByTestId("verified-hospital-list").locator(".gh-h-card").count();
-    if(n<5)throw Error(specialty+" must show actual, source-verified hospital cards: "+n);
-    data.steps.push({specialty,verifiedHospitals:n});
+    if(n<5)throw Error(specialty+" source landing to hospital-list failed: "+n);
+    data.steps.push({specialty,sourceLanding:true,verifiedHospitals:n});
   }
   if(requests.length)throw Error("Static GitHub Pages attempted to call runtime API: "+JSON.stringify(requests));
   if(errors.length)throw Error("Browser JS errors: "+errors.join("; "));
