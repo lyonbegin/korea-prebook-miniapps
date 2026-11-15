@@ -37,9 +37,9 @@ function WebsiteFooter({go}){
   </section>
  </footer>;
 }
-function Selector({Icon,value,onChange,options,label}){
+function Selector({Icon,icon,value,onChange,options,label}){
  return <label className="ow-hospital-select">
-  <Icon size={19} strokeWidth={2.2} aria-hidden="true"/>
+  <img className="ow-hospital-original-icon" src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-"+icon+".png"} alt="" aria-hidden="true"/>
   <select aria-label={label} value={value} onChange={e=>onChange(e.target.value)}>
     <option value="">{label}</option>
     {options.map(o=><option key={o} value={o}>{o}</option>)}
@@ -60,7 +60,7 @@ export default function WebsiteParityHospital({go}){
  };
  return <div className="ow-hospital-page" data-testid="website-parity-hospital">
    <header className="owh-header">
-     <button type="button" className="owh-brand" aria-label="나만의닥터 홈" onClick={()=>go("/")}>나만의닥.</button>
+     <button type="button" className="owh-brand" aria-label="나만의닥터 홈" onClick={()=>go("/")}><img src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-brand.png"} alt="나만의닥터"/></button>
      <button type="button" className="owh-menu-btn" aria-label={menu?"메뉴 닫기":"메뉴 열기"} aria-expanded={menu}
        onClick={()=>setMenu(x=>!x)}>{menu?<X size={22}/>:<Menu size={22}/>}</button>
      {menu&&<nav className="owh-dropdown">
@@ -76,9 +76,9 @@ export default function WebsiteParityHospital({go}){
      <p>내 주변 문 연 병원을 조건·지역별로 찾아보세요. 야간·일요일 진료 병원의 위치와 영업시간을 나만의닥터에서 확인할 수 있어요.</p>
    </section>
    <form className="ow-hospital-form" onSubmit={e=>{e.preventDefault();submit()}}>
-     <Selector Icon={MapPin} label="지역" value={region} onChange={setRegion} options={regions}/>
-     <Selector Icon={BriefcaseMedical} label="진료과" value={department} onChange={setDepartment} options={choices}/>
-     <Selector Icon={Stethoscope} label="모든 진료" value={treatment} onChange={setTreatment}
+     <Selector Icon={MapPin} icon="region" label="지역" value={region} onChange={setRegion} options={regions}/>
+     <Selector Icon={BriefcaseMedical} icon="specialty" label="진료과" value={department} onChange={setDepartment} options={choices}/>
+     <Selector Icon={Stethoscope} icon="care" label="모든 진료" value={treatment} onChange={setTreatment}
        options={["전체","야간","일요일","주말","공휴일"]}/>
      <button type="submit" className="ow-hospital-submit">병원 조회하기</button>
    </form>
