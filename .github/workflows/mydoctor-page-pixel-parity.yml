@@ -47,6 +47,7 @@ jobs:
         working-directory: mydoctor-clone/frontend
         run: |
           npm install --no-audit --no-fund
+          node tests/extract-verified-home-phone.cjs
           npm run build:pages
           npx playwright install --with-deps chromium
       - name: Strict sequential original pixel audit
