@@ -53,15 +53,15 @@ export default function OriginalDepartmentLanding({department,go}){
      <p>내 주변 {department}를 지역별로 찾아보세요. 야간·일요일·주말 진료, 전문의 병원과 영업시간, 후기 정보를 나만의닥터에서 확인할 수 있어요.</p>
    </section>
    <form className="original-dept-lookup" onSubmit={e=>{e.preventDefault();viewList()}}>
-     <label><MapPin size={18} aria-hidden="true"/>
+     <label><img className="original-dept-source-icon" src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-region.png"} alt="" aria-hidden="true"/>
        <select aria-label="지역" value={selectedArea} onChange={e=>setSelectedArea(e.target.value)}>
          <option value="">지역</option>{areas.map(r=><option value={r} key={r}>{r}</option>)}
        </select><ChevronDown size={16} aria-hidden="true"/></label>
-     <label><Hospital size={18} aria-hidden="true"/>
+     <label><img className="original-dept-source-icon" src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-specialty.png"} alt="" aria-hidden="true"/>
        <select aria-label="진료과" defaultValue={department}>
          <option value={department}>{department}</option>
        </select><ChevronDown size={16} aria-hidden="true"/></label>
-     <label><Stethoscope size={18} aria-hidden="true"/>
+     <label><img className="original-dept-source-icon" src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-care.png"} alt="" aria-hidden="true"/>
        <select aria-label="진료 조건" value={selectedCare} onChange={e=>setSelectedCare(e.target.value)}>
          {careOptions.map(([v,label])=><option value={v} key={v}>{label}</option>)}
        </select><ChevronDown size={16} aria-hidden="true"/></label>
