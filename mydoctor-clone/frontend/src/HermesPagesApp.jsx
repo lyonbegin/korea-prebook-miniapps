@@ -3,6 +3,7 @@ import {Home,Hospital,Stethoscope,Tags,ChevronLeft,ChevronRight,Search,X,FileTex
 import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
 import WebsiteParityHome from "./WebsiteParityHome.jsx";
 import WebsiteParityHospital from "./WebsiteParityHospital.jsx";
+import OriginalTelemedicineLanding from "./OriginalTelemedicineLanding.jsx";
 import HermesPagesDetail from "./HermesPagesDetail.jsx";
 import {publicMenuGroups,publicLinks} from "./HermesPagesStaticData.js";
 import "./hermes-pages.css";
@@ -113,7 +114,7 @@ export default function HermesPagesApp(){
       {page.screen==="home"&&<WebsiteParityHome go={go}/>}
       {page.screen==="native-home"&&<HermesSourceWebScreen screen="home" staticMode go={go}/>}
       {page.screen==="hospital-list"&&<WebsiteParityHospital go={go}/>}
-      {page.screen==="telemedicine"&&<Directory key="telemedicine" groupKey="telemedicine" title="비대면 진료" go={go}/>}
+      {page.screen==="telemedicine"&&<OriginalTelemedicineLanding go={go}/>}
       {page.screen==="medical-cost"&&<Directory key="price" groupKey="price" title="최저가 병원 예약 · 가격 비교" go={go}/>}
       {page.screen==="pharmacy"&&<Directory key="pharmacy" groupKey="pharmacy" title="약국 찾기" go={go}/>}
       {page.screen==="health"&&<Directory key="health" groupKey="health" title="건강 정보" go={go}/>}
@@ -122,6 +123,6 @@ export default function HermesPagesApp(){
         <FileText size={15}/> Android 6.50.0 Hermes 확인 레이아웃 + 공개 메뉴 정적 자료 · GitHub Pages
       </footer>
     </main>
-    {page.screen!=="home"&&<BottomTabs screen={page.screen} target={page.target} go={go}/>}
+    {page.screen!=="home"&&page.screen!=="telemedicine"&&<BottomTabs screen={page.screen} target={page.target} go={go}/>}
   </div>;
 }
