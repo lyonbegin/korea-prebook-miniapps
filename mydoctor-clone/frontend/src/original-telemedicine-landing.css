@@ -1,0 +1,24 @@
+.original-telemedicine-root{min-height:100vh;background:#fff;color:#16191e;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.original-telemedicine-root .owh-brand img{display:block;width:100px;height:37px;object-fit:contain}
+.original-telemedicine-hero{padding:23px 20px 0;background:#fff}
+.original-telemedicine-hero h1{font-size:23px;line-height:33px;letter-spacing:-.55px;font-weight:760;margin:0 0 10px;color:#181d24}
+.original-telemedicine-hero p{font-size:16px;line-height:26px;letter-spacing:.05px;margin:0 0 22px;color:#313b47;word-break:keep-all}
+.original-telemedicine-hero p a{color:#326dff;text-decoration:underline;cursor:pointer}
+.original-telemedicine-tabs{display:grid;grid-template-columns:1fr 1fr;background:#fff;border-bottom:1px solid #dce0e5;height:51px;margin:0}
+.original-telemedicine-tabs button{border:0;border-bottom:2px solid transparent;color:#8993a1;background:white;font-size:16px;font-weight:400;cursor:pointer}
+.original-telemedicine-tabs button.active{color:#13171f;border-bottom-color:#15191e;font-weight:750}
+.original-telemedicine-symptoms{background:#fff}
+.original-telemedicine-group{border-bottom:1px solid #e7e9ed}
+.original-telemedicine-row{height:77px;padding:0 20px;display:flex;align-items:center;width:100%;background:#fff;border:0;text-align:left;gap:12px;cursor:pointer;color:#212a34;font-family:inherit}
+.original-telemedicine-icon{width:40px;flex:0 0 40px;display:flex;align-items:center;justify-content:flex-start}
+.original-telemedicine-row-text{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.original-telemedicine-row-text strong{font-size:15px;font-weight:750;line-height:20px;color:#191f27}
+.original-telemedicine-row-text small{font-size:13px;line-height:19px;color:#8994a7;white-space:normal}
+.original-telemedicine-row>svg{flex-shrink:0;margin-right:2px}
+.original-telemedicine-expanded{display:flex;flex-direction:column;padding:5px 20px 10px 72px;background:#fafbfe}
+.original-telemedicine-expanded button{background:transparent;border:0;border-bottom:1px solid #edf0f3;padding:12px 0;display:flex;align-items:center;justify-content:space-between;text-align:left;font-size:14px;color:#384860}
+.original-telemedicine-departments{padding:2px 20px;background:#fff}
+.original-telemedicine-departments button{display:flex;align-items:center;justify-content:space-between;width:100%;height:58px;background:white;border:0;border-bottom:1px solid #edf0f3;text-align:left;font-size:15px;font-weight:600;color:#26313f}
+.original-telemedicine-root button:focus-visible{outline:2px solid #326dff;outline-offset:2px}
+.gh-hermes-main:has(.original-telemedicine-root){padding-bottom:0}
+.gh-hermes-site:has(.original-telemedicine-root) .gh-bottom-tabs{display:none}
