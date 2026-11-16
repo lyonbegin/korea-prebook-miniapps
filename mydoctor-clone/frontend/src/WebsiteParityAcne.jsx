@@ -22,7 +22,7 @@ export default function WebsiteParityAcne({go}){
   {getCell(0,0,1)}입니다.
  </>;
  const info=detail?.links?.filter(x=>x.path.startsWith("/hospital/detail?")).slice(0,18)||[];
- return <div className="ow-mounjaro-page ow-acne-page" data-testid="website-parity-medical-cost-category">
+ return <div className="ow-mounjaro-page ow-acne-page" data-testid="website-parity-medical-cost-item-by-area">
    <header className="owh-header">
      <button type="button" className="owh-brand" aria-label="나만의닥터 홈" onClick={()=>go("/")}>
       <img src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-brand.png"} alt="나만의닥터"/>
