@@ -104,3 +104,11 @@
  .ow-legacy-page .original-hospital-night-card>img{transform:translateY(-1px)}
 }
 
+
+/* Drug article source text has visibly wider Korean glyphs than the former
+   13px clone; keep the preserved 2-line introduction and interactive CTA. */
+.ow-legacy-page .original-drug-intro{background:#f9fafa}
+.ow-legacy-page .original-drug-intro h1{font-size:22px;line-height:1.33}
+.ow-legacy-page .original-drug-intro p{font-size:14px;line-height:23px}
+.ow-legacy-page .original-drug-symptoms>p{font-size:15px;line-height:24px}
+.ow-legacy-page .original-drug-symptoms>h2{font-size:20px;line-height:1.4}
