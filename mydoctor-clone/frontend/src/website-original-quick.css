@@ -119,3 +119,15 @@
 .ow-q-reviews-doctor .ow-q-review-tags{row-gap:10px}
 .ow-q-reviews-doctor .ow-q-review-head{padding-bottom:13px}
 .ow-q-reviews-doctor .ow-q-reviews-subtitle{margin-bottom:36px}
+
+/* Original doctor-review screenshot has a single rounded white, outlined
+ * "시간 준수 / 예약시간을 잘 지켜요" feedback panel, not two gray chip pills. */
+.ow-q-reviews-doctor .ow-q-reviews-subtitle{margin-bottom:25px}
+.ow-q-reviews-doctor .ow-q-review-detail-tags{
+ display:flex;align-items:center;gap:12px;border:1px solid #dfe4ea;border-radius:13px;
+ min-height:48px;padding:10px 14px;margin-top:24px;background:#fff
+}
+.ow-q-reviews-doctor .ow-q-review-detail-tags span{
+ background:none;border-radius:0;padding:0;font-size:13px;color:#73839a
+}
+.ow-q-reviews-doctor .ow-q-review-detail-tags span:nth-child(2){color:#343f4d}
