@@ -76,7 +76,3 @@
 .ow-hd-mobile-break{display:inline}
 @media (min-width:480px){.ow-hd-mobile-break{display:none}}
 
-/* Measured original hospital headings: h1 143px vs 125px clone;
- * "진료비 안내" width 211px vs 191px clone. */
-.ow-hd-top>h1{transform:scaleX(1.14);transform-origin:left center}
-.ow-hd-info h2{transform:scaleX(1.10);transform-origin:left center}
