@@ -41,3 +41,25 @@
 .ow-legacy-page .original-qna-index>header{margin-bottom:25px}
 .ow-legacy-page .original-qna-questions{margin-top:0;top:-4px}
 .ow-legacy-page .original-qna-card-meta{font-size:12px;line-height:18px;margin:7px 0 0 17px;color:#7d8c9e}
+
+/* The real 2026-11-09 health article has a plain 116px fixed bottom action,
+ * blue text (not gray), and no rounded/shadowed floating card. */
+.ow-legacy-page .original-health-fixed-action{
+ position:fixed;left:50%;bottom:0;transform:translateX(-50%);
+ width:100%;max-width:560px;min-height:116px;border:0;border-radius:0;
+ box-shadow:none;background:#fff;padding:15px 20px 14px;z-index:20
+}
+.ow-legacy-page .original-health-fixed-action span{
+ font-size:15px;line-height:23px;color:#306dff;font-weight:700;
+ margin:0 0 12px;text-align:center
+}
+.ow-legacy-page .original-health-fixed-action a{
+ padding:14px 10px;border-radius:11px;min-height:54px;
+ display:flex;justify-content:center;align-items:center;font-size:16px;font-weight:760
+}
+.ow-legacy-page .original-health-author b{font-size:15px}
+.ow-legacy-page .original-health-author small{font-size:13px}
+.ow-legacy-page .original-health-article>p{font-size:16px;line-height:26px}
+.ow-legacy-page .original-health-toc{margin-bottom:91px}
+.ow-legacy-page .original-health-toc b,
+.ow-legacy-page .original-health-toc a{font-size:14px}
