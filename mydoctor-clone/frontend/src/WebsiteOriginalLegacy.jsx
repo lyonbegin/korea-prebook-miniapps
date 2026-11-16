@@ -3,6 +3,7 @@ import {Menu,X,ChevronRight} from "lucide-react";
 import sourceFacts from "./data/verified-public-page-facts-29.json";
 import {parsePublicFacts} from "./lib/sourceModel.js";
 import {VerifiedSourcePage} from "./VerifiedSourcePage.jsx";
+import WebsiteOriginalQuickPages from "./WebsiteOriginalQuickPages.jsx";
 import "./website-parity-hospital.css";
 import "./website-original-legacy.css";
 
@@ -51,7 +52,9 @@ export default function WebsiteOriginalLegacy({target,go}){
     </nav>
    </>}
    <div className="ow-legacy-body">
-    <VerifiedSourcePage key={target} route={canonical(target)} data={data} go={go}/>
+    <>{["/medicine/ingredient/세마글루티드","/healthLab/calculator/bmi","/hospital/10055/reviews","/telemedicine/doctor/탑연합의원-박광규-100/reviews"].includes(cleanPath(target))?
+      <WebsiteOriginalQuickPages target={target} go={go}/>:
+      <VerifiedSourcePage key={target} route={canonical(target)} data={data} go={go}/>}</>
    </div>
  </div>;
 }
