@@ -274,3 +274,7 @@
 .original-qna-chips{position:relative;top:-6px}
 .original-qna-questions{position:relative;top:2px}
 .original-qna-item>svg{display:none}
+
+/* Source screenshot's noninteractive pediatric illustration, without simulated phone drawing. */
+.original-baby119-source-phone{display:block;width:142px;height:186px;max-width:none;
+  object-fit:contain;transform:translateX(12px)}
