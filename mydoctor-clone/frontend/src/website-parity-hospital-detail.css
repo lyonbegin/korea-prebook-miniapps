@@ -89,3 +89,6 @@
 
 /* Single-axis final registration: source hospital tab baseline x≈17. */
 .ow-hd-tabs{padding-left:17px}
+
+/* Original table top is ~4px below current source-registered clone. */
+.ow-hd-tableclip{top:1px}
