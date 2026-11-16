@@ -107,3 +107,8 @@
 /* Localized night-hospital card label gap; the original badges appear lower
    without changing fixed card row pitch or preserved screenshot avatars. */
 .ow-legacy-page .original-hospital-night-tags{margin-top:12px}
+
+/* The archived night-pharmacy weekly schedule fits in three lines.
+ * The 15px override forced four lines and shifted every later pharmacy. */
+.ow-legacy-page .original-pharmacy-cardline{font-size:13.5px;letter-spacing:-.18px;line-height:21px}
+.ow-legacy-page .original-pharmacy-cardline .pharmacy-status-label{font-size:13.5px}
