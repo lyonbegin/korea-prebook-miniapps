@@ -76,3 +76,12 @@
 .ow-q-reviews-hospital .ow-q-review-head{padding-bottom:26px}
 .ow-q-reviews-hospital .ow-q-reviews-subtitle{margin-bottom:25px}
 .ow-q-reviews-hospital .ow-q-review-items{padding-top:26px}
+
+/* Exact viewport alignment measured against 2026-11-09 HTTP-200 original */
+.ow-q-med-body{padding-top:27px}
+.ow-q-med-card{margin-bottom:9px}
+.ow-q-bmi-intro{margin-bottom:18px}
+.ow-q-bmi-main{padding-bottom:25px}
+.ow-q-review-items{padding-top:22px}
+.ow-q-reviews-hospital .ow-q-review-items{padding-top:22px}
+.ow-q-reviews-hospital .ow-q-reviews-subtitle{margin-bottom:21px}
