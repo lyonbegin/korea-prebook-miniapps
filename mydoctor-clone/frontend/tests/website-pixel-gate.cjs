@@ -26,6 +26,9 @@ const cases=[
  {id:"medical-cost-category",source:"origin-medical-cost-category.png",full:null,
    url:"?screen=detail&target="+encodeURIComponent("/medical-cost/마운자로"),
    selector:"[data-testid='pages-static-detail']"},
+ {id:"medical-cost-item-by-area",source:"origin-medical-cost-item-by-area.png",full:null,
+   url:"?screen=detail&target="+encodeURIComponent("/medical-cost/여드름약/이소티논"),
+   selector:"[data-testid='website-parity-medical-cost-item-by-area']"},
  /* Advance only once the preceding original pixel gate passes */
 ];
 fs.mkdirSync(DEST,{recursive:true});
