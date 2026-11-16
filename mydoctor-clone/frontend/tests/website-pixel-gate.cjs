@@ -23,6 +23,9 @@ const cases=[
    url:"?screen=telemedicine",selector:"[data-testid='original-telemedicine-landing']"},
  {id:"medical-cost-index",source:"origin-medical-cost-index.png",full:null,
    url:"?screen=medical-cost",selector:"[data-testid='website-parity-medical-cost']"},
+ {id:"medical-cost-category",source:"origin-medical-cost-category.png",full:null,
+   url:"?screen=detail&target="+encodeURIComponent("/medical-cost/마운자로"),
+   selector:"[data-testid='pages-static-detail']"},
  /* Advance only once the preceding original pixel gate passes */
 ];
 fs.mkdirSync(DEST,{recursive:true});
