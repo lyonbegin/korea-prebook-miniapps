@@ -1,0 +1,56 @@
+/* Captured my-doctor.io/hospital/detail?hospital_id=323 390x844,
+ * 2026-11-09 original public website layout.
+ * Real data, DOM controls and price table; no baked-in screen screenshot.
+ */
+.ow-hd-page{min-height:100vh;background:white;color:#141d28;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-hd-page *{box-sizing:border-box}
+.ow-hd-page .owh-header{height:58px;background:white}
+.ow-hd-page .owh-brand img{width:100px;height:37px;object-fit:contain;display:block}
+.ow-hd-crumb{height:42px;display:flex;align-items:center;gap:6px;padding:0 16px;white-space:nowrap;overflow:hidden;border-bottom:1px solid #e6e9ee;font-size:12px}
+.ow-hd-crumb button{border:0;background:none;padding:0;color:#7b8796;font-size:12px;white-space:nowrap}
+.ow-hd-crumb>span{color:#a6b0bb}
+.ow-hd-crumb strong{color:#162332;font-size:12px;font-weight:700;text-overflow:ellipsis;overflow:hidden}
+.ow-hd-top{padding:18px 20px 19px;min-height:216px}
+.ow-hd-top>h1{font-size:22px;font-weight:790;line-height:30px;margin:0 0 16px;letter-spacing:-.65px}
+.ow-hd-availability{border:1px solid #e1e5eb;border-radius:14px;height:78px;padding:12px 15px;margin-bottom:12px}
+.ow-hd-hours{display:flex;align-items:center;gap:5px;height:22px;font-size:14px}
+.ow-hd-hours strong{color:#20c986;font-weight:790;font-size:15px}
+.ow-hd-hours span{font-size:14px;font-weight:580;color:#293541}
+.ow-hd-hours svg:last-child{margin-left:0;color:#647284}
+.ow-hd-address{display:flex;align-items:center;gap:5px;line-height:20px;font-size:14px;color:#98a5b4;margin-top:5px}
+.ow-hd-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;height:43px}
+.ow-hd-actions a,.ow-hd-actions button{border:1px solid #cbd4df;border-radius:9px;background:#fff;color:#171f28;display:flex;align-items:center;justify-content:center;gap:5px;font-size:15px;text-decoration:none;font-weight:660}
+.ow-hd-notice{margin:8px 0 0;color:#697888;font-size:12px}
+.ow-hd-separator{height:8px;background:#f2f4f6}
+.ow-hd-tabs{display:flex;height:49px;border-bottom:1px solid #dce0e6;align-items:stretch;padding:0 20px;gap:19px}
+.ow-hd-tabs>button{position:relative;border:0;background:#fff;color:#a2a9b4;font-size:15px;font-weight:680;padding:0 7px}
+.ow-hd-tabs>button.selected{color:#131f2e;font-weight:760}
+.ow-hd-tabs>button.selected:after{position:absolute;bottom:-1px;left:0;right:0;content:"";height:2px;background:#1d2630}
+.ow-hd-info{padding:21px 20px 19px;min-height:115px;border-bottom:8px solid #f5f6f8}
+.ow-hd-info h2{font-size:18px;font-weight:780;line-height:26px;letter-spacing:-.4px;margin:0 0 3px}
+.ow-hd-info p{margin:0;color:#79889b;font-size:14px;line-height:23px;word-break:keep-all}
+.ow-hd-filters{padding:10px 20px 11px;display:flex;gap:6px;white-space:nowrap;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid #e8eaee;height:56px}
+.ow-hd-filters::-webkit-scrollbar{display:none}
+.ow-hd-filters button{border:1px solid #d1d9e4;border-radius:23px;background:#fff;color:#626f7f;font-size:14px;line-height:21px;padding:0 15px;flex:none}
+.ow-hd-filters button.active{background:#383f48;color:white;border-color:#383f48}
+.ow-hd-prices{padding:20px 20px 110px}
+.ow-hd-prices h2{font-size:17px;font-weight:770;line-height:24px;margin:0 0 17px}
+.ow-hd-tableclip{width:100%;overflow-x:auto;scrollbar-width:none}
+.ow-hd-prices table{border-collapse:collapse;table-layout:fixed;min-width:350px;width:100%;font-size:12px}
+.ow-hd-prices th,.ow-hd-prices td{border:1px solid #dce1e6;text-align:left;padding:9px 12px;line-height:19px;color:#2e3943}
+.ow-hd-prices th{background:#f2f3f5;font-size:12px;font-weight:710;height:36px}
+.ow-hd-prices th:nth-child(1){width:32%}
+.ow-hd-prices th:nth-child(2){width:24%}
+.ow-hd-prices th:nth-child(3){width:25%}
+.ow-hd-prices th:nth-child(4){width:19%}
+.ow-hd-prices td{height:38px;font-size:12px;white-space:nowrap}
+.ow-hd-hospital-info{padding:22px 20px 100px}
+.ow-hd-hospital-info h2{font-size:19px}
+.ow-hd-hospital-info p{font-size:14px;color:#536172;line-height:25px}
+.ow-hd-hospital-info>a,.ow-hd-hospital-info button{display:flex;justify-content:space-between;background:white;border:1px solid #dce0e8;border-radius:7px;padding:12px;margin-bottom:7px;font-size:14px;color:#2e63aa}
+.ow-hd-snapshot-note{font-size:12px;line-height:18px;color:#8b98a4;margin:0;padding:10px 20px 120px}
+.ow-hd-fixed{position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:560px;height:82px;padding:14px 20px 13px;background:white}
+.ow-hd-fixed button{display:block;border:0;background:#316bff;color:white;font-size:15px;font-weight:760;border-radius:11px;height:54px;width:100%;cursor:pointer}
+.gh-hermes-site:has(.ow-hd-page) .gh-bottom-tabs{display:none}
+.gh-hermes-main:has(.ow-hd-page){padding-bottom:0}
+.gh-hermes-main:has(.ow-hd-page)>.gh-pages-source-footer{display:none}
