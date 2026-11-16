@@ -116,7 +116,7 @@ async function runOne(browserContext,c){
   page.on("pageerror",e=>errors.push(e.message));
   const response=await page.goto(url,{waitUntil:"networkidle",timeout:30000});
   if(response?.status()!==200)throw Error("Clone HTTP "+(response?.status()??"no response"));
-  await page.locator(SELECTOR_BY_ID[c.id]||"[data-testid='pages-static-detail']").waitFor({timeout:8000});
+  await page.locator(SELECTOR_BY_ID[c.id]||"[data-testid='pages-static-detail'],[data-testid='website-source-original-detail']").waitFor({timeout:8000});
   await page.evaluate(async()=>{
    await document.fonts.ready;
    await Promise.all([...document.images].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{
