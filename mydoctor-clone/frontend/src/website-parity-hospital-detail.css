@@ -96,3 +96,7 @@
 /* Direct source-vs-clone RGB shift search: table body at y=570..680 matches
    with clone shifted up 3px; remove earlier +1px position. */
 .ow-hd-tableclip{top:-2px}
+
+/* The original source h2 heading is 18px high but glyphs use a wider
+ * 20px Korean font; isolate this instead of moving the surrounding table. */
+.ow-hd-info h2{font-size:20px}
