@@ -126,3 +126,10 @@
 .ow-legacy-page .original-pharmacy-card:first-child h2{margin-bottom:3px}
 .ow-legacy-page .original-pharmacy-card:first-child .original-pharmacy-cardline:has(img[src*="pharmacy-calendar"]){margin-bottom:2px}
 .ow-legacy-page .original-pharmacy-card:first-child .original-pharmacy-cardline:has(a[href^="tel:"]){margin-top:2px}
+
+/* Night-hospital 390x844 image-registration search:
+ * headline source box y=125..178: best B(x-4,y-2) vs current B(x,y);
+ * paragraph y=185..247: best B(x-4,y-1).
+ * Move the two paint layers only, keeping hospital cards and scroll geometry. */
+.ow-legacy-page .original-hospital-night>header h1{position:relative;left:4px;top:2px}
+.ow-legacy-page .original-hospital-night>header p{position:relative;left:4px;top:1px}
