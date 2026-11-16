@@ -28,3 +28,16 @@
 .ow-legacy-page .original-doctor-tabs{padding:0 20px}
 .ow-legacy-page .original-doctor-tabs button{padding-bottom:9px}
 .ow-legacy-page .original-doctor-booking p{font-size:15px;line-height:18px;margin-bottom:12px}
+
+/* Original public breadcrumbs stay single-line at 390px, with ellipsis on
+ * the active Q&A question, not line-wrap onto a second row. */
+.ow-legacy-page .ow-hospital-breadcrumb{display:flex;align-items:center;gap:7px;white-space:nowrap;overflow:hidden}
+.ow-legacy-page .ow-hospital-breadcrumb>button,
+.ow-legacy-page .ow-hospital-breadcrumb>span{flex-shrink:0}
+.ow-legacy-page .ow-hospital-breadcrumb .ow-legacy-current-crumb{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+
+/* Original source Q&A index has the first question's verified answer metadata
+ * and slightly more space after the '질문하기' header. */
+.ow-legacy-page .original-qna-index>header{margin-bottom:25px}
+.ow-legacy-page .original-qna-questions{margin-top:0;top:-4px}
+.ow-legacy-page .original-qna-card-meta{font-size:12px;line-height:18px;margin:7px 0 0 17px;color:#7d8c9e}
