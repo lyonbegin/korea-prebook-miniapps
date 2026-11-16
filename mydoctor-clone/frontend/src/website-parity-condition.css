@@ -39,3 +39,10 @@
 .gh-hermes-site:has(.ow-hypertension-page) .gh-bottom-tabs{display:none}
 .gh-hermes-main:has(.ow-hypertension-page){padding-bottom:0}
 .gh-hermes-main:has(.ow-hypertension-page)>.gh-pages-source-footer{display:none}
+
+/* Source pixel alignment: source doctor row separators y=456,575,724;
+   clone fixed-height list was y=468,616,764. A no-specialty row is 119px. */
+.ow-hypertension-intro h1{margin-bottom:8px}
+.ow-hypertension-filters{height:51px}
+.ow-hypertension-doctor{padding-top:14px}
+.ow-hypertension-doctor:not(:has(.ow-hypertension-badge)){height:119px}
