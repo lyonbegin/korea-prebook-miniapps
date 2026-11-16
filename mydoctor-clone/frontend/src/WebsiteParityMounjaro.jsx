@@ -87,8 +87,9 @@ export default function WebsiteParityMounjaro({go}){
            onClick={()=>go(hospital.path)}>
            <span><strong>{hospital.label}</strong>
              <small>{match?.[1]||"원본 공개 병원 정보"}</small></span>
-           <span className="ow-mounjaro-picture" aria-hidden="true"/>
-           <ChevronRight size={17}/>
+           {i===0?<img className="ow-mounjaro-picture"
+             src={(import.meta.env.BASE_URL||"/")+"website-source-mounjaro-first-provider.png"} alt=""/>:
+             <span className="ow-mounjaro-picture" aria-hidden="true"/>}
          </button>;
        })}
      </div>
