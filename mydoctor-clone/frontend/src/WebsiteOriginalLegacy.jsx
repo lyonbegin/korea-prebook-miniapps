@@ -4,6 +4,7 @@ import sourceFacts from "./data/verified-public-page-facts-29.json";
 import {parsePublicFacts} from "./lib/sourceModel.js";
 import {VerifiedSourcePage} from "./VerifiedSourcePage.jsx";
 import WebsiteOriginalQuickPages from "./WebsiteOriginalQuickPages.jsx";
+import WebsiteQnaDetail from "./WebsiteQnaDetail.jsx";
 import "./website-parity-hospital.css";
 import "./website-original-legacy.css";
 
@@ -32,6 +33,7 @@ export default function WebsiteOriginalLegacy({target,go}){
  const crumb={
   "/medicine/ingredient/세마글루티드":"세마글루티드 성분 의약품",
   "/telemedicine/doctor/한사랑패밀리의원-허훈-10":"허훈 의사",
+  "/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요":"정형외과 › 아침에 첫발을 디딜 때 발뒤꿈치가 아픈데 족저근막염일까요?",
   "/healthLab/calculator/bmi":"비만도 계산기",
   "/hospital/10055/reviews":"성남시 내과 › 동산의원 › 후기",
   "/telemedicine/doctor/탑연합의원-박광규-100/reviews":"박광규 의사 › 후기"
@@ -60,9 +62,9 @@ export default function WebsiteOriginalLegacy({target,go}){
     </nav>
    </>}
    <div className="ow-legacy-body">
-    <>{["/medicine/ingredient/세마글루티드","/healthLab/calculator/bmi","/hospital/10055/reviews","/telemedicine/doctor/탑연합의원-박광규-100/reviews"].includes(cleanPath(target))?
+    {cleanPath(target).startsWith("/qna/1/")?<WebsiteQnaDetail go={go}/>:<>{["/medicine/ingredient/세마글루티드","/healthLab/calculator/bmi","/hospital/10055/reviews","/telemedicine/doctor/탑연합의원-박광규-100/reviews"].includes(cleanPath(target))?
       <WebsiteOriginalQuickPages target={target} go={go}/>:
-      <VerifiedSourcePage key={target} route={canonical(target)} data={data} go={go}/>}</>
+      <VerifiedSourcePage key={target} route={canonical(target)} data={data} go={go}/>}</>}
    </div>
  </div>;
 }
