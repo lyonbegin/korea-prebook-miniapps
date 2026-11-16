@@ -29,3 +29,11 @@
 .ow-legacy-page .original-doctor-tabs button{padding-bottom:9px}
 .ow-legacy-page .original-doctor-booking p{font-size:15px;line-height:18px;margin-bottom:12px}
 
+
+/* Natural font rasterization (no stretched glyphs): original text bboxes
+ * h1 ~178x21 vs fallback ~157x20; section h2 ~143x18 vs ~125x15,
+ * and tabs source labels are roughly 16px tall, clone about 13px. */
+.ow-legacy-page .original-doctor-head h1{font-size:24px;line-height:30px}
+.ow-legacy-page .original-doctor-information h2{font-size:19px}
+.ow-legacy-page .original-doctor-tabs button{font-size:17px;font-weight:680}
+.ow-legacy-page .original-doctor-tabs button.current{font-weight:770}
