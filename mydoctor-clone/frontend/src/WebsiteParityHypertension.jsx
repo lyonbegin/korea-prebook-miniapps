@@ -42,7 +42,7 @@ export default function WebsiteParityHypertension({go}){
   </nav>
   <section className="ow-hypertension-intro">
    <h1>고혈압 비대면 진료 예약</h1>
-   <p>고혈압 비대면 진료 예약은 <strong>나만의닥터</strong>를 통해 앱 설치 없이 가능해요. 진료의, 리뷰, 약력, 진료시간, 진료비를 확인하고 안전하게 비대면 진료를 예약해보세요.</p>
+   <p>고혈압 비대면 진료 예약은 <strong>나만의닥터</strong>를 통해 앱 설<span className="ow-source-linebreak"><br/></span>치 없이 가능해요. 전문의, 리뷰, 약력, 진료시간, 진료<span className="ow-source-linebreak"><br/></span>비를 확인하고 안전하게 비대면 진료를 예약해보세요.</p>
   </section>
   <div className="ow-hypertension-filters">
    <button type="button" onClick={()=>go("/telemedicine/all-department")}>고혈압 <ChevronDown size={14}/></button>
@@ -56,8 +56,8 @@ export default function WebsiteParityHypertension({go}){
    <div className="ow-hypertension-name"><strong>{v.name} 의사</strong>
     <Heart size={15} fill="#ff353f" stroke="#ff353f"/><span>{v.rating}</span>
     <small>(리뷰 {v.reviews})</small></div>
-   <div className="ow-hypertension-time"><b>진료가능</b><Clock3 size={15} fill="#3971fa" stroke="#3971fa"/>
-    <span>캡처 당시 {v.time||"시간 확인 필요"}부터 가능</span></div>
+   <div className="ow-hypertension-time"><b>진료가능</b><img className="ow-hypertension-clock" src={PUBLIC+"website-source-hypertension-clock.png"} alt="" width="16" height="16"/>
+    <span>당시 {v.time||"시간 확인 필요"}부터 가능</span></div>
    {v.specialty&&<span className="ow-hypertension-badge">내과 전문의</span>}
   </button>)}</div>
   <p className="ow-hypertension-snapshot-note">의사·진료시간은 2026년 11월 9일 원본 화면 기록이며 현재 예약 가능 여부를 뜻하지 않습니다.</p>
