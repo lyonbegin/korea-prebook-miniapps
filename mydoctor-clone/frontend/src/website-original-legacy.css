@@ -23,3 +23,8 @@
 .ow-legacy-page .original-doctor-booking{padding:16px 20px 12px}
 .ow-legacy-page .original-doctor-booking p{font-size:14px;line-height:17px;margin:0 0 13px}
 .ow-legacy-page .original-doctor-booking a{font-size:15px;line-height:19px;padding:16px 0}
+
+/* Source profile uses a 350px-wide 3-tab strip with 20px side gutters. */
+.ow-legacy-page .original-doctor-tabs{padding:0 20px}
+.ow-legacy-page .original-doctor-tabs button{padding-bottom:9px}
+.ow-legacy-page .original-doctor-booking p{font-size:15px;line-height:18px;margin-bottom:12px}
