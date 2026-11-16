@@ -119,6 +119,26 @@ function fontVariants(id){
   for(const gap of [5,6,7,8])
    out.push({name:"chip-rowgap-"+gap,css:".ow-legacy-page .original-qna-chips{row-gap:"+gap+"px;}"});
  }
+ if(id==="qna-index"){
+  // Compare cumulative chip row pitch and leading Q&A card offsets in one run.
+  for(const gap of [6,7,8,9])
+   for(const margin of [22,25,28])
+    out.push({name:"qna-layout-gap-"+gap+"-heading-"+margin,css:
+     ".ow-legacy-page .original-qna-chips{row-gap:"+gap+"px;}"+
+     ".ow-legacy-page .original-qna-index>header{margin-bottom:"+margin+"px;}"});
+  for(const preview of [7,10,12])
+   for(const font of [13.2,13.7,14])
+    out.push({name:"preview-margin-"+preview+"-font-"+font,css:
+     ".ow-legacy-page .original-qna-item p{margin-top:"+preview+"px;font-size:"+font+"px;}"});
+ }
+ if(id==="qna-answer"){
+  // Content section height must stay anchored while text lines move.
+  for(const questionMargin of [18,21,24])
+   for(const answerMargin of [10,12,15])
+    out.push({name:"answer-layout-q-"+questionMargin+"-a-"+answerMargin,css:
+     ".ow-qd-page .ow-qd-author{margin-bottom:"+questionMargin+"px;}"+
+     ".ow-qd-page .ow-qd-answer-head{margin-bottom:"+answerMargin+"px;}"});
+ }
  if(id==="qna-answer"){
   for(const q of [15.5,16,16.5,17])
    for(const a of [15.5,16,16.5])
@@ -144,10 +164,12 @@ function fontVariants(id){
  }
  /* Test whether the original screenshots resemble an entirely different
   * family. These variants are temporary and never alter production CSS. */
- for(const family of ["Pretendard Variable","Noto Sans CJK KR","Nanum Gothic","Arial","system-ui"]){
-  const fam='"'+family+'"';
-  out.push({name:"font-family-"+family,css:
-   ".ow-legacy-page,.ow-qd-page{font-family:"+fam+",sans-serif!important;}"});
+ if(["qna-index","qna-answer","medicine-detail","health-article-or-test"].includes(id)){
+  for(const family of ["Pretendard Variable","Noto Sans CJK KR","Nanum Gothic","Arial","system-ui"]){
+   const fam='"'+family+'"';
+   out.push({name:"font-family-"+family,css:
+    ".ow-legacy-page,.ow-qd-page{font-family:"+fam+",sans-serif!important;}"});
+  }
  }
  return out;
 }
