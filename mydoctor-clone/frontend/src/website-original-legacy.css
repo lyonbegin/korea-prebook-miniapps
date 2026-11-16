@@ -133,3 +133,10 @@
  * Move the two paint layers only, keeping hospital cards and scroll geometry. */
 .ow-legacy-page .original-hospital-night>header h1{position:relative;left:4px;top:2px}
 .ow-legacy-page .original-hospital-night>header p{position:relative;left:4px;top:1px}
+
+/* Measured against the archived public screenshot; Pretendard Variable is
+ * loaded, and 8px row gap / 13.2px preview reduce Q&A list mismatch. */
+.ow-legacy-page .original-qna-chips{row-gap:8px}
+.ow-legacy-page .original-qna-item p{font-size:13.2px}
+.ow-legacy-page .original-health-article>p{font-size:17px;line-height:26px;letter-spacing:0}
+.ow-legacy-page .original-drug-intro p{font-size:13px}
