@@ -4,6 +4,7 @@ import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
 import WebsiteParityHome from "./WebsiteParityHome.jsx";
 import WebsiteParityHospital from "./WebsiteParityHospital.jsx";
 import WebsiteParityMedicalCost from "./WebsiteParityMedicalCost.jsx";
+import WebsiteParityHealthLanding from "./WebsiteParityHealthLanding.jsx";
 import OriginalTelemedicineLanding from "./OriginalTelemedicineLanding.jsx";
 import HermesPagesDetail from "./HermesPagesDetail.jsx";
 import {publicMenuGroups,publicLinks} from "./HermesPagesStaticData.js";
@@ -14,7 +15,7 @@ const pageUrl=(screen="home",target="")=>ROOT+"?screen="+encodeURIComponent(scre
 const parsePage=()=>{
   const q=new URLSearchParams(window.location.search);
   const screen=q.get("screen")||"home";
-  const valid=["home","native-home","hospital-list","telemedicine","medical-cost","pharmacy","health","detail"];
+  const valid=["home","native-home","hospital-list","telemedicine","medical-cost","pharmacy","health","health-landing","detail"];
   return {screen:valid.includes(screen)?screen:"home",target:q.get("target")||""};
 };
 function resolveRoute(raw){
@@ -35,7 +36,8 @@ function resolveRoute(raw){
   if(raw.startsWith("/medical-cost/"))return {screen:"detail",target:raw};
   if(raw==="/pharmacy")return {screen:"pharmacy",target:""};
   if(raw==="/qna")return {screen:"detail",target:raw};
-  if(raw==="/healthLab"||raw==="/qna"||raw==="/medicine")
+  if(raw==="/healthLab")return {screen:"health-landing",target:""};
+  if(raw==="/qna"||raw==="/medicine")
     return {screen:"health",target:""};
   if(raw.startsWith("/pharmacy/")||raw.startsWith("/healthLab/")||raw.startsWith("/medicine/")||raw.startsWith("/qna/"))
     return {screen:"detail",target:raw};
@@ -119,12 +121,13 @@ export default function HermesPagesApp(){
       {page.screen==="telemedicine"&&<OriginalTelemedicineLanding go={go}/>}
       {page.screen==="medical-cost"&&<WebsiteParityMedicalCost go={go}/>}
       {page.screen==="pharmacy"&&<Directory key="pharmacy" groupKey="pharmacy" title="약국 찾기" go={go}/>}
+      {page.screen==="health-landing"&&<WebsiteParityHealthLanding go={go}/>}
       {page.screen==="health"&&<Directory key="health" groupKey="health" title="건강 정보" go={go}/>}
       {page.screen==="detail"&&<HermesPagesDetail target={page.target} go={go} back={()=>history.length>1?history.back():go("/")}/>}
       <footer className="gh-pages-source-footer">
         <FileText size={15}/> Android 6.50.0 Hermes 확인 레이아웃 + 공개 메뉴 정적 자료 · GitHub Pages
       </footer>
     </main>
-    {page.screen!=="home"&&page.screen!=="telemedicine"&&<BottomTabs screen={page.screen} target={page.target} go={go}/>}
+    {page.screen!=="home"&&page.screen!=="telemedicine"&&page.screen!=="health-landing"&&<BottomTabs screen={page.screen} target={page.target} go={go}/>}
   </div>;
 }
