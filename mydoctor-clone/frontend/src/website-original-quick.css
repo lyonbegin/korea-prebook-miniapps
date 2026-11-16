@@ -96,3 +96,7 @@
 .ow-q-reviews-doctor .ow-q-reviews-subtitle{margin-bottom:24px}
 .ow-q-reviews-doctor .ow-q-review-meta{margin-bottom:5px}
 .ow-q-review-second{padding-top:17px;margin-top:17px}
+
+/* The original review labels contain pictograms and wider text pills. */
+.ow-q-review-detail-tags span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.ow-q-review-detail-tags svg{flex:0 0 13px}
