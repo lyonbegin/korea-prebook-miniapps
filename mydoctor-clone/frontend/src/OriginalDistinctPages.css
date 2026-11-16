@@ -278,3 +278,20 @@
 /* Source screenshot's noninteractive pediatric illustration, without simulated phone drawing. */
 .original-baby119-source-phone{display:block;width:142px;height:186px;max-width:none;
   object-fit:contain;transform:translate(12px,-1px)}
+
+/* Captured company public screenshot 390x844:
+ * root cards x=20..370 (clone x=18..372), first card y=298 (clone y=287),
+ * second and fifth cards 100px tall (clone 83px), 12px card gaps.
+ * Keep links and interactive elements as HTML, not screenshot backgrounds. */
+.ow-legacy-company .original-company-landing{padding:44px 20px 40px}
+.ow-legacy-company .original-company-identity{margin-bottom:30px}
+.ow-legacy-company .original-company-identity h1{margin-top:14px;font-size:23px}
+.ow-legacy-company .original-company-identity>strong{font-size:14px}
+.ow-legacy-company .original-company-identity>p{font-size:13px;line-height:21px}
+.ow-legacy-company .original-company-cards{gap:12px}
+.ow-legacy-company .original-company-cards>a{padding:16px 19px;gap:15px}
+.ow-legacy-company .original-company-cards>a:nth-child(2),
+.ow-legacy-company .original-company-cards>a:nth-child(5){min-height:100px}
+.ow-legacy-company .original-company-cards>a>span{width:39px;height:40px}
+.ow-legacy-company .original-company-cards b{font-size:15px}
+.ow-legacy-company .original-company-cards small{font-size:13px;line-height:19px}
