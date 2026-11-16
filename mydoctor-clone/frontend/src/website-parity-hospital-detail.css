@@ -104,3 +104,7 @@
 
 /* Authentic 2026-11-09 source action pictograms, not fallback Lucide strokes. */
 .ow-hd-actions img{display:block;object-fit:contain;flex:none}
+
+/* Verified original fee filter row: 3rd pill occupies x=155..309 (154px),
+ * while clone rendered it x=155..293 (~138px), placing the 4th 16px early. */
+.ow-hd-filters button:nth-child(3){flex:0 0 154px}
