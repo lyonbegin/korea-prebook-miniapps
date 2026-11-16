@@ -1,0 +1,78 @@
+/* Original my-doctor.io mobile public screens, snapshot 2026-11-09 at 390x844. */
+.ow-legacy-page .ow-q-med,.ow-legacy-page .ow-q-bmi,.ow-legacy-page .ow-q-reviews{width:100%;background:#fff;color:#1b212a;box-sizing:border-box}
+.ow-q-med *,.ow-q-bmi *,.ow-q-reviews *{box-sizing:border-box}
+.ow-q-med h1,.ow-q-bmi h1,.ow-q-reviews h1,.ow-q-med h2,.ow-q-bmi h2,.ow-q-reviews h2{letter-spacing:-.4px}
+.ow-q-med-head{padding:30px 20px 34px;border-bottom:8px solid #f2f3f5}
+.ow-q-med-head h1{font-size:21px;line-height:28px;font-weight:780;margin:0 0 14px}
+.ow-q-med-head p{font-size:14px;line-height:24px;margin:0;color:#424d58;word-break:keep-all}
+.ow-q-med-body{padding:29px 20px 27px}
+.ow-q-med-body h2{margin:0 0 18px;font-size:19px;line-height:25px;font-weight:760}
+.ow-q-med-card{display:block;width:100%;height:84px;border:1px solid #e1e4e8;background:white;
+ border-radius:8px;text-align:left;padding:15px 16px;margin-bottom:10px;cursor:pointer;color:#1b212a}
+.ow-q-med-card>div{display:flex;align-items:center;gap:9px;line-height:21px}
+.ow-q-med-card span{border-radius:6px;background:#f7f8fa;font-size:12px;color:#303b4a;padding:3px 5px;font-weight:620}
+.ow-q-med-card strong{font-size:15px;font-weight:760;line-height:22px}
+.ow-q-med-card p{margin:7px 0 0;font-size:13px;color:#8b98a8;line-height:20px}
+.ow-q-med-card:focus-visible,.ow-q-bmi button:focus-visible,.ow-q-review-tags button:focus-visible{outline:2px solid #316bff;outline-offset:2px}
+.ow-q-bmi-main{padding:30px 20px 38px;border-bottom:8px solid #f0f1f3}
+.ow-q-bmi-main h1{font-size:21px;font-weight:780;line-height:27px;margin:0 0 13px}
+.ow-q-bmi-intro{font-size:15px;line-height:27px;color:#394451;margin:0 0 24px;word-break:keep-all}
+.ow-q-bmi-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.ow-q-bmi-fields>label{font-size:13px;font-weight:700;line-height:21px}
+.ow-q-bmi-fields>label>div{display:flex;align-items:center;border:1px solid #ccd3dc;border-radius:11px;height:53px;margin-top:10px;padding:0 13px;background:#fff}
+.ow-q-bmi-fields input{min-width:0;width:100%;border:none;background:transparent;outline:none;font-size:16px;color:#17212c}
+.ow-q-bmi-fields input::-webkit-inner-spin-button,.ow-q-bmi-fields input::-webkit-outer-spin-button{-webkit-appearance:none}
+.ow-q-bmi-fields label span{font-size:15px;font-weight:500;color:#17212c}
+.ow-q-bmi-submit{border:0;border-radius:12px;width:100%;height:56px;background:#306bfa;color:#fff;font-size:15px;font-weight:760;cursor:pointer}
+.ow-q-bmi-submit:disabled{opacity:.5;cursor:not-allowed}
+.ow-q-bmi-result{background:#f3f4f6;border-radius:11px;padding:20px;margin-top:20px;min-height:170px}
+.ow-q-bmi-value{display:flex;align-items:baseline;font-size:14px;gap:6px;margin-bottom:9px;color:#1b2832}
+.ow-q-bmi-value strong{font-size:28px;color:#121b24;font-weight:790}
+.ow-q-bmi-status{display:inline-block;background:#e1eaff;border-radius:18px;color:#1a3c88;
+ font-size:14px;font-weight:700;padding:5px 12px;margin-bottom:9px}
+.ow-q-bmi-result p{margin:5px 0 0;font-size:14px;line-height:22px;color:#424e5b}
+.ow-q-bmi-note{font-size:13px;line-height:23px;color:#8b97a5;margin:11px 0 0}
+.ow-q-bmi-criteria{padding:30px 20px 80px}
+.ow-q-bmi-criteria h2{font-size:19px;line-height:28px;margin:0 0 16px;font-weight:780}
+.ow-q-bmi-criteria table{width:100%;border-collapse:collapse;text-align:left;margin-bottom:35px}
+.ow-q-bmi-criteria th{background:#f2f3f5;font-size:13px;padding:14px 20px}
+.ow-q-bmi-criteria td{font-size:13px;padding:13px 20px;border-bottom:1px solid #e6e9ee}
+.ow-q-bmi-criteria button{display:flex;width:100%;justify-content:space-between;padding:14px;background:#fff;border:1px solid #e5e8ed;border-radius:7px}
+.ow-q-review-head{padding:19px 20px 27px}
+.ow-q-review-head h1{font-size:22px;line-height:31px;letter-spacing:-.65px;font-weight:790;margin:0 0 41px;word-break:keep-all}
+.ow-q-review-metrics{display:flex;gap:28px;margin:0 0 24px}
+.ow-q-review-metrics>div{display:flex;flex-direction:column;gap:8px}
+.ow-q-review-metrics span{font-size:13px;color:#84909d;line-height:18px}
+.ow-q-review-metrics strong{font-size:17px;font-weight:700;color:#306dff}
+.ow-q-review-metrics>div:first-child strong{color:#1a2430}
+.ow-q-review-ratings{margin:0 0 24px}
+.ow-q-review-ratings p{margin:0 0 8px;font-size:13px;color:#344252}
+.ow-q-review-ratings p span{color:#8a96a2;margin-right:8px}
+.ow-q-review-ratings p b{font-weight:500}
+.ow-q-review-tag-title{font-size:13px;color:#8793a1;margin-bottom:12px}
+.ow-q-review-tags{display:flex;gap:7px 6px;flex-wrap:wrap}
+.ow-q-review-tags button{background:#f4f5f6;color:#34414d;border:0;border-radius:5px;font-size:13px;
+ line-height:22px;white-space:nowrap;padding:2px 9px;cursor:pointer}
+.ow-q-review-tags button.selected{background:#dfeaff;color:#3068e7}
+.ow-q-review-items{border-top:8px solid #f4f5f6;padding:26px 20px 75px}
+.ow-q-review-items h2{font-size:20px;line-height:27px;margin:0 0 6px;font-weight:790}
+.ow-q-reviews-subtitle{font-size:13px;line-height:20px;color:#8794a1;margin:0 0 36px}
+.ow-q-review-item{padding:3px 0 20px;border-bottom:1px solid #e5e8ee}
+.ow-q-review-doctor{font-size:15px;color:#223344;display:flex;align-items:center;gap:9px;margin:0 0 10px}
+.ow-q-doctor-icon{width:26px;height:26px;border-radius:50%;background:#edf2f9;display:inline-grid;place-items:center}
+.ow-q-review-revisit{display:table;background:#e9f0ff;border-radius:4px;padding:6px 9px;
+ font-size:13px;color:#2f6df0;font-weight:650;margin-bottom:13px}
+.ow-q-review-meta{font-size:13px;line-height:22px;color:#7a899b;margin:0 0 12px}
+.ow-q-review-item>p{margin:0 0 12px;color:#2d3744;font-size:15px;line-height:23px}
+.ow-q-review-detail-tags{display:flex;gap:6px}
+.ow-q-review-detail-tags span{font-size:12px;color:#536476;background:#f3f5f7;border-radius:5px;padding:6px 8px}
+.ow-q-review-more{margin-top:25px;background:#fff;border:1px solid #cbd7ee;padding:10px 16px;border-radius:8px;
+ display:flex;align-items:center;gap:8px;font-size:14px;color:#306dff}
+.ow-q-reviews-empty{font-size:13px;color:#697a8e}
+.ow-q-review-source{background:#f4f6f9;padding:15px;margin-top:8px}
+.ow-q-review-source button{background:#fff;border:1px solid #dee4ec;padding:8px 12px}
+.ow-q-reviews-hospital .ow-q-review-head h1{margin-bottom:40px}
+.ow-q-reviews-hospital .ow-q-review-metrics{margin-bottom:24px}
+.ow-q-reviews-hospital .ow-q-review-head{padding-bottom:26px}
+.ow-q-reviews-hospital .ow-q-reviews-subtitle{margin-bottom:25px}
+.ow-q-reviews-hospital .ow-q-review-items{padding-top:26px}
