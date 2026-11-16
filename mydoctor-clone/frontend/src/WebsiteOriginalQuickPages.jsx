@@ -122,7 +122,7 @@ export function OriginalReviewSource({kind="doctor",go}){
    <p className="ow-q-reviews-subtitle">{active?"원본 화면에서 확인된 증상 분류":"최근 글 후기 우선 100건 표시"}</p>
    {!active&&<article className="ow-q-review-item">
     {doctor?<div className="ow-q-review-meta">피부 질환 처방　 김**(여성 50대)　|　26.10.24</div>:
-      <div className="ow-q-review-doctor"><span className="ow-q-doctor-icon">👨🏻‍⚕️</span> 조상제 의사</div>}
+      <div className="ow-q-review-doctor"><span className="ow-q-doctor-icon"><img src={(import.meta.env.BASE_URL||"/")+"website-source-review-josangje.png"} width="26" height="26" alt="" style={{objectFit:"contain"}}/></span> 조상제 의사</div>}
     {!doctor&&<div className="ow-q-review-revisit">다시 진료받고 싶어요</div>}
     {!doctor&&<div className="ow-q-review-meta">여성 질환　 전**(여성 30대)　|　26.10.28</div>}
     {doctor&&<div className="ow-q-review-revisit">다시 진료받고 싶어요</div>}
@@ -131,7 +131,7 @@ export function OriginalReviewSource({kind="doctor",go}){
      <span key={x}>{x}</span>)}</div>
    </article>}
    {!doctor&&!active&&<article className="ow-q-review-item ow-q-review-second">
-    <div className="ow-q-review-doctor"><span className="ow-q-doctor-icon">👨🏻‍⚕️</span> 조상제 의사</div>
+    <div className="ow-q-review-doctor"><span className="ow-q-doctor-icon"><img src={(import.meta.env.BASE_URL||"/")+"website-source-review-josangje.png"} width="26" height="26" alt="" style={{objectFit:"contain"}}/></span> 조상제 의사</div>
     <div className="ow-q-review-revisit">다시 진료받고 싶어요</div>
    </article>}
    {active&&<p className="ow-q-reviews-empty">선택한 증상별 개별 후기는 원본에서 추가 자료 확인이 필요합니다.</p>}
