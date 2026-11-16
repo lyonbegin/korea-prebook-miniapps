@@ -47,7 +47,7 @@ export default function WebsiteParityHospitalDetail({go}){
    </div>
    <div className="ow-hd-actions">
     <a href={"tel:"+PHONE}><Phone size={17}/>전화</a>
-    <a href={"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(NAME+" "+ADDRESS)} target="_blank" rel="noreferrer"><MapPin size={17} fill="#9bb8ff" stroke="#94b5ff"/>길찾기</a>
+    <a href={"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(NAME+" "+ADDRESS)} target="_blank" rel="noreferrer"><img src={BASE+"website-source-clinic-location-icon.png"} width="18" height="18" alt="" aria-hidden="true"/>길찾기</a>
     <button type="button" onClick={()=>setNotice(x=>!x)}><House size={17}/>홈페이지</button>
    </div>
    {notice&&<p className="ow-hd-notice" role="status">원본 공개 자료에서 병원 공식 홈페이지 주소가 확인되지 않았습니다.</p>}
