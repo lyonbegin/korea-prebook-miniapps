@@ -25,6 +25,7 @@ const ROOT_SCENES={
 const SELECTOR_BY_ID={
  "home":"[data-testid='website-parity-home']",
  "hospital-search":"[data-testid='website-parity-hospital']",
+ "hospital-detail":"[data-testid='website-source-hospital-detail']",
  "hospital-by-department":"[data-testid='original-department-landing']",
  "map-emergency":"[data-testid='website-source-emergency-map']",
  "telemedicine-index":"[data-testid='original-telemedicine-landing']",
