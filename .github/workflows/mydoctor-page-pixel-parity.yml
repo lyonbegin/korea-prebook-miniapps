@@ -10,6 +10,8 @@ on:
       - "mydoctor-clone/frontend/tests/website-pixel-gate.cjs"
       - "mydoctor-clone/frontend/src/WebsiteParityHome.jsx"
       - "mydoctor-clone/frontend/src/WebsiteParityHospital.jsx"
+      - "mydoctor-clone/frontend/src/website-parity-mounjaro.css"
+      - "mydoctor-clone/frontend/src/WebsiteParityMounjaro.jsx"
       - "mydoctor-clone/frontend/src/website-parity-medical-cost.css"
       - "mydoctor-clone/frontend/src/WebsiteParityMedicalCost.jsx"
       - "mydoctor-clone/frontend/src/website-parity-home.css"
