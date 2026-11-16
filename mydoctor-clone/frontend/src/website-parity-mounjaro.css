@@ -4,8 +4,8 @@
 .ow-mounjaro-page .ow-hospital-breadcrumb{height:42px;background:#fff}
 .ow-mounjaro-page .ow-hospital-breadcrumb strong{font-weight:730}
 .ow-mounjaro-intro{padding:20px 20px 0}
-.ow-mounjaro-intro h1{font-size:23px;letter-spacing:-.45px;line-height:30px;font-weight:790;margin:0 0 11px;color:#0c1019}
-.ow-mounjaro-intro p{font-size:16px;line-height:26px;letter-spacing:-.2px;font-weight:760;color:#14171f;margin:0;word-break:keep-all}
+.ow-mounjaro-intro h1{font-size:25px;letter-spacing:-.2px;line-height:30px;font-weight:790;margin:0 0 11px;color:#0c1019}
+.ow-mounjaro-intro p{font-size:17px;line-height:26px;letter-spacing:-.2px;font-weight:760;color:#14171f;margin:0;word-break:keep-all}
 .ow-mounjaro-lookup{padding:19px 20px 54px;background:white}
 .ow-mounjaro-field{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
 .ow-mounjaro-field>span{color:#a1aec0;font-size:13px;line-height:20px;font-weight:400}
@@ -16,12 +16,12 @@
 .ow-mounjaro-lookup>.ow-mounjaro-field:nth-of-type(2){margin-bottom:16px}
 .ow-mounjaro-submit{border:0;height:54px;width:100%;background:#326dff;border-radius:11px;color:white;font-family:inherit;font-size:16px;font-weight:780;cursor:pointer}
 .ow-mounjaro-results{border-top:7px solid #f5f6f8;padding:32px 20px 50px;background:white}
-.ow-mounjaro-results h2{font-size:18px;font-weight:800;line-height:27px;margin:0 0 20px;color:#161b23}
-.ow-mounjaro-provider{display:flex;gap:8px;align-items:center;text-align:left;width:100%;border:1px solid #e1e5eb;background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;min-height:98px;cursor:pointer}
+.ow-mounjaro-results h2{font-size:19.5px;font-weight:800;line-height:27px;margin:0 0 20px;color:#161b23}
+.ow-mounjaro-provider{display:flex;gap:8px;align-items:flex-start;text-align:left;width:100%;border:1px solid #e1e5eb;background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;min-height:98px;cursor:pointer}
 .ow-mounjaro-provider>span:first-child{display:flex;flex:1;flex-direction:column;gap:8px;min-width:0}
 .ow-mounjaro-provider strong{font-size:15px;font-weight:800;color:#17202e}
 .ow-mounjaro-provider small{font-size:12px;color:#8b9aaf}
-.ow-mounjaro-picture{height:60px;width:65px;background:#f1f3f5;border-radius:6px;flex-shrink:0}
+.ow-mounjaro-picture{height:49px;width:73px;object-fit:cover;background:#f1f3f5;border-radius:6px;flex-shrink:0}
 .ow-mounjaro-provider>svg{color:#9ca7b9;flex-shrink:0}
 .ow-mounjaro-tables{margin-top:28px}
 .ow-mounjaro-tables section{margin-bottom:25px}
