@@ -85,3 +85,14 @@
 .ow-q-review-items{padding-top:22px}
 .ow-q-reviews-hospital .ow-q-review-items{padding-top:22px}
 .ow-q-reviews-hospital .ow-q-reviews-subtitle{margin-bottom:21px}
+
+/* Iterative true viewport alignment (source 2026-11-09). */
+.ow-q-med-head{padding-top:28px;padding-bottom:30px}
+.ow-q-med-body{padding-top:28px}
+.ow-q-med-body h2{margin-bottom:17px}
+.ow-q-med-card{margin-bottom:10px}
+.ow-q-med-card>div{gap:17px}
+.ow-q-reviews-hospital .ow-q-reviews-subtitle{margin-bottom:12px}
+.ow-q-reviews-doctor .ow-q-reviews-subtitle{margin-bottom:24px}
+.ow-q-reviews-doctor .ow-q-review-meta{margin-bottom:5px}
+.ow-q-review-second{padding-top:17px;margin-top:17px}
