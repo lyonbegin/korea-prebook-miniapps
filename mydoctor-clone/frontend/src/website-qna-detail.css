@@ -31,8 +31,3 @@
 .ow-qd-page .ow-qd-avatar{width:41px;height:42px;object-fit:contain;background:transparent}
 .ow-qd-page .ow-qd-answer h2{margin-bottom:19px}
 .ow-qd-page .ow-qd-answer-head{margin-bottom:12px}
-
-/* The source question paragraph starts 5px below the clone even though
- * the title and answer-divider already match. Move its flow without
- * changing the 342px card floor or the following AI answer section. */
-.ow-qd-page .ow-qd-author{margin-bottom:23px}
