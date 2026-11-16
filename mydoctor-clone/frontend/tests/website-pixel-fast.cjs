@@ -118,7 +118,16 @@ async function runOne(browserContext,c){
   // Freeze ONLY archived night-pharmacy pixel verification at its captured
   // Tuesday overnight UI state; production page continues using KST clock.
   if(c.id==="pharmacy-condition-search"){
-   await page.clock.install({time:new Date("2026-11-10T01:00:00+09:00")});
+   // Set the archived browser screenshot's Tuesday 01:00 KST clock before
+   // navigation. addInitScript avoids page.clock controller incompatibility.
+   await page.addInitScript(({iso})=>{
+    const RealDate=window.Date;
+    class SnapshotDate extends RealDate{
+     constructor(...args){super(...(args.length?args:[iso]));}
+     static now(){return new RealDate(iso).getTime();}
+    }
+    window.Date=SnapshotDate;
+   },{iso:"2026-11-09T16:00:00.000Z"});
    rec.reference_clock="2026-11-10T01:00:00+09:00";
   }
   const errors=[];
