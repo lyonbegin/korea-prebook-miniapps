@@ -365,6 +365,7 @@ const SOURCE_WEB_ROUTES=new Set([
  "/healthLab/FAQ",
  "/healthLab/info/1268/만성-소화기-질환-관리법",
  "/healthLab/calculator/bmi",
+ "/medicine/ingredient/세마글루티드",
  "/qna",
  "/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요",
  "/company"
