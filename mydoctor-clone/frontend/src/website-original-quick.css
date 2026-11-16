@@ -137,3 +137,6 @@
 .ow-q-reviews-doctor .ow-q-review-metrics{gap:20px}
 .ow-q-reviews-doctor .ow-q-review-tags{column-gap:6px}
 .ow-q-reviews-doctor .ow-q-review-head h1{letter-spacing:-.4px}
+
+/* Original review layout uses a tighter 81px first metric column. */
+.ow-q-reviews-doctor .ow-q-review-metrics{column-gap:18px}
