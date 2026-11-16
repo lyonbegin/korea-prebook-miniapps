@@ -26,7 +26,7 @@ function DoctorDetail({data,go}) {
  const hospitalLink=data.links?.find(x=>x.path.includes("hospital/detail"))?.path;
  const sections=["허훈 의사 진료과목","허훈 의사 비대면 진료시간","허훈 의사 약력","허훈 의사 소개"];
  return <div className="original-doctor-profile" data-source-view="doctor-detail">
-  <div className="original-doctor-portrait"><img alt="허훈 의사" src={DOCTOR_IMG}/>
+  <div className="original-doctor-portrait" style={{height:268,background:"#e8e9ec"}}><img alt="허훈 의사" src={(import.meta.env.BASE_URL||"/")+"website-source-doctor-huhoon.png"} style={{width:295,height:268,objectFit:"cover",display:"block",margin:"0 auto"}}/>
    <button type="button" className="original-doctor-back" onClick={()=>go("/telemedicine/all-department")} aria-label="이전 화면"><ArrowLeft size={22}/></button>
   </div>
   <div className="original-doctor-head"><p>한사랑패밀리의원</p><h1>{data.title}</h1><small>준비 중 <span aria-label="진료 상태">◉</span></small></div>
