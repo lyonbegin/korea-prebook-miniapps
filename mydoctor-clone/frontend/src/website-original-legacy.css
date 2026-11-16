@@ -116,3 +116,13 @@
 /* Try 13px weekly pharmacy rows: the original saves a line of text in both
  * long Monday-Sunday schedules, without changing schedule data. */
 .ow-legacy-page .original-pharmacy-cardline{font-size:13px;letter-spacing:-.1px}
+
+/* Pixel registration for source first night pharmacy card:
+ * screenshot icon y ranges (source / clone):
+ * clock 474..487 / 471..484, calendar 498..510 / 494..506,
+ * location 567..580 / 562..573, phone 596..605 / 588..597.
+ * Add cumulative 3/2/2px spacing, preserving the schedule text and
+ * bringing the first card divider from clone y=627 to source y=634. */
+.ow-legacy-page .original-pharmacy-card:first-child h2{margin-bottom:3px}
+.ow-legacy-page .original-pharmacy-card:first-child .original-pharmacy-cardline:has(img[src*="pharmacy-calendar"]){margin-bottom:2px}
+.ow-legacy-page .original-pharmacy-card:first-child .original-pharmacy-cardline:has(a[href^="tel:"]){margin-top:2px}
