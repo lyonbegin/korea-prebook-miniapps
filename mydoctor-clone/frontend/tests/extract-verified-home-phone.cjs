@@ -109,3 +109,17 @@ saveHospitalDecorativeAsset("region",35,276,26,26);
 saveHospitalDecorativeAsset("specialty",35,337,26,26);
 saveHospitalDecorativeAsset("care",35,397,26,26);
 console.log("SOURCE_HOSPITAL_PICTOGRAMS_READY");
+
+
+/* Decorative hospital thumbnail from the independently preserved 2026-11-09
+ * original public Mounjaro page, crop ONLY the actual provider photo.
+ * This is not a baked-in UI or a fake hospital record. */
+const originalMounjaroPng=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-medical-cost-category.png")));
+const photo=new PNG({width:73,height:49});
+for(let row=0;row<49;row++){
+ const start=((795+row)*originalMounjaroPng.width+281)*4;
+ originalMounjaroPng.data.copy(photo.data,row*73*4,start,start+73*4);
+}
+fs.writeFileSync(path.join(root,"public","website-source-mounjaro-first-provider.png"),PNG.sync.write(photo));
+console.log("VERIFIED_PUBLIC_MOUNJARO_PROVIDER_DECORATIVE_PHOTO_READY");
