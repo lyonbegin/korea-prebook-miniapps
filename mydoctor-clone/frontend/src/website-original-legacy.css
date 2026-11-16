@@ -103,3 +103,15 @@
  .ow-legacy-page .original-hospital-night-card{min-height:149px;padding-top:21px}
  .ow-legacy-page .original-hospital-night-card>img{transform:translateY(-1px)}
 }
+
+/* Night-hospital source typography: original body is larger and review/day
+ * tags sit 10px below the cloned position. The 149px row pitch remains. */
+.ow-legacy-page .original-hospital-night h1{font-size:25px}
+.ow-legacy-page .original-hospital-night-time{font-size:14px;line-height:18px}
+.ow-legacy-page .original-hospital-night-location{font-size:14px;line-height:18px;margin-top:6px}
+.ow-legacy-page .original-hospital-night-tags{margin-top:14px}
+.ow-legacy-page .original-hospital-night-tags span{font-size:12px;font-weight:650;color:#48515b}
+.ow-legacy-page .original-hospital-night-time img.ow-night-icon,
+.ow-legacy-page .original-hospital-night-location img.ow-night-icon{
+ width:17px;height:18px;object-fit:contain;display:block;flex-shrink:0
+}
