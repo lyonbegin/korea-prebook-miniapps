@@ -140,3 +140,11 @@
 .ow-legacy-page .original-qna-item p{font-size:13.2px}
 .ow-legacy-page .original-health-article>p{font-size:17px;line-height:26px;letter-spacing:0}
 .ow-legacy-page .original-drug-intro p{font-size:13px}
+
+/* Screen-coordinate registration, verified from the 390x844 origin/clone
+ * screenshots. Original Q&A chip row1 is 4px LOWER than the clone, while
+ * row10 is ~5px HIGHER; use 29px header gap and 7px pitch. After correcting
+ * the bank, restore the question list's original y=630 position separately. */
+.ow-legacy-page .original-qna-index>header{margin-bottom:29px}
+.ow-legacy-page .original-qna-chips{row-gap:7px}
+.ow-legacy-page .original-qna-questions{margin-top:17px}
