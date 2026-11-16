@@ -1,0 +1,13 @@
+.ow-acne-page .ow-mounjaro-intro h1{font-size:24.5px;line-height:31px;font-weight:650;letter-spacing:0}
+.ow-acne-page .ow-mounjaro-intro p{font-size:16.8px;line-height:26px;font-weight:600;letter-spacing:-.2px}
+.ow-acne-page .ow-mounjaro-lookup{padding-top:18px;padding-bottom:54px}
+.ow-acne-page .ow-mounjaro-intro{padding-top:21px}
+.ow-acne-breadcrumb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;display:inline-block;vertical-align:middle}
+.ow-acne-breadcrumb strong{font-weight:760}
+.ow-acne-page .ow-mounjaro-two .ow-mounjaro-field:last-child select{height:84px;white-space:normal;padding-right:33px;line-height:23px;text-overflow:clip}
+.ow-acne-page .ow-mounjaro-two .ow-mounjaro-field:last-child{margin-bottom:0}
+.ow-acne-page .ow-mounjaro-results{padding:34px 20px 50px}
+.ow-acne-segment{display:flex;height:48px;padding:4px;background:#f5f6f8;border-radius:8px;gap:0;margin-bottom:22px}
+.ow-acne-segment button{flex:1;border:0;background:none;border-radius:7px;font-size:14px;font-weight:700;color:#788596}
+.ow-acne-segment button.active{background:white;color:#326dff;box-shadow:0 1px 3px #00102410}
+.ow-acne-page .ow-mounjaro-results h2{font-size:20px}
