@@ -43,7 +43,6 @@ function DoctorDetail({data,go}) {
  </div>;
 }
 function HospitalNight({data,go}) {
- const ART=import.meta.env.BASE_URL||"/";
  const [search,setSearch]=useState(""),[region,setRegion]=useState("전국");
  const source=(data.links||[]).filter(x=>x.path.includes("/hospital/detail?hospital_id="));
  const cards=source.map(x=>{
@@ -55,8 +54,8 @@ function HospitalNight({data,go}) {
    <label className="original-hospital-night-search"><Search size={20}/><input value={search} onChange={e=>setSearch(e.target.value)} aria-label="병원·지역 검색" placeholder="병원·지역 검색"/></label>
    <div className="original-hospital-night-regions">{["전국","서울","경기","인천","부산","대구"].map(x=><button key={x} className={region===x?"current":""} onClick={()=>setRegion(x)}>{x}</button>)}</div>
    <div className="original-hospital-night-list">{cards.map(c=><Anchor go={go} path={c.path} className="original-hospital-night-card" key={c.path}>
-     <div><h2>{c.name}</h2><p className="original-hospital-night-time"><img className="ow-night-icon" alt="" src={ART+"website-source-night-hospital-clock.png"}/>야간 진료 ({c.day}) {c.time}</p>
-       <p className="original-hospital-night-location"><img className="ow-night-icon" alt="" src={ART+"website-source-night-hospital-location.png"}/>{c.details.replace(/토요일 진료.*$/,"").replace(/일요일 진료.*$/,"").replace(/야간 진료.*$/,"").trim()}</p>
+     <div><h2>{c.name}</h2><p className="original-hospital-night-time"><Clock3 size={14}/>야간 진료 ({c.day}) {c.time}</p>
+       <p className="original-hospital-night-location"><MapPin size={14}/>{c.details.replace(/토요일 진료.*$/,"").replace(/일요일 진료.*$/,"").replace(/야간 진료.*$/,"").trim()}</p>
        <div className="original-hospital-night-tags">{["토요일 진료","일요일 진료","야간 진료"].filter(z=>c.details.includes(z)).map(z=><span key={z}>{z}</span>)}</div>
      </div>{HOSPITAL_IMAGES[c.name]&&<img src={HOSPITAL_IMAGES[c.name]} alt={c.name}/>}
    </Anchor>)}</div>
