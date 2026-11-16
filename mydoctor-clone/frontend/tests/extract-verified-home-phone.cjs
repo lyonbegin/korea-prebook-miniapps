@@ -249,3 +249,8 @@ if(nightHospScreenshot.width!==390||nightHospScreenshot.height!==844)
 observedCrop(nightHospScreenshot,"website-source-night-hospital-clock.png",[19,346,17,18]);
 observedCrop(nightHospScreenshot,"website-source-night-hospital-location.png",[19,373,17,19]);
 console.log("VERIFIED_SOURCE_NIGHT_HOSPITAL_PICTOGRAMS_READY");
+
+
+/* Archived hypertension listing's small blue clock pictogram, x=73..89,
+   y=391..408. Text, cards and scheduling status stay separate DOM. */
+observedCrop(hypertensionSource,"website-source-hypertension-clock.png",[73,391,17,18]);
