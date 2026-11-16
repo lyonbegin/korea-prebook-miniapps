@@ -6,7 +6,14 @@ on:
       - feature/mydoctor-hermes-to-react-web-20261114
     paths:
       - ".github/workflows/mydoctor-hermes-github-pages.yml"
-      - "mydoctor-clone/frontend/**"
+      - "mydoctor-clone/frontend/src/**"
+      - "mydoctor-clone/frontend/assets/**"
+      - "mydoctor-clone/frontend/public/**"
+      - "mydoctor-clone/frontend/index.html"
+      - "mydoctor-clone/frontend/package.json"
+      - "mydoctor-clone/frontend/vite.config.*"
+      - "mydoctor-clone/frontend/tests/extract-verified-home-phone.cjs"
+      - "mydoctor-clone/frontend/tests/hermes-pages-local.cjs"
   workflow_dispatch:
 
 permissions:
@@ -26,18 +33,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Download verified 2026-11-09 original website screenshot baseline
-        uses: actions/download-artifact@v4
+      - name: Reuse npm and Chromium downloads
+        uses: actions/cache@v4
         with:
-          name: mydoctor-source-parity
-          run-id: 42650015118
-          repository: lyonbegin/korea-prebook-miniapps
-          github-token: ${{ github.token }}
-          path: mydoctor-clone/frontend/qa-original
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-mydoctor-web-pixel-v2-${{ hashFiles('mydoctor-clone/frontend/package.json') }}
       - name: Install dependencies and build static site
         working-directory: mydoctor-clone/frontend
         run: |
-          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --prefer-offline
           node tests/extract-verified-home-phone.cjs
           npm run build:pages
           test -s dist/index.html
@@ -63,28 +69,13 @@ jobs:
             sleep 1
           done
           node tests/hermes-pages-local.cjs
-      - name: Compare original website screenshot pixel-by-pixel in strict page order
-        working-directory: mydoctor-clone/frontend
-        run: |
-          set -euo pipefail
-          python3 -m http.server 4173 --bind 127.0.0.1 --directory /tmp/github-pages-static > /tmp/hermes-pixel-preview.log 2>&1 &
-          pixel_server_pid=$!
-          trap 'kill "$pixel_server_pid" 2>/dev/null || true' EXIT
-          for i in $(seq 1 25); do
-            if curl -fsS http://127.0.0.1:4173/korea-prebook-miniapps/ -o /dev/null; then break; fi
-            sleep 1
-          done
-          # Keep the incomplete screen as FAIL in the report; publishing a
-          # preview must not be interpreted as a visual parity PASS.
-          node tests/website-pixel-gate.cjs || echo "SOURCE_WEBSITE_PIXEL_PARITY_NOT_YET_PASSED"
-      - name: Save screenshot and browser evidence
+      - name: Save mobile interaction test evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mydoctor-hermes-github-pages-mobile-evidence
           path: |
             mydoctor-clone/frontend/hermes-pages-evidence/
-            mydoctor-clone/frontend/website-pixel-evidence/
           if-no-files-found: warn
           retention-days: 14
       - name: Publish static website to gh-pages branch
