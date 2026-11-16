@@ -112,3 +112,10 @@
 .ow-q-reviews-hospital .ow-q-review-item:not(.ow-q-review-second) .ow-q-review-doctor{position:relative;top:8px}
 .ow-q-reviews-hospital .ow-q-review-item:not(.ow-q-review-second) .ow-q-review-revisit{position:relative;top:6px}
 .ow-q-reviews-hospital .ow-q-review-second{margin-top:5px}
+
+/* Source doctor reviews: five facet rows gain ~3px pitch each while the
+ * section divider stays fixed; first review begins 12px below old clone. */
+.ow-q-reviews-doctor .ow-q-review-ratings p{margin-bottom:9px}
+.ow-q-reviews-doctor .ow-q-review-tags{row-gap:10px}
+.ow-q-reviews-doctor .ow-q-review-head{padding-bottom:13px}
+.ow-q-reviews-doctor .ow-q-reviews-subtitle{margin-bottom:36px}
