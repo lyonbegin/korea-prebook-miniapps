@@ -20,7 +20,7 @@ const FULL_BY_ID={"home":"source-full-home.png","hospital-search":"source-full-h
 const ROOT_SCENES={
  "home":"home","telemedicine-index":"telemedicine","telemedicine-department-list":"telemedicine",
  "hospital-search":"hospital-list","medical-cost-index":"medical-cost",
- "pharmacy-search":"pharmacy","medicine-search":"health","health-landing":"health","qna-index":"health"
+ "pharmacy-search":"pharmacy","medicine-search":"health","health-landing":"health"
 };
 const SELECTOR_BY_ID={
  "home":"[data-testid='website-parity-home']",
