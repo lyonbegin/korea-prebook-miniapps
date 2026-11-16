@@ -144,3 +144,9 @@
 /* Exact first-fold title image registration: doctor-review heading is two
    pixels above the original; offset only glyph paint, not the metrics below. */
 .ow-q-reviews-doctor .ow-q-review-head h1{position:relative;top:2px}
+
+/* Pixel-measured chip pitches (original y=406,440,474,508; clone
+ * y=406,442,478,514). Use 34px pitch instead of 36px; add compensating
+ * 7px to the header bottom so the original divider stays at y=588. */
+.ow-q-reviews-doctor .ow-q-review-tags{row-gap:8px}
+.ow-q-reviews-doctor .ow-q-review-head{padding-bottom:20px}
