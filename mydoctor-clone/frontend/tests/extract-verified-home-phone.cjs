@@ -238,3 +238,14 @@ for(const [name,r] of [
  ["phone",[19,594,17,18]]
 ])observedCrop(pharmacyScreenshot,"website-source-pharmacy-"+name+".png",r);
 console.log("VERIFIED_SOURCE_PHARMACY_STATUS_PICTOGRAMS_READY");
+
+/* Original night-hospital clock and map-pin pictograms are decorative,
+ * captured from HTTP-200 public browser screenshot. Keep hospital cards
+ * as real DOM links with text and time labels. */
+const nightHospScreenshot=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-hospital-availability-search.png")));
+if(nightHospScreenshot.width!==390||nightHospScreenshot.height!==844)
+ throw Error("Original night-hospital screenshot size unexpected");
+observedCrop(nightHospScreenshot,"website-source-night-hospital-clock.png",[19,346,17,18]);
+observedCrop(nightHospScreenshot,"website-source-night-hospital-location.png",[19,373,17,19]);
+console.log("VERIFIED_SOURCE_NIGHT_HOSPITAL_PICTOGRAMS_READY");
