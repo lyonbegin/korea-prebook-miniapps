@@ -31,3 +31,9 @@
 .ow-qd-page .ow-qd-avatar{width:41px;height:42px;object-fit:contain;background:transparent}
 .ow-qd-page .ow-qd-answer h2{margin-bottom:19px}
 .ow-qd-page .ow-qd-answer-head{margin-bottom:12px}
+
+/* Source Q&A body glyphs and blue specialty tag are visually 3px below
+ * their clone paint position. Keep layout boxes and the answer divider fixed. */
+.ow-qd-page .ow-qd-question-text,
+.ow-qd-page .ow-qd-tag{position:relative;top:3px}
+.ow-qd-page .ow-qd-answer-head{margin-bottom:14px}
