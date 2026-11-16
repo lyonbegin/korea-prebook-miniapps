@@ -215,3 +215,12 @@ observedCrop(clinicDetailSource,"website-source-clinic-open-icon.png",[34,179,21
 observedCrop(clinicDetailSource,"website-source-clinic-location-icon.png",[33,208,21,22]);
 observedCrop(doctorSource,"website-source-doctor-ready-icon.png",[61,463,21,22]);
 console.log("VERIFIED_SOURCE_CLINIC_STATUS_ICONS_READY");
+
+/* Crop ONLY the original Q&A AI doctor's small circular avatar from the
+ * captured HTTP-200 public screenshot. The medical answer stays real text. */
+const qnaDetailOriginal=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-qna-answer.png")));
+if(qnaDetailOriginal.width!==390||qnaDetailOriginal.height!==844)
+ throw Error("Unexpected original Q&A screenshot dimensions");
+observedCrop(qnaDetailOriginal,"website-source-qna-ai-avatar.png",[20,537,41,42]);
+console.log("VERIFIED_SOURCE_QNA_AI_AVATAR_READY");
