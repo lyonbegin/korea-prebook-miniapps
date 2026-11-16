@@ -20,7 +20,7 @@ const FULL_BY_ID={"home":"source-full-home.png","hospital-search":"source-full-h
 const ROOT_SCENES={
  "home":"home","telemedicine-index":"telemedicine","telemedicine-department-list":"telemedicine",
  "hospital-search":"hospital-list","medical-cost-index":"medical-cost",
- "pharmacy-search":"pharmacy","medicine-search":"health","health-landing":"health"
+ "pharmacy-search":"pharmacy","medicine-search":"health","health-landing":"health-landing"
 };
 const SELECTOR_BY_ID={
  "home":"[data-testid='website-parity-home']",
@@ -33,7 +33,7 @@ const SELECTOR_BY_ID={
  "medical-cost-item-by-area":"[data-testid='website-parity-medical-cost-item-by-area']",
  "pharmacy-search":"[data-testid='pages-static-directory']",
  "medicine-search":"[data-testid='pages-static-directory']",
- "health-landing":"[data-testid='pages-static-directory']",
+ "health-landing":"[data-testid='website-source-health-landing']",
  "qna-index":"[data-testid='website-source-original-detail']"
 };
 const SUCCESS=new Set(["PASS","PASS_VIEWPORT_ONLY","PASS_VERIFIED_PREFIX"]);
