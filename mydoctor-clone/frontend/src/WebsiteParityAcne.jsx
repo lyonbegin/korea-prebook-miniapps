@@ -63,7 +63,6 @@ export default function WebsiteParityAcne({go}){
          <select aria-label="여드름약 성분" value={dose} onChange={e=>setDose(e.target.value)}>
           {["여드름약(이소티논, 니메겐 등 이소트레티노인)"].map(v=><option key={v}>{v}</option>)}
          </select>
-         <span className="ow-acne-display-value" aria-hidden="true">여드름약(이소<br/>티논, 니메겐 등<br/>이소트레티노<br/>인)</span>
        </label>
      </div>
      <label className="ow-mounjaro-field">
