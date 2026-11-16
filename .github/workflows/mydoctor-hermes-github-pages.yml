@@ -40,6 +40,13 @@ jobs:
             ~/.npm
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-mydoctor-web-pixel-v2-${{ hashFiles('mydoctor-clone/frontend/package.json') }}
+      - name: Download verified original phone screenshot asset
+        uses: actions/download-artifact@v4
+        with:
+          name: mydoctor-source-parity
+          run-id: 42650015118
+          github-token: ${{ github.token }}
+          path: mydoctor-clone/frontend/qa-original
       - name: Install dependencies and build static site
         working-directory: mydoctor-clone/frontend
         run: |
