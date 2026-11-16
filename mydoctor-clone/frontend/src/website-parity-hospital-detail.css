@@ -54,3 +54,15 @@
 .gh-hermes-site:has(.ow-hd-page) .gh-bottom-tabs{display:none}
 .gh-hermes-main:has(.ow-hd-page){padding-bottom:0}
 .gh-hermes-main:has(.ow-hd-page)>.gh-pages-source-footer{display:none}
+
+/* Second screenshot registration: the source price table is horizontally
+ * wider than its 350px visible clip. Keeping it 350px wrapped the fourth
+ * header onto two lines and displaced the entire price table. */
+.ow-hd-info{padding-bottom:12px}
+.ow-hd-prices h2{margin-bottom:22px}
+.ow-hd-prices table{width:410px;min-width:410px}
+.ow-hd-prices th:nth-child(1){width:112px}
+.ow-hd-prices th:nth-child(2){width:84px}
+.ow-hd-prices th:nth-child(3){width:88px}
+.ow-hd-prices th:nth-child(4){width:126px}
+.ow-hd-prices th,.ow-hd-prices td{white-space:nowrap}
