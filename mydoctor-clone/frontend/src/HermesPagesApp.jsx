@@ -34,6 +34,7 @@ function resolveRoute(raw){
   if(raw==="/medical-cost")return {screen:"medical-cost",target:""};
   if(raw.startsWith("/medical-cost/"))return {screen:"detail",target:raw};
   if(raw==="/pharmacy")return {screen:"pharmacy",target:""};
+  if(raw==="/qna")return {screen:"detail",target:raw};
   if(raw==="/healthLab"||raw==="/qna"||raw==="/medicine")
     return {screen:"health",target:""};
   if(raw.startsWith("/pharmacy/")||raw.startsWith("/healthLab/")||raw.startsWith("/medicine/")||raw.startsWith("/qna/"))
