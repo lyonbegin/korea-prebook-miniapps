@@ -46,3 +46,7 @@
 .ow-hypertension-filters{height:51px}
 .ow-hypertension-doctor{padding-top:14px}
 .ow-hypertension-doctor:not(:has(.ow-hypertension-badge)){height:119px}
+
+/* Original text wraps at the word "설치" and aligns clock-to-time gap. */
+.ow-hypertension-intro p{font-size:16px}
+.ow-hypertension-time svg{margin-right:14px}
