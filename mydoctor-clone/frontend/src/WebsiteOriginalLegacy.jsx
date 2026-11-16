@@ -32,6 +32,8 @@ export default function WebsiteOriginalLegacy({target,go}){
  },target),[target,raw]);
  const crumb={
   "/medicine/ingredient/세마글루티드":"세마글루티드 성분 의약품",
+  "/pharmacy/야간약국":"전국 야간 약국",
+  "/medicine/0.9-엔에이시엘.케이40주-200710605":"0.9% 엔에이시엘.케이40주",
   "/telemedicine/doctor/한사랑패밀리의원-허훈-10":"허훈 의사",
   "/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요":"정형외과 › 아침에 첫발을 디딜 때 발뒤꿈치가 아픈데 족저근막염일까요?",
   "/healthLab/calculator/bmi":"비만도 계산기",
@@ -54,9 +56,10 @@ export default function WebsiteOriginalLegacy({target,go}){
     </header>
     <nav className="ow-hospital-breadcrumb" aria-label="현재 위치">
      <button onClick={()=>go("/")} type="button">홈</button><span>›</span>
+     {cleanPath(target).startsWith("/qna")&&<><button type="button" onClick={()=>go("/healthLab")}>건강 정보</button><span>›</span></>}
      {ancestor(cleanPath(target))&&<button type="button" onClick={()=>go(
        target.startsWith("/telemedicine/")?"/telemedicine":target.startsWith("/hospital/")?"/hospital":
-       target.startsWith("/pharmacy/")?"/pharmacy":"/healthLab"
+       target.startsWith("/pharmacy/")?"/pharmacy":target.startsWith("/qna")?"/qna":"/healthLab"
      )}>{ancestor(cleanPath(target))}</button>}
      {crumb&&<><span>›</span><strong className="ow-legacy-current-crumb">{crumb}</strong></>}
     </nav>
