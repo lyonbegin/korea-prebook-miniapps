@@ -37,10 +37,3 @@
 .ow-qd-page .ow-qd-answer h2{margin-bottom:19px}
 .ow-qd-page .ow-qd-answer-head{margin-bottom:12px}
 .ow-qd-page .ow-qd-answer>p{font-size:16.5px;line-height:26px}
-
-/* Original patient question uses smaller glyphs: its first line ends at
-   "발뒤꿈치" rather than the oversized clone's "때" at 390px. */
-.ow-qd-page .ow-qd-question-text{font-size:15.3px;line-height:26px;letter-spacing:0}
-.ow-qd-page .ow-qd-author{margin-bottom:25px}
-.ow-qd-page .ow-qd-question{padding-bottom:21px}
-.ow-qd-page .ow-qd-answer>p{font-size:15.4px;line-height:26px;letter-spacing:0}
