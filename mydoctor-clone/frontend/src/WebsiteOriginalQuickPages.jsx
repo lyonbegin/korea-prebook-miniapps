@@ -1,5 +1,5 @@
 import React,{useMemo,useState} from "react";
-import {ChevronRight} from "lucide-react";
+import {ChevronRight,Hourglass,Heart,Ear} from "lucide-react";
 import originalFacts from "./data/verified-public-page-facts-29.json";
 import "./website-original-quick.css";
 
@@ -127,8 +127,8 @@ export function OriginalReviewSource({kind="doctor",go}){
     {!doctor&&<div className="ow-q-review-meta">여성 질환　 전**(여성 30대)　|　26.10.28</div>}
     {doctor&&<div className="ow-q-review-revisit">다시 진료받고 싶어요</div>}
     <p>{reviewTitle}</p>
-    <div className="ow-q-review-detail-tags">{(doctor?["시간 준수","예약시간을 잘 지켜요"]:["시간 준수","친절한 진료","자세한 설명"]).map(x=>
-     <span key={x}>{x}</span>)}</div>
+    <div className="ow-q-review-detail-tags">{(doctor?["시간 준수","예약시간을 잘 지켜요"]:["시간 준수","친절한 진료","자세한 설명"]).map((x,i)=>
+     <span key={x}>{i===0?<Hourglass size={13} color="#3b76ff"/>:(!doctor&&i===1)?<Heart size={13} color="#f35a63" fill="#f35a63"/>:(!doctor&&i===2)?<Ear size={13} color="#f4a062"/>:null}{x}</span>)}</div>
    </article>}
    {!doctor&&!active&&<article className="ow-q-review-item ow-q-review-second">
     <div className="ow-q-review-doctor"><span className="ow-q-doctor-icon"><img src={(import.meta.env.BASE_URL||"/")+"website-source-review-josangje.png"} width="26" height="26" alt="" style={{objectFit:"contain"}}/></span> 조상제 의사</div>
