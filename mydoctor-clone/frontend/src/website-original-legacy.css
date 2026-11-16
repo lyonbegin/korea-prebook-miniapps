@@ -10,3 +10,16 @@
 .gh-hermes-site:has(.ow-legacy-page) .gh-bottom-tabs{display:none}
 .gh-hermes-main:has(.ow-legacy-page){padding-bottom:0}
 .gh-hermes-main:has(.ow-legacy-page)>.gh-pages-source-footer{display:none}
+
+/* Verified 2026-11-09 doctor-detail source viewport: portrait is now exact;
+ * align details/title, source tab position, first two section headings and
+ * fixed booking CTA without changing other distinct page types. */
+.ow-legacy-page .original-doctor-head{padding:24px 20px 10px}
+.ow-legacy-page .original-doctor-head p{font-size:14px;margin:0 0 13px}
+.ow-legacy-page .original-doctor-head h1{font-size:22px;line-height:30px;margin:0 0 11px;font-weight:770}
+.ow-legacy-page .original-doctor-head small{font-size:15px}
+.ow-legacy-page .original-doctor-information h2{font-size:17px;margin:18px 0 12px}
+.ow-legacy-page .original-doctor-information p{font-size:16px;line-height:25px;margin-bottom:44px}
+.ow-legacy-page .original-doctor-booking{padding:16px 20px 12px}
+.ow-legacy-page .original-doctor-booking p{font-size:14px;line-height:17px;margin:0 0 13px}
+.ow-legacy-page .original-doctor-booking a{font-size:15px;line-height:19px;padding:16px 0}
