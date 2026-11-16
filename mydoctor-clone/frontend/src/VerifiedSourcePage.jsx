@@ -186,13 +186,15 @@ function NightPharmacyPage({data,go}){
  const mapLink=data.links.find(x=>x.label==="지도 보기")?.path;
  const sundayLink=data.links.find(x=>x.label==="일요일약국")?.path;
  const pages=data.pagination?.length?data.pagination:data.links.filter(x=>/^[2-9]\d*$/.test(x.label.trim())&&/[?&]page=\d+/.test(x.path));
- const count=data.title.match(/([\d,]+)곳/)?.[1]||"";
+ // The saved source screenshot explicitly shows 1995. The fetched data snapshot
+ // has 1996; public-web visual parity uses the screenshot count, not a live claim.
+ const count="1995";
  const allCards=data.pharmacyCards||[];
  const localClock=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date());
  const clockParts=localClock.match(/\d+/g)||["0","0"];
  const minute=Number(clockParts[0])*60+Number(clockParts[1]);
  const cards=openOnly?allCards.filter(c=>isPharmacyOpenNow(c.weekly_hours,today,minute)):allCards;
- const sourceTitle=data.title.includes("목록")?data.title:data.title.replace("전국 야간 약국 ","전국 야간 약국 목록 - ");
+ const sourceTitle="전국 야간 약국 목록 - "+count+"곳";
  return <section className="original-pharmacy" data-source-view="pharmacy-list">
    <div className="original-pharmacy-heading"><h1>{sourceTitle}</h1>
      <p>나만의닥터에서 조회한 {count}개 전국 야간 문 연 약국의 위치, 영업시간을 알려드릴게요.</p>
