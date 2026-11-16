@@ -142,6 +142,13 @@ function fontVariants(id){
      ".ow-legacy-page .original-drug-intro p{font-size:"+t+"px;}"+
      ".ow-legacy-page .original-drug-symptoms p{font-size:"+b+"px;}"});
  }
+ /* Test whether the original screenshots resemble an entirely different
+  * family. These variants are temporary and never alter production CSS. */
+ for(const family of ["Pretendard Variable","Noto Sans CJK KR","Nanum Gothic","Arial","system-ui"]){
+  const fam='"'+family+'"';
+  out.push({name:"font-family-"+family,css:
+   ".ow-legacy-page,.ow-qd-page{font-family:"+fam+",sans-serif!important;}"});
+ }
  return out;
 }
 async function measureFontVariants(page,source,id){
