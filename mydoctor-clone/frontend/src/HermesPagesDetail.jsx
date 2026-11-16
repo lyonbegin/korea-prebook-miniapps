@@ -1,3 +1,4 @@
+import WebsiteOriginalLegacy from "./WebsiteOriginalLegacy.jsx";
 import React,{useMemo,useState} from "react";
 import {
   ArrowLeft,Search,X,ChevronRight,ChevronDown,MapPin,Clock3,
@@ -353,7 +354,25 @@ function MapDetail({target,doc,go}){
    </Section>
  </>;
 }
+const SOURCE_WEB_ROUTES=new Set([
+ "/telemedicine/doctor/한사랑패밀리의원-허훈-10",
+ "/telemedicine/doctor/탑연합의원-박광규-100/reviews",
+ "/hospital/야간진료",
+ "/hospital/10055/reviews",
+ "/pharmacy/야간약국",
+ "/map/baby119",
+ "/medicine/0.9-엔에이시엘.케이40주-200710605",
+ "/healthLab/FAQ",
+ "/healthLab/info/1268/만성-소화기-질환-관리법",
+ "/healthLab/calculator/bmi",
+ "/qna",
+ "/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요",
+ "/company"
+]);
 export default function HermesPagesDetail({target,go,back}){
+  let sourcePath=target.split("?")[0];
+  try{sourcePath=decodeURIComponent(sourcePath)}catch{}
+  if(SOURCE_WEB_ROUTES.has(sourcePath))return <WebsiteOriginalLegacy target={target} go={go}/>;
   const doc=getEvidence(target);
   const known=findLink(target);
   const isSourceMounjaro=norm(target)==="/medical-cost/마운자로";
