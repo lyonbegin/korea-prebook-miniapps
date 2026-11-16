@@ -1,5 +1,6 @@
 import WebsiteOriginalLegacy from "./WebsiteOriginalLegacy.jsx";
 import WebsiteParityMap119 from "./WebsiteParityMap119.jsx";
+import WebsiteParityHypertension from "./WebsiteParityHypertension.jsx";
 import React,{useMemo,useState} from "react";
 import {
   ArrowLeft,Search,X,ChevronRight,ChevronDown,MapPin,Clock3,
@@ -375,6 +376,7 @@ export default function HermesPagesDetail({target,go,back}){
   let sourcePath=target.split("?")[0];
   try{sourcePath=decodeURIComponent(sourcePath)}catch{}
   if(sourcePath==="/map/119")return <WebsiteParityMap119 go={go}/>;
+  if(sourcePath==="/telemedicine/고혈압-비대면진료-예약")return <WebsiteParityHypertension go={go}/>;
   if(SOURCE_WEB_ROUTES.has(sourcePath))return <WebsiteOriginalLegacy target={target} go={go}/>;
   const doc=getEvidence(target);
   const known=findLink(target);
