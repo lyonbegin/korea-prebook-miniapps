@@ -4,15 +4,15 @@
 .ow-mounjaro-page .ow-hospital-breadcrumb{height:42px;background:#fff}
 .ow-mounjaro-page .ow-hospital-breadcrumb strong{font-weight:730}
 .ow-mounjaro-intro{padding:20px 20px 0}
-.ow-mounjaro-intro h1{font-size:25px;letter-spacing:-.2px;line-height:30px;font-weight:790;margin:0 0 11px;color:#0c1019}
-.ow-mounjaro-intro p{font-size:17px;line-height:26px;letter-spacing:-.2px;font-weight:760;color:#14171f;margin:0;word-break:keep-all}
+.ow-mounjaro-intro h1{font-size:24.2px;letter-spacing:-.3px;line-height:30px;font-weight:790;margin:0 0 11px;color:#0c1019}
+.ow-mounjaro-intro p{font-size:16.55px;line-height:26px;letter-spacing:-.2px;font-weight:760;color:#14171f;margin:0;word-break:keep-all}
 .ow-mounjaro-lookup{padding:19px 20px 54px;background:white}
 .ow-mounjaro-field{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
 .ow-mounjaro-field>span{color:#a1aec0;font-size:13px;line-height:20px;font-weight:400}
 .ow-mounjaro-field select{width:100%;height:49px;background-color:#fff;appearance:none;outline:none;border:1px solid #cbd3df;border-radius:8px;color:#17222f;font-size:16px;font-family:inherit;line-height:21px;font-weight:750;padding:0 35px 0 16px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23192331' stroke-width='2' width='18' height='18'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-position:right 16px center;background-repeat:no-repeat}
 .ow-mounjaro-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .ow-mounjaro-two .ow-mounjaro-field{min-width:0}
-.ow-mounjaro-two .ow-mounjaro-field select{white-space:normal;padding-right:34px}
+.ow-mounjaro-two .ow-mounjaro-field select{white-space:normal;padding-right:56px}
 .ow-mounjaro-lookup>.ow-mounjaro-field:nth-of-type(2){margin-bottom:16px}
 .ow-mounjaro-submit{border:0;height:54px;width:100%;background:#326dff;border-radius:11px;color:white;font-family:inherit;font-size:16px;font-weight:780;cursor:pointer}
 .ow-mounjaro-results{border-top:7px solid #f5f6f8;padding:32px 20px 50px;background:white}
