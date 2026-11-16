@@ -156,3 +156,15 @@
 .ow-legacy-page .original-qna-item strong{gap:10px}
 .ow-legacy-page .original-qna-item p{margin-top:10px;margin-left:20px}
 .ow-legacy-page .original-qna-card-meta{margin-left:20px}
+
+/* Original Q&A font-size registration from screenshot pixel glyph bounds:
+ * title orig 119×21px vs clone 104×19px; question orig 282×13px
+ * vs clone 261×12px; preview orig 13px glyph height vs clone 11px.
+ * Restore source-like font sizes without stretching text via transforms.
+ * +3px CTA height is balanced with -3px heading gap to keep the chip bank
+ * at the already-matched y=179 source row origin. */
+.ow-legacy-page .original-qna-index h1{font-size:24px}
+.ow-legacy-page .original-qna-index>header>a{font-size:14px;padding:10px 15px}
+.ow-legacy-page .original-qna-index>header{margin-bottom:26px}
+.ow-legacy-page .original-qna-item strong{font-size:15px}
+.ow-legacy-page .original-qna-item p{font-size:15px}
