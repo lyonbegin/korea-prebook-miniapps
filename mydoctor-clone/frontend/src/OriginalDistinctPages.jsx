@@ -169,7 +169,7 @@ function BabyEmergencyMap({data,go}) {
   <div className="original-baby119-list"><h2>아래의 경우에 해당한다면 응급실에 가는 것이 좋아요.</h2><h2>병원·약국 찾기</h2>{data.links?.slice(0,6).map(x=><Anchor path={x.path} go={go} key={x.path}>{x.label}</Anchor>)}</div>
   {dialog&&<div className="original-baby119-overlay" role="presentation"><div className="original-baby119-dialog" role="dialog" aria-modal="true" aria-label="소아과 119 지도 소장">
     <p>위급한 순간 언제든 사용할 수 있도록</p><h2>소아과 119지도를<br/>무료로 소장해보세요!</h2>
-    <div className="original-baby119-phone"><div className="original-baby119-phone-screen"><i></i><span>●</span><span>●</span><span>●</span></div><div className="original-baby119-hand"></div></div>
+    <div className="original-baby119-phone"><img className="original-baby119-source-phone" src={(import.meta.env.BASE_URL||"/")+"website-source-baby119-phone.png"} alt=""/></div>
     <a href="https://abr.ge/zskg4p" target="_blank" rel="noreferrer">나만의닥터 앱 다운로드</a>
     <button type="button" onClick={()=>setDialog(false)}>다음에 소장하기</button>
    </div></div>}
