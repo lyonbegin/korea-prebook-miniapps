@@ -277,4 +277,4 @@
 
 /* Source screenshot's noninteractive pediatric illustration, without simulated phone drawing. */
 .original-baby119-source-phone{display:block;width:142px;height:186px;max-width:none;
-  object-fit:contain;transform:translateX(12px)}
+  object-fit:contain;transform:translate(12px,-1px)}
