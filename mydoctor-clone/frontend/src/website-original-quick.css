@@ -100,3 +100,7 @@
 /* The original review labels contain pictograms and wider text pills. */
 .ow-q-review-detail-tags span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
 .ow-q-review-detail-tags svg{flex:0 0 13px}
+
+/* Source review headings have ~15% wider glyph advance than the
+ * Linux fallback font in the static GitHub Pages build. */
+.ow-q-review-head h1{transform:scaleX(1.14);transform-origin:left center}
