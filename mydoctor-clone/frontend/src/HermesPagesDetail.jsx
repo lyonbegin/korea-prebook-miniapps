@@ -5,6 +5,7 @@ import {
   Phone,ShieldCheck,Star,ArrowRight
 } from "lucide-react";
 import facts from "./data/verified-public-page-facts-29.json";
+import WebsiteParityMounjaro from "./WebsiteParityMounjaro.jsx";
 import menuFacts from "./data/verified-public-menu-facts-72.json";
 import {DepartmentHospitalBrowser,VerifiedHospitalProfile} from "./HermesDepartmentHospitals.jsx";
 import OriginalDepartmentLanding from "./OriginalDepartmentLanding.jsx";
@@ -354,6 +355,7 @@ function MapDetail({target,doc,go}){
 export default function HermesPagesDetail({target,go,back}){
   const doc=getEvidence(target);
   const known=findLink(target);
+  const isSourceMounjaro=norm(target)==="/medical-cost/마운자로";
   const type=target.startsWith("/medical-cost/")?"price":
     target.startsWith("/telemedicine/doctor/")?"doctor":
     target.startsWith("/telemedicine/")?"telemedicine":
@@ -369,8 +371,8 @@ export default function HermesPagesDetail({target,go,back}){
     type==="department"?"병원 찾기":type==="pharmacy"?"약국 찾기":
     type==="doctor"?"의사 정보":type==="hospital-collection"?"진료 병원":"상세 정보";
   return <div className="gh-d-page" data-testid="pages-static-detail" data-detail-type={type} data-detail-target={target}>
-    {type!=="department"&&type!=="verified-hospital"&&<DetailHead title={title} subtitle={known?.label||undefined} back={back}/>}
-    {type==="price"&&<PriceDetail target={target} doc={doc} go={go}/>}
+    {type!=="department"&&type!=="verified-hospital"&&!isSourceMounjaro&&<DetailHead title={title} subtitle={known?.label||undefined} back={back}/>}
+    {isSourceMounjaro?<WebsiteParityMounjaro go={go}/>:type==="price"&&<PriceDetail target={target} doc={doc} go={go}/>}
     {type==="telemedicine"&&<TelemedicineDetail target={target} doc={doc} go={go}/>}
     {type==="department"&&(/^(?:\/dept-hub\/[^/?]+)\/?$/.test(target.split("?")[0])?
       <OriginalDepartmentLanding department={decodeURIComponent(target.split("?")[0].split("/")[2])} go={go}/>:
