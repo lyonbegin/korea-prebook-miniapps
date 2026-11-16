@@ -76,3 +76,9 @@
 .ow-hd-mobile-break{display:inline}
 @media (min-width:480px){.ow-hd-mobile-break{display:none}}
 
+
+/* 390x844 pixel-region search: the price table is 3px lower in the clone,
+ * and the tab labels are 4px left of the captured original. */
+.ow-hd-tableclip{position:relative;top:-3px}
+.ow-hd-tabs{padding-left:24px}
+.ow-hd-tabs button{top:1px}
