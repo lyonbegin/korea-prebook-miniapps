@@ -31,6 +31,7 @@ export default function WebsiteOriginalLegacy({target,go}){
  },target),[target,raw]);
  const crumb={
   "/medicine/ingredient/세마글루티드":"세마글루티드 성분 의약품",
+  "/telemedicine/doctor/한사랑패밀리의원-허훈-10":"허훈 의사",
   "/healthLab/calculator/bmi":"비만도 계산기",
   "/hospital/10055/reviews":"성남시 내과 › 동산의원 › 후기",
   "/telemedicine/doctor/탑연합의원-박광규-100/reviews":"박광규 의사 › 후기"
