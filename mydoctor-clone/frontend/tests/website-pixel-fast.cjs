@@ -26,6 +26,7 @@ const SELECTOR_BY_ID={
  "home":"[data-testid='website-parity-home']",
  "hospital-search":"[data-testid='website-parity-hospital']",
  "hospital-by-department":"[data-testid='original-department-landing']",
+ "map-emergency":"[data-testid='website-source-emergency-map']",
  "telemedicine-index":"[data-testid='original-telemedicine-landing']",
  "telemedicine-department-list":"[data-testid='original-telemedicine-landing']",
  "medical-cost-index":"[data-testid='website-parity-medical-cost']",
