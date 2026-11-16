@@ -149,6 +149,30 @@ async function runOne(browserContext,c){
   }
   await page.waitForTimeout(200);
   if(errors.length)throw Error("Browser JavaScript errors: "+errors.join("; "));
+  if(["qna-index","qna-answer","hospital-detail","health-article-or-test"].includes(c.id)){
+   rec.typography=await page.evaluate(()=>{
+    const selectors=[
+     ".original-qna-index h1",".original-qna-chips a",
+     ".original-qna-item strong",".original-qna-item p",
+     ".ow-qd-question h1",".ow-qd-question-text",
+     ".ow-qd-answer>p",".ow-hd-info h2",".original-health-article>p"];
+    const styles=Object.fromEntries(selectors.map(sel=>{
+     const el=document.querySelector(sel);
+     if(!el)return [sel,null];
+     const s=getComputedStyle(el),r=el.getBoundingClientRect();
+     return [sel,{font:s.fontFamily,fontSize:s.fontSize,fontWeight:s.fontWeight,
+       lineHeight:s.lineHeight,letterSpacing:s.letterSpacing,boxWidth:+r.width.toFixed(2),
+       boxHeight:+r.height.toFixed(2),preview:el.textContent?.slice(0,55)}];
+    }).filter(([,v])=>v));
+    const fonts=[...document.fonts].map(f=>({family:f.family,status:f.status,weight:f.weight,
+       style:f.style})).slice(0,24);
+    const fontNetwork=performance.getEntriesByType("resource")
+      .filter(x=>/woff|ttf|pretendard|font|jsdelivr/i.test(x.name))
+      .map(x=>({name:x.name,ms:Math.round(x.duration),bytes:x.transferSize})).slice(0,28);
+    return {styles,fonts,fontNetwork};
+   });
+   console.log("MYDOCTOR_SOURCE_FONT_AUDIT "+JSON.stringify({id:c.id,typography:rec.typography}));
+  }
   rec.render=await page.evaluate(()=>({
    title:document.title,
    text_chars:document.body.innerText.length,
