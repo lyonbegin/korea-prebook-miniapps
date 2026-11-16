@@ -70,3 +70,24 @@
 .ow-legacy-page .original-pharmacy-cardline img.source-pharmacy-icon-small{width:17px;height:18px;display:block;object-fit:contain;flex-shrink:0;margin-top:0}
 .ow-legacy-page .original-pharmacy-cardline:has(img.source-pharmacy-icon-small){gap:5px}
 .ow-legacy-page .original-pharmacy-select{gap:8px}
+
+/* Second-pass real source article text registration; adjust author and copy,
+ * but counteract its height change at the TOC to keep the next h2 aligned. */
+.ow-legacy-page .original-health-article h1{margin-bottom:26px}
+.ow-legacy-page .original-health-author{gap:12px;margin-bottom:22px}
+.ow-legacy-page .original-health-author img{width:40px;height:40px}
+.ow-legacy-page .original-health-author b{font-size:16px}
+.ow-legacy-page .original-health-article>p{font-size:16.5px;line-height:26px}
+.ow-legacy-page .original-health-toc{margin-bottom:80px}
+
+/* Original pharmacy text is a little wider; preserve 21px line pitch and
+ * original 3-line weekly schedules while correctly wrapping after Tuesday. */
+.ow-legacy-page .original-pharmacy-heading h1{font-size:25px;line-height:32px}
+.ow-legacy-page .original-pharmacy-heading p{font-size:16.5px}
+.ow-legacy-page .original-pharmacy-card h2{font-size:17px;font-weight:700}
+.ow-legacy-page .original-pharmacy-cardline{font-size:15px;line-height:21px}
+
+/* Original Q&A chip bank starts 2px inset and contains slightly wider labels. */
+.ow-legacy-page .original-qna-index{padding-left:20px;padding-right:20px}
+.ow-legacy-page .original-qna-index h1{font-size:21px}
+.ow-legacy-page .original-qna-chips a{font-size:15px;padding:8px 11px}
