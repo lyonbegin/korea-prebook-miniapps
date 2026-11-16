@@ -295,7 +295,3 @@
 .ow-legacy-company .original-company-cards>a>span{width:39px;height:40px}
 .ow-legacy-company .original-company-cards b{font-size:15px}
 .ow-legacy-company .original-company-cards small{font-size:13px;line-height:19px}
-
-/* Q&A chip rows: original first row begins four pixels lower and each
- * succeeding row has approximately 1px less vertical pitch. */
-.original-qna-chips{row-gap:8px;top:-2px}
