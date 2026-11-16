@@ -91,3 +91,15 @@
 .ow-legacy-page .original-qna-index{padding-left:20px;padding-right:20px}
 .ow-legacy-page .original-qna-index h1{font-size:21px}
 .ow-legacy-page .original-qna-chips a{font-size:15px;padding:8px 11px}
+
+/* Regional pixel shift found by image registration:
+ * each archived night-hospital photo matches the original with x=-2,
+ * y=-2 on the first card, and +1px drift per following card. */
+.ow-night-mobile-break{display:none}
+@media(max-width:430px){
+ .ow-night-mobile-break{display:inline}
+ .ow-legacy-page .original-hospital-night>header{padding-bottom:20px}
+ .ow-legacy-page .original-hospital-night-list{padding-left:20px;padding-right:20px}
+ .ow-legacy-page .original-hospital-night-card{min-height:149px;padding-top:21px}
+ .ow-legacy-page .original-hospital-night-card>img{transform:translateY(-1px)}
+}
