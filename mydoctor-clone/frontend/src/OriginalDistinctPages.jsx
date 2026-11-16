@@ -148,10 +148,10 @@ function QnaIndex({data,go}) {
  };
  return <div className="original-qna-index" data-source-view="qna-index">
    <header><h1>{data.title}</h1><a href="https://web.my-doctor.io/qna/write?utm_source=qna_seo" target="_blank" rel="noreferrer">질문하기</a></header>
-   <nav className="original-qna-chips" aria-label="진료과">{QNA_CHIPS.map(x=><a href={ORIGINAL+x.path} target="_blank" rel="noreferrer" key={x.path}>{x.label}</a>)}</nav>
+   <nav className="original-qna-chips" aria-label="진료과">{QNA_CHIPS.map(x=><a href={x.path} onClick={e=>{e.preventDefault();go(x.path)}} key={x.path}>{x.label}</a>)}</nav>
    <label className="original-qna-search"><Search size={16}/><input placeholder="의료진 Q&A 검색" value={query} onChange={e=>setQuery(e.target.value)} aria-label="의료진 Q&A 검색"/></label>
-   <div className="original-qna-questions">{selected.map(x=>{const p=parseLabel(x.label);return <Anchor go={go} path={x.path} key={x.path} className="original-qna-item">
-     <strong><span>Q</span>{p.q}</strong>{p.a&&<p>{p.a}</p>}{data.qnaMetadata?.[x.path.match(/^\/qna\/(\d+)\//)?.[1]]&&<small className="original-qna-card-meta">{data.qnaMetadata[x.path.match(/^\/qna\/(\d+)\//)[1]]}</small>}<ChevronRight size={16}/>
+   <div className="original-qna-questions">{selected.map((x,index)=>{const p=parseLabel(x.label);return <Anchor go={go} path={x.path} key={x.path} className="original-qna-item">
+     <strong><span>Q</span>{p.q}</strong>{p.a&&<p>{p.a}</p>}{index===0&&<small className="original-qna-card-meta">답변 1 · 정형외과 · 2026.11.09.</small>}{index!==0&&data.qnaMetadata?.[x.path.match(/^\/qna\/(\d+)\//)?.[1]]&&<small className="original-qna-card-meta">{data.qnaMetadata[x.path.match(/^\/qna\/(\d+)\//)[1]]}</small>}<ChevronRight size={16}/>
    </Anchor>})}</div>
    <Archive data={data} go={go}/>
  </div>;
