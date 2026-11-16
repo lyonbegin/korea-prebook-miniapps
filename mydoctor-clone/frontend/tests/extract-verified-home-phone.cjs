@@ -123,3 +123,23 @@ for(let row=0;row<49;row++){
 }
 fs.writeFileSync(path.join(root,"public","website-source-mounjaro-first-provider.png"),PNG.sync.write(photo));
 console.log("VERIFIED_PUBLIC_MOUNJARO_PROVIDER_DECORATIVE_PHOTO_READY");
+
+
+/* Extract ONLY the original health-page decorative illustrations (money icon
+ * and clipboard), not headings, cards, CTAs or other interactive UI.
+ * All interface content is rendered as React elements by WebsiteParityHealthLanding. */
+const healthOriginal=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-health-landing.png")));
+if(healthOriginal.width!==390||healthOriginal.height!==844)
+ throw new Error("Original health screenshot dimensions changed");
+function saveHealthArt(name,x,y,width,height){
+ const decor=new PNG({width,height});
+ for(let row=0;row<height;row++){
+  const begin=((y+row)*healthOriginal.width+x)*4;
+  healthOriginal.data.copy(decor.data,row*width*4,begin,begin+width*4);
+ }
+ fs.writeFileSync(path.join(root,"public","website-source-health-"+name+".png"),PNG.sync.write(decor));
+}
+saveHealthArt("quiz",250,166,112,121);
+saveHealthArt("test",258,469,92,135);
+console.log("VERIFIED_SOURCE_HEALTH_DECORATIVE_ASSETS_READY");
