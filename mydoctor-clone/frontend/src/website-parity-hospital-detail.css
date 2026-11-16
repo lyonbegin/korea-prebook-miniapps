@@ -71,3 +71,7 @@
  * use a slightly larger text size than the first reimplementation. */
 .ow-hd-info p{font-size:15px;line-height:23px}
 .ow-hd-prices td{font-size:13px}
+
+.ow-hd-availability img{flex-shrink:0;object-fit:contain;margin-right:-4px}
+.ow-hd-mobile-break{display:inline}
+@media (min-width:480px){.ow-hd-mobile-break{display:none}}
