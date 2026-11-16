@@ -81,10 +81,12 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.getByRole("button",{name:"병원 찾기로 뒤로"}).click();
   await page.getByTestId("website-parity-hospital").waitFor();
   await page.goto(BASE+"?screen=medical-cost",{waitUntil:"domcontentloaded"});
-  await page.getByTestId("pages-static-directory").waitFor();
-  if(!(await page.getByTestId("pages-static-directory").innerText()).includes("마운자로"))
-    throw Error("Verified public price navigation is missing");
-  await page.getByRole("button",{name:"마운자로 상세"}).first().click();
+  await page.getByTestId("website-parity-medical-cost").waitFor();
+  const categoryCards=page.locator(".ow-price-grid .ow-price-category");
+  if(await categoryCards.count()<20)throw Error("Original price compare grid is incomplete");
+  if(!(await page.getByTestId("website-parity-medical-cost").innerText()).includes("마운자로"))
+    throw Error("Original price category labels are missing");
+  await categoryCards.first().click();
   await page.getByTestId("pages-static-detail").waitFor();
   if(await page.locator('[data-detail-type="price"]').count()!==1)throw Error("Price detail screen missing");
   const priceText=await page.getByTestId("pages-static-detail").innerText();
