@@ -1,12 +1,12 @@
-.ow-acne-page .ow-mounjaro-intro h1{font-size:24.5px;line-height:31px;font-weight:650;letter-spacing:0}
-.ow-acne-page .ow-mounjaro-intro p{font-size:16.8px;line-height:26px;font-weight:600;letter-spacing:-.2px}
+.ow-acne-page .ow-mounjaro-intro h1{font-size:24.5px;line-height:31px;font-weight:700;letter-spacing:0}
+.ow-acne-page .ow-mounjaro-intro p{font-size:16.8px;line-height:26px;font-weight:650;letter-spacing:-.2px;position:relative;top:-1px}
 .ow-acne-page .ow-mounjaro-lookup{padding-top:18px;padding-bottom:54px}
 .ow-acne-page .ow-mounjaro-intro{padding-top:21px}
 .ow-acne-breadcrumb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;display:inline-block;vertical-align:middle}
 .ow-acne-breadcrumb strong{font-weight:760}
 .ow-acne-page .ow-mounjaro-two .ow-mounjaro-field:last-child select{height:49px;white-space:normal;padding-right:33px;line-height:23px;text-overflow:clip}
 .ow-acne-page .ow-mounjaro-two .ow-mounjaro-field:last-child{margin-bottom:0}
-.ow-acne-page .ow-mounjaro-two{margin-bottom:5px}
+.ow-acne-page .ow-mounjaro-two{margin-bottom:-5px}
 .ow-acne-page .ow-mounjaro-lookup>.ow-mounjaro-field:nth-of-type(2){margin-bottom:20px}
 .ow-acne-page .ow-mounjaro-results{padding:34px 20px 50px}
 .ow-acne-segment{display:flex;height:48px;padding:4px;background:#f5f6f8;border-radius:8px;gap:0;margin-bottom:22px}
