@@ -131,3 +131,9 @@
  background:none;border-radius:0;padding:0;font-size:13px;color:#73839a
 }
 .ow-q-reviews-doctor .ow-q-review-detail-tags span:nth-child(2){color:#343f4d}
+
+/* Source doctor-review aggregate columns and filter strips are closer
+   together than the earlier responsive default; no effect on hospital reviews. */
+.ow-q-reviews-doctor .ow-q-review-metrics{gap:20px}
+.ow-q-reviews-doctor .ow-q-review-tags{column-gap:6px}
+.ow-q-reviews-doctor .ow-q-review-head h1{letter-spacing:-.4px}
