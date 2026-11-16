@@ -34,7 +34,7 @@ const SELECTOR_BY_ID={
  "pharmacy-search":"[data-testid='pages-static-directory']",
  "medicine-search":"[data-testid='pages-static-directory']",
  "health-landing":"[data-testid='pages-static-directory']",
- "qna-index":"[data-testid='pages-static-directory']"
+ "qna-index":"[data-testid='website-source-original-detail']"
 };
 const SUCCESS=new Set(["PASS","PASS_VIEWPORT_ONLY","PASS_VERIFIED_PREFIX"]);
 fs.mkdirSync(DEST,{recursive:true});
