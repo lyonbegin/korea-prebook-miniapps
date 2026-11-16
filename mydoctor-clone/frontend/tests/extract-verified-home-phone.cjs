@@ -160,3 +160,17 @@ if(hypertensionSource.width!==390||hypertensionSource.height!==844)
  fs.writeFileSync(path.join(root,"public","website-source-hypertension-avatar-"+i+".png"),PNG.sync.write(face));
 });
 console.log("VERIFIED_SOURCE_HYPERTENSION_DOCTOR_AVATARS_READY");
+
+/* Preserve only the noninteractive pediatric-modal phone/hand artwork,
+ * visually observed in the real browser screen (not a screenshot of UI controls). */
+const childMapSource=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-map-child-emergency.png")));
+if(childMapSource.width!==390||childMapSource.height!==844)
+ throw Error("Unexpected child-emergency screenshot dimensions");
+const childPhone=new PNG({width:142,height:186});
+for(let y=0;y<186;y++){
+ const begin=((494+y)*390+142)*4;
+ childMapSource.data.copy(childPhone.data,y*142*4,begin,begin+142*4);
+}
+fs.writeFileSync(path.join(root,"public","website-source-baby119-phone.png"),PNG.sync.write(childPhone));
+console.log("VERIFIED_SOURCE_BABY119_DECORATIVE_PHONE_READY");
