@@ -86,3 +86,6 @@
 /* Isolated single-variable check: source filter chips are 6px wider than
  * clone, without changing headings, tabs or the already-registered table. */
 .ow-hd-filters button{padding-left:18px;padding-right:18px}
+
+/* Single-axis final registration: source hospital tab baseline x≈17. */
+.ow-hd-tabs{padding-left:17px}
