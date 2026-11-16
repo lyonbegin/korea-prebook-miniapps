@@ -140,3 +140,7 @@
 
 /* Original review layout uses a tighter 81px first metric column. */
 .ow-q-reviews-doctor .ow-q-review-metrics{column-gap:18px}
+
+/* Exact first-fold title image registration: doctor-review heading is two
+   pixels above the original; offset only glyph paint, not the metrics below. */
+.ow-q-reviews-doctor .ow-q-review-head h1{position:relative;top:2px}
