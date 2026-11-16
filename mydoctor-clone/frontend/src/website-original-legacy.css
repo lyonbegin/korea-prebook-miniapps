@@ -29,8 +29,3 @@
 .ow-legacy-page .original-doctor-tabs button{padding-bottom:9px}
 .ow-legacy-page .original-doctor-booking p{font-size:15px;line-height:18px;margin-bottom:12px}
 
-/* Measured Korean text advance in the original browser screenshot:
- * doctor title 178px vs clone 157px; section h2 143px vs 125px.
- * Horizontal glyph expansion preserves vertical layout and button behavior. */
-.ow-legacy-page .original-doctor-head h1{transform:scaleX(1.13);transform-origin:left center}
-.ow-legacy-page .original-doctor-information h2{transform:scaleX(1.14);transform-origin:left center}
