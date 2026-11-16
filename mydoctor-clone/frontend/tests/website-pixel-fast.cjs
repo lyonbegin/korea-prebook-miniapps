@@ -28,6 +28,7 @@ const SELECTOR_BY_ID={
  "hospital-by-department":"[data-testid='original-department-landing']",
  "map-emergency":"[data-testid='website-source-emergency-map']",
  "telemedicine-index":"[data-testid='original-telemedicine-landing']",
+ "telemedicine-condition":"[data-testid='website-source-hypertension-list']",
  "telemedicine-department-list":"[data-testid='original-telemedicine-landing']",
  "medical-cost-index":"[data-testid='website-parity-medical-cost']",
  "medical-cost-category":"[data-testid='website-parity-medical-cost-category']",
