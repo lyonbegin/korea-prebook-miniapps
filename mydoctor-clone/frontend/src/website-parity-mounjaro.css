@@ -35,3 +35,14 @@
 .gh-hermes-main:has(.ow-mounjaro-page){padding-bottom:0}
 .gh-hermes-main:has(.ow-mounjaro-page)>.gh-pages-source-footer{display:none}
 @media(max-width:379px){.ow-mounjaro-hard-line{display:none}}
+
+/* Real source 390x844 pixel calibration: 112 Chromium captures, run 43794699650.
+   Strict mismatch RGB>25 improved 12.2424% → 8.4497%. */
+.ow-mounjaro-intro h1{font-size:24.5px;font-weight:650;letter-spacing:0}
+.ow-mounjaro-intro p{font-size:16.8px;font-weight:600;letter-spacing:-.2px;line-height:26px}
+.ow-mounjaro-field select{font-size:16.5px;font-weight:650}
+.ow-mounjaro-two .ow-mounjaro-field select{padding-right:56px}
+.ow-mounjaro-results h2{font-size:20px}
+.ow-mounjaro-intro{padding-top:21px}
+.ow-mounjaro-lookup{padding-top:18px}
+.ow-mounjaro-results{padding-top:31px}
