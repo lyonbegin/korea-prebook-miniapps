@@ -14,3 +14,4 @@
 .ow-acne-segment button.active{background:white;color:#326dff;box-shadow:0 1px 3px #00102410}
 .ow-acne-page .ow-mounjaro-results h2{font-size:20px}
 \n.ow-acne-page .ow-mounjaro-lookup>.ow-mounjaro-field:nth-of-type(2) select{position:relative;top:-1px}\n
+.ow-acne-page .ow-mounjaro-lookup>.ow-mounjaro-field:first-child>span{position:relative;left:1px;top:1px}
