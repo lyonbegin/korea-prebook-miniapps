@@ -130,6 +130,10 @@ export function OriginalReviewSource({kind="doctor",go}){
     <div className="ow-q-review-detail-tags">{(doctor?["시간 준수","예약시간을 잘 지켜요"]:["시간 준수","친절한 진료","자세한 설명"]).map(x=>
      <span key={x}>{x}</span>)}</div>
    </article>}
+   {!doctor&&!active&&<article className="ow-q-review-item ow-q-review-second">
+    <div className="ow-q-review-doctor"><span className="ow-q-doctor-icon">👨🏻‍⚕️</span> 조상제 의사</div>
+    <div className="ow-q-review-revisit">다시 진료받고 싶어요</div>
+   </article>}
    {active&&<p className="ow-q-reviews-empty">선택한 증상별 개별 후기는 원본에서 추가 자료 확인이 필요합니다.</p>}
    <button type="button" className="ow-q-review-more" onClick={()=>setExtended(!extended)}>
      {extended?"접기":"후기 전체 보기"} <ChevronRight size={17}/>
