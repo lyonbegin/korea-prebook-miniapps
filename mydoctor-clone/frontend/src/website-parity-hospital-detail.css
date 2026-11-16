@@ -66,3 +66,8 @@
 .ow-hd-prices th:nth-child(3){width:88px}
 .ow-hd-prices th:nth-child(4){width:126px}
 .ow-hd-prices th,.ow-hd-prices td{white-space:nowrap}
+
+/* Original description wraps '약제비' at the fold, and source price cells
+ * use a slightly larger text size than the first reimplementation. */
+.ow-hd-info p{font-size:15px;line-height:23px}
+.ow-hd-prices td{font-size:13px}
