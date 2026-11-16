@@ -29,6 +29,12 @@ export default function WebsiteOriginalLegacy({target,go}){
   facts:raw||{path:target,headline:"원본 자료가 확보되지 않은 화면",links:[],headings:[],tables:[]},
   quality:raw?"original-browser-capture-2026-11-09":"no-confirmed-original-facts"
  },target),[target,raw]);
+ const crumb={
+  "/medicine/ingredient/세마글루티드":"세마글루티드 성분 의약품",
+  "/healthLab/calculator/bmi":"비만도 계산기",
+  "/hospital/10055/reviews":"성남시 내과 › 동산의원 › 후기",
+  "/telemedicine/doctor/탑연합의원-박광규-100/reviews":"박광규 의사 › 후기"
+ }[cleanPath(target)]||"";
  const company=cleanPath(target)==="/company";
  return <div className={"ow-legacy-page"+(company?" ow-legacy-company":"")} data-testid="website-source-original-detail" data-source-cached={!!raw}>
    {!company&&<>
@@ -49,6 +55,7 @@ export default function WebsiteOriginalLegacy({target,go}){
        target.startsWith("/telemedicine/")?"/telemedicine":target.startsWith("/hospital/")?"/hospital":
        target.startsWith("/pharmacy/")?"/pharmacy":"/healthLab"
      )}>{ancestor(cleanPath(target))}</button>}
+     {crumb&&<><span>›</span><strong className="ow-legacy-current-crumb">{crumb}</strong></>}
     </nav>
    </>}
    <div className="ow-legacy-body">
