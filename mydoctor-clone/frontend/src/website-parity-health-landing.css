@@ -1,0 +1,32 @@
+/* Website source: my-doctor.io/healthLab screenshot, 390x844, 2026-11-09 */
+.ow-health-landing{background:#fff;color:#161e28;min-height:100vh;
+ font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-health-landing *{box-sizing:border-box}
+.ow-health-landing .owh-header{height:58px;background:#fff}
+.ow-health-landing .owh-brand img{width:100px;height:37px;object-fit:contain;display:block}
+.ow-health-breadcrumb{height:42px;display:flex;gap:8px;align-items:center;padding:0 16px;
+ font-size:12px;border-bottom:1px solid #dfe2e6;color:#738091}
+.ow-health-breadcrumb strong{font-weight:650;color:#233047}
+.ow-health-breadcrumb button{border:0;padding:0;background:transparent;color:#748090;font-size:12px}
+.ow-health-panel{position:relative;padding:21px 20px 0;border-bottom:8px solid #f2f3f5;background:#fff}
+.ow-health-panel h2{margin:0;font-size:16px;font-weight:740;line-height:25px}
+.ow-health-panel h3{margin:24px 0 11px;font-size:21px;line-height:27px;font-weight:780;
+ letter-spacing:-.4px;color:#3070ff}
+.ow-health-panel p{margin:0;font-size:15px;line-height:24px;color:#536374;letter-spacing:-.25px}
+.ow-health-quiz{height:300px}
+.ow-health-quiz-art{position:absolute;left:250px;top:66px;width:112px;height:121px;object-fit:contain}
+.ow-health-test{height:298px}
+.ow-health-test h3{margin-top:24px}
+.ow-health-test-art{position:absolute;left:258px;top:69px;width:92px;height:135px;object-fit:contain}
+.ow-health-cta{position:absolute;left:50%;transform:translateX(-50%);bottom:39px;
+ border:0;border-radius:30px;height:48px;min-width:140px;padding:0 20px;color:#fff;
+ background:#306bff;font-size:15px;font-weight:770;white-space:nowrap;cursor:pointer}
+.ow-health-test .ow-health-cta{bottom:39px}
+.ow-health-calcs{padding-top:29px;border-bottom:0}
+.ow-health-calcs h2{margin-bottom:22px}
+.ow-health-calc-row{width:100%;border:1px solid #e0e4eb;border-radius:8px;background:#fff;
+ height:75px;padding:0 16px;text-align:left;display:flex;align-items:center;color:#16212b;
+ font-weight:720;font-size:16px;margin-bottom:9px;cursor:pointer}
+.gh-hermes-site:has(.ow-health-landing) .gh-bottom-tabs{display:none}
+.gh-hermes-main:has(.ow-health-landing){padding-bottom:0}
+.gh-hermes-main:has(.ow-health-landing)>.gh-pages-source-footer{display:none}
