@@ -177,6 +177,7 @@ function isPharmacyOpenNow(hours,day,minute){
 const KOREAN_REGIONS=new Set(["전국","강원","경기","경남","경북","대구","대전","부산","서울","세종","울산","인천","전남광주","전북","제주","충남","충북"]);
 /** The original has opening-hour, weekly schedule, address and telephone cards. */
 function NightPharmacyPage({data,go}){
+ const BASE=import.meta.env.BASE_URL||"/";
  const [regionOpen,setRegionOpen]=useState(false);
  const [kindOpen,setKindOpen]=useState(false);
  const [selected,setSelected]=useState(null);
@@ -201,19 +202,19 @@ function NightPharmacyPage({data,go}){
    </div>
    <div className="original-pharmacy-controls">
      <button className="original-pharmacy-select" type="button" aria-expanded={regionOpen}
-       onClick={()=>{setRegionOpen(!regionOpen);setKindOpen(false)}}><MapPin size={20}/>전국 <ChevronRight size={18}/></button>
+       onClick={()=>{setRegionOpen(!regionOpen);setKindOpen(false)}}><img className="source-pharmacy-icon" alt="" src={BASE+"website-source-pharmacy-region.png"}/>전국 <ChevronRight size={18}/></button>
      {regionOpen&&<nav className="original-pharmacy-options" aria-label="지역 선택">
        {regions.map(x=><a key={x.path} href={x.path} onClick={e=>{e.preventDefault();setRegionOpen(false);go(x.path)}}>{x.label}</a>)}
      </nav>}
      <button className="original-pharmacy-select" type="button" aria-expanded={kindOpen}
-       onClick={()=>{setKindOpen(!kindOpen);setRegionOpen(false)}}>야간약국 <ChevronRight size={18}/></button>
+       onClick={()=>{setKindOpen(!kindOpen);setRegionOpen(false)}}><img className="source-pharmacy-icon" alt="" src={BASE+"website-source-pharmacy-kind.png"}/>야간약국 <ChevronRight size={18}/></button>
      {kindOpen&&<div className="original-pharmacy-options" role="group" aria-label="약국 종류 선택">
        {sundayLink&&<a href={sundayLink} onClick={e=>{e.preventDefault();go(sundayLink)}}>일요일약국</a>}
        <span aria-current="true">야간약국</span>
      </div>}
      <div className="original-pharmacy-actions">
        <button type="button" className="original-pharmacy-open" aria-pressed={openOnly}
-         onClick={()=>setOpenOnly(!openOnly)}><CheckCircle2 size={16} aria-hidden="true"/>영업 중</button>
+         onClick={()=>setOpenOnly(!openOnly)}><img className="source-pharmacy-icon-small" alt="" src={BASE+"website-source-pharmacy-open.png"}/>영업 중</button>
        {mapLink&&<a className="original-pharmacy-map" href={mapLink}
          onClick={e=>{e.preventDefault();go(mapLink)}}>지도 보기</a>}
      </div>
@@ -225,11 +226,11 @@ function NightPharmacyPage({data,go}){
      return <article className="original-pharmacy-card" key={card.name+"-"+i}>
        <h2><button type="button" aria-expanded={selected===i}
          onClick={()=>setSelected(selected===i?null:i)}>{card.name}</button></h2>
-       {day&&<p className="original-pharmacy-cardline"><Clock3 size={16} className="pharmacy-time-icon" aria-hidden="true"/><span><strong className="pharmacy-status-label" title="게시된 운영시간 기준">{scheduleOpen?"영업 중":"영업 종료"}</strong> ({today}) {day}</span></p>}
-       {card.weekly_hours&&<p className="original-pharmacy-cardline"><CalendarDays size={16} aria-hidden="true"/>
+       {day&&<p className="original-pharmacy-cardline"><img className="source-pharmacy-icon-small" alt="" src={BASE+"website-source-pharmacy-clock.png"}/><span><strong className="pharmacy-status-label" title="게시된 운영시간 기준">{scheduleOpen?"영업 중":"영업 종료"}</strong> ({today}) {day}</span></p>}
+       {card.weekly_hours&&<p className="original-pharmacy-cardline"><img className="source-pharmacy-icon-small" alt="" src={BASE+"website-source-pharmacy-calendar.png"}/>
          <span><b>야간 영업</b> {card.weekly_hours}</span></p>}
-       {card.address&&<p className="original-pharmacy-cardline"><MapPin size={16}/><span>{card.address}</span></p>}
-       {card.phone&&<p className="original-pharmacy-cardline"><Phone size={16} aria-hidden="true"/>
+       {card.address&&<p className="original-pharmacy-cardline"><img className="source-pharmacy-icon-small" alt="" src={BASE+"website-source-pharmacy-address.png"}/><span>{card.address}</span></p>}
+       {card.phone&&<p className="original-pharmacy-cardline"><img className="source-pharmacy-icon-small" alt="" src={BASE+"website-source-pharmacy-phone.png"}/>
          <a href={"tel:"+card.phone}>{card.phone}</a></p>}
        {selected===i&&<div className="original-pharmacy-expanded" role="region" aria-label={card.name+" 정보"}>
          <strong>{card.name}</strong><p>{card.address}</p>
