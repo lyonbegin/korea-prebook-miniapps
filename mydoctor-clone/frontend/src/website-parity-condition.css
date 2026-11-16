@@ -47,3 +47,11 @@
 .ow-hypertension-doctor{padding-top:14px}
 .ow-hypertension-doctor:not(:has(.ow-hypertension-badge)){height:119px}
 
+
+/* At 390px use the same three original line wraps without changing the
+   original mobile-sized font or the surrounding card geometry. */
+.ow-source-linebreak{display:inline}
+@media (min-width:431px){.ow-source-linebreak{display:none}}
+.ow-hypertension-intro p{letter-spacing:0}
+.ow-hypertension-clock{width:16px;height:16px;object-fit:contain;flex:0 0 auto;margin-right:3px}
+.ow-hypertension-filters{background:#f7f8fa}
