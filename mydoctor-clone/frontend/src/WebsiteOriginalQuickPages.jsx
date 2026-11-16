@@ -58,7 +58,7 @@ export function HealthBmiSource({go}){
     <button className="ow-q-bmi-submit" type="submit" disabled={!valid}>결과 보기</button>
    </form>
    <div className="ow-q-bmi-result" role="status">
-    <div className="ow-q-bmi-value"><strong>{result.toFixed(1)}</strong> kg/m²</div>
+    <div className="ow-q-bmi-value"><strong>{(Math.floor(result*10)/10).toFixed(1)}</strong> kg/m²</div>
     <span className="ow-q-bmi-status">{category}</span>
     <p>비만을 간접적으로 판정하는 방법으로 체중(kg)을 신장(m)의 제곱으로 나누어 구할 수 있습니다.</p>
    </div>
@@ -105,7 +105,7 @@ export function OriginalReviewSource({kind="doctor",go}){
  const clickChip=x=>setActive(active===x?"":x);
  return <div className={"ow-q-reviews "+(doctor?"ow-q-reviews-doctor":"ow-q-reviews-hospital")} data-source-view={doctor?"doctor-reviews-original":"hospital-reviews-original"}>
   <section className="ow-q-review-head">
-   <h1>{title}</h1>
+   <h1>{doctor?<>박광규 가정의학과 의사 후기 1,079<br/>건 · 재진료 의향 99% (2026)</>:<>동산의원 후기 464건 · 재진료 의향<br/>97% (2026)</>}</h1>
    <div className="ow-q-review-metrics"><div><span>전체 후기</span><strong>{count}건</strong></div><div><span>재진료 의향</span><strong>{ratio}</strong></div></div>
    {doctor&&<div className="ow-q-review-ratings">
      <p><span>친절도</span><b>친절해요 99%</b></p>
