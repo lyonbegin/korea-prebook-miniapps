@@ -3,10 +3,10 @@
 .ow-medical-price-page .owh-header{height:58px}
 .ow-medical-price-page .ow-hospital-breadcrumb{height:42px}
 .ow-price-intro{background:#f8fafc;padding:27px 20px 32px}
-.ow-price-intro h1{font-size:22px;line-height:32px;font-weight:780;letter-spacing:-.55px;margin:0 0 11px}
+.ow-price-intro h1{font-size:24.5px;line-height:32px;font-weight:780;letter-spacing:-.1px;margin:0 0 11px}
 .ow-price-intro p{font-size:14px;line-height:22px;font-weight:400;letter-spacing:-.1px;word-break:keep-all;color:#34404d;margin:0}
 .ow-price-catalog{background:#fff;padding:27px 20px 23px}
-.ow-price-catalog h2,.ow-price-popular h2{font-size:18px;line-height:27px;font-weight:760;letter-spacing:-.4px;margin:0 0 16px}
+.ow-price-catalog h2,.ow-price-popular h2{font-size:19.5px;line-height:27px;font-weight:760;letter-spacing:-.1px;margin:0 0 16px}
 .ow-price-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .ow-price-category{display:flex;height:108px;min-height:108px;overflow:hidden;flex-direction:column;align-items:stretch;gap:10px;text-align:left;border:1px solid #e0e4ea;background:#fff;border-radius:9px;padding:17px 16px;cursor:pointer;font-family:inherit;letter-spacing:-.2px}
 .ow-price-category strong{font-size:16px;line-height:22px;font-weight:750;color:#101820;word-break:keep-all}
