@@ -104,3 +104,11 @@
 /* Source review headings have ~15% wider glyph advance than the
  * Linux fallback font in the static GitHub Pages build. */
 .ow-q-review-head h1{transform:scaleX(1.14);transform-origin:left center}
+
+/* Source hospital-review first card: avatar and revisit label are 6–8px
+ * lower than the cloned text baseline; next card starts 16px earlier.
+ * Position only the affected rows, leaving metadata/body text in place. */
+.ow-q-reviews-hospital .ow-q-review-item:not(.ow-q-review-second){padding-bottom:16px}
+.ow-q-reviews-hospital .ow-q-review-item:not(.ow-q-review-second) .ow-q-review-doctor{position:relative;top:8px}
+.ow-q-reviews-hospital .ow-q-review-item:not(.ow-q-review-second) .ow-q-review-revisit{position:relative;top:6px}
+.ow-q-reviews-hospital .ow-q-review-second{margin-top:5px}
