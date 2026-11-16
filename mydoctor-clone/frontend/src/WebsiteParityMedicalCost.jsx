@@ -45,7 +45,7 @@ export default function WebsiteParityMedicalCost({go}){
   </nav>
   <section className="ow-price-intro">
     <h1>의료비 가격 비교 | 나만의닥터</h1>
-    <p>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파 검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</p>
+    <p className="ow-price-original-copy"><span>나만의닥터에서 비급여 진료비와 의료비 가격을 비교해 보세</span><span>요. 치과 치료, 시력교정술, MRI 검사, 예방접종 백신, 초음파</span><span>검사, 상급병실료 등 병원 가격을 지역별로 확인할 수 있어요.</span></p>
   </section>
   <section className="ow-price-catalog">
     <h2>가격 비교 카테고리</h2>
