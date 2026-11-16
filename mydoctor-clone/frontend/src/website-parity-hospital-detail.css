@@ -108,3 +108,10 @@
 /* Verified original fee filter row: 3rd pill occupies x=155..309 (154px),
  * while clone rendered it x=155..293 (~138px), placing the 4th 16px early. */
 .ow-hd-filters button:nth-child(3){flex:0 0 154px}
+
+/* Direct RGB registration against source viewport (not guessed typography):
+ * section h2 best alignment: clone right 3px/up 1px;
+ * 2-line description: clone left 3px/up 1px.
+ * Relative positioning preserves all rows, filters and click targets. */
+.ow-hd-info h2{position:relative;left:3px;top:-1px}
+.ow-hd-info p{position:relative;left:-3px;top:-1px}
