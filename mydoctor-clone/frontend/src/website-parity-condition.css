@@ -1,0 +1,41 @@
+/* 2026-11-09 source browser snapshot: hypertension doctor list, 390x844. */
+.ow-hypertension-page{background:#fff;color:#18222c;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-hypertension-page *{box-sizing:border-box}
+.ow-hypertension-page .owh-header{height:58px}
+.ow-hypertension-page .owh-brand img{display:block;width:100px;height:37px;object-fit:contain}
+.ow-hypertension-crumb{height:42px;display:flex;align-items:center;gap:7px;padding:0 16px;
+ font-size:12px;border-bottom:1px solid #e0e4e9;color:#7e8c9a}
+.ow-hypertension-crumb button{padding:0;background:none;border:0;font-size:12px;color:#7a8794}
+.ow-hypertension-crumb strong{color:#24303e;font-size:12px}
+.ow-hypertension-intro{min-height:150px;padding:17px 20px 16px;border-bottom:8px solid #f2f4f6}
+.ow-hypertension-intro h1{font-size:22px;font-weight:780;line-height:31px;margin:0 0 13px;letter-spacing:-.6px}
+.ow-hypertension-intro p{font-size:15px;line-height:26px;letter-spacing:-.25px;margin:0;word-break:keep-all}
+.ow-hypertension-intro p strong{color:#286aff;font-weight:700}
+.ow-hypertension-filters{height:58px;display:flex;gap:8px;align-items:center;padding:0 20px;border-bottom:1px solid #e4e9ed}
+.ow-hypertension-filters>button,.ow-hypertension-filters>label{height:34px;border:1px solid #ccd3dc;
+ border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between;
+ gap:7px;padding:0 10px;color:#3a4652;white-space:nowrap;font-size:14px}
+.ow-hypertension-filters>button.active{border-color:#3070fa;color:#306bfa;background:#eef4ff}
+.ow-hypertension-filters>label select{appearance:none;border:0;background:transparent;font-size:14px;
+ color:#414b57;max-width:70px;outline:none}
+.ow-hypertension-doctors{width:100%;padding:0}
+.ow-hypertension-doctor{position:relative;display:block;width:100%;height:148px;border:0;
+ border-bottom:1px solid #e7eaee;background:#fff;padding:17px 20px 15px;text-align:left;cursor:pointer}
+.ow-hypertension-doctor:disabled{opacity:.8;cursor:default}
+.ow-hypertension-clinic{font-size:13px;line-height:20px;color:#7c8a9b;margin-bottom:8px}
+.ow-hypertension-name{display:flex;gap:6px;align-items:center;margin-bottom:12px;line-height:22px}
+.ow-hypertension-name strong{font-size:17px;font-weight:780;line-height:24px}
+.ow-hypertension-name span{font-size:15px;color:#23303f}
+.ow-hypertension-name small{font-size:14px;color:#748395}
+.ow-hypertension-time{display:flex;gap:5px;align-items:center;font-size:13px;line-height:20px;
+ color:#3c4754}
+.ow-hypertension-time b{color:#3070ff;font-size:14px;font-weight:770}
+.ow-hypertension-time svg{margin-right:4px}
+.ow-hypertension-badge{display:table;margin-top:10px;background:#edf3ff;color:#306bff;
+ border-radius:3px;padding:4px 7px;font-size:12px;font-weight:620}
+.ow-hypertension-avatar{position:absolute;right:20px;top:16px;width:66px;height:66px;
+ border-radius:50%;object-fit:cover}
+.ow-hypertension-snapshot-note{font-size:12px;color:#6d7986;line-height:19px;padding:15px 20px}
+.gh-hermes-site:has(.ow-hypertension-page) .gh-bottom-tabs{display:none}
+.gh-hermes-main:has(.ow-hypertension-page){padding-bottom:0}
+.gh-hermes-main:has(.ow-hypertension-page)>.gh-pages-source-footer{display:none}
