@@ -3,6 +3,7 @@ import {Home,Hospital,Stethoscope,Tags,ChevronLeft,ChevronRight,Search,X,FileTex
 import HermesSourceWebScreen from "./HermesSourceWebScreen.jsx";
 import WebsiteParityHome from "./WebsiteParityHome.jsx";
 import WebsiteParityHospital from "./WebsiteParityHospital.jsx";
+import WebsiteParityMedicalCost from "./WebsiteParityMedicalCost.jsx";
 import OriginalTelemedicineLanding from "./OriginalTelemedicineLanding.jsx";
 import HermesPagesDetail from "./HermesPagesDetail.jsx";
 import {publicMenuGroups,publicLinks} from "./HermesPagesStaticData.js";
@@ -115,7 +116,7 @@ export default function HermesPagesApp(){
       {page.screen==="native-home"&&<HermesSourceWebScreen screen="home" staticMode go={go}/>}
       {page.screen==="hospital-list"&&<WebsiteParityHospital go={go}/>}
       {page.screen==="telemedicine"&&<OriginalTelemedicineLanding go={go}/>}
-      {page.screen==="medical-cost"&&<Directory key="price" groupKey="price" title="최저가 병원 예약 · 가격 비교" go={go}/>}
+      {page.screen==="medical-cost"&&<WebsiteParityMedicalCost go={go}/>}
       {page.screen==="pharmacy"&&<Directory key="pharmacy" groupKey="pharmacy" title="약국 찾기" go={go}/>}
       {page.screen==="health"&&<Directory key="health" groupKey="health" title="건강 정보" go={go}/>}
       {page.screen==="detail"&&<HermesPagesDetail target={page.target} go={go} back={()=>history.length>1?history.back():go("/")}/>}
