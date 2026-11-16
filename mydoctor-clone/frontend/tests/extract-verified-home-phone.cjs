@@ -203,3 +203,15 @@ if(reviewSource.width!==390||reviewSource.height!==844)
  throw Error("Unexpected original hospital reviews screenshot dimensions");
 observedCrop(reviewSource,"website-source-review-josangje.png",[18,577,29,33]);
 console.log("VERIFIED_SOURCE_DOCTOR_AND_REVIEW_PORTRAITS_READY");
+
+
+/* Tiny noninteractive status pictograms from independently preserved
+ * original public screenshot. Text and buttons remain accessible DOM. */
+const clinicDetailSource=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-hospital-detail.png")));
+if(clinicDetailSource.width!==390||clinicDetailSource.height!==844)
+ throw Error("Unexpected clinic detail reference dimensions");
+observedCrop(clinicDetailSource,"website-source-clinic-open-icon.png",[34,179,21,20]);
+observedCrop(clinicDetailSource,"website-source-clinic-location-icon.png",[33,208,21,22]);
+observedCrop(doctorSource,"website-source-doctor-ready-icon.png",[61,463,21,22]);
+console.log("VERIFIED_SOURCE_CLINIC_STATUS_ICONS_READY");
