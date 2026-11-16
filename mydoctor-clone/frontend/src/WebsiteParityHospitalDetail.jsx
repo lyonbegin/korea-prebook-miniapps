@@ -41,9 +41,9 @@ export default function WebsiteParityHospitalDetail({go}){
   <section className="ow-hd-top">
    <h1>{NAME}</h1>
    <div className="ow-hd-availability">
-    <div className="ow-hd-hours"><Clock3 size={17} fill="#4fcf90" stroke="white"/>
+    <div className="ow-hd-hours"><img src={BASE+"website-source-clinic-open-icon.png"} width="21" height="20" alt="" aria-hidden="true"/>
       <strong>영업 중</strong><span>· 오늘 (월) 24시간</span><ChevronRight size={18}/></div>
-    <div className="ow-hd-address"><MapPin size={18} fill="#82a4fd" stroke="#82a4fd"/>{ADDRESS}</div>
+    <div className="ow-hd-address"><img src={BASE+"website-source-clinic-location-icon.png"} width="21" height="22" alt="" aria-hidden="true"/>{ADDRESS}</div>
    </div>
    <div className="ow-hd-actions">
     <a href={"tel:"+PHONE}><Phone size={17}/>전화</a>
@@ -60,7 +60,7 @@ export default function WebsiteParityHospitalDetail({go}){
   {tab==="진료비"?<>
    <section className="ow-hd-info">
     <h2>{NAME} 진료비 안내</h2>
-    <p>나만의닥터에서 수집한 {NAME}의 대면 진료비, 약제비, 접종료 등 모든 가격을 확인해보세요.</p>
+    <p>나만의닥터에서 수집한 {NAME}의 대면 진료비, 약제<span className="ow-hd-mobile-break"><br/></span>비, 접종료 등 모든 가격을 확인해보세요.</p>
    </section>
    <nav className="ow-hd-filters" aria-label="진료비 유형">
     {LABELS.map(v=><button type="button" key={v} onClick={()=>setFilter(v)} aria-pressed={filter===v} className={filter===v?"active":""}>{v}</button>)}
