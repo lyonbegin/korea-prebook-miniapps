@@ -43,8 +43,3 @@
  * Preserve five text rows and answer divider height while fitting source. */
 .ow-qd-question-text{font-size:14.6px;letter-spacing:-.15px;line-height:26px}
 .ow-qd-page .ow-qd-question{min-height:342px}
-
-/* Match specificity of the existing .ow-qd-page rule. The earlier isolated
- * 14.6px trial was overridden by .ow-qd-page .ow-qd-question-text (17.2px). */
-.ow-qd-page .ow-qd-question-text{font-size:14.9px;letter-spacing:-.08px;line-height:26px}
-.ow-qd-page .ow-qd-answer>p{font-size:15.4px;line-height:26px}
