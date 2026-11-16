@@ -148,3 +148,11 @@
 .ow-legacy-page .original-qna-index>header{margin-bottom:29px}
 .ow-legacy-page .original-qna-chips{row-gap:7px}
 .ow-legacy-page .original-qna-questions{margin-top:17px}
+
+/* Pixel-aligned source Q&A text start: question label uses 10px icon gap
+ * (clone was 5px), and both preview and metadata are 3px further right.
+ * The original preview begins 3px beneath the cloned y baseline. */
+.ow-legacy-page .original-qna-chips a{padding-left:13px;padding-right:9px}
+.ow-legacy-page .original-qna-item strong{gap:10px}
+.ow-legacy-page .original-qna-item p{margin-top:10px;margin-left:20px}
+.ow-legacy-page .original-qna-card-meta{margin-left:20px}
