@@ -32,7 +32,6 @@ export default function WebsiteOriginalLegacy({target,go}){
  const crumb={
   "/medicine/ingredient/세마글루티드":"세마글루티드 성분 의약품",
   "/healthLab/calculator/bmi":"비만도 계산기",
-  "/map/baby119":"소아과 119 지도",
   "/hospital/10055/reviews":"성남시 내과 › 동산의원 › 후기",
   "/telemedicine/doctor/탑연합의원-박광규-100/reviews":"박광규 의사 › 후기"
  }[cleanPath(target)]||"";
