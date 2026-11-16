@@ -19,7 +19,7 @@ export default function WebsiteQnaDetail({go}){
   <section className="ow-qd-answer">
     <h2>답변 1개</h2>
     <div className="ow-qd-answer-head">
-      <div className="ow-qd-avatar" aria-label="나만의닥터 AI">닥.</div>
+      <img className="ow-qd-avatar" src={(import.meta.env.BASE_URL||"/")+"website-source-qna-ai-avatar.png"} alt="나만의닥터 AI"/>
       <div><div className="ow-qd-answer-author"><strong>나만의닥터 AI</strong><span>AI 답변</span></div>
       <p>2026.10.22.</p></div>
     </div>
