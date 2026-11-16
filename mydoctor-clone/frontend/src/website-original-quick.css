@@ -150,3 +150,14 @@
  * 7px to the header bottom so the original divider stays at y=588. */
 .ow-q-reviews-doctor .ow-q-review-tags{row-gap:8px}
 .ow-q-reviews-doctor .ow-q-review-head{padding-bottom:20px}
+
+/* Pill geometry measured in 390px source screenshot (x positions):
+ * original row1: [20,119],[127,237],[245,344];
+ * Linux clone:   [20,121],[127,239],[245,346].
+ * Restore 8px gaps and -2px horizontal padding per normal pill.
+ * Long hypertension and ENT pills already have correct native widths. */
+.ow-q-reviews-doctor .ow-q-review-tags{column-gap:8px}
+.ow-q-reviews-doctor .ow-q-review-tags button{padding-left:8px;padding-right:8px}
+.ow-q-reviews-doctor .ow-q-review-tags button:nth-child(4),
+.ow-q-reviews-doctor .ow-q-review-tags button:nth-child(10){padding-left:9px;padding-right:9px}
+.ow-q-reviews-doctor .ow-q-review-tags button:nth-child(5){padding-left:8px;padding-right:9px}
