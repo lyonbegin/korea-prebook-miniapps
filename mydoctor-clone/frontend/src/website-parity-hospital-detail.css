@@ -82,3 +82,11 @@
 .ow-hd-tableclip{position:relative;top:-3px}
 .ow-hd-tabs{padding-left:24px}
 .ow-hd-tabs button{top:1px}
+
+/* Source 390px pixels: title glyph advance +9%, tabs 4px left, and
+ * each selection chip 7px wider; real DOM table returns to y+4. */
+.ow-hd-top>h1{font-size:24px;line-height:30px}
+.ow-hd-info h2{font-size:20px;line-height:26px}
+.ow-hd-tabs{padding-left:20px;gap:16px}
+.ow-hd-filters button{padding-left:18px;padding-right:18px}
+.ow-hd-tableclip{top:1px}
