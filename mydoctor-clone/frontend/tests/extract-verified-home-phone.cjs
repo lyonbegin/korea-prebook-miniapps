@@ -254,3 +254,10 @@ console.log("VERIFIED_SOURCE_NIGHT_HOSPITAL_PICTOGRAMS_READY");
 /* Archived hypertension listing's small blue clock pictogram, x=73..89,
    y=391..408. Text, cards and scheduling status stay separate DOM. */
 observedCrop(hypertensionSource,"website-source-hypertension-clock.png",[73,391,17,18]);
+
+/* Preserve only the source public hospital's three tiny action pictograms.
+ * Buttons, labels, events and destinations remain interactive DOM. */
+observedCrop(clinicDetailSource,"website-source-clinic-call-icon.png",[52,265,18,19]);
+observedCrop(clinicDetailSource,"website-source-clinic-directions-icon.png",[164,264,19,20]);
+observedCrop(clinicDetailSource,"website-source-clinic-home-icon.png",[278,265,19,19]);
+console.log("VERIFIED_SOURCE_CLINIC_ACTION_ICONS_READY");
