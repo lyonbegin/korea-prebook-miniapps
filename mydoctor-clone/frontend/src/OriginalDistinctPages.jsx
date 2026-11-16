@@ -29,7 +29,7 @@ function DoctorDetail({data,go}) {
   <div className="original-doctor-portrait" style={{height:268,background:"#e8e9ec"}}><img alt="허훈 의사" src={(import.meta.env.BASE_URL||"/")+"website-source-doctor-huhoon.png"} style={{width:295,height:268,objectFit:"cover",display:"block",margin:"0 auto"}}/>
    <button type="button" className="original-doctor-back" onClick={()=>go("/telemedicine/all-department")} aria-label="이전 화면"><ArrowLeft size={22}/></button>
   </div>
-  <div className="original-doctor-head"><p>한사랑패밀리의원</p><h1>{data.title}</h1><small>준비 중 <span aria-label="진료 상태">◉</span></small></div>
+  <div className="original-doctor-head"><p>한사랑패밀리의원</p><h1>{data.title}</h1><small>준비 중 <img src={(import.meta.env.BASE_URL||"/")+"website-source-doctor-ready-icon.png"} width="17" height="17" alt="" aria-label="진료 상태" style={{display:"inline-block",verticalAlign:"middle",objectFit:"contain",marginTop:-1}}/></small></div>
   <nav className="original-doctor-tabs" aria-label="의사 정보 탭">{["의사 정보","진료비","리뷰 (22)"].map(x=><button type="button" className={x===tab?"current":""} onClick={()=>setTab(x)} key={x}>{x}</button>)}</nav>
   {tab==="의사 정보"?<div className="original-doctor-information">
    <h2>{sections[0]}</h2><p>산부인과, 내과, 이비인후과, 비뇨의학과</p>
