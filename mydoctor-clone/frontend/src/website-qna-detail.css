@@ -1,0 +1,22 @@
+/* My-doctor.io Q&A article, 390x844 original public screenshot of 2026-11-09. */
+.ow-qd-page{background:white;color:#111820;width:100%;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-qd-page *{box-sizing:border-box}
+.ow-qd-question{padding:20px 20px 25px;border-bottom:8px solid #f3f4f6}
+.ow-qd-pill{display:inline-block;background:#f4f5f6;color:#2d3742;font-weight:750;font-size:14px;padding:6px 10px;border-radius:6px;margin-bottom:13px}
+.ow-qd-question h1{font-size:22px;line-height:32px;letter-spacing:-.35px;font-weight:790;margin:0 0 13px;word-break:keep-all}
+.ow-qd-author{color:#8a9bad;font-size:14px;line-height:20px;margin:0 0 24px}
+.ow-qd-question-text{font-size:16px;line-height:26px;color:#26313d;margin:0 0 17px;word-break:keep-all}
+.ow-qd-tag{border:0;background:none;color:#316eff;padding:0;font-size:15px;font-weight:700;cursor:pointer}
+.ow-qd-answer{padding:22px 20px 80px}
+.ow-qd-answer h2{font-size:19px;line-height:27px;margin:0 0 22px;font-weight:790}
+.ow-qd-answer-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.ow-qd-avatar{width:40px;height:40px;background:#306dff;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:25px;font-weight:800;flex:none}
+.ow-qd-answer-head>div:last-child{display:flex;flex-direction:column;gap:4px}
+.ow-qd-answer-author{display:flex;align-items:center;gap:9px}
+.ow-qd-answer-author strong{font-size:15px;font-weight:740}
+.ow-qd-answer-author span{background:#f3f4f6;color:#5c7189;padding:4px 8px;border-radius:5px;font-size:13px}
+.ow-qd-answer-head p{font-size:13px;color:#93a1b0;margin:0}
+.ow-qd-answer>p{font-size:16px;line-height:26px;margin:0 0 22px;color:#27323e;word-break:keep-all}
+.ow-qd-related{margin-top:30px;padding-top:20px;border-top:8px solid #f3f5f7}
+.ow-qd-related h2{font-size:18px;margin:0 0 20px}
+.ow-qd-related button{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px;border:0;border-bottom:1px solid #e9edf1;background:white;text-align:left;color:#42536a}
