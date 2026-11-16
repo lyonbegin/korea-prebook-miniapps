@@ -50,7 +50,7 @@ function HospitalNight({data,go}) {
   return {path:x.path,name:m?.[1]||x.label.split(" 야간 진료")[0],time:m?.[3]||"",day:m?.[2]||"",details:m?.[4]||"",label:x.label};
  }).filter(c=>(!search||c.label.includes(search))&&(region==="전국"||c.label.includes(region)));
  return <div className="original-hospital-night" data-source-view="hospital-night">
-   <header><h1>{data.title}</h1><p>나만의닥터에서 조회한 18361개 전국 야간 문 연 진료 병원의 위치, 영업시간, 전문의 여부를 알려드릴게요.</p></header>
+   <header><h1>{data.title}</h1><p>나만의닥터에서 조회한 18361개 전국 야간 문 연 진<span className="ow-night-mobile-break"><br/></span>료 병원의 위치, 영업시간, 전문의 여부를 알려드릴게<span className="ow-night-mobile-break"><br/></span>요.</p></header>
    <label className="original-hospital-night-search"><Search size={20}/><input value={search} onChange={e=>setSearch(e.target.value)} aria-label="병원·지역 검색" placeholder="병원·지역 검색"/></label>
    <div className="original-hospital-night-regions">{["전국","서울","경기","인천","부산","대구"].map(x=><button key={x} className={region===x?"current":""} onClick={()=>setRegion(x)}>{x}</button>)}</div>
    <div className="original-hospital-night-list">{cards.map(c=><Anchor go={go} path={c.path} className="original-hospital-night-card" key={c.path}>
