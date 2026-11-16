@@ -1,0 +1,12 @@
+/* Public website screen framing for existing original-specific components.
+   Source screenshots were captured from the website, not Android. */
+.ow-legacy-page{background:#fff;color:#19212a;min-height:100vh;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-legacy-page .owh-header{height:58px;background:#fff}
+.ow-legacy-page .owh-brand img{width:100px;height:37px;object-fit:contain;display:block}
+.ow-legacy-page .ow-hospital-breadcrumb{height:42px;background:#fff}
+.ow-legacy-page .ow-legacy-body{width:100%;background:#fff}
+.ow-legacy-page .original-record-archive{margin-bottom:45px}
+.ow-legacy-company{padding-top:0}
+.gh-hermes-site:has(.ow-legacy-page) .gh-bottom-tabs{display:none}
+.gh-hermes-main:has(.ow-legacy-page){padding-bottom:0}
+.gh-hermes-main:has(.ow-legacy-page)>.gh-pages-source-footer{display:none}
