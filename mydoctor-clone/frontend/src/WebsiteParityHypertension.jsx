@@ -11,9 +11,9 @@ const VISIBLES=[
  {name:"조준형",clinic:"조준형내과의원",rating:"100%",reviews:"700+",time:"07:20",specialty:true}
 ];
 const parse=(x)=>{
- const m=x.label.match(/^(.*?) ([가-힣]{2,4}) 의사 (\\d+%|수집 중) \\(리뷰 ([^)]+)\\) (.*)$/);
+ const m=x.label.match(/^(.*?) ([가-힣]{2,4}) 의사 (\d+%|수집 중) \(리뷰 ([^)]+)\) (.*)$/);
  if(!m)return null;
- return {clinic:m[1],name:m[2],rating:m[3],reviews:m[4],time:m[5].match(/(\\d{2}:\\d{2})부터/)?.[1]||"",specialty:/전문의/.test(m[5]),path:x.path};
+ return {clinic:m[1],name:m[2],rating:m[3],reviews:m[4],time:m[5].match(/(\d{2}:\d{2})부터/)?.[1]||"",specialty:/전문의/.test(m[5]),path:x.path};
 };
 const all=(source?.links||[]).map(parse).filter(Boolean);
 const featured=VISIBLES.map((v,i)=>({...v,path:all.find(x=>x.name===v.name)?.path,art:i}));
@@ -24,7 +24,7 @@ export default function WebsiteParityHypertension({go}){
   let rows=[...featured,...others];
   if(special)rows=rows.filter(x=>x.specialty);
   if(quick)rows=rows.filter(x=>Boolean(x.time));
-  if(order==="리뷰순")rows.sort((a,b)=>Number(b.reviews.replace(/\\D/g,""))-Number(a.reviews.replace(/\\D/g,"")));
+  if(order==="리뷰순")rows.sort((a,b)=>Number(b.reviews.replace(/\D/g,""))-Number(a.reviews.replace(/\D/g,"")));
   if(order==="평점순")rows.sort((a,b)=>parseInt(b.rating,10)-parseInt(a.rating,10));
   return rows;
  },[order,quick,special]);
