@@ -33,7 +33,7 @@ export default function WebsiteOriginalLegacy({target,go}){
    {!company&&<>
     <header className="owh-header">
      <button className="owh-brand" type="button" aria-label="나만의닥터 홈" onClick={()=>go("/")}>
-      <img src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-brand.png" alt="나만의닥터"/>
+      <img src={(import.meta.env.BASE_URL||"/")+"website-source-hospital-brand.png"} alt="나만의닥터"/>
      </button>
      <button type="button" className="owh-menu-btn" aria-label={menu?"메뉴 닫기":"메뉴 열기"}
       aria-expanded={menu} onClick={()=>setMenu(x=>!x)}>{menu?<X size={22}/>:<Menu size={22}/>}</button>
