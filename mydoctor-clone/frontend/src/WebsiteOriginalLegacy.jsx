@@ -33,6 +33,7 @@ export default function WebsiteOriginalLegacy({target,go}){
  const crumb={
   "/medicine/ingredient/세마글루티드":"세마글루티드 성분 의약품",
   "/pharmacy/야간약국":"전국 야간 약국",
+  "/hospital/야간진료":"전국 야간 진료 병원",
   "/healthLab/info/1268/만성-소화기-질환-관리법":"만성 소화기 질환의 초기 증상과 관리 방법, 어떻게 시작할까?",
   "/medicine/0.9-엔에이시엘.케이40주-200710605":"0.9% 엔에이시엘.케이40주",
   "/telemedicine/doctor/한사랑패밀리의원-허훈-10":"허훈 의사",
