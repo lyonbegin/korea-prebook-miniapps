@@ -1,0 +1,49 @@
+/* my-doctor.io/map/119 original HTTP-200 browser capture: 390x844 */
+.ow-map119{position:relative;min-height:844px;background:#f7f8fa;color:#1a232d;overflow:hidden}
+.ow-map119 *{box-sizing:border-box}
+.ow-map119 .owh-header{height:58px;background:#fff}
+.ow-map119 .owh-brand img{display:block;width:100px;height:37px;object-fit:contain}
+.ow-map119-breadcrumb{height:42px;display:flex;align-items:center;gap:7px;background:#fff;padding:0 16px;
+ font-size:12px;color:#8b97a5}
+.ow-map119-breadcrumb button{background:transparent;border:0;color:#7c8999;font-size:12px;padding:0}
+.ow-map119-breadcrumb strong{font-size:12px;color:#1b2632;font-weight:700}
+.ow-map119-blue{height:80px;background:#306bfa;color:white;padding:15px 16px;
+ display:flex;align-items:center;justify-content:space-between}
+.ow-map119-blue>div{display:flex;flex-direction:column;gap:5px}
+.ow-map119-blue span{font-size:13px;font-weight:600}
+.ow-map119-blue strong{font-size:19px;font-weight:760}
+.ow-map119-blue button{background:#ffe500;color:#161b22;border:0;border-radius:7px;
+ height:42px;padding:0 12px;display:flex;align-items:center;gap:6px;font-size:15px;font-weight:760}
+.ow-map119-tabs{display:grid;grid-template-columns:repeat(4,1fr);height:48px;background:#fff;
+ border-bottom:1px solid #e0e4e8;padding:0 20px}
+.ow-map119-tabs button{background:transparent;border:0;position:relative;font-size:14px;
+ color:#b2bdc9;font-weight:700;white-space:nowrap}
+.ow-map119-tabs button.current{color:#1b2832}
+.ow-map119-tabs button.current:after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:#232a31}
+.ow-map119-canvas{height:456px;position:relative;background:#f7f8f9}
+.ow-map119-controls{position:absolute;bottom:13px;left:0;right:0;
+ display:flex;justify-content:center;align-items:center;pointer-events:none}
+.ow-map119-controls button{pointer-events:auto;background:white;color:#19222d;box-shadow:0 1px 8px #25344625;
+ border:1px solid #e0e3e8}
+.ow-map119-list{height:39px;border-radius:24px;font-size:14px;padding:0 14px;display:flex;align-items:center;gap:6px}
+.ow-map119-list svg{stroke:#376fff}
+.ow-map119-locate{position:absolute;right:16px;bottom:0;width:41px;height:41px;border-radius:9px;
+ display:grid;place-items:center;padding:0}
+.ow-map119-message{position:absolute;left:18px;right:18px;bottom:66px;padding:12px 15px;
+ background:#fff;border-radius:8px;font-size:12px;box-shadow:0 2px 10px #0002;z-index:2}
+.ow-map119-sheet{position:relative;z-index:3;background:#fff;border-radius:17px 17px 0 0;
+ min-height:375px;padding:0 16px 35px;margin-top:0}
+.ow-map119-handle{width:40px;height:4px;background:#e2e4e8;margin:8px auto 16px;border-radius:9px}
+.ow-map119-notice{height:40px;background:#383e46;color:#fff;font-size:13px;
+ padding:0 16px;display:flex;align-items:center;gap:9px;border-radius:8px}
+.ow-map119-hospital-source{padding:25px 4px 15px}
+.ow-map119-hospital-source strong{font-size:16px;font-weight:750}
+.ow-map119-hospital-source p{color:#475363;font-size:13px;margin:13px 0 0}
+.ow-map119-hospital-source p span{color:#d17d04;font-size:11px;margin-left:7px}
+.ow-map119-regions{padding:8px 4px 30px}
+.ow-map119-regions summary{cursor:pointer;display:flex;justify-content:space-between;font-size:14px;color:#365d97}
+.ow-map119-regions button{width:100%;display:flex;justify-content:space-between;padding:11px;
+ border:0;border-bottom:1px solid #eef0f3;background:#fff}
+.gh-hermes-site:has(.ow-map119) .gh-bottom-tabs{display:none}
+.gh-hermes-main:has(.ow-map119){padding-bottom:0}
+.gh-hermes-main:has(.ow-map119)>.gh-pages-source-footer{display:none}
