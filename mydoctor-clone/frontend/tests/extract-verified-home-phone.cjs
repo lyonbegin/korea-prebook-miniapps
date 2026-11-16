@@ -143,3 +143,20 @@ function saveHealthArt(name,x,y,width,height){
 saveHealthArt("quiz",250,166,112,121);
 saveHealthArt("test",258,469,92,135);
 console.log("VERIFIED_SOURCE_HEALTH_DECORATIVE_ASSETS_READY");
+
+/* Only the four visible doctor avatar illustrations/photographs cropped from
+ * the authenticated original public website SCREENSHOT. Names, attributes
+ * and links remain separate searchable interactive HTML elements. */
+const hypertensionSource=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-telemedicine-condition.png")));
+if(hypertensionSource.width!==390||hypertensionSource.height!==844)
+ throw Error("Unexpected hypertension source screenshot dimensions");
+[326,476,592,742].forEach((top,i)=>{
+ const face=new PNG({width:66,height:66});
+ for(let y=0;y<66;y++){
+  const begin=((top+y)*390+305)*4;
+  hypertensionSource.data.copy(face.data,y*66*4,begin,begin+66*4);
+ }
+ fs.writeFileSync(path.join(root,"public","website-source-hypertension-avatar-"+i+".png"),PNG.sync.write(face));
+});
+console.log("VERIFIED_SOURCE_HYPERTENSION_DOCTOR_AVATARS_READY");
