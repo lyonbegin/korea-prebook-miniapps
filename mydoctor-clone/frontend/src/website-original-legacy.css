@@ -133,3 +133,8 @@
  * Move the two paint layers only, keeping hospital cards and scroll geometry. */
 .ow-legacy-page .original-hospital-night>header h1{position:relative;left:4px;top:2px}
 .ow-legacy-page .original-hospital-night>header p{position:relative;left:4px;top:1px}
+
+/* Archived pharmacy line-wrap calibration: 13.5px stopped the first line
+ * before Tuesday hours; 13px extended into Wednesday hours. 13.25px
+ * targets the source's Tuesday closing time while preserving three lines. */
+.ow-legacy-page .original-pharmacy-cardline{font-size:13.25px;letter-spacing:-.1px}
