@@ -101,3 +101,6 @@
  * Adjust interglyph spacing instead of font-size or container geometry. */
 .ow-hd-info h2{letter-spacing:.45px}
 .ow-hd-top>h1{letter-spacing:-.15px}
+
+/* Authentic 2026-11-09 source action pictograms, not fallback Lucide strokes. */
+.ow-hd-actions img{display:block;object-fit:contain;flex:none}
