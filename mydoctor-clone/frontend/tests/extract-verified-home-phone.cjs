@@ -174,3 +174,32 @@ for(let y=0;y<186;y++){
 }
 fs.writeFileSync(path.join(root,"public","website-source-baby119-phone.png"),PNG.sync.write(childPhone));
 console.log("VERIFIED_SOURCE_BABY119_DECORATIVE_PHONE_READY");
+
+
+/* The original doctor-photo CDN is signed and can expire.
+ * Crop only the photograph (x=55..349, y=100..367) from the preserved
+ * HTTP-200 original screenshot. The back button is OUTSIDE the crop
+ * and remains a real accessible React control, not a baked-in screenshot. */
+const doctorSource=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-doctor-detail.png")));
+if(doctorSource.width!==390||doctorSource.height!==844)
+ throw Error("Unexpected original doctor-detail screenshot dimensions");
+function observedCrop(source,filename,rect){
+ const [x,y,width,height]=rect;
+ const crop=new PNG({width,height});
+ for(let row=0;row<height;row++){
+  const srcOffset=((row+y)*source.width+x)*4;
+  source.data.copy(crop.data,row*width*4,srcOffset,srcOffset+width*4);
+ }
+ fs.writeFileSync(path.join(root,"public",filename),PNG.sync.write(crop));
+}
+observedCrop(doctorSource,"website-source-doctor-huhoon.png",[55,100,295,268]);
+
+/* These are two small decorative avatar photos ONLY, not UI text,
+ * buttons, review data or full-screen screenshot substitutes. */
+const reviewSource=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-hospital-reviews.png")));
+if(reviewSource.width!==390||reviewSource.height!==844)
+ throw Error("Unexpected original hospital reviews screenshot dimensions");
+observedCrop(reviewSource,"website-source-review-josangje.png",[18,577,29,33]);
+console.log("VERIFIED_SOURCE_DOCTOR_AND_REVIEW_PORTRAITS_READY");
