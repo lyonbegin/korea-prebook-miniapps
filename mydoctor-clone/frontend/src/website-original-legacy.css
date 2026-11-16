@@ -63,3 +63,10 @@
 .ow-legacy-page .original-health-toc{margin-bottom:91px}
 .ow-legacy-page .original-health-toc b,
 .ow-legacy-page .original-health-toc a{font-size:14px}
+
+/* True source night-pharmacy pictograms, not generic outline SVG fallback. */
+.ow-legacy-page .original-pharmacy-select img.source-pharmacy-icon{width:21px;height:23px;display:block;object-fit:contain;flex:0 0 auto}
+.ow-legacy-page .original-pharmacy-open img.source-pharmacy-icon-small{width:16px;height:18px;display:block;object-fit:contain;flex:none}
+.ow-legacy-page .original-pharmacy-cardline img.source-pharmacy-icon-small{width:17px;height:18px;display:block;object-fit:contain;flex-shrink:0;margin-top:0}
+.ow-legacy-page .original-pharmacy-cardline:has(img.source-pharmacy-icon-small){gap:5px}
+.ow-legacy-page .original-pharmacy-select{gap:8px}
