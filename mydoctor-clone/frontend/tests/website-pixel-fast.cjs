@@ -278,7 +278,7 @@ async function runOne(browserContext,c){
   if(src.width!==dst.width||src.height!==dst.height)
    throw Error("Viewport mismatch "+src.width+"x"+src.height+" vs "+dst.width+"x"+dst.height);
   rec.viewport=measure(src,dst);
-  if(fontVariants(c.id).length)rec.font_sweep=await measureFontVariants(page,src,c.id);
+  if(process.env.PIXEL_FONT_SWEEP==="1"&&fontVariants(c.id).length)rec.font_sweep=await measureFontVariants(page,src,c.id);
   const fullName=FULL_BY_ID[c.id];
   if(fullName&&fs.existsSync(path.join(ORIGINAL,fullName))){
    const refFull=getPixels(path.join(ORIGINAL,fullName));
