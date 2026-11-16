@@ -101,6 +101,68 @@ function writeDiff(src,dst,id){
  }
  fs.writeFileSync(path.join(DEST,"side-by-side-"+id+".png"),PNG.sync.write(panel,{compressionLevel:3}));
 }
+/* Test-only font parameter sweep. The experiment never changes the cloned
+ * source code or scores a modified page as a pass. All generated CSS is
+ * removed before the browser proceeds to the next screen. */
+function fontVariants(id){
+ const out=[];
+ if(id==="qna-index"){
+  for(const sz of [14,14.5,15])
+   for(const w of [400,500,600])
+    out.push({name:"chips-"+sz+"-"+w,css:
+     ".ow-legacy-page .original-qna-chips a{font-size:"+sz+"px;font-weight:"+w+";}"});
+  for(const w of [450,500,550])
+   out.push({name:"chips-weight-"+w+"-compact",css:
+    ".ow-legacy-page .original-qna-chips a{font-weight:"+w+";letter-spacing:-.2px;}"});
+  for(const t of [13.2,13.5,14])
+   out.push({name:"item-body-"+t,css:".ow-legacy-page .original-qna-item p{font-size:"+t+"px;}"});
+  for(const gap of [5,6,7,8])
+   out.push({name:"chip-rowgap-"+gap,css:".ow-legacy-page .original-qna-chips{row-gap:"+gap+"px;}"});
+ }
+ if(id==="qna-answer"){
+  for(const q of [15.5,16,16.5,17])
+   for(const a of [15.5,16,16.5])
+    out.push({name:"body-"+q+"-answer-"+a,css:
+     ".ow-qd-page .ow-qd-question-text{font-size:"+q+"px;letter-spacing:0;}"+
+     ".ow-qd-page .ow-qd-answer>p{font-size:"+a+"px;}"});
+  for(const w of [450,500,550])
+   out.push({name:"weight-"+w,css:
+    ".ow-qd-page .ow-qd-question-text,.ow-qd-page .ow-qd-answer>p{font-weight:"+w+";}"});
+ }
+ if(id==="health-article-or-test"){
+  for(const t of [15,15.5,16,16.5,17])
+   for(const ls of [0,.2,.4])
+    out.push({name:"article-"+t+"-ls-"+ls,css:
+     ".ow-legacy-page .original-health-article>p{font-size:"+t+"px;letter-spacing:"+ls+"px;}"});
+ }
+ if(id==="medicine-detail"){
+  for(const t of [13,13.5,14,14.5,15])
+   for(const b of [15,16,17])
+    out.push({name:"intro-"+t+"-body-"+b,css:
+     ".ow-legacy-page .original-drug-intro p{font-size:"+t+"px;}"+
+     ".ow-legacy-page .original-drug-symptoms p{font-size:"+b+"px;}"});
+ }
+ return out;
+}
+async function measureFontVariants(page,source,id){
+ const candidates=fontVariants(id);
+ if(!candidates.length)return null;
+ const result=[];
+ for(const item of candidates){
+  let sheet;
+  try{
+   sheet=await page.addStyleTag({content:item.css});
+   const shot=PNG.sync.read(await page.screenshot({fullPage:false,animations:"disabled"}));
+   result.push({name:item.name,pct:measure(source,shot).mismatch_pct,css:item.css});
+  }finally{
+   if(sheet)await sheet.evaluate(el=>el.remove()).catch(()=>{});
+  }
+ }
+ result.sort((a,b)=>a.pct-b.pct);
+ const ret={tested:result.length,best:result.slice(0,6)};
+ console.log("MYDOCTOR_FONT_SWEEP "+JSON.stringify({id,baseline:"normal",...ret}));
+ return ret;
+}
 async function runOne(browserContext,c){
  const started=Date.now();
  const url=targetUrl(c);
@@ -187,6 +249,7 @@ async function runOne(browserContext,c){
   if(src.width!==dst.width||src.height!==dst.height)
    throw Error("Viewport mismatch "+src.width+"x"+src.height+" vs "+dst.width+"x"+dst.height);
   rec.viewport=measure(src,dst);
+  if(fontVariants(c.id).length)rec.font_sweep=await measureFontVariants(page,src,c.id);
   const fullName=FULL_BY_ID[c.id];
   if(fullName&&fs.existsSync(path.join(ORIGINAL,fullName))){
    const refFull=getPixels(path.join(ORIGINAL,fullName));
