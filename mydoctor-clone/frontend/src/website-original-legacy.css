@@ -168,3 +168,10 @@
 .ow-legacy-page .original-qna-index>header{margin-bottom:26px}
 .ow-legacy-page .original-qna-item strong{font-size:15px}
 .ow-legacy-page .original-qna-item p{font-size:15px}
+
+/* Source night-hospital cards: each source gray day-tag row is 7–9px below
+ * the clone, while clock/location baselines are ~2px above it. Keep row
+ * height and photo/divider coordinates fixed, adjust paint positions only. */
+.ow-legacy-page .original-hospital-night-time,
+.ow-legacy-page .original-hospital-night-location{position:relative;top:-2px}
+.ow-legacy-page .original-hospital-night-tags{position:relative;top:8px}
