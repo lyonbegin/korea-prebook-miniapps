@@ -224,3 +224,17 @@ if(qnaDetailOriginal.width!==390||qnaDetailOriginal.height!==844)
  throw Error("Unexpected original Q&A screenshot dimensions");
 observedCrop(qnaDetailOriginal,"website-source-qna-ai-avatar.png",[20,537,41,42]);
 console.log("VERIFIED_SOURCE_QNA_AI_AVATAR_READY");
+
+/* Real decorative icons from the source night-pharmacy browser screenshot,
+ * captured independently of this clone; all data/text remain React DOM. */
+const pharmacyScreenshot=PNG.sync.read(fs.readFileSync(
+ path.join(root,"qa-original","origin-pharmacy-condition-search.png")));
+if(pharmacyScreenshot.width!==390||pharmacyScreenshot.height!==844)
+ throw Error("Unexpected original pharmacy image dimensions");
+for(const [name,r] of [
+ ["region",[38,261,18,23]],["kind",[38,323,19,23]],
+ ["open",[33,376,16,18]],["clock",[19,472,17,18]],
+ ["calendar",[19,498,17,18]],["address",[19,566,17,20]],
+ ["phone",[19,594,17,18]]
+])observedCrop(pharmacyScreenshot,"website-source-pharmacy-"+name+".png",r);
+console.log("VERIFIED_SOURCE_PHARMACY_STATUS_PICTOGRAMS_READY");
