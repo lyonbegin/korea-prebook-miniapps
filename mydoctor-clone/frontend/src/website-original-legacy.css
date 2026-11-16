@@ -103,3 +103,7 @@
  .ow-legacy-page .original-hospital-night-card{min-height:149px;padding-top:21px}
  .ow-legacy-page .original-hospital-night-card>img{transform:translateY(-1px)}
 }
+
+/* Localized night-hospital card label gap; the original badges appear lower
+   without changing fixed card row pitch or preserved screenshot avatars. */
+.ow-legacy-page .original-hospital-night-tags{margin-top:12px}
