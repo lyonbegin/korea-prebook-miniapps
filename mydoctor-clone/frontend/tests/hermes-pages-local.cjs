@@ -117,6 +117,50 @@ fs.mkdirSync(OUT,{recursive:true});
   await page.locator(".original-pharmacy-card h2>button").first().click();
   if(!await page.locator(".original-pharmacy-expanded").count())throw Error("Pharmacy detail expansion failed");
   data.steps.push({screen:"night-pharmacy",count:pharmacies,expanded:true,sourceLayout:true});
+  // Additional genuine user interactions on newly reconstructed source screens.
+  // Do not count a click as success unless the intended UI content changes.
+  await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/hospital/detail?hospital_id=323"),{waitUntil:"networkidle"});
+  await page.getByTestId("website-source-hospital-detail").waitFor();
+  if(await page.locator(".ow-hd-prices tbody tr").count()<3)throw Error("Original hospital price data missing");
+  await page.locator(".ow-hd-filters").getByRole("button",{name:"급여",exact:true}).click();
+  if(await page.locator(".ow-hd-prices tbody tr").count()!==1)throw Error("Hospital fee category filter did not alter price rows");
+  await page.getByRole("button",{name:"병원 정보",exact:true}).click();
+  if(!await page.locator(".ow-hd-hospital-info").isVisible())throw Error("Hospital details tab failed to open");
+  await page.getByRole("button",{name:"진료비",exact:true}).click();
+  await page.locator(".ow-hd-prices").waitFor();
+  data.steps.push({screen:"hospital-original-detail",feeFilter:true,tabSwitch:true});
+
+  await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/healthLab/calculator/bmi"),{waitUntil:"networkidle"});
+  await page.locator('[data-source-view="bmi-original"]').waitFor();
+  await page.getByLabel("신장 (cm)").fill("180");
+  await page.getByLabel("체중 (kg)").fill("81");
+  await page.getByRole("button",{name:"결과 보기"}).click();
+  if(!(await page.locator(".ow-q-bmi-result").innerText()).includes("25.0"))
+    throw Error("BMI arithmetic / result render incorrect after changing inputs");
+  data.steps.push({screen:"original-bmi",interactiveResult:"25.0"});
+
+  await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/qna"),{waitUntil:"networkidle"});
+  await page.locator(".original-qna-chips").waitFor();
+  const chips=await page.locator(".original-qna-chips a").count();
+  if(chips<30)throw Error("Q&A source 35-department filter link collection incomplete: "+chips);
+  await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/qna/1/아침에-첫발을-디딜-때-발뒤꿈치가-아픈데-족저근막염일까요"),{waitUntil:"networkidle"});
+  await page.getByTestId("website-source-qna-answer").waitFor();
+  if(!(await page.getByTestId("website-source-qna-answer").innerText()).includes("족저근막염 초기"))
+    throw Error("Original public Q&A question/answer body missing");
+  await page.getByRole("button",{name:"의료진 Q&A 목록"}).click();
+  await page.locator(".original-qna-chips").waitFor();
+  data.steps.push({screen:"original-qna",sourceDepartments:chips,articleOpen:true,backNavigation:true});
+
+  await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/telemedicine/고혈압-비대면진료-예약"),{waitUntil:"networkidle"});
+  await page.getByTestId("website-source-hypertension-list").waitFor();
+  await page.locator(".ow-hypertension-filters select").selectOption("리뷰순");
+  if(!(await page.locator(".ow-hypertension-doctor").first().innerText()).includes("홍성진"))
+    throw Error("Doctor sort by review count did not reorder doctor cards");
+  await page.getByRole("button",{name:"전문의",exact:true}).click();
+  if(await page.locator(".ow-hypertension-doctor").filter({hasText:"홍성진"}).count())
+    throw Error("Specialist filter did not exclude source non-specialist doctor");
+  data.steps.push({screen:"original-hypertension",sortedByReview:true,specialistFilter:true});
+
   for(const specialty of ["피부과","내과","이비인후과","정형외과","안과","소아청소년과","산부인과","성형외과","치과","비뇨의학과","정신건강의학과","신경과","신경외과","외과","재활의학과","마취통증의학과","가정의학과"]){
     await page.goto(BASE+"?screen=detail&target="+encodeURIComponent("/dept-hub/"+specialty),{waitUntil:"domcontentloaded"});
     await page.getByTestId("original-department-landing").waitFor();
