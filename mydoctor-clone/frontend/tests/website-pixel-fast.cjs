@@ -115,6 +115,12 @@ async function runOne(browserContext,c){
  let page;
  try{
   page=await browserContext.newPage();
+  // Freeze ONLY archived night-pharmacy pixel verification at its captured
+  // Tuesday overnight UI state; production page continues using KST clock.
+  if(c.id==="pharmacy-condition-search"){
+   await page.clock.install({time:new Date("2026-11-10T01:00:00+09:00")});
+   rec.reference_clock="2026-11-10T01:00:00+09:00";
+  }
   const errors=[];
   page.on("pageerror",e=>errors.push(e.message));
   const response=await page.goto(url,{waitUntil:"networkidle",timeout:30000});
