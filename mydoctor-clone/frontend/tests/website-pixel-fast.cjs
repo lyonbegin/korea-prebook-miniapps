@@ -192,6 +192,72 @@ async function measureFontVariants(page,source,id){
  console.log("MYDOCTOR_FONT_SWEEP "+JSON.stringify({id,baseline:"normal",...ret}));
  return ret;
 }
+
+async function auditLiveOriginalFonts(context){
+ const out={url:"https://my-doctor.io/qna",capture_kind:"LIVE_SOURCE_DOM_NOT_ARCHIVED_PIXEL_BASELINE"};
+ let page;
+ try{
+  page=await context.newPage();
+  const response=await page.goto(out.url,{waitUntil:"domcontentloaded",timeout:30000});
+  out.http_status=response?.status()??null;
+  await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>{});
+  await page.evaluate(async()=>{await document.fonts.ready});
+  out.index=await page.evaluate(()=>{
+   const describe=el=>{
+    if(!el)return null;
+    const s=getComputedStyle(el),r=el.getBoundingClientRect();
+    return {tag:el.tagName,classes:typeof el.className==="string"?el.className:"",text:(el.innerText||el.textContent||"").trim().slice(0,100),
+     fontFamily:s.fontFamily,fontSize:s.fontSize,fontWeight:s.fontWeight,lineHeight:s.lineHeight,
+     letterSpacing:s.letterSpacing,width:+r.width.toFixed(2),height:+r.height.toFixed(2),
+     href:el.href||null,html:el.outerHTML.slice(0,320)};
+   };
+   const h1=[...document.querySelectorAll("h1")].find(x=>(x.innerText||"").includes("의료진 Q&A"));
+   const root=h1?.closest("main")||document.body;
+   const links=[...root.querySelectorAll("a")];
+   const chips=links.filter(a=>["정형외과","내과","피부과"].includes((a.innerText||"").trim())&&a.href.includes("/qna"));
+   const items=links.filter(a=>/^\s*Q\s/.test(a.innerText||""));
+   const faces=[...document.fonts].map(f=>({family:f.family,status:f.status,weight:f.weight,style:f.style}));
+   const fontResources=performance.getEntriesByType("resource")
+    .filter(x=>/\.(woff2?|ttf|otf)(\?|$)|font|pretendard|noto/i.test(x.name))
+    .map(x=>({url:x.name,ms:Math.round(x.duration),bytes:x.transferSize||x.decodedBodySize||0}));
+   const sheets=[...document.styleSheets].map(s=>s.href).filter(Boolean);
+   const faceRules=[];
+   for(const sheet of document.styleSheets){try{for(const rule of sheet.cssRules||[])if(rule.type===CSSRule.FONT_FACE_RULE)faceRules.push(rule.cssText)}catch{}}
+   const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+   const sample="한 달 전부터 아침에 일어나 첫걸음을 뗄 때 발뒤꿈치가";
+   const widths={};
+   for(const family of ["Pretendard Variable","Pretendard","Noto Sans KR","Apple SD Gothic Neo","Arial","sans-serif"]){
+    ctx.font='16px "'+family+'"';widths[family]=+ctx.measureText(sample).width.toFixed(2);
+   }
+   return {title:document.title,url:location.href,heading:describe(h1),chips:chips.slice(0,4).map(describe),
+    firstQuestions:items.slice(0,3).map(describe),firstQuestionHref:items[0]?.href||null,
+    fontFaces:faces,fontResources,styleSheets:sheets,fontFaceRules:faceRules.slice(0,12),
+    fontChecks:{pretendardVariable:document.fonts.check('16px "Pretendard Variable"'),
+     pretendard:document.fonts.check('16px Pretendard'),notoSansKr:document.fonts.check('16px "Noto Sans KR"')},
+    sampleTextWidths:widths};
+  });
+  if(out.index?.firstQuestionHref){
+   await page.goto(out.index.firstQuestionHref,{waitUntil:"domcontentloaded",timeout:25000});
+   await page.waitForLoadState("networkidle",{timeout:12000}).catch(()=>{});
+   await page.evaluate(async()=>{await document.fonts.ready});
+   out.detail=await page.evaluate(()=>{
+    const describe=el=>{if(!el)return null;const s=getComputedStyle(el),r=el.getBoundingClientRect();
+     return {tag:el.tagName,classes:typeof el.className==="string"?el.className:"",text:(el.innerText||"").trim().slice(0,130),
+      fontFamily:s.fontFamily,fontSize:s.fontSize,fontWeight:s.fontWeight,lineHeight:s.lineHeight,
+      letterSpacing:s.letterSpacing,width:+r.width.toFixed(2),height:+r.height.toFixed(2)}};
+    const title=[...document.querySelectorAll("h1,h2")].find(e=>(e.innerText||"").trim().length>12);
+    const paras=[...document.querySelectorAll("p")].filter(e=>(e.innerText||"").trim().length>25).slice(0,6);
+    return {url:location.href,title:document.title,heading:describe(title),paragraphs:paras.map(describe),
+     fontFaces:[...document.fonts].map(f=>({family:f.family,status:f.status,weight:f.weight,style:f.style})),
+     fontResources:performance.getEntriesByType("resource").filter(x=>/\.(woff2?|ttf|otf)(\?|$)|font|pretendard|noto/i.test(x.name)).map(x=>x.name)};
+   });
+  }
+ }catch(e){out.error=String(e.stack||e).slice(0,1500)}
+ finally{if(page)await page.close().catch(()=>{})}
+ console.log("MYDOCTOR_LIVE_SOURCE_FONT_AUDIT "+JSON.stringify(out));
+ return out;
+}
+
 async function runOne(browserContext,c){
  const started=Date.now();
  const url=targetUrl(c);
@@ -319,6 +385,7 @@ async function runOne(browserContext,c){
   isMobile:true,hasTouch:true,locale:"ko-KR",timezoneId:"Asia/Seoul",reducedMotion:"reduce"};
  const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
  const context=await browser.newContext(contextOptions);
+ await auditLiveOriginalFonts(context);
  const results=new Array(inventory.cases.length);
  let cursor=0;
  try{
