@@ -202,7 +202,7 @@ async function auditLiveOriginalFonts(context){
   out.http_status=response?.status()??null;
   await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>{});
   await page.evaluate(async()=>{await document.fonts.ready});
-  out.index=await page.evaluate(()=>{
+  out.index=await page.evaluate(async()=>{
    const describe=el=>{
     if(!el)return null;
     const s=getComputedStyle(el),r=el.getBoundingClientRect();
@@ -223,6 +223,10 @@ async function auditLiveOriginalFonts(context){
    const sheets=[...document.styleSheets].map(s=>s.href).filter(Boolean);
    const faceRules=[];
    for(const sheet of document.styleSheets){try{for(const rule of sheet.cssRules||[])if(rule.type===CSSRule.FONT_FACE_RULE)faceRules.push(rule.cssText)}catch{}}
+   const fetchedFontRules=await Promise.all(sheets.map(async href=>{
+    try{const css=await fetch(href).then(r=>r.text());return {href,fontFaces:[...(css.matchAll(/@font-face\s*\{[^}]*\}/g))].map(x=>x[0]).filter(x=>/Pretendard|woff2/i.test(x)).slice(0,100)}}
+    catch(e){return {href,error:String(e).slice(0,180)}}
+   }));
    const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
    const sample="한 달 전부터 아침에 일어나 첫걸음을 뗄 때 발뒤꿈치가";
    const widths={};
@@ -230,8 +234,8 @@ async function auditLiveOriginalFonts(context){
     ctx.font='16px "'+family+'"';widths[family]=+ctx.measureText(sample).width.toFixed(2);
    }
    return {title:document.title,url:location.href,heading:describe(h1),chips:chips.slice(0,4).map(describe),
-    firstQuestions:items.slice(0,3).map(describe),firstQuestionHref:items[0]?.href||null,
-    fontFaces:faces,fontResources,styleSheets:sheets,fontFaceRules:faceRules.slice(0,12),
+    firstQuestions:items.slice(0,3).map(el=>({root:describe(el),children:[...el.querySelectorAll("span,p,strong,small")].slice(0,8).map(describe)})),firstQuestionHref:items[0]?.href||null,
+    fontFaces:faces,fontResources,styleSheets:sheets,fontFaceRules:faceRules.slice(0,12),fetchedFontRules,
     fontChecks:{pretendardVariable:document.fonts.check('16px "Pretendard Variable"'),
      pretendard:document.fonts.check('16px Pretendard'),notoSansKr:document.fonts.check('16px "Noto Sans KR"')},
     sampleTextWidths:widths};
