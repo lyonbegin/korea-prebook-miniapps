@@ -11,6 +11,7 @@ on:
       - "mydoctor-clone/frontend/src/**"
       - "mydoctor-clone/frontend/index.html"
       - "mydoctor-clone/frontend/package.json"
+      - "mydoctor-clone/frontend/scripts/**"
 
 permissions:
   contents: read
