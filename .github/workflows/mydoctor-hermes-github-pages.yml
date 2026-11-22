@@ -11,6 +11,7 @@ on:
       - "mydoctor-clone/frontend/public/**"
       - "mydoctor-clone/frontend/index.html"
       - "mydoctor-clone/frontend/package.json"
+      - "mydoctor-clone/frontend/scripts/**"
       - "mydoctor-clone/frontend/vite.config.*"
       - "mydoctor-clone/frontend/tests/extract-verified-home-phone.cjs"
       - "mydoctor-clone/frontend/tests/hermes-pages-local.cjs"
