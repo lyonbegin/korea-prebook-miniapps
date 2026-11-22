@@ -161,10 +161,12 @@ function fontVariants(id){
      ".ow-qd-page .ow-qd-answer-head{margin-bottom:"+answerMargin+"px;}"});
  }
  if(id==="qna-answer"){
-  // Live original Q&A detail DOM: H1 24/700; prose 17/400/26 with -0.17px tracking.
+  // The archived Nov-09 baseline has narrower question text wrapping than
+  // the current live source redesign. Sweep smaller historical sizes as well
+  // as current source 17px, keeping question and answer text independent.
   for(const h1Weight of [700,750,790]){
-   for(const q of [16,16.5,17]){
-    for(const a of [16,16.5,17]){
+   for(const q of [14,14.5,15,15.5,16,16.5,17]){
+    for(const a of [14,15,15.5,16,16.5,17]){
      for(const tracking of [-.17,0]){
       out.push({name:"source-answer-h1-"+h1Weight+"-q-"+q+"-a-"+a+"-ls-"+tracking,css:
        ".ow-qd-page .ow-qd-question h1{font-weight:"+h1Weight+";}"+
@@ -175,7 +177,6 @@ function fontVariants(id){
    }
   }
  }
-
  if(id==="qna-answer"){
   for(const q of [15.5,16,16.5,17])
    for(const a of [15.5,16,16.5])
