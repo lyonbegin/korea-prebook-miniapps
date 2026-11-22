@@ -90,7 +90,7 @@
 /* Original Q&A chip bank starts 2px inset and contains slightly wider labels. */
 .ow-legacy-page .original-qna-index{padding-left:20px;padding-right:20px}
 .ow-legacy-page .original-qna-index h1{font-size:21px}
-.ow-legacy-page .original-qna-chips a{font-size:15px;padding:8px 11px}
+.ow-legacy-page .original-qna-chips a{font-size:15px;font-weight:500;padding:8px 11px}
 
 /* Regional pixel shift found by image registration:
  * each archived night-hospital photo matches the original with x=-2,
@@ -163,11 +163,11 @@
  * Restore source-like font sizes without stretching text via transforms.
  * +3px CTA height is balanced with -3px heading gap to keep the chip bank
  * at the already-matched y=179 source row origin. */
-.ow-legacy-page .original-qna-index h1{font-size:24px}
+.ow-legacy-page .original-qna-index h1{font-size:24px;font-weight:700}
 .ow-legacy-page .original-qna-index>header>a{font-size:14px;padding:10px 15px}
 .ow-legacy-page .original-qna-index>header{margin-bottom:26px}
 .ow-legacy-page .original-qna-item strong{font-size:15px}
-.ow-legacy-page .original-qna-item p{font-size:15px}
+.ow-legacy-page .original-qna-item p{font-size:15px;line-height:19px;letter-spacing:-.15px}
 
 /* Source night-hospital cards: each source gray day-tag row is 7–9px below
  * the clone, while clock/location baselines are ~2px above it. Keep row
