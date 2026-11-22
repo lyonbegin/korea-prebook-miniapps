@@ -65,6 +65,7 @@ jobs:
         working-directory: mydoctor-clone/frontend
         env:
           PIXEL_WORKERS: "4"
+          PIXEL_FONT_SWEEP: "1"
         run: |
           set -euo pipefail
           mkdir -p /tmp/mydoctor-parity-static/korea-prebook-miniapps
