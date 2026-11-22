@@ -131,6 +131,27 @@ function fontVariants(id){
     out.push({name:"preview-margin-"+preview+"-font-"+font,css:
      ".ow-legacy-page .original-qna-item p{margin-top:"+preview+"px;font-size:"+font+"px;}"});
  }
+ if(id==="qna-index"){
+  // Source DOM audit: title 24/700, chips 16/400, question title 15/600,
+  // preview 15/400 with -0.15px tracking. Test these exact values against
+  // the archived screenshot, plus the previously best 15/500.
+  for(const chip of [{size:15,weight:500},{size:16,weight:400},{size:16,weight:500}]){
+   for(const headingWeight of [700,750]){
+    for(const questionWeight of [600,700]){
+     for(const preview of [{size:14,line:19},{size:15,line:19},{size:15,line:22}]){
+      out.push({name:"source-qna-chip-"+chip.size+"-"+chip.weight+"-head-"+headingWeight+
+       "-title-"+questionWeight+"-preview-"+preview.size+"-"+preview.line,css:
+       ".ow-legacy-page .original-qna-index h1{font-weight:"+headingWeight+";}"+
+       ".ow-legacy-page .original-qna-chips a{font-size:"+chip.size+"px;font-weight:"+chip.weight+";}"+
+       ".ow-legacy-page .original-qna-item strong{font-weight:"+questionWeight+";}"+
+       ".ow-legacy-page .original-qna-item p{font-size:"+preview.size+"px;line-height:"+preview.line+
+       "px;letter-spacing:-.15px;}"});
+     }
+    }
+   }
+  }
+ }
+
  if(id==="qna-answer"){
   // Content section height must stay anchored while text lines move.
   for(const questionMargin of [18,21,24])
@@ -139,6 +160,22 @@ function fontVariants(id){
      ".ow-qd-page .ow-qd-author{margin-bottom:"+questionMargin+"px;}"+
      ".ow-qd-page .ow-qd-answer-head{margin-bottom:"+answerMargin+"px;}"});
  }
+ if(id==="qna-answer"){
+  // Live original Q&A detail DOM: H1 24/700; prose 17/400/26 with -0.17px tracking.
+  for(const h1Weight of [700,750,790]){
+   for(const q of [16,16.5,17]){
+    for(const a of [16,16.5,17]){
+     for(const tracking of [-.17,0]){
+      out.push({name:"source-answer-h1-"+h1Weight+"-q-"+q+"-a-"+a+"-ls-"+tracking,css:
+       ".ow-qd-page .ow-qd-question h1{font-weight:"+h1Weight+";}"+
+       ".ow-qd-page .ow-qd-question-text{font-size:"+q+"px;letter-spacing:"+tracking+"px;}"+
+       ".ow-qd-page .ow-qd-answer>p{font-size:"+a+"px;letter-spacing:"+tracking+"px;}"});
+     }
+    }
+   }
+  }
+ }
+
  if(id==="qna-answer"){
   for(const q of [15.5,16,16.5,17])
    for(const a of [15.5,16,16.5])
