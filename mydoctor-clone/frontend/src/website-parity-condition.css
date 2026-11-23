@@ -1,5 +1,5 @@
 /* 2026-11-09 source browser snapshot: hypertension doctor list, 390x844. */
-.ow-hypertension-page{background:#fff;color:#18222c;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-hypertension-page{background:#fff;color:#18222c;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,Roboto,"Helvetica Neue","Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
 .ow-hypertension-page *{box-sizing:border-box}
 .ow-hypertension-page .owh-header{height:58px}
 .ow-hypertension-page .owh-brand img{display:block;width:100px;height:37px;object-fit:contain}
@@ -52,6 +52,6 @@
    original mobile-sized font or the surrounding card geometry. */
 .ow-source-linebreak{display:inline}
 @media (min-width:431px){.ow-source-linebreak{display:none}}
-.ow-hypertension-intro p{letter-spacing:0}
+.ow-hypertension-intro p{letter-spacing:-.17px}
 .ow-hypertension-clock{width:16px;height:16px;object-fit:contain;flex:0 0 auto;margin-right:3px}
 .ow-hypertension-filters{background:#f7f8fa}
