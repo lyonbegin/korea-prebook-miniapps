@@ -205,7 +205,7 @@
 
 /* 390x844 original-source second-pass layout calibration, isolated to nine types. */
 .site-original-nine .breadcrumb{height:36px}
-.original-hospital-night h1{font-size:24px;line-height:1.30;font-weight:750}
+.original-hospital-night h1{font-size:24px;line-height:1.30;font-weight:700}
 .original-hospital-night>header p{font-size:16px;line-height:1.62}
 .original-hospital-night>header{padding-bottom:30px}
 .original-hospital-night-card{min-height:128px;padding:20px 0}
@@ -220,7 +220,7 @@
 .original-drug-intro h1{font-size:24px;line-height:1.36}
 .original-drug-intro p{font-size:14px;line-height:24px}
 .original-drug-reviewed{font-size:12px!important}
-.original-drug-symptoms h2,.original-drug-content h2{font-size:21px}
+.original-drug-symptoms h2,.original-drug-content h2{font-size:20px}
 .original-drug-symptoms p,.original-drug-content p{font-size:16px;line-height:27px}
 .original-health-article h1{font-size:24px;line-height:1.35}
 .original-health-article>p{font-size:15px;line-height:26px}
