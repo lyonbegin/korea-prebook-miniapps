@@ -259,6 +259,72 @@ function fontVariants(id){
      ".ow-legacy-page .original-drug-intro p{font-size:"+t+"px;}"+
      ".ow-legacy-page .original-drug-symptoms p{font-size:"+b+"px;}"});
  }
+ if(id==="medicine-detail"){
+  for(const w of [600,650,700,750]){
+   for(const ls of [-.3,0]){
+    out.push({name:"drug-h1-weight-"+w+"-ls-"+ls,css:
+     ".ow-legacy-page .original-drug-intro h1{font-weight:"+w+";letter-spacing:"+ls+"px;}"});
+   }
+  }
+  for(const w of [600,700,750]){
+   out.push({name:"drug-section-heading-weight-"+w,css:
+    ".ow-legacy-page .original-drug-symptoms h2,.ow-legacy-page .original-drug-content h2{font-weight:"+w+";}"});
+  }
+  for(const w of [400,450,500]){
+   out.push({name:"drug-body-weight-"+w,css:
+    ".ow-legacy-page .original-drug-symptoms p,.ow-legacy-page .original-drug-content p{font-weight:"+w+";}"});
+  }
+ }
+ if(id==="health-article-or-test"){
+  for(const w of [600,700,750]){
+   for(const ls of [-.25,0]){
+    out.push({name:"health-h1-weight-"+w+"-ls-"+ls,css:
+     ".ow-legacy-page .original-health-article h1{font-weight:"+w+";letter-spacing:"+ls+"px;}"});
+   }
+  }
+  for(const w of [600,700,750]){
+   out.push({name:"health-section-heading-weight-"+w,css:
+    ".ow-legacy-page .original-health-article section h2{font-weight:"+w+";}"});
+  }
+ }
+ if(id==="telemedicine-condition"){
+  for(const size of [22,23,24]){
+   for(const w of [600,700,750]){
+    out.push({name:"telemedicine-h1-"+size+"-"+w,css:
+     ".original-telemedicine-root .original-telemedicine-hero h1{font-size:"+size+"px;font-weight:"+w+";}"});
+   }
+  }
+  for(const size of [14,15,16]){
+   out.push({name:"telemedicine-intro-"+size,css:
+    ".original-telemedicine-root .original-telemedicine-hero p{font-size:"+size+"px;}"});
+  }
+ }
+ if(id==="hospital-availability-search"){
+  for(const size of [20,22,24]){
+   for(const w of [600,700,750]){
+    out.push({name:"night-hospital-h1-"+size+"-"+w,css:
+     ".ow-legacy-page .original-hospital-night h1{font-size:"+size+"px;font-weight:"+w+";}"});
+   }
+  }
+  for(const size of [14,15,16]){
+   out.push({name:"night-hospital-intro-"+size,css:
+    ".ow-legacy-page .original-hospital-night>header p{font-size:"+size+"px;}"});
+  }
+ }
+ if(id==="pharmacy-condition-search"){
+  for(const size of [13,13.25,13.5]){
+   for(const line of [20,21,22]){
+    for(const ls of [-.18,-.1,0]){
+     out.push({name:"night-pharmacy-schedule-"+size+"-"+line+"-"+ls,css:
+      ".ow-legacy-page .original-pharmacy-cardline{font-size:"+size+"px;line-height:"+line+"px;letter-spacing:"+ls+"px;}"});
+    }
+   }
+  }
+  for(const w of [600,700,750]){
+   out.push({name:"night-pharmacy-title-weight-"+w,css:
+    ".ow-legacy-page .original-pharmacy-heading h1{font-weight:"+w+";}"});
+  }
+ }
  /* Test whether the original screenshots resemble an entirely different
   * family. These variants are temporary and never alter production CSS. */
  if(["qna-index","qna-answer","medicine-detail","health-article-or-test"].includes(id)){
@@ -337,6 +403,39 @@ async function auditLiveOriginalFonts(context){
      pretendard:document.fonts.check('16px Pretendard'),notoSansKr:document.fonts.check('16px "Noto Sans KR"')},
     sampleTextWidths:widths};
   });
+  const livePages=[
+   {key:"medicine",url:"https://my-doctor.io/medicine/0.9-%EC%97%94%EC%97%90%EC%9D%B4%EC%8B%9C%EC%97%98.%EC%BC%80%EC%9D%B440%EC%A3%BC-200710605"},
+   {key:"healthArticle",url:"https://my-doctor.io/healthLab/info/1268/%EB%A7%8C%EC%84%B1-%EC%86%8C%ED%99%94%EA%B8%B0-%EC%A7%88%ED%99%98-%EA%B4%80%EB%A6%AC%EB%B2%95"},
+   {key:"telemedicineCondition",url:"https://my-doctor.io/telemedicine/%EA%B3%A0%ED%98%88%EC%95%95-%EB%B9%84%EB%8C%80%EB%A9%B4%EC%A7%84%EB%A3%8C-%EC%98%88%EC%95%BD"},
+   {key:"hospitalAvailability",url:"https://my-doctor.io/hospital/%EC%95%BC%EA%B0%84%EC%A7%84%EB%A3%8C"},
+   {key:"pharmacyCondition",url:"https://my-doctor.io/pharmacy/%EC%95%BC%EA%B0%84%EC%95%BD%EA%B5%AD"}
+  ];
+  out.additionalPages={};
+  for(const item of livePages){
+   try{
+    const response=await page.goto(item.url,{waitUntil:"domcontentloaded",timeout:25000});
+    await page.waitForLoadState("networkidle",{timeout:10000}).catch(()=>{});
+    await page.evaluate(async()=>{await document.fonts.ready});
+    out.additionalPages[item.key]=await page.evaluate(()=>{
+     const root=document.querySelector("main")||document.body;
+     const elements=[...root.querySelectorAll("h1,h2,h3,p,button,a")]
+      .filter(el=>(el.innerText||el.textContent||"").trim().length>5)
+      .filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0})
+      .slice(0,14).map(el=>{
+       const s=getComputedStyle(el),r=el.getBoundingClientRect();
+       return {tag:el.tagName,text:(el.innerText||el.textContent||"").trim().slice(0,80),
+        fontFamily:s.fontFamily,fontSize:s.fontSize,fontWeight:s.fontWeight,
+        lineHeight:s.lineHeight,letterSpacing:s.letterSpacing,
+        width:+r.width.toFixed(1),height:+r.height.toFixed(1)};
+      });
+     const faces=[...document.fonts];
+     return {url:location.href,title:document.title,elements,
+      loadedFaces:faces.filter(f=>f.status==="loaded").map(f=>f.family),
+      fontResources:performance.getEntriesByType("resource").filter(x=>/woff|ttf|pretendard|font/i.test(x.name)).map(x=>x.name)};
+    });
+    out.additionalPages[item.key].http_status=response?.status()??null;
+   }catch(e){out.additionalPages[item.key]={error:String(e).slice(0,250)}}
+  }
   if(out.index?.firstQuestionHref){
    await page.goto(out.index.firstQuestionHref,{waitUntil:"domcontentloaded",timeout:25000});
    await page.waitForLoadState("networkidle",{timeout:12000}).catch(()=>{});
