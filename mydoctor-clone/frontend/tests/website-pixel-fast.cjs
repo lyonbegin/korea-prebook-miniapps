@@ -152,6 +152,31 @@ function fontVariants(id){
   }
  }
 
+ if(id==="qna-index"){
+  // Compare archived Nov-09 typography with current live-source DOM metrics.
+  for(const h1Line of [26,32]){
+   for(const chip of [
+    {name:"archive-15-500",size:15,weight:500,line:"17px",height:"auto",padding:"8px 12px"},
+    {name:"live-16-400",size:16,weight:400,line:"normal",height:"34px",padding:"0 12px"}
+   ]){
+    for(const question of [{weight:700,line:21},{weight:600,line:22}]){
+     for(const previewLine of [19,22]){
+      for(const metaSize of [12,13]){
+       out.push({name:"qna-type-"+h1Line+"-"+chip.name+"-q"+question.weight+"-"+question.line+"-p"+previewLine+"-m"+metaSize,
+        css:".ow-legacy-page .original-qna-index h1{line-height:"+h1Line+"px;}"+
+         ".ow-legacy-page .original-qna-chips a{font-size:"+chip.size+"px;font-weight:"+chip.weight+
+         ";line-height:"+chip.line+";height:"+chip.height+";padding:"+chip.padding+";}"+
+         ".ow-legacy-page .original-qna-item strong{font-size:15px;font-weight:"+question.weight+
+         ";line-height:"+question.line+"px;letter-spacing:-.15px;}"+
+         ".ow-legacy-page .original-qna-item p{font-size:15px;font-weight:400;line-height:"+
+         previewLine+"px;letter-spacing:-.15px;}"+
+         ".ow-legacy-page .original-qna-card-meta{font-size:"+metaSize+"px;line-height:18px;}"});
+      }
+     }
+    }
+   }
+  }
+ }
  if(id==="qna-answer"){
   // Content section height must stay anchored while text lines move.
   for(const questionMargin of [18,21,24])
@@ -173,6 +198,25 @@ function fontVariants(id){
        ".ow-qd-page .ow-qd-question-text{font-size:"+q+"px;letter-spacing:"+tracking+"px;}"+
        ".ow-qd-page .ow-qd-answer>p{font-size:"+a+"px;letter-spacing:"+tracking+"px;}"});
      }
+    }
+   }
+  }
+ }
+ if(id==="qna-answer"){
+  // Archived title tracking was not included in the first 281-case sweep.
+  for(const h1Tracking of [-.25,0,.1]){
+   for(const h1Weight of [700,750]){
+    out.push({name:"answer-h1-tracking-"+h1Tracking+"-weight-"+h1Weight,css:
+     ".ow-qd-page .ow-qd-question h1{letter-spacing:"+h1Tracking+"px;font-weight:"+h1Weight+";}"});
+   }
+  }
+  for(const h1Tracking of [-.25,0]){
+   for(const q of [16,17]){
+    for(const a of [16,17]){
+     out.push({name:"answer-h1-"+h1Tracking+"-question-"+q+"-answer-"+a,css:
+      ".ow-qd-page .ow-qd-question h1{letter-spacing:"+h1Tracking+"px;}"+
+      ".ow-qd-page .ow-qd-question-text{font-size:"+q+"px;}"+
+      ".ow-qd-page .ow-qd-answer>p{font-size:"+a+"px;}"});
     }
    }
   }
@@ -226,7 +270,7 @@ async function measureFontVariants(page,source,id){
   }
  }
  result.sort((a,b)=>a.pct-b.pct);
- const ret={tested:result.length,best:result.slice(0,6)};
+ const ret={tested:result.length,best:result.slice(0,12)};
  console.log("MYDOCTOR_FONT_SWEEP "+JSON.stringify({id,baseline:"normal",...ret}));
  return ret;
 }
@@ -363,14 +407,23 @@ async function runOne(browserContext,c){
        lineHeight:s.lineHeight,letterSpacing:s.letterSpacing,boxWidth:+r.width.toFixed(2),
        boxHeight:+r.height.toFixed(2),preview:el.textContent?.slice(0,55)}];
     }).filter(([,v])=>v));
-    const fonts=[...document.fonts].map(f=>({family:f.family,status:f.status,weight:f.weight,
-       style:f.style})).slice(0,24);
+    const allFonts=[...document.fonts];
+    const fonts=allFonts.map(f=>({family:f.family,status:f.status,weight:f.weight,style:f.style})).slice(0,24);
+    const loadedPretendardFaces=allFonts.filter(f=>f.family.replaceAll('"',"")==="Pretendard Variable"&&f.status==="loaded").length;
     const fontNetwork=performance.getEntriesByType("resource")
       .filter(x=>/woff|ttf|pretendard|font|jsdelivr/i.test(x.name))
-      .map(x=>({name:x.name,ms:Math.round(x.duration),bytes:x.transferSize})).slice(0,28);
-    return {styles,fonts,fontNetwork};
+      .map(x=>({name:x.name,ms:Math.round(x.duration),bytes:x.transferSize})).slice(0,40);
+    const sample="한 달 전부터 아침에 일어나 첫걸음을 뗄 때 발뒤꿈치가";
+    const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+    ctx.font='17px "Pretendard Variable"';
+    const sampleWidth=+ctx.measureText(sample).width.toFixed(2);
+    return {styles,fonts,loadedPretendardFaces,
+      pretendardCheck:document.fonts.check('400 17px "Pretendard Variable"',sample),
+      sampleWidth,fontNetwork};
    });
    console.log("MYDOCTOR_SOURCE_FONT_AUDIT "+JSON.stringify({id:c.id,typography:rec.typography}));
+   if(["qna-index","qna-answer"].includes(c.id)&&rec.typography.loadedPretendardFaces<1)
+    throw Error("Pretendard Variable subset did not load for "+c.id);
   }
   rec.render=await page.evaluate(()=>({
    title:document.title,
