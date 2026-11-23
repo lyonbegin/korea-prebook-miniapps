@@ -92,7 +92,7 @@
 .original-drug-reviewed{font-size:11px!important;color:#9ba5b1!important;margin:0 0 14px!important}
 .original-drug-intro p{font-size:13px;line-height:23px;color:#545d68;margin:8px 0}
 .original-drug-symptoms{padding:26px 18px 30px}
-.original-drug-symptoms h2,.original-drug-content h2{font-size:20px;font-weight:600;line-height:26px;margin:0 0 15px}
+.original-drug-symptoms h2,.original-drug-content h2{font-size:19px;font-weight:750;line-height:1.4;margin:0 0 15px}
 .original-drug-symptoms>span{background:#f1f3f5;border-radius:22px;font-size:13px;padding:7px 12px}
 .original-drug-symptoms p,.original-drug-content p{font-size:14px;line-height:23px;color:#505967;margin:14px 0}
 .original-drug-symptoms>a{display:block;background:#316bff;color:white;font-weight:700;text-align:center;
@@ -117,7 +117,7 @@
  display:flex;flex-direction:column;gap:11px}
 .original-health-toc b{font-size:13px;margin-bottom:6px}
 .original-health-toc a{font-size:13px;text-decoration:underline;color:#536070}
-.original-health-article section h2{font-size:18px;font-weight:750;line-height:1.4;margin:0 0 20px}
+.original-health-article section h2{font-size:18px;font-weight:600;line-height:1.4;margin:0 0 20px}
 .original-health-article section p{font-size:14px;line-height:24px;color:#4e5864}
 .original-health-article section img{max-width:100%;height:auto}
 
@@ -205,7 +205,7 @@
 
 /* 390x844 original-source second-pass layout calibration, isolated to nine types. */
 .site-original-nine .breadcrumb{height:36px}
-.original-hospital-night h1{font-size:24px;line-height:1.30;font-weight:700}
+.original-hospital-night h1{font-size:24px;line-height:1.30;font-weight:750}
 .original-hospital-night>header p{font-size:16px;line-height:1.62}
 .original-hospital-night>header{padding-bottom:30px}
 .original-hospital-night-card{min-height:128px;padding:20px 0}
@@ -220,7 +220,7 @@
 .original-drug-intro h1{font-size:24px;line-height:1.36}
 .original-drug-intro p{font-size:14px;line-height:24px}
 .original-drug-reviewed{font-size:12px!important}
-.original-drug-symptoms h2,.original-drug-content h2{font-size:20px}
+.original-drug-symptoms h2,.original-drug-content h2{font-size:21px;font-weight:600}
 .original-drug-symptoms p,.original-drug-content p{font-size:16px;line-height:27px}
 .original-health-article h1{font-size:24px;line-height:1.35}
 .original-health-article>p{font-size:15px;line-height:26px}
