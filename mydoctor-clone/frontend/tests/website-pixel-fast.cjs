@@ -266,9 +266,19 @@ function fontVariants(id){
      ".ow-legacy-page .original-drug-intro h1{font-weight:"+w+";letter-spacing:"+ls+"px;}"});
    }
   }
-  for(const w of [600,700,750]){
-   out.push({name:"drug-section-heading-weight-"+w,css:
-    ".ow-legacy-page .original-drug-symptoms h2,.ow-legacy-page .original-drug-content h2{font-weight:"+w+";}"});
+  for(const size of [19,20,21]){
+   for(const w of [600,700,750]){
+    out.push({name:"drug-section-heading-"+size+"-"+w,css:
+     ".ow-legacy-page .original-drug-symptoms h2,.ow-legacy-page .original-drug-content h2{font-size:"+size+"px;font-weight:"+w+";}"});
+   }
+  }
+  for(const size of [22,23,24]){
+   for(const w of [600,700]){
+    for(const ls of [0,-.3]){
+     out.push({name:"drug-title-"+size+"-"+w+"-"+ls,css:
+      ".ow-legacy-page .original-drug-intro h1{font-size:"+size+"px;font-weight:"+w+";letter-spacing:"+ls+"px;}"});
+    }
+   }
   }
   for(const w of [400,450,500]){
    out.push({name:"drug-body-weight-"+w,css:
@@ -288,15 +298,25 @@ function fontVariants(id){
   }
  }
  if(id==="telemedicine-condition"){
-  for(const size of [22,23,24]){
-   for(const w of [600,700,750]){
-    out.push({name:"telemedicine-h1-"+size+"-"+w,css:
-     ".original-telemedicine-root .original-telemedicine-hero h1{font-size:"+size+"px;font-weight:"+w+";}"});
+  for(const size of [20,21,22,23,24]){
+   for(const w of [600,700,750,780]){
+    for(const ls of [-.6,-.3,0]){
+     out.push({name:"telemedicine-h1-"+size+"-"+w+"-"+ls,css:
+      ".ow-hypertension-page .ow-hypertension-intro h1{font-size:"+size+"px;font-weight:"+w+";letter-spacing:"+ls+"px;}"});
+    }
    }
   }
-  for(const size of [14,15,16]){
-   out.push({name:"telemedicine-intro-"+size,css:
-    ".original-telemedicine-root .original-telemedicine-hero p{font-size:"+size+"px;}"});
+  for(const size of [14,15,16,17]){
+   for(const ls of [-.25,-.17,0]){
+    out.push({name:"telemedicine-intro-"+size+"-"+ls,css:
+     ".ow-hypertension-page .ow-hypertension-intro p{font-size:"+size+"px;letter-spacing:"+ls+"px;}"});
+   }
+  }
+  for(const size of [16,17,18]){
+   for(const w of [600,700,780]){
+    out.push({name:"telemedicine-doctor-name-"+size+"-"+w,css:
+     ".ow-hypertension-page .ow-hypertension-name strong{font-size:"+size+"px;font-weight:"+w+";}"});
+   }
   }
  }
  if(id==="hospital-availability-search"){
@@ -320,9 +340,11 @@ function fontVariants(id){
     }
    }
   }
-  for(const w of [600,700,750]){
-   out.push({name:"night-pharmacy-title-weight-"+w,css:
-    ".ow-legacy-page .original-pharmacy-heading h1{font-weight:"+w+";}"});
+  for(const size of [23,24,25]){
+   for(const w of [600,700]){
+    out.push({name:"night-pharmacy-title-"+size+"-"+w,css:
+     ".ow-legacy-page .original-pharmacy-heading h1{font-size:"+size+"px;font-weight:"+w+";}"});
+   }
   }
  }
  /* Test whether the original screenshots resemble an entirely different
