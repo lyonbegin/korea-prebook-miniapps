@@ -231,6 +231,21 @@ function fontVariants(id){
    out.push({name:"weight-"+w,css:
     ".ow-qd-page .ow-qd-question-text,.ow-qd-page .ow-qd-answer>p{font-weight:"+w+";}"});
  }
+ if(id==="qna-answer"){
+  // Fine-grained Korean glyph-width sweep around the archived question-body
+  // line breaks. Keep answer copy independently adjustable.
+  for(const q of [16,16.5,17]){
+   for(const qls of [-.17,-.25,-.35,-.45]){
+    for(const a of [16.5,17]){
+     for(const als of [-.17,-.25]){
+      out.push({name:"qna-glyph-q"+q+"-ls"+qls+"-a"+a+"-ls"+als,css:
+       ".ow-qd-page .ow-qd-question-text{font-size:"+q+"px;letter-spacing:"+qls+"px;}"+
+       ".ow-qd-page .ow-qd-answer>p{font-size:"+a+"px;letter-spacing:"+als+"px;}"});
+     }
+    }
+   }
+  }
+ }
  if(id==="health-article-or-test"){
   for(const t of [15,15.5,16,16.5,17])
    for(const ls of [0,.2,.4])
