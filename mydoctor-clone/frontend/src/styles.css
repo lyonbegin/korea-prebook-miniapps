@@ -28,7 +28,7 @@
 .cost-tile strong{-webkit-text-stroke:.3px currentColor}
 
 /* Exact computed font metrics measured from the original Playwright browser. */
-:root{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+:root{font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,Roboto,"Helvetica Neue","Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
 .md-home h1{font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;font-size:56px;
  font-weight:900;line-height:67.2px;letter-spacing:1.12px;width:321px;max-width:100%;
  margin:2px auto 27px;-webkit-text-stroke:0}
