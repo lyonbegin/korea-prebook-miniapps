@@ -115,7 +115,7 @@
 
 /* Try 13px weekly pharmacy rows: the original saves a line of text in both
  * long Monday-Sunday schedules, without changing schedule data. */
-.ow-legacy-page .original-pharmacy-cardline{font-size:13px;letter-spacing:-.1px}
+.ow-legacy-page .original-pharmacy-cardline{font-size:13.5px;letter-spacing:-.1px}
 
 /* Pixel registration for source first night pharmacy card:
  * screenshot icon y ranges (source / clone):
