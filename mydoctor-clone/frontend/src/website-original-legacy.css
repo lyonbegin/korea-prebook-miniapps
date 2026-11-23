@@ -82,7 +82,7 @@
 
 /* Original pharmacy text is a little wider; preserve 21px line pitch and
  * original 3-line weekly schedules while correctly wrapping after Tuesday. */
-.ow-legacy-page .original-pharmacy-heading h1{font-size:25px;line-height:32px}
+.ow-legacy-page .original-pharmacy-heading h1{font-size:24px;line-height:32px;font-weight:700}
 .ow-legacy-page .original-pharmacy-heading p{font-size:16.5px}
 .ow-legacy-page .original-pharmacy-card h2{font-size:17px;font-weight:700}
 .ow-legacy-page .original-pharmacy-cardline{font-size:15px;line-height:21px}
