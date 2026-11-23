@@ -1,6 +1,6 @@
 /* Public website screen framing for existing original-specific components.
    Source screenshots were captured from the website, not Android. */
-.ow-legacy-page{background:#fff;color:#19212a;min-height:100vh;font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo",Arial,sans-serif}
+.ow-legacy-page{background:#fff;color:#19212a;min-height:100vh;font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,Roboto,"Helvetica Neue","Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
 .ow-legacy-page .owh-header{height:58px;background:#fff}
 .ow-legacy-page .owh-brand img{width:100px;height:37px;object-fit:contain;display:block}
 .ow-legacy-page .ow-hospital-breadcrumb{height:42px;background:#fff}
