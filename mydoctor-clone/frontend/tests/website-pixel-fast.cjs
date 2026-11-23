@@ -413,17 +413,24 @@ async function runOne(browserContext,c){
     const fontNetwork=performance.getEntriesByType("resource")
       .filter(x=>/woff|ttf|pretendard|font|jsdelivr/i.test(x.name))
       .map(x=>({name:x.name,ms:Math.round(x.duration),bytes:x.transferSize})).slice(0,40);
-    const sample="한 달 전부터 아침에 일어나 첫걸음을 뗄 때 발뒤꿈치가";
+    const probe=document.querySelector(".ow-qd-question-text")||
+      document.querySelector(".original-qna-item strong")||
+      document.querySelector(".original-health-article>p")||
+      document.querySelector(".original-drug-intro h1");
+    const probeStyle=probe?getComputedStyle(probe):null;
+    const probeText=(probe?.textContent||"").trim().slice(0,120);
+    const probeFont=probeStyle?probeStyle.fontWeight+" "+probeStyle.fontSize+' "Pretendard Variable"':'400 16px "Pretendard Variable"';
     const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
-    ctx.font='17px "Pretendard Variable"';
-    const sampleWidth=+ctx.measureText(sample).width.toFixed(2);
+    ctx.font=probeFont;
+    const sampleWidth=+ctx.measureText(probeText).width.toFixed(2);
     return {styles,fonts,loadedPretendardFaces,
-      pretendardCheck:document.fonts.check('400 17px "Pretendard Variable"',sample),
-      sampleWidth,fontNetwork};
+      actualTextPretendardCheck:document.fonts.check(probeFont,probeText),
+      probeFont,probeText,sampleWidth,fontNetwork};
    });
    console.log("MYDOCTOR_SOURCE_FONT_AUDIT "+JSON.stringify({id:c.id,typography:rec.typography}));
-   if(["qna-index","qna-answer"].includes(c.id)&&rec.typography.loadedPretendardFaces<1)
-    throw Error("Pretendard Variable subset did not load for "+c.id);
+   if(["qna-index","qna-answer"].includes(c.id)&&
+      (rec.typography.loadedPretendardFaces<1||!rec.typography.actualTextPretendardCheck))
+    throw Error("Pretendard Variable did not load for visible Korean text on "+c.id);
   }
   rec.render=await page.evaluate(()=>({
    title:document.title,
