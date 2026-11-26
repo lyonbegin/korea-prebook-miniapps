@@ -13,6 +13,7 @@ const qaProxy=process.env.UNNI_TEST_PROXY_TARGET?{
 
 export default defineConfig({
  plugins:[react()],
+ base:process.env.UNNI_PAGES_BUILD==="1"?"/korea-prebook-miniapps/unni/":"/",
  server:{host:"0.0.0.0",port:5173,allowedHosts,proxy:qaProxy},
  preview:{host:"0.0.0.0",allowedHosts,strictPort:true}
 });

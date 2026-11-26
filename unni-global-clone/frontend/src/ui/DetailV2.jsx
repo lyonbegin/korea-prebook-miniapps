@@ -1,3 +1,4 @@
+import {readRoute,pushRoute} from "../lib/navigation";
 import React,{useEffect,useRef,useState} from "react";
 import {createPortal} from "react-dom";
 import {ArrowRight,Check,ChevronDown,ChevronLeft,ChevronRight,Clock3,ExternalLink,Heart,MapPin,Maximize2,MessageCircle,Navigation,Share2,ShieldAlert,Star,X} from "lucide-react";
@@ -84,11 +85,11 @@ function OptionList({detail,selected,setSelected,resolveOption}){
  function choose(o,i){
    const verified=resolveOption?resolveOption(o):o;
    setSelected(verified);
-   const url=new URL(location.href);
+   const url=new URL(readRoute(),location.origin);
    url.searchParams.delete("optionId");url.searchParams.delete("optionIndex");
    if(verified.sourceOptionId)url.searchParams.set("optionId",verified.sourceOptionId);
    else url.searchParams.set("optionIndex",String(i+1));
-   history.pushState(history.state,"",url.pathname+url.search);
+   pushRoute(url.pathname+url.search);
    window.dispatchEvent(new Event("unni:optionchange"));
  }
  return <Block id="d2-options"><Header sub={opts.length+" options"}>Procedure options</Header>

@@ -1,0 +1,60 @@
+name: UNNI mobile UI — GitHub Pages
+on:
+  push:
+    branches: [feature/unni-github-pages-20261126]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: shared-project-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build UNNI for project subdirectory
+        working-directory: unni-global-clone/frontend
+        env:
+          UNNI_PAGES_BUILD: "1"
+          VITE_GATEWAY_BASE: https://unni-mobile-api-production.up.railway.app
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+          test -s dist/index.html
+          grep -q '/korea-prebook-miniapps/unni/assets/' dist/index.html
+      - name: Check static route and option navigation
+        working-directory: unni-global-clone/frontend
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const src=fs.readFileSync('src/lib/navigation.js','utf8').replaceAll('import.meta.env.BASE_URL','"/korea-prebook-miniapps/unni/"');
+          globalThis.location={hash:'#/events/70809?optionId=abc',pathname:'/korea-prebook-miniapps/unni/',search:''};
+          globalThis.history={state:null,pushState(_a,_b,url){globalThis.lastURL=url}};
+          const {readRoute,pushRoute}=await import('data:text/javascript;base64,'+Buffer.from(src).toString('base64'));
+          assert.equal(readRoute(),'/events/70809?optionId=abc');
+          pushRoute('/hospitals/826');
+          assert.equal(globalThis.lastURL,'/korea-prebook-miniapps/unni/#/hospitals/826');
+          pushRoute('//external.example');assert.equal(globalThis.lastURL,'/korea-prebook-miniapps/unni/#/hospitals/826');
+          JS
+      - name: Publish UNNI only, preserve MyDoctor
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone --branch gh-pages --single-branch "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/shared-pages
+          mkdir -p /tmp/shared-pages/unni
+          rsync -a --delete unni-global-clone/frontend/dist/ /tmp/shared-pages/unni/
+          touch /tmp/shared-pages/.nojekyll
+          cd /tmp/shared-pages
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish UNNI mobile to /unni/ without replacing MyDoctor"
+          git push origin gh-pages

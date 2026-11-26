@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useState} from "react";
 import {ArrowLeft,Heart,Home,MapPin,Menu,Search,Stethoscope,UserRound,X,ChevronRight} from "lucide-react";
+import {readRoute,pushRoute} from "./lib/navigation";
 import {gatewayUrl,UNNI_SERVICES} from "./lib/originalGateway";
 import {CATEGORY_IDS,createPageSource,parseSource} from "./lib/sourceModel";
 import {SourceFooter,ErrorState,EmptyState} from "./ui/Components";
@@ -9,11 +10,11 @@ import {HomeScreen,SearchScreen,SearchResultsScreen,ListingScreen,EventScreen,Ho
 
 const SAVED_KEY="unni_clone_saved_pages_v2";
 function readSaved(){try{const r=JSON.parse(localStorage.getItem(SAVED_KEY)||"[]");return Array.isArray(r)?r:[]}catch{return[]}}
-function fullRoute(){return location.pathname+location.search;}
+function fullRoute(){return readRoute();}
 function useNavigation(){
  const[route,setRoute]=useState(fullRoute);
- useEffect(()=>{const f=()=>{setRoute(fullRoute());window.scrollTo(0,0)};window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);
- const go=useCallback(path=>{if(typeof path!=="string"||!path.startsWith("/")||path.startsWith("//"))return;history.pushState(null,"",path);setRoute(fullRoute());scrollTo(0,0)},[]);
+ useEffect(()=>{const f=()=>{setRoute(fullRoute());window.scrollTo(0,0)};window.addEventListener("popstate",f);window.addEventListener("hashchange",f);return()=>{window.removeEventListener("popstate",f);window.removeEventListener("hashchange",f)}},[]);
+ const go=useCallback(path=>{if(typeof path!=="string"||!path.startsWith("/")||path.startsWith("//"))return;pushRoute(path);setRoute(fullRoute());scrollTo(0,0)},[]);
  return[route,go];
 }
 async function fetchPage(source,signal){
