@@ -1,0 +1,91 @@
+name: UNNI live Pages functional verification
+on:
+  push:
+    branches: [feature/unni-github-pages-20261126]
+    paths: [".github/workflows/unni-live-pages-check.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    container: mcr.microsoft.com/playwright:v1.51.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser test library
+        run: npm install --no-save --no-audit --no-fund playwright@1.51.1
+      - name: Verify real Railway API, CORS and PostgreSQL
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json,time
+          api='https://unni-mobile-api-production.up.railway.app'
+          for i in range(30):
+              try:
+                  req=urllib.request.Request(api+'/health',headers={'Origin':'https://lyonbegin.github.io'})
+                  with urllib.request.urlopen(req,timeout=10) as r:
+                      d=json.load(r); cors=r.headers.get('Access-Control-Allow-Origin')
+                      print('LIVE_HEALTH',d,'CORS',cors,flush=True)
+                      assert d['db_table_ready'] and d['cache']=='postgresql' and cors=='https://lyonbegin.github.io'
+                  with urllib.request.urlopen(api+'/catalog/status',timeout=10) as r:
+                      print('LIVE_CATALOG',json.load(r),flush=True)
+                  break
+              except Exception as e:
+                  print('NOT_READY',repr(e),flush=True)
+                  time.sleep(5)
+          else: raise SystemExit('API readiness or CORS failed')
+          PY
+      - name: Real browser on published GitHub Pages, no mocks
+        run: |
+          mkdir -p live-qa
+          node <<'JS'
+          const {chromium}=require('playwright');
+          const assert=require('node:assert/strict');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+            const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+            page.on('pageerror',e=>console.log('PAGE_ERROR',e.message));
+            page.on('requestfailed',r=>console.log('REQUEST_FAILED',r.url(),r.failure()?.errorText));
+            page.on('response',r=>{if(r.url().includes('railway.app'))console.log('API_RESPONSE',r.status(),r.url())});
+            const url='https://lyonbegin.github.io/korea-prebook-miniapps/unni/';
+            try {
+              await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.locator('.offer-card').first().waitFor({timeout:60000});
+              console.log('HOME',await page.locator('.offer-card').count(),await page.locator('.offer-card').first().innerText());
+              await page.screenshot({path:'live-qa/home.png',fullPage:true});
+              await page.locator('.offer-card').first().click();
+              await page.waitForURL(/#\/events\//);
+              await page.locator('.d2-top h1').waitFor({timeout:60000});
+              console.log('EVENT',page.url(),await page.locator('.d2-top h1').innerText());
+              await page.screenshot({path:'live-qa/event.png',fullPage:true});
+              await page.reload();
+              await page.locator('.d2-top h1').waitFor({timeout:60000});
+              console.log('DETAIL_RELOAD_PASS');
+              await page.goto(url+'#/hospitals',{waitUntil:'domcontentloaded'});
+              await page.locator('.clinic-card').first().waitFor({timeout:60000});
+              console.log('CLINICS',await page.locator('.clinic-card').count());
+              await page.screenshot({path:'live-qa/clinics.png',fullPage:true});
+              await page.locator('.clinic-card').first().click();
+              await page.waitForURL(/#\/hospitals\//);
+              await page.locator('.d2-top h1').waitFor({timeout:60000});
+              console.log('CLINIC_DETAIL',await page.locator('.d2-top h1').innerText());
+              await page.screenshot({path:'live-qa/clinic-detail.png',fullPage:true});
+              await page.goto(url+'#/events',{waitUntil:'domcontentloaded'});
+              await page.locator('.offer-card').first().waitFor({timeout:60000});
+              console.log('PROCEDURES',await page.locator('.offer-card').count());
+              await page.screenshot({path:'live-qa/procedures.png',fullPage:true});
+              assert.ok(!(await page.locator('body').innerText()).includes('Original data unavailable'));
+              console.log('LIVE_BROWSER_PASS');
+            } catch(e) {
+              await page.screenshot({path:'live-qa/failure.png',fullPage:true}).catch(()=>{});
+              console.error('LIVE_BROWSER_FAIL',e.message, (await page.locator('body').innerText()).slice(0,500));
+              process.exitCode=1;
+            } finally { await browser.close(); }
+          })().catch(e=>{console.error(e);process.exitCode=1;});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unni-live-pages-screenshots
+          path: live-qa/
+          if-no-files-found: warn
