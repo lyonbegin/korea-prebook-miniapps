@@ -22,8 +22,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: "pages-mydoctor-hermes"
-  cancel-in-progress: true
+  group: shared-project-pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -91,16 +91,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p /tmp/hermes-gh-pages
-          cp -a mydoctor-clone/frontend/dist/. /tmp/hermes-gh-pages/
-          touch /tmp/hermes-gh-pages/.nojekyll
-          cd /tmp/hermes-gh-pages
-          git init -b gh-pages
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git clone --branch gh-pages --single-branch "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/shared-pages
+          rsync -a --delete --exclude='.git/' --exclude='/unni/' mydoctor-clone/frontend/dist/ /tmp/shared-pages/
+          touch /tmp/shared-pages/.nojekyll
+          cd /tmp/shared-pages
           git add -A
-          git commit -m "Publish MyDoctor Hermes UI static GitHub Pages"
-          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          git -c http.extraheader="AUTHORIZATION: basic $auth_header" push --force \
-            "https://github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/gh-pages
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish MyDoctor root while preserving UNNI subdirectory"
+          git push origin gh-pages
           echo "GITHUB_PAGES_BRANCH_PUBLISHED=gh-pages"
