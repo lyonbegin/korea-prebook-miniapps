@@ -172,6 +172,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="UNNI public-data transparent write-behind cache", lifespan=lifespan)
 app.include_router(inquiry_router)
 origins = [s.strip() for s in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",") if s.strip()]
+if "https://lyonbegin.github.io" not in origins:
+    origins.append("https://lyonbegin.github.io")
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "HEAD", "POST", "DELETE"],
                    allow_headers=["*"], expose_headers=["x-data-source", "x-cache"])
 
@@ -338,7 +340,8 @@ async def gateway(service: str, rest: str, request: Request):
                 cache_key,
             )
             if record:
-                headers = dict(record["response_headers"])
+                stored_headers = record["response_headers"]
+                headers = json.loads(stored_headers) if isinstance(stored_headers, str) else dict(stored_headers)
                 headers.update({"x-cache": "HIT", "x-data-source": "postgresql"})
                 return Response(content=bytes(record["raw_body"]), status_code=record["status_code"], headers=headers)
         except Exception:
